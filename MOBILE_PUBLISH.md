@@ -22,7 +22,7 @@ The workflow never prints the key.
 
 ## Publish
 
-Open Actions -> Cursed Collision Publish -> Run workflow, set the publish confirmation to true, and run it.
+Open Actions -> Cursed Collision Publish -> Run workflow, enter the Universe ID and Place ID, set the publish confirmation to true, and run it.
 
 The workflow first runs the same structural validator and Rojo build used by CI. Only a successful build is sent to Roblox through the Place Publishing API.
 
