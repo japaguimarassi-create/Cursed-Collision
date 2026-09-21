@@ -79,8 +79,14 @@ end
 button("M1", "M1", 0, 0)
 button("HEAVY", "Heavy", 0.2, 0)
 button("DASH", "Dash", 0.4, 0)
-local blockButton = button("BLOCK", "BlockStart", 0.6, 0)
 local mobileBlock = false
+local blockButton = Instance.new("TextButton")
+blockButton.Name = "BLOCK"
+blockButton.Text = "BLOCK"
+blockButton.TextScaled = true
+blockButton.Size = UDim2.fromScale(0.18, 0.22)
+blockButton.Position = UDim2.fromScale(0.6, 0)
+blockButton.Parent = actionFrame
 blockButton.Activated:Connect(function()
     mobileBlock = not mobileBlock
     blockButton.Text = mobileBlock and "BLOCKING" or "BLOCK"
