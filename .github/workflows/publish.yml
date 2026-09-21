@@ -2,6 +2,12 @@ name: Cursed Collision Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Publish the validated build to Roblox"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -9,7 +15,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: roblox-production
+    if: ${{ inputs.confirm == true }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
