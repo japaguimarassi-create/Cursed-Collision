@@ -42,8 +42,12 @@ jobs:
       - name: Validate Luau requires
         run: luau-lsp require-graph --sourcemap=sourcemap.json src > require-graph.json
 
+      - name: Download Roblox type definitions
+        run: |
+          curl -fsSL https://luau-lsp.pages.dev/type-definitions/globalTypes.RobloxScriptSecurity.d.luau -o globalTypes.d.luau
+
       - name: Static Luau analysis
-        run: luau-lsp analyze --sourcemap=sourcemap.json src
+        run: luau-lsp analyze --sourcemap=sourcemap.json --definitions=globalTypes.d.luau src
 
       - name: Upload cloud validation artifacts
         if: always()
