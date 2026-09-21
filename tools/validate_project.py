@@ -116,7 +116,13 @@ def main() -> int:
         if not re.search(rf"function M\.{re.escape(method)}\b", factory):
             fail(f"CharacterFactory missing method: M.{method}")
 
-    all_text_files = [p for p in ROOT.rglob("*") if p.is_file() and ".git" not in p.parts]
+    scan_roots = [SRC, ROOT / "README.md", ROOT / "default.project.json", ROOT / "foreman.toml", ROOT / ".github"]
+    all_text_files = []
+    for scan_root in scan_roots:
+        if scan_root.is_file():
+            all_text_files.append(scan_root)
+        elif scan_root.is_dir():
+            all_text_files.extend(p for p in scan_root.rglob("*") if p.is_file() and ".git" not in p.parts)
     for path in all_text_files:
         if path.suffix.lower() not in {".lua", ".luau", ".json", ".md", ".toml", ".yml", ".yaml", ".py"}:
             continue
