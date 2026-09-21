@@ -38,6 +38,9 @@ local function finishClash(state, winner, loser, reason)
     if winner then
         state.pressure = state.pressure or {}
         winner:SetAttribute("ClashOpening", true)
+        if domainService then
+            domainService:Stop(loser)
+        end
         loser:SetAttribute("ClashOpening", false)
         sendClash(state.a, "ClashEnd", {winner = winner.UserId, reason = reason})
         sendClash(state.b, "ClashEnd", {winner = winner.UserId, reason = reason})
@@ -112,6 +115,10 @@ function DomainClashService:Configure(context)
 end
 
 function DomainClashService:TryStart(player)
+    if player:GetAttribute("InClash") then
+        return true
+    end
+
     local overlaps = domainService:FindOverlaps(player)
     local opponentDomain = overlaps[1]
     if not opponentDomain then
@@ -119,6 +126,10 @@ function DomainClashService:TryStart(player)
     end
 
     local opponent = opponentDomain.player
+    if opponent:GetAttribute("InClash") then
+        return false
+    end
+
     local key = getKey(player, opponent)
     if combats[key] then
         return true
