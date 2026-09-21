@@ -98,6 +98,7 @@ function CharacterService:Initialize(player)
     player:SetAttribute("InClash", false)
     player:SetAttribute("ClashOpponent", nil)
     player:SetAttribute("ClashOpening", false)
+    player:SetAttribute("Blocking", false)
 
     local module = CharacterModules[definition.Id]
     if module and module.Init then
@@ -113,7 +114,11 @@ function CharacterService:Select(player, id)
     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     local state = ctx.getState(player)
 
-    if not state or state.Clash or state.Domain or state.Awakening then
+    if not state or state.Clash or state.Awakening or state.StunnedUntil > os.clock() then
+        return false, "Busy"
+    end
+
+    if player:GetAttribute("DomainActive") or player:GetAttribute("ClashOpening") then
         return false, "Busy"
     end
 

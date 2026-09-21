@@ -26,6 +26,7 @@ local function setClash(player, opponent, active)
     if not player or not player.Parent then return end
     player:SetAttribute("InClash", active)
     player:SetAttribute("ClashOpponent", active and opponent.UserId or nil)
+    player:SetAttribute("Blocking", false)
     local state = getState and getState(player)
     if state then
         state.Clash = active
@@ -89,7 +90,6 @@ local function resetRound(state)
     state.pressure = {}
     state.round += 1
     state.deadline = os.clock() + Config.Clash.DecisionWindow
-
     send(state.a, "ClashReset", {round=state.round, moves=Config.Clash.Moves})
     send(state.b, "ClashReset", {round=state.round, moves=Config.Clash.Moves})
 end
@@ -97,9 +97,7 @@ end
 local function resolve(state)
     local aMove = state.moves[state.a]
     local bMove = state.moves[state.b]
-    if not aMove or not bMove then
-        return
-    end
+    if not aMove or not bMove then return end
 
     if aMove == bMove then
         resetRound(state)
@@ -138,25 +136,17 @@ function DomainClashService:Configure(context)
 end
 
 function DomainClashService:TryStart(player)
-    if player:GetAttribute("InClash") then
-        return true
-    end
+    if player:GetAttribute("InClash") then return true end
 
     local overlaps = domainService:FindOverlaps(player)
     local opponentDomain = overlaps[1]
-    if not opponentDomain then
-        return false
-    end
+    if not opponentDomain then return false end
 
     local opponent = opponentDomain.player
-    if not opponent or not opponent.Parent or opponent:GetAttribute("InClash") then
-        return false
-    end
+    if not opponent or not opponent.Parent or opponent:GetAttribute("InClash") then return false end
 
     local key = getKey(player, opponent)
-    if combats[key] then
-        return true
-    end
+    if combats[key] then return true end
 
     local state = {
         key=key,
@@ -175,7 +165,7 @@ function DomainClashService:TryStart(player)
 
     send(player, "ClashStart", {opponent=opponent.UserId, round=1, moves=Config.Clash.Moves})
     send(opponent, "ClashStart", {opponent=player.UserId, round=1, moves=Config.Clash.Moves})
-    
+
     task.spawn(function()
         while combats[key] == state and not state.finished do
             if os.clock() > state.deadline then
@@ -189,23 +179,15 @@ function DomainClashService:TryStart(player)
 end
 
 function DomainClashService:Move(player, move)
-    if type(move) ~= "number" or move % 1 ~= 0 or move < 1 or move > 4 then
-        return false
-    end
+    if type(move) ~= "number" or move % 1 ~= 0 or move < 1 or move > 4 then return false end
 
     local opponentId = player:GetAttribute("ClashOpponent")
     local opponent = opponentId and Players:GetPlayerByUserId(opponentId)
-    if not opponent then
-        return false
-    end
+    if not opponent then return false end
 
     local state = combats[getKey(player, opponent)]
-    if not state or state.finished or os.clock() > state.deadline then
-        return false
-    end
-    if state.moves[player] then
-        return false
-    end
+    if not state or state.finished or os.clock() > state.deadline then return false end
+    if state.moves[player] then return false end
 
     state.moves[player] = move
     send(player, "ClashLocked", {move=move, round=state.round})
@@ -236,14 +218,10 @@ end
 function DomainClashService:Special(player)
     local opponentId = player:GetAttribute("ClashOpponent")
     local opponent = opponentId and Players:GetPlayerByUserId(opponentId)
-    if not opponent then
-        return false
-    end
+    if not opponent then return false end
 
     local state = combats[getKey(player, opponent)]
-    if not state or state.finished or os.clock() > state.deadline then
-        return false
-    end
+    if not state or state.finished or os.clock() > state.deadline then return false end
 
     local pressure = (state.pressure[player] or 0) + Config.Clash.PressurePerSpecial
     state.pressure[player] = pressure
