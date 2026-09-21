@@ -198,6 +198,33 @@ function DomainClashService:Move(player, move)
     return true
 end
 
+function DomainClashService:Cancel(player)
+    local pending = {}
+
+    for _, state in pairs(combats) do
+        if state.a == player or state.b == player then
+            table.insert(pending, state)
+        end
+    end
+
+    for _, state in ipairs(pending) do
+        state.finished = true
+        combats[state.key] = nil
+
+        if state.a and state.a.Parent then
+            state.a:SetAttribute("InClash", false)
+            state.a:SetAttribute("ClashOpponent", nil)
+        end
+        if state.b and state.b.Parent then
+            state.b:SetAttribute("InClash", false)
+            state.b:SetAttribute("ClashOpponent", nil)
+        end
+
+        sendClash(state.a, "ClashEnd", {winner = nil, reason = "PlayerReset"})
+        sendClash(state.b, "ClashEnd", {winner = nil, reason = "PlayerReset"})
+    end
+end
+
 function DomainClashService:Special(player)
     local opponentId = player:GetAttribute("ClashOpponent")
     if not opponentId then
