@@ -8,6 +8,14 @@ on:
         required: true
         type: boolean
         default: false
+      universe_id:
+        description: "Roblox Universe ID"
+        required: true
+        type: string
+      place_id:
+        description: "Roblox Place ID"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -41,18 +49,18 @@ jobs:
       - name: Publish place version
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          ROBLOX_UNIVERSE_ID: ${{ secrets.ROBLOX_UNIVERSE_ID }}
-          ROBLOX_PLACE_ID: ${{ secrets.ROBLOX_PLACE_ID }}
+          ROBLOX_UNIVERSE_ID: ${{ inputs.universe_id }}
+          ROBLOX_PLACE_ID: ${{ inputs.place_id }}
         run: |
           set -euo pipefail
           test -n "${ROBLOX_API_KEY}"
           test -n "${ROBLOX_UNIVERSE_ID}"
           test -n "${ROBLOX_PLACE_ID}"
+          echo "Publishing Universe ${ROBLOX_UNIVERSE_ID}, Place ${ROBLOX_PLACE_ID}"
           response="$(
             curl --fail-with-body --silent --show-error --location               --request POST               --url "https://apis.roblox.com/universes/v1/${ROBLOX_UNIVERSE_ID}/places/${ROBLOX_PLACE_ID}/versions?versionType=Published"               --header "x-api-key: ${ROBLOX_API_KEY}"               --header "Content-Type: application/octet-stream"               --data-binary "@build/CursedCollision.rbxl"
           )"
-          printf '%s
-' "${response}" | tee build/publish-response.json
+          printf '%s\n' "${response}" | tee build/publish-response.json
           python3 - "${response}" <<'PY'
 import json
 import sys
