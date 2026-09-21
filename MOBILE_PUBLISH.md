@@ -10,15 +10,15 @@ The Place Publishing API updates an existing place. It does not create the first
 
 In Creator Dashboard, open API Keys and create a dedicated key for this game. For place publishing, grant the universe-places API system and Write access to the selected experience. Store the key securely; never commit it.
 
-## GitHub secrets
+## GitHub secret
 
-In the repository's Settings -> Secrets and variables -> Actions, add:
+In the repository's Settings -> Secrets and variables -> Actions, add one repository secret:
 
-- ROBLOX_API_KEY
-- ROBLOX_UNIVERSE_ID
-- ROBLOX_PLACE_ID
+- `ROBLOX_API_KEY`
 
-The workflow never prints the key.
+The current workflow asks for the Universe ID and Place ID as inputs when you click **Run workflow**; they do not need to be repository secrets.
+
+The workflow never prints the API key.
 
 ## Publish
 
