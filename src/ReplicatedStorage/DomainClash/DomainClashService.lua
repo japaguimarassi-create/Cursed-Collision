@@ -27,6 +27,7 @@ local function setClash(player, opponent, active)
     player:SetAttribute("InClash", active)
     player:SetAttribute("ClashOpponent", active and opponent.UserId or nil)
     player:SetAttribute("Blocking", false)
+    player:SetAttribute("ClashOpening", false)
     local state = getState and getState(player)
     if state then
         state.Clash = active
@@ -144,6 +145,11 @@ function DomainClashService:TryStart(player)
 
     local opponent = opponentDomain.player
     if not opponent or not opponent.Parent or opponent:GetAttribute("InClash") then return false end
+
+    if domainService then
+        domainService:Stop(player)
+        domainService:Stop(opponent)
+    end
 
     local key = getKey(player, opponent)
     if combats[key] then return true end
