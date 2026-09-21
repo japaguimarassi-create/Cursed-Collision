@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
@@ -400,7 +401,8 @@ local function handle(player, action)
 end
 
 remotes.CombatAction.OnServerEvent:Connect(function(player, action, payload)
-    if type(action) ~= "string" or #action > 32 then return end
+    if type(action) ~= "string" or #action > 32 or not states[player] then return end
+    if payload ~= nil and type(payload) ~= "number" and type(payload) ~= "string" and type(payload) ~= "boolean" then return end
 
     if action == "ClashMove" then
         if type(payload) == "number" and allowAction(player) then
