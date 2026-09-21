@@ -1,0 +1,69 @@
+name: Cursed Collision Publish
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: roblox-production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Roblox toolchain
+        uses: Roblox/setup-foreman@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allow-external-github-orgs: true
+
+      - name: Install Roblox tooling
+        run: foreman install
+
+      - name: Structural validation
+        run: python3 tools/validate_project.py
+
+      - name: Build binary place
+        run: |
+          mkdir -p build
+          rojo build default.project.json --output build/CursedCollision.rbxl
+          test -s build/CursedCollision.rbxl
+
+      - name: Publish place version
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          ROBLOX_UNIVERSE_ID: ${{ secrets.ROBLOX_UNIVERSE_ID }}
+          ROBLOX_PLACE_ID: ${{ secrets.ROBLOX_PLACE_ID }}
+        run: |
+          set -euo pipefail
+          test -n "${ROBLOX_API_KEY}"
+          test -n "${ROBLOX_UNIVERSE_ID}"
+          test -n "${ROBLOX_PLACE_ID}"
+          response="$(
+            curl --fail-with-body --silent --show-error --location               --request POST               --url "https://apis.roblox.com/universes/v1/${ROBLOX_UNIVERSE_ID}/places/${ROBLOX_PLACE_ID}/versions?versionType=Published"               --header "x-api-key: ${ROBLOX_API_KEY}"               --header "Content-Type: application/octet-stream"               --data-binary "@build/CursedCollision.rbxl"
+          )"
+          printf '%s
+' "${response}" | tee build/publish-response.json
+          python3 - "${response}" <<'PY'
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+version = payload.get("versionNumber")
+if not isinstance(version, int) or version <= 0:
+    raise SystemExit("Publish response did not contain a valid versionNumber")
+print(f"Published place version: {version}")
+PY
+
+      - name: Upload published build metadata
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cursed-collision-publish
+          path: |
+            build/CursedCollision.rbxl
+            build/publish-response.json
+          if-no-files-found: ignore
