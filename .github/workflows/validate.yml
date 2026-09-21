@@ -1,0 +1,56 @@
+name: Cursed Collision Validation
+
+on:
+  push:
+    branches:
+      - main
+      - mobile-hardening
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Roblox toolchain
+        uses: Roblox/setup-foreman@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Structural validation
+        run: python3 tools/validate_project.py
+
+      - name: Build Rojo place
+        run: |
+          mkdir -p build
+          rojo build default.project.json --output build/CursedCollision.rbxl
+
+      - name: Generate Rojo sourcemap
+        run: rojo sourcemap default.project.json --output sourcemap.json
+
+      - name: Validate Luau requires
+        run: luau-lsp require-graph --sourcemap=sourcemap.json src > require-graph.json
+
+      - name: Static Luau analysis
+        run: luau-lsp analyze --sourcemap=sourcemap.json src
+
+      - name: Upload cloud validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cursed-collision-validation
+          path: |
+            build/CursedCollision.rbxl
+            sourcemap.json
+            require-graph.json
+          if-no-files-found: ignore
