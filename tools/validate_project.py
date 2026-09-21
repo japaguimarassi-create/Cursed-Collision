@@ -55,7 +55,7 @@ FORBIDDEN = [
 
 CRITICAL_STUBS = re.compile(
     r"\b(?:TODO|FIXME|HACK|NOT IMPLEMENTED|IMPLEMENT ME|PLACEHOLDER)\b",
-    re.I,
+    0,
 )
 
 
