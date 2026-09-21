@@ -79,7 +79,13 @@ end
 button("M1", "M1", 0, 0)
 button("HEAVY", "Heavy", 0.2, 0)
 button("DASH", "Dash", 0.4, 0)
-button("BLOCK", "BlockStart", 0.6, 0)
+local blockButton = button("BLOCK", "BlockStart", 0.6, 0)
+local mobileBlock = false
+blockButton.Activated:Connect(function()
+    mobileBlock = not mobileBlock
+    blockButton.Text = mobileBlock and "BLOCKING" or "BLOCK"
+    combatAction:FireServer(mobileBlock and "BlockStart" or "BlockEnd")
+end)
 button("DODGE", "Dodge", 0.8, 0)
 button("GRAB", "Grab", 0, 0.25)
 button("SPECIAL", "Special", 0.2, 0.25)
@@ -202,9 +208,17 @@ UserInputService.InputBegan:Connect(function(input, processed)
         return
     end
 
-    if input.KeyCode >= Enum.KeyCode.One and input.KeyCode <= Enum.KeyCode.Four then
+    local clashKeyMap = {
+        [Enum.KeyCode.One] = 1,
+        [Enum.KeyCode.Two] = 2,
+        [Enum.KeyCode.Three] = 3,
+        [Enum.KeyCode.Four] = 4
+    }
+
+    local clashMove = clashKeyMap[input.KeyCode]
+    if clashMove then
         if player:GetAttribute("InClash") then
-            combatAction:FireServer("ClashMove", input.KeyCode.Value - Enum.KeyCode.One.Value + 1)
+            combatAction:FireServer("ClashMove", clashMove)
         end
         return
     end
