@@ -18,12 +18,15 @@ function OneTimeAttackService:TryUse(player, characterService)
         return false
     end
 
+    local success = characterService:OneTime(player)
+    if not success then
+        return false
+    end
+
     used[player] = true
     player:SetAttribute("OneTimeAttackUsed", true)
     player:SetAttribute("OneTimeAttackReady", false)
-
-    local success = characterService:OneTime(player)
-    return success
+    return true
 end
 
 function OneTimeAttackService:End(player)
