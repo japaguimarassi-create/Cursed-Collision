@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
+local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 
 local PerfectComboService = {}
 local progress = {}
@@ -19,7 +20,8 @@ function PerfectComboService:Record(player, action)
         return false
     end
 
-    local sequence = Config.PerfectCombo.Sequences[player:GetAttribute("CharacterId") or "Yuji"]
+    local definition = Definitions[player:GetAttribute("CharacterId") or "Yuji"]
+    local sequence = definition and definition.PerfectCombo
     if not sequence then
         return false
     end
@@ -29,21 +31,14 @@ function PerfectComboService:Record(player, action)
         if action ~= sequence[1] then
             return false
         end
-        entry = {
-            index = 1,
-            last = os.clock()
-        }
+        entry = {index = 1, last = os.clock()}
         progress[player] = entry
-        player:SetAttribute("PerfectComboStep", entry.index)
+        player:SetAttribute("PerfectComboStep", 1)
         return false
     end
 
     if os.clock() - entry.last > Config.PerfectCombo.StepWindow then
         self:Reset(player)
-        if action == sequence[1] then
-            progress[player] = {index = 1, last = os.clock()}
-            player:SetAttribute("PerfectComboStep", 1)
-        end
         return false
     end
 

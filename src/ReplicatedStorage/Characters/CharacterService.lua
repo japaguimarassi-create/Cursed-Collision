@@ -5,7 +5,28 @@ local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local CharacterModules = {
     Yuji = require(ReplicatedStorage.Characters.Yuji),
     Gojo = require(ReplicatedStorage.Characters.Gojo),
-    Sukuna = require(ReplicatedStorage.Characters.Sukuna)
+    Sukuna = require(ReplicatedStorage.Characters.Sukuna),
+    Megumi = require(ReplicatedStorage.Characters.Megumi),
+    Yuta = require(ReplicatedStorage.Characters.Yuta),
+    Maki = require(ReplicatedStorage.Characters.Maki),
+    Toji = require(ReplicatedStorage.Characters.Toji),
+    Mahito = require(ReplicatedStorage.Characters.Mahito),
+    Todo = require(ReplicatedStorage.Characters.Todo),
+    Hakari = require(ReplicatedStorage.Characters.Hakari),
+    Choso = require(ReplicatedStorage.Characters.Choso),
+    Kashimo = require(ReplicatedStorage.Characters.Kashimo),
+    Naoya = require(ReplicatedStorage.Characters.Naoya),
+    Kenjaku = require(ReplicatedStorage.Characters.Kenjaku),
+    Jogo = require(ReplicatedStorage.Characters.Jogo),
+    Dagon = require(ReplicatedStorage.Characters.Dagon),
+    Hanami = require(ReplicatedStorage.Characters.Hanami),
+    Higuruma = require(ReplicatedStorage.Characters.Higuruma),
+    Takaba = require(ReplicatedStorage.Characters.Takaba),
+    Uraume = require(ReplicatedStorage.Characters.Uraume),
+    Yorozu = require(ReplicatedStorage.Characters.Yorozu),
+    Ryu = require(ReplicatedStorage.Characters.Ryu),
+    Uro = require(ReplicatedStorage.Characters.Uro),
+    Kusakabe = require(ReplicatedStorage.Characters.Kusakabe)
 }
 
 local CharacterService = {}
@@ -21,7 +42,10 @@ function CharacterService:GetAvailable()
         table.insert(result, {
             Id = id,
             Name = definition.Name,
-            Subtitle = definition.Subtitle
+            Subtitle = definition.Subtitle,
+            Unique = definition.Unique,
+            Domain = definition.Domain,
+            Awakening = definition.AwakeningName
         })
     end
     table.sort(result, function(a, b)
@@ -31,11 +55,20 @@ function CharacterService:GetAvailable()
 end
 
 function CharacterService:GetId(player)
-    return player:GetAttribute("CharacterId") or "Yuji"
+    local id = player:GetAttribute("CharacterId")
+    return Definitions[id] and id or "Yuji"
 end
 
 function CharacterService:GetModule(player)
     return CharacterModules[self:GetId(player)]
+end
+
+function CharacterService:GetCooldown(player, action)
+    local module = self:GetModule(player)
+    if module and module.GetCooldown then
+        return module.GetCooldown(action)
+    end
+    return 0.6
 end
 
 function CharacterService:Initialize(player)
@@ -47,18 +80,24 @@ function CharacterService:Initialize(player)
     state.Momentum = 0
     state.BlackFlashWindow = nil
     state.Infinity = false
+    state.InfinityBreakUntil = 0
     state.LimitlessState = "Neutral"
-    state.SlashAdaptation = "Neutral"
+    state.SlashAdaptation = "Dismantle"
+    state.Clash = false
+    state.Domain = false
 
     player:SetAttribute("CharacterId", definition.Id)
     player:SetAttribute("CharacterName", definition.Name)
     player:SetAttribute("CharacterTitle", definition.Subtitle)
-    player:SetAttribute("CE", definition.MaxCE)
-    player:SetAttribute("MaxCE", definition.MaxCE)
+    player:SetAttribute("UniqueState", definition.Unique)
+    player:SetAttribute("AwakeningName", definition.AwakeningName)
+    player:SetAttribute("DomainName", definition.Domain or "None")
     player:SetAttribute("Awakening", 0)
     player:SetAttribute("AwakeningActive", false)
     player:SetAttribute("DomainActive", false)
     player:SetAttribute("InClash", false)
+    player:SetAttribute("ClashOpponent", nil)
+    player:SetAttribute("ClashOpening", false)
 
     local module = CharacterModules[definition.Id]
     if module and module.Init then
@@ -74,7 +113,7 @@ function CharacterService:Select(player, id)
     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     local state = ctx.getState(player)
 
-    if state.Clash or state.Domain or state.Awakening then
+    if not state or state.Clash or state.Domain or state.Awakening then
         return false, "Busy"
     end
 
@@ -88,16 +127,15 @@ function CharacterService:Select(player, id)
     return true
 end
 
-function CharacterService:Special(player, action, context)
+function CharacterService:Special(player, action)
     local module = self:GetModule(player)
     if not module then
         return false
     end
     if action == "Special" and module.Special then
-        return module.Special(player, ctx, context)
-    end
-    if action == "Skill" and module.Skill then
-        return module.Skill(player, ctx, context)
+        return module.Special(player, ctx)
+    elseif action == "Skill" and module.Skill then
+        return module.Skill(player, ctx)
     end
     return false
 end

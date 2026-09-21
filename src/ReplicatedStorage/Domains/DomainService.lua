@@ -2,6 +2,24 @@ local Players = game:GetService("Players")
 
 local DomainService = {}
 local domains = {}
+local context
+
+local function colorFor(id)
+    local colors = {
+        Yuji = Color3.fromRGB(245, 180, 120),
+        Gojo = Color3.fromRGB(110, 170, 255),
+        Sukuna = Color3.fromRGB(180, 35, 35),
+        Megumi = Color3.fromRGB(55, 55, 90),
+        Yuta = Color3.fromRGB(190, 160, 255),
+        Mahito = Color3.fromRGB(160, 95, 185),
+        Hakari = Color3.fromRGB(245, 215, 90),
+        Jogo = Color3.fromRGB(245, 80, 35),
+        Dagon = Color3.fromRGB(60, 150, 210),
+        Higuruma = Color3.fromRGB(220, 220, 220),
+        Kenjaku = Color3.fromRGB(115, 45, 145)
+    }
+    return colors[id] or Color3.fromRGB(235, 235, 235)
+end
 
 local function makeVisual(player, name, radius, duration, characterId)
     local folder = workspace:FindFirstChild("CursedDomains")
@@ -11,37 +29,43 @@ local function makeVisual(player, name, radius, duration, characterId)
         folder.Parent = workspace
     end
 
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then
+        return nil
+    end
+
     local model = Instance.new("Model")
     model.Name = name .. "_" .. player.UserId
     model.Parent = folder
 
-    local root = Instance.new("Part")
-    root.Name = "DomainCore"
-    root.Anchored = true
-    root.CanCollide = false
-    root.CanQuery = false
-    root.Shape = Enum.PartType.Ball
-    root.Size = Vector3.new(radius * 2, radius * 2, radius * 2)
-    root.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
-    root.Material = Enum.Material.ForceField
-    root.Transparency = characterId == "Sukuna" and 1 or 0.88
-    root.Color = characterId == "Gojo" and Color3.fromRGB(110, 170, 255)
-        or characterId == "Sukuna" and Color3.fromRGB(180, 35, 35)
-        or Color3.fromRGB(245, 245, 245)
-    root.Parent = model
+    local shell = Instance.new("Part")
+    shell.Name = "DomainShell"
+    shell.Anchored = true
+    shell.CanCollide = false
+    shell.CanTouch = false
+    shell.CanQuery = false
+    shell.Shape = Enum.PartType.Ball
+    shell.Size = Vector3.new(radius * 2, radius * 2, radius * 2)
+    shell.CFrame = CFrame.new(root.Position)
+    shell.Material = Enum.Material.ForceField
+    shell.Transparency = characterId == "Sukuna" and 1 or 0.9
+    shell.Color = colorFor(characterId)
+    shell.Parent = model
 
-    local ring = Instance.new("Part")
-    ring.Name = "DomainFloor"
-    ring.Anchored = true
-    ring.CanCollide = false
-    ring.CanQuery = false
-    ring.Transparency = 0.7
-    ring.Shape = Enum.PartType.Cylinder
-    ring.Size = Vector3.new(0.5, radius * 2, radius * 2)
-    ring.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position) * CFrame.Angles(0, 0, math.rad(90))
-    ring.Material = Enum.Material.Neon
-    ring.Color = root.Color
-    ring.Parent = model
+    local floor = Instance.new("Part")
+    floor.Name = "DomainFloor"
+    floor.Anchored = true
+    floor.CanCollide = false
+    floor.CanTouch = false
+    floor.CanQuery = false
+    floor.Shape = Enum.PartType.Cylinder
+    floor.Size = Vector3.new(0.35, radius * 2, radius * 2)
+    floor.CFrame = CFrame.new(root.Position) * CFrame.Angles(0, 0, math.rad(90))
+    floor.Material = Enum.Material.Neon
+    floor.Transparency = 0.78
+    floor.Color = shell.Color
+    floor.Parent = model
 
     if characterId == "Sukuna" then
         for i = 1, 4 do
@@ -49,6 +73,8 @@ local function makeVisual(player, name, radius, duration, characterId)
             pillar.Name = "ShrinePillar_" .. i
             pillar.Anchored = true
             pillar.CanCollide = false
+            pillar.CanTouch = false
+            pillar.CanQuery = false
             pillar.Size = Vector3.new(2, 12, 2)
             local angle = math.rad((i - 1) * 90)
             pillar.Position = root.Position + Vector3.new(math.cos(angle) * radius * 0.58, 6, math.sin(angle) * radius * 0.58)
@@ -85,7 +111,7 @@ local function getHumanoidsInRadius(center, radius, owner)
             local root = model:FindFirstChild("HumanoidRootPart")
             if player and player ~= owner and humanoid and humanoid.Health > 0 and root then
                 seen[model] = true
-                table.insert(targets, {player = player, humanoid = humanoid, root = root})
+                table.insert(targets, {player=player, humanoid=humanoid, root=root})
             end
         end
     end
@@ -93,39 +119,41 @@ local function getHumanoidsInRadius(center, radius, owner)
     return targets
 end
 
-local function applyDomainPulse(entry)
-    local owner = entry.player
-    if not owner.Parent or owner:GetAttribute("InClash") then
+local function pulse(entry)
+    if not context or not entry.player.Parent or entry.player:GetAttribute("InClash") then
         return
     end
 
-    local targets = getHumanoidsInRadius(entry.center, entry.radius, owner)
+    local targets = getHumanoidsInRadius(entry.center, entry.radius, entry.player)
+    local damage, stun, knockback = 2.5, 0.25, 0
+
+    if entry.characterId == "Sukuna" then
+        damage, stun, knockback = 5, 0.32, 38
+    elseif entry.characterId == "Yuji" then
+        damage, stun, knockback = 3.5, 0.3, 24
+    elseif entry.characterId == "Gojo" then
+        damage, stun, knockback = 2, 0.42, 0
+    elseif entry.characterId == "Jogo" then
+        damage, stun, knockback = 4.5, 0.3, 32
+    elseif entry.characterId == "Dagon" then
+        damage, stun, knockback = 4, 0.28, 26
+    elseif entry.characterId == "Mahito" then
+        damage, stun, knockback = 3.8, 0.35, 18
+    end
+
     for _, target in ipairs(targets) do
         if not target.player:GetAttribute("InClash") then
-            if entry.characterId == "Gojo" then
-                target.humanoid:TakeDamage(2.5)
-                local oldSpeed = target.humanoid.WalkSpeed
-                target.humanoid.WalkSpeed = math.min(oldSpeed, 6)
-                task.delay(0.42, function()
-                    if target.humanoid.Parent and target.humanoid.Health > 0 and not target.player:GetAttribute("InClash") then
-                        target.humanoid.WalkSpeed = math.max(target.humanoid.WalkSpeed, 16)
-                    end
-                end)
-            elseif entry.characterId == "Sukuna" then
-                target.humanoid:TakeDamage(5)
-                local direction = (target.root.Position - entry.center)
-                if direction.Magnitude > 0 then
-                    target.root.AssemblyLinearVelocity = direction.Unit * 42 + Vector3.new(0, 12, 0)
-                end
-            elseif entry.characterId == "Yuji" then
-                target.humanoid:TakeDamage(4)
-                local direction = (target.root.Position - entry.center)
-                if direction.Magnitude > 0 then
-                    target.root.AssemblyLinearVelocity = direction.Unit * 26 + Vector3.new(0, 8, 0)
-                end
-            end
+            context.damage(entry.player, target.humanoid, damage, {
+                stun = stun,
+                knockback = knockback,
+                tag = entry.name
+            })
         end
     end
+end
+
+function DomainService:Configure(newContext)
+    context = newContext
 end
 
 function DomainService:GetAll()
@@ -139,6 +167,7 @@ end
 function DomainService:Stop(player)
     local entry = domains[player]
     if not entry then
+        player:SetAttribute("DomainActive", false)
         return
     end
 
@@ -157,15 +186,15 @@ function DomainService:start(player, domainName, characterId, radius, duration)
 
     local character = player.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
-    if not root then
-        return false
-    end
-
-    if domains[player] then
+    if not root or domains[player] then
         return false
     end
 
     local visual = makeVisual(player, domainName, radius, duration, characterId)
+    if not visual then
+        return false
+    end
+
     local entry = {
         player = player,
         name = domainName,
@@ -182,7 +211,7 @@ function DomainService:start(player, domainName, characterId, radius, duration)
 
     task.spawn(function()
         while domains[player] == entry and os.clock() - entry.started < duration do
-            applyDomainPulse(entry)
+            pulse(entry)
             task.wait(0.5)
         end
         if domains[player] == entry then
@@ -207,12 +236,15 @@ function DomainService:FindOverlaps(player)
             end
         end
     end
-
     return overlaps
 end
 
 function DomainService:ForceClashState(player, active)
     player:SetAttribute("InClash", active)
+    local state = context and context.getState(player)
+    if state then
+        state.Clash = active
+    end
     if active then
         player:SetAttribute("DomainActive", false)
     end

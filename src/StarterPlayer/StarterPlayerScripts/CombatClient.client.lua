@@ -2,15 +2,16 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local combatAction = remotes:WaitForChild("CombatAction")
 local serverEvent = remotes:WaitForChild("ServerEvent")
 local combatFX = remotes:WaitForChild("CombatFX")
 local clashEvent = remotes:WaitForChild("ClashEvent")
 local selection = remotes:WaitForChild("Selection")
+local definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "CursedCollisionUI"
@@ -19,30 +20,38 @@ gui.IgnoreGuiInset = true
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local top = Instance.new("Frame")
-top.Size = UDim2.fromScale(0.34, 0.18)
+top.Size = UDim2.fromScale(0.42, 0.2)
 top.Position = UDim2.fromScale(0.02, 0.03)
-top.BackgroundTransparency = 0.28
+top.BackgroundTransparency = 0.2
 top.Parent = gui
 
 local characterLabel = Instance.new("TextLabel")
-characterLabel.Size = UDim2.fromScale(1, 0.25)
+characterLabel.Size = UDim2.fromScale(1, 0.18)
 characterLabel.BackgroundTransparency = 1
 characterLabel.TextScaled = true
 characterLabel.TextXAlignment = Enum.TextXAlignment.Left
 characterLabel.Parent = top
 
-local ceBack = Instance.new("Frame")
-ceBack.Size = UDim2.fromScale(0.98, 0.2)
-ceBack.Position = UDim2.fromScale(0.01, 0.3)
-ceBack.Parent = top
+local uniqueLabel = Instance.new("TextLabel")
+uniqueLabel.Size = UDim2.fromScale(1, 0.18)
+uniqueLabel.Position = UDim2.fromScale(0, 0.18)
+uniqueLabel.BackgroundTransparency = 1
+uniqueLabel.TextScaled = true
+uniqueLabel.TextXAlignment = Enum.TextXAlignment.Left
+uniqueLabel.Parent = top
 
-local ceFill = Instance.new("Frame")
-ceFill.Size = UDim2.fromScale(1, 1)
-ceFill.Parent = ceBack
+local healthBack = Instance.new("Frame")
+healthBack.Size = UDim2.fromScale(0.98, 0.16)
+healthBack.Position = UDim2.fromScale(0.01, 0.38)
+healthBack.Parent = top
+
+local healthFill = Instance.new("Frame")
+healthFill.Size = UDim2.fromScale(1, 1)
+healthFill.Parent = healthBack
 
 local awBack = Instance.new("Frame")
-awBack.Size = UDim2.fromScale(0.98, 0.2)
-awBack.Position = UDim2.fromScale(0.01, 0.54)
+awBack.Size = UDim2.fromScale(0.98, 0.16)
+awBack.Position = UDim2.fromScale(0.01, 0.58)
 awBack.Parent = top
 
 local awFill = Instance.new("Frame")
@@ -100,41 +109,48 @@ button("AWAKEN", "Awaken", 0.6, 0.25)
 button("DOMAIN", "Domain", 0.8, 0.25)
 button("ONE TIME", "OneTime", 0, 0.5)
 
-local selectFrame = Instance.new("Frame")
-selectFrame.Size = UDim2.fromScale(0.32, 0.28)
-selectFrame.Position = UDim2.fromScale(0.02, 0.23)
-selectFrame.BackgroundTransparency = 0.3
+local selectFrame = Instance.new("ScrollingFrame")
+selectFrame.Size = UDim2.fromScale(0.46, 0.5)
+selectFrame.Position = UDim2.fromScale(0.02, 0.25)
+selectFrame.BackgroundTransparency = 0.25
+selectFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+selectFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+selectFrame.ScrollBarThickness = 6
 selectFrame.Parent = gui
 
+local layout = Instance.new("UIGridLayout")
+layout.CellSize = UDim2.fromScale(0.23, 0.11)
+layout.CellPadding = UDim2.fromScale(0.01, 0.01)
+layout.Parent = selectFrame
+
 local selectTitle = Instance.new("TextLabel")
-selectTitle.Size = UDim2.fromScale(1, 0.25)
-selectTitle.Text = "CHARACTER"
+selectTitle.Size = UDim2.new(1, -12, 0, 24)
+selectTitle.Position = UDim2.fromOffset(6, 4)
+selectTitle.Text = "CHARACTERS • 24"
 selectTitle.TextScaled = true
-selectTitle.BackgroundTransparency = 1
+selectTitle.BackgroundTransparency = 0.15
 selectTitle.Parent = selectFrame
 
-local choices = {
-    {"YUJI", "Yuji"},
-    {"GOJO", "Gojo"},
-    {"SUKUNA", "Sukuna"}
-}
+local ids = {}
+for id in pairs(definitions) do table.insert(ids, id) end
+table.sort(ids)
 
-for i, choice in ipairs(choices) do
+for _, id in ipairs(ids) do
+    local definition = definitions[id]
     local b = Instance.new("TextButton")
-    b.Text = choice[1]
+    b.Text = definition.Name:gsub(" ", "\n")
     b.TextScaled = true
-    b.Size = UDim2.fromScale(0.3, 0.46)
-    b.Position = UDim2.fromScale((i - 1) * 0.33, 0.38)
+    b.BackgroundTransparency = 0.08
     b.Parent = selectFrame
     b.Activated:Connect(function()
-        selection:FireServer(choice[2])
+        selection:FireServer(id)
     end)
 end
 
 local clashFrame = Instance.new("Frame")
 clashFrame.Size = UDim2.fromScale(0.58, 0.25)
 clashFrame.Position = UDim2.fromScale(0.21, 0.36)
-clashFrame.BackgroundTransparency = 0.18
+clashFrame.BackgroundTransparency = 0.12
 clashFrame.Visible = false
 clashFrame.Parent = gui
 
@@ -159,80 +175,137 @@ for i = 1, 4 do
     end)
 end
 
+local function healthPercent()
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.MaxHealth <= 0 then return 0 end
+    return math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+end
+
+local stateAttributeNames = {
+    "Momentum","Infinity","LimitlessState","SlashState","Shikigami","RikaActive","CopySlot","WeaponMode",
+    "SoulIntegrity","SwapReady","Jackpot","JackpotRoll","Blood","ElectricalCharge","FrameSequence",
+    "TechniqueStock","Heat","Tide","Roots","Evidence","Confiscated","ComedyContext","Frost",
+    "Construction","OutputCharge","SkyDistortion","SimpleDomain","PerfectComboStep","OneTimeAttackReady"
+}
+
+local function uniqueText()
+    local id = player:GetAttribute("CharacterId") or "Yuji"
+    local key = player:GetAttribute("UniqueState") or ""
+    local pieces = {key}
+
+    local values = {
+        Yuji = "Momentum "..tostring(player:GetAttribute("Momentum") or 0),
+        Gojo = (player:GetAttribute("Infinity") and "Infinity ON" or "Infinity OFF").." • "..tostring(player:GetAttribute("LimitlessState") or "Neutral"),
+        Sukuna = "State "..tostring(player:GetAttribute("SlashState") or "Dismantle"),
+        Megumi = tostring(player:GetAttribute("Shikigami") or "Divine Dogs"),
+        Yuta = "Rika "..(player:GetAttribute("RikaActive") and "ON" or "OFF").." • Copy "..tostring(player:GetAttribute("CopySlot") or 1),
+        Maki = tostring(player:GetAttribute("WeaponMode") or "Katana"),
+        Toji = tostring(player:GetAttribute("WeaponMode") or "Katana"),
+        Mahito = "Soul "..tostring(math.floor(player:GetAttribute("SoulIntegrity") or 100)),
+        Todo = "Swap "..(player:GetAttribute("SwapReady") and "READY" or "USED"),
+        Hakari = player:GetAttribute("Jackpot") and "JACKPOT" or ("Roll "..tostring(player:GetAttribute("JackpotRoll") or 0)),
+        Choso = "Blood "..tostring(math.floor(player:GetAttribute("Blood") or 100)),
+        Kashimo = "Charge "..tostring(math.floor(player:GetAttribute("ElectricalCharge") or 0)),
+        Naoya = "Frames "..tostring(player:GetAttribute("FrameSequence") or 0).."/24",
+        Kenjaku = "Stock "..tostring(player:GetAttribute("TechniqueStock") or 0),
+        Jogo = "Heat "..tostring(math.floor(player:GetAttribute("Heat") or 0)),
+        Dagon = "Tide "..tostring(math.floor(player:GetAttribute("Tide") or 0)),
+        Hanami = "Roots "..tostring(math.floor(player:GetAttribute("Roots") or 0)),
+        Higuruma = "Evidence "..tostring(math.floor(player:GetAttribute("Evidence") or 0)),
+        Takaba = "Context "..tostring(math.floor(player:GetAttribute("ComedyContext") or 0)),
+        Uraume = "Frost "..tostring(math.floor(player:GetAttribute("Frost") or 0)),
+        Yorozu = "Construction "..tostring(math.floor(player:GetAttribute("Construction") or 0)),
+        Ryu = "Output "..tostring(math.floor(player:GetAttribute("OutputCharge") or 0)),
+        Uro = "Sky "..tostring(math.floor(player:GetAttribute("SkyDistortion") or 0)),
+        Kusakabe = "Simple Domain "..(player:GetAttribute("SimpleDomain") and "ON" or "OFF")
+    }
+
+    table.insert(pieces, values[id] or "")
+    return table.concat(pieces, " • ")
+end
+
 local function update()
-    local ce = player:GetAttribute("CE") or 0
-    local maxCE = player:GetAttribute("MaxCE") or 100
     local aw = player:GetAttribute("Awakening") or 0
-    characterLabel.Text = (player:GetAttribute("CharacterName") or "Yuji") .. " | " .. (player:GetAttribute("CharacterTitle") or "")
-    ceFill.Size = UDim2.fromScale(math.clamp(ce / maxCE, 0, 1), 1)
+    local id = player:GetAttribute("CharacterId") or "Yuji"
+    characterLabel.Text = (player:GetAttribute("CharacterName") or id).." • "..(player:GetAttribute("AwakeningName") or "")
+    uniqueLabel.Text = uniqueText()
+    healthFill.Size = UDim2.fromScale(healthPercent(), 1)
     awFill.Size = UDim2.fromScale(math.clamp(aw / 100, 0, 1), 1)
 
     local state = "READY"
     if player:GetAttribute("InClash") then
         state = "DOMAIN CLASH"
     elseif player:GetAttribute("AwakeningActive") then
-        state = "AWAKENING"
+        state = "AWAKENING • STEP "..tostring(player:GetAttribute("PerfectComboStep") or 0)
     elseif player:GetAttribute("DomainActive") then
-        state = "DOMAIN"
+        state = "DOMAIN • "..tostring(player:GetAttribute("DomainName") or "")
+    elseif player:GetAttribute("ClashOpening") then
+        state = "CLASH OPENING"
     end
-
     status.Text = state
 
+    local domainName = definitions[id] and definitions[id].Domain
+    local domainButton = actionFrame:FindFirstChild("DOMAIN")
+    if domainButton then
+        domainButton.Text = domainName and "DOMAIN" or "NO DOMAIN"
+    end
+
     for i = 1, 4 do
-        clashButtons[i].Text = (i .. " • " .. ({"CRUSH","COUNTER","FEINT","BREAK"})[i])
+        clashButtons[i].Text = i.." • "..({"CRUSH","COUNTER","FEINT","BREAK"})[i]
     end
 end
 
 for _, attr in ipairs({
-    "CE","MaxCE","Awakening","CharacterName","CharacterTitle",
-    "InClash","AwakeningActive","DomainActive","LimitlessState","SlashState"
+    "Awakening","CharacterId","CharacterName","CharacterTitle","CharacterName","CharacterTitle","UniqueState",
+    "AwakeningActive","AwakeningName","DomainActive","DomainName","InClash","ClashOpening",
+    table.unpack(stateAttributeNames)
 }) do
     player:GetAttributeChangedSignal(attr):Connect(update)
 end
+
+local function bindHumanoid(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.HealthChanged:Connect(update)
+    update()
+end
+
+if player.Character then bindHumanoid(player.Character) end
+player.CharacterAdded:Connect(bindHumanoid)
 update()
 
 local keyActions = {
-    [Enum.KeyCode.R] = "Heavy",
-    [Enum.KeyCode.Q] = "Dash",
-    [Enum.KeyCode.F] = "BlockStart",
-    [Enum.KeyCode.E] = "Dodge",
-    [Enum.KeyCode.T] = "Grab",
-    [Enum.KeyCode.Z] = "Special",
-    [Enum.KeyCode.X] = "Skill",
-    [Enum.KeyCode.G] = "Awaken",
-    [Enum.KeyCode.H] = "Domain",
-    [Enum.KeyCode.J] = "OneTime"
+    [Enum.KeyCode.R]="Heavy",
+    [Enum.KeyCode.Q]="Dash",
+    [Enum.KeyCode.F]="BlockStart",
+    [Enum.KeyCode.E]="Dodge",
+    [Enum.KeyCode.T]="Grab",
+    [Enum.KeyCode.Z]="Special",
+    [Enum.KeyCode.X]="Skill",
+    [Enum.KeyCode.G]="Awaken",
+    [Enum.KeyCode.H]="Domain",
+    [Enum.KeyCode.J]="OneTime"
 }
 
 UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then
-        return
-    end
-
+    if processed then return end
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         combatAction:FireServer("M1")
         return
     end
-
     local clashKeyMap = {
-        [Enum.KeyCode.One] = 1,
-        [Enum.KeyCode.Two] = 2,
-        [Enum.KeyCode.Three] = 3,
-        [Enum.KeyCode.Four] = 4
+        [Enum.KeyCode.One]=1,
+        [Enum.KeyCode.Two]=2,
+        [Enum.KeyCode.Three]=3,
+        [Enum.KeyCode.Four]=4
     }
-
     local clashMove = clashKeyMap[input.KeyCode]
     if clashMove then
-        if player:GetAttribute("InClash") then
-            combatAction:FireServer("ClashMove", clashMove)
-        end
+        if player:GetAttribute("InClash") then combatAction:FireServer("ClashMove", clashMove) end
         return
     end
-
     local action = keyActions[input.KeyCode]
-    if action then
-        combatAction:FireServer(action)
-    end
+    if action then combatAction:FireServer(action) end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
@@ -242,63 +315,65 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 local function burst(position, size, transparency, duration)
+    if typeof(position) ~= "Vector3" then return end
     local part = Instance.new("Part")
     part.Anchored = true
     part.CanCollide = false
     part.CanQuery = false
+    part.CanTouch = false
     part.Shape = Enum.PartType.Ball
     part.Size = Vector3.new(size, size, size)
     part.Transparency = transparency
     part.CFrame = CFrame.new(position)
     part.Parent = workspace.CurrentCamera
     local tween = TweenService:Create(part, TweenInfo.new(duration), {
-        Size = Vector3.new(size * 2.8, size * 2.8, size * 2.8),
-        Transparency = 1
+        Size=Vector3.new(size*2.8, size*2.8, size*2.8),
+        Transparency=1
     })
     tween:Play()
     Debris:AddItem(part, duration + 0.1)
 end
 
 combatFX.OnClientEvent:Connect(function(kind, position)
-    if typeof(position) ~= "Vector3" then
-        return
-    end
-
+    if typeof(position) ~= "Vector3" then return end
     if kind == "BlackFlash" then
         burst(position, 2, 0.05, 0.18)
     elseif kind == "PerfectBlock" then
         burst(position, 1.5, 0.1, 0.12)
     elseif kind == "Hit" then
         burst(position, 0.8, 0.25, 0.09)
-    elseif kind == "Awakening" or kind == "YujiAwakening" or kind == "GojoAwakening" or kind == "SukunaAwakening" then
+    elseif kind == "Awakening" or kind == "CharacterAwakening" then
         burst(position, 3, 0.18, 0.25)
     elseif kind == "DomainStart" or kind == "DomainClashStart" then
         burst(position, 5, 0.55, 0.45)
     elseif kind == "OneTimeAttack" then
         burst(position, 7, 0.3, 0.5)
-    elseif string.find(kind, "Gojo") or string.find(kind, "Sukuna") or string.find(kind, "Yuji") then
-        burst(position, 2.5, 0.25, 0.25)
+    else
+        burst(position, 2.5, 0.25, 0.2)
     end
 end)
 
 clashEvent.OnClientEvent:Connect(function(event, payload)
+    payload = payload or {}
     if event == "ClashStart" or event == "ClashReset" then
         clashFrame.Visible = true
-        status.Text = "DOMAIN CLASH • ROUND " .. tostring(payload.round or 1)
+        status.Text = "DOMAIN CLASH • ROUND "..tostring(payload.round or 1)
     elseif event == "ClashLocked" then
         status.Text = "CLASH LOCKED • WAIT"
     elseif event == "ClashPressure" then
-        status.Text = "CLASH PRESSURE " .. tostring(payload.value or payload.opponent or 0)
+        status.Text = "CLASH PRESSURE "..tostring(payload.value or payload.opponent or 0)
+    elseif event == "ClashNeutral" then
+        status.Text = "CLASH NEUTRAL • RESET"
     elseif event == "ClashEnd" then
         clashFrame.Visible = false
-        status.Text = "CLASH ENDED"
+        update()
     end
 end)
 
 serverEvent.OnClientEvent:Connect(function(event)
     if event == "BlackFlashWindow" then
         status.Text = "BLACK FLASH WINDOW"
-        task.delay(0.25, update)
+        task.delay(0.3, update)
     elseif event == "DodgeEvaded" then
         status.Text = "DODGED"
         task.delay(0.35, update)
