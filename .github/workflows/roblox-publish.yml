@@ -25,9 +25,23 @@ env:
 
 
 jobs:
+  push-noop:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep push checks green
+        run: echo "Roblox publishing is manual. No place is published by a normal push."
+
+  manual-noop:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm != true }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip unconfirmed publish
+        run: echo "Publish confirmation was not enabled; nothing was published."
+
   publish:
     runs-on: ubuntu-latest
-    if: ${{ inputs.confirm == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm == true }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
