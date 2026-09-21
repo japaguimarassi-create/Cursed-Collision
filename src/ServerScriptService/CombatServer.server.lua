@@ -129,14 +129,17 @@ function context.damage(attacker, humanoid, amount, meta)
         return false
     end
 
-    local finalAmount = CharacterService:IncomingDamage(targetPlayer, amount)
+    local finalAmount
     if targetState.PerfectBlockUntil and now() <= targetState.PerfectBlockUntil then
         targetState.PerfectBlockUntil = 0
         finalAmount = 0
         stunPlayer(attacker, Config.Combat.Block.PerfectWindow + 0.2)
         remotes.CombatFX:FireAllClients("PerfectBlock", targetCharacter.HumanoidRootPart.Position)
-    elseif targetState.Blocking then
-        finalAmount *= (1 - Config.Combat.Block.DamageReduction)
+    else
+        finalAmount = CharacterService:IncomingDamage(targetPlayer, amount)
+        if targetState.Blocking then
+            finalAmount *= (1 - Config.Combat.Block.DamageReduction)
+        end
     end
 
     if finalAmount <= 0 then
