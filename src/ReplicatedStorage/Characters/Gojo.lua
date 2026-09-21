@@ -113,7 +113,13 @@ end
 
 function Gojo.OnIncomingDamage(player, ctx, amount)
     local state = ctx.getState(player)
-    if state.Infinity and not state.InfinityBypassUntil then
+    if state.Infinity and (player:GetAttribute("CE") or 0) > 0 then
+        player:SetAttribute("CE", math.max(0, (player:GetAttribute("CE") or 0) - 8))
+        if (player:GetAttribute("CE") or 0) <= 0 then
+            state.Infinity = false
+            ctx.setAttribute(player, "Infinity", false)
+        end
+        ctx.fx("GojoInfinity", ctx.rootPosition(player))
         return 0
     end
     return amount
