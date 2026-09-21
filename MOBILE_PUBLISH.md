@@ -24,6 +24,8 @@ The workflow never prints the API key.
 
 Open Actions -> Cursed Collision Publish -> Run workflow, enter the Universe ID and Place ID, set the publish confirmation to true, and run it.
 
+The publisher is a manual `workflow_dispatch` workflow. A normal push only runs the validation workflow; it does not publish the game.
+
 The workflow first runs the same structural validator and Rojo build used by CI. Only a successful build is sent to Roblox through the Place Publishing API.
 
 ## Public release
