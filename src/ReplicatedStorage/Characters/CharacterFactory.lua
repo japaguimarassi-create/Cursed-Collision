@@ -493,7 +493,43 @@ function Factory.Build(id)
             set(ctx, player, "SimpleDomain", true)
         elseif id == "Naoya" then
             state.FrameSequence = 24
+            state.FrameWindowUntil = os.clock() + 2
             set(ctx, player, "FrameSequence", 24)
+        elseif id == "Todo" then
+            state.SwapReady = true
+            set(ctx, player, "SwapReady", true)
+        elseif id == "Kenjaku" then
+            state.TechniqueStock = 4
+            set(ctx, player, "TechniqueStock", 4)
+        elseif id == "Jogo" then
+            state.Heat = 100
+            set(ctx, player, "Heat", 100)
+        elseif id == "Dagon" then
+            state.Tide = 100
+            set(ctx, player, "Tide", 100)
+        elseif id == "Hanami" then
+            state.Roots = 100
+            set(ctx, player, "Roots", 100)
+        elseif id == "Higuruma" then
+            state.Evidence = 100
+            state.Confiscated = true
+            set(ctx, player, "Evidence", 100)
+            set(ctx, player, "Confiscated", true)
+        elseif id == "Takaba" then
+            state.ComedyContext = 100
+            set(ctx, player, "ComedyContext", 100)
+        elseif id == "Uraume" then
+            state.Frost = 100
+            set(ctx, player, "Frost", 100)
+        elseif id == "Yorozu" then
+            state.Construction = 100
+            set(ctx, player, "Construction", 100)
+        elseif id == "Ryu" then
+            state.OutputCharge = 100
+            set(ctx, player, "OutputCharge", 100)
+        elseif id == "Uro" then
+            state.SkyDistortion = 100
+            set(ctx, player, "SkyDistortion", 100)
         end
         ctx.fx("CharacterAwakening", root(ctx, player), id, profile.AwakeningName)
     end
@@ -510,15 +546,32 @@ function Factory.Build(id)
         local position = root(ctx, player)
         local damage = 44
         local radius = 16
-        if id == "Gojo" then damage, radius = 56, 18
-        elseif id == "Sukuna" then damage, radius = 58, 20
-        elseif id == "Megumi" then damage, radius = 54, 18
-        elseif id == "Yuta" then damage, radius = 52, 18
-        elseif id == "Jogo" then damage, radius = 60, 20
-        elseif id == "Dagon" then damage, radius = 54, 20
-        elseif id == "Higuruma" then damage, radius = 50, 15
-        elseif id == "Ryu" then damage, radius = 62, 18
-        elseif id == "Takaba" then damage, radius = 46, 16 end
+        local knockback = 82
+        local stun = 1.15
+        if id == "Yuji" then damage, radius, knockback, stun = 50, 10, 104, 1.25
+        elseif id == "Gojo" then damage, radius, knockback, stun = 56, 18, 118, 1.1
+        elseif id == "Sukuna" then damage, radius, knockback, stun = 58, 20, 126, 1.2
+        elseif id == "Megumi" then damage, radius, knockback, stun = 54, 18, 92, 1.25
+        elseif id == "Yuta" then damage, radius, knockback, stun = 52, 18, 96, 1.15
+        elseif id == "Maki" then damage, radius, knockback, stun = 52, 11, 110, 1.0
+        elseif id == "Toji" then damage, radius, knockback, stun = 56, 12, 118, 1.05
+        elseif id == "Mahito" then damage, radius, knockback, stun = 48, 16, 76, 1.35
+        elseif id == "Todo" then damage, radius, knockback, stun = 46, 14, 88, 1.0
+        elseif id == "Hakari" then damage, radius, knockback, stun = 56, 17, 100, 1.2
+        elseif id == "Choso" then damage, radius, knockback, stun = 52, 18, 86, 1.15
+        elseif id == "Kashimo" then damage, radius, knockback, stun = 58, 18, 122, 1.1
+        elseif id == "Naoya" then damage, radius, knockback, stun = 50, 15, 112, 1.05
+        elseif id == "Kenjaku" then damage, radius, knockback, stun = 54, 19, 92, 1.2
+        elseif id == "Jogo" then damage, radius, knockback, stun = 60, 20, 118, 1.2
+        elseif id == "Dagon" then damage, radius, knockback, stun = 54, 20, 96, 1.25
+        elseif id == "Hanami" then damage, radius, knockback, stun = 50, 17, 84, 1.3
+        elseif id == "Higuruma" then damage, radius, knockback, stun = 50, 15, 92, 1.3
+        elseif id == "Takaba" then damage, radius, knockback, stun = 46, 16, 72, 1.15
+        elseif id == "Uraume" then damage, radius, knockback, stun = 52, 18, 68, 1.45
+        elseif id == "Yorozu" then damage, radius, knockback, stun = 56, 17, 104, 1.2
+        elseif id == "Ryu" then damage, radius, knockback, stun = 62, 18, 130, 1.1
+        elseif id == "Uro" then damage, radius, knockback, stun = 50, 16, 102, 1.15
+        elseif id == "Kusakabe" then damage, radius, knockback, stun = 48, 12, 94, 1.05 end
 
         local success = false
         for _, target in ipairs(area(ctx, player, radius)) do
@@ -527,7 +580,7 @@ function Factory.Build(id)
             if id == "Choso" then extra = math.floor((state.Blood or 0) * 0.12) end
             if id == "Kashimo" then extra = math.floor((state.ElectricalCharge or 0) * 0.15) end
             if id == "Ryu" then extra = math.floor((state.OutputCharge or 0) * 0.18) end
-            if hit(ctx, player, target, damage + extra, profile.OneTimeName, 1.15, 82) then
+            if hit(ctx, player, target, damage + extra, profile.OneTimeName, stun, knockback) then
                 success = true
             end
         end
@@ -544,7 +597,7 @@ function Factory.Build(id)
         end
 
         ctx.fx("CharacterOneTime", position, id, profile.OneTimeName)
-        return true
+        return success
     end
 
     function M.OnIncomingDamage(player, ctx, amount)
