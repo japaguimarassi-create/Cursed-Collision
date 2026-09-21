@@ -44,7 +44,7 @@ function CharacterService:Initialize(player)
     local state = ctx.getState(player)
 
     state.CharacterId = definition.Id
-    state.Momentum = state.Momentum or 0
+    state.Momentum = 0
     state.BlackFlashWindow = nil
     state.Infinity = false
     state.LimitlessState = "Neutral"
