@@ -146,8 +146,7 @@ function Factory.Build(id)
     function M.GetCooldown(action)
         if action == "Special" then
             return profile.SpecialCooldown
-        end
-        if action == "Skill" then
+        elseif action == "Skill" then
             return profile.SkillCooldown
         end
         return 0.6
@@ -168,13 +167,20 @@ function Factory.Build(id)
             end
             return ok
         elseif id == "Gojo" then
-            local target = front(ctx, player, state.LimitlessState == "Purple" and 24 or 15, 9, 8)
+            local range = state.LimitlessState == "Purple" and 24 or 15
+            local target = front(ctx, player, range, 9, 8)
             if state.LimitlessState == "Red" then
-                return hit(ctx, player, target, 24, "Red", 0.55, 94) and (ctx.fx("GojoRed", target.root.Position) or true)
+                local ok = hit(ctx, player, target, 24, "Red", 0.55, 94)
+                if ok then ctx.fx("GojoRed", target.root.Position) end
+                return ok
             elseif state.LimitlessState == "Purple" then
-                return hit(ctx, player, target, 38, "HollowPurple", 0.9, 118) and (ctx.fx("GojoPurple", target.root.Position) or true)
+                local ok = hit(ctx, player, target, 38, "HollowPurple", 0.9, 118)
+                if ok then ctx.fx("GojoPurple", target.root.Position) end
+                return ok
             else
-                return hit(ctx, player, target, 18, "Blue", 0.45, 50) and (ctx.fx("GojoBlue", target.root.Position) or true)
+                local ok = hit(ctx, player, target, 18, "Blue", 0.45, 50)
+                if ok then ctx.fx("GojoBlue", target.root.Position) end
+                return ok
             end
         elseif id == "Sukuna" then
             local target = front(ctx, player, 15, 8, 8)
@@ -187,23 +193,23 @@ function Factory.Build(id)
             return hit(ctx, player, target, damage, mode, 0.45, mode == "Fire" and 54 or 30)
         elseif id == "Megumi" then
             local mode = state.ShikigamiMode or "Divine Dogs"
-            local radius = mode == "Rabbit Escape" and 12 or mode == "Nue" and 13 or 9
-            local damage = mode == "Nue" and 18 or mode == "Max Elephant" and 24 or mode == "Rabbit Escape" and 6 or 13
             if mode == "Mahoraga" then
-                state.MahoragaAdaptation["Last"] = os.clock()
-                set(ctx, player, "MahoragaAdaptation", "Learning")
-                ctx.fx("MegumiMahoraga", root(ctx, player))
+                state.MahoragaAdaptation.Last = os.clock()
+                set(ctx, player, "MahoragaStatus", "Adapting")
                 return pulse(ctx, player, 13, 28, "Mahoraga", 0.7, 64)
             end
+            local radius = mode == "Rabbit Escape" and 12 or mode == "Nue" and 13 or 9
+            local damage = mode == "Nue" and 18 or mode == "Max Elephant" and 24 or mode == "Rabbit Escape" and 6 or 13
             return pulse(ctx, player, radius, damage, mode:gsub(" ", ""), 0.45, 38)
         elseif id == "Yuta" then
             local target = front(ctx, player, 9, 7, 7)
             if not target then return false end
-            if state.RikaActive then
+            local damage = state.CopySlot == 1 and 16 or state.CopySlot == 2 and 20 or 24
+            local ok = hit(ctx, player, target, damage, "RikaSword", 0.5, 42)
+            if ok and state.RikaActive then
                 target.root.AssemblyLinearVelocity = (target.root.Position - root(ctx, player)).Unit * 46 + Vector3.new(0, 18, 0)
             end
-            local damage = state.CopySlot == 1 and 16 or state.CopySlot == 2 and 20 or 24
-            return hit(ctx, player, target, damage, "RikaSword", 0.5, 42)
+            return ok
         elseif id == "Maki" or id == "Toji" then
             local mode = state.WeaponMode or "Katana"
             local target = front(ctx, player, id == "Toji" and 10 or 8, 7, 7)
@@ -222,48 +228,40 @@ function Factory.Build(id)
             local target = front(ctx, player, 14, 10, 10)
             if not target then return false end
             local other = randomTarget(ctx, player, 22)
-            if other and swapPositions(player, other.player) then
-                ctx.fx("TodoSwap", root(ctx, player), target.root.Position)
+            if state.SwapReady and other and swapPositions(player, other.player) then
+                set(ctx, player, "SwapReady", false)
+                ctx.fx("TodoSwap", root(ctx, player), other.root.Position)
                 return true
             end
             return hit(ctx, player, target, 15, "BoogieWoogie", 0.4, 32)
         elseif id == "Hakari" then
             local target = front(ctx, player, 8, 7, 7)
             local damage = state.Jackpot and 24 or 16
-            local ok = hit(ctx, player, target, damage, "PrivatePureLove", 0.5, 46)
-            if state.Jackpot then
-                state.JackpotUntil = math.max(state.JackpotUntil or 0, os.clock() + 0.5)
-                set(ctx, player, "Jackpot", true)
-            end
-            return ok
+            return hit(ctx, player, target, damage, "PrivatePureLove", 0.5, 46)
         elseif id == "Choso" then
             local blood = state.Blood or 0
             if blood < 18 then return false end
             state.Blood = blood - 18
             set(ctx, player, "Blood", state.Blood)
-            local target = front(ctx, player, 18, 5, 6)
-            return hit(ctx, player, target, 25, "PiercingBlood", 0.5, 72)
+            return hit(ctx, player, front(ctx, player, 18, 5, 6), 25, "PiercingBlood", 0.5, 72)
         elseif id == "Kashimo" then
             local target = front(ctx, player, 9, 7, 7)
             if not target then return false end
-            local gain = 18
-            state.ElectricalCharge = math.clamp((state.ElectricalCharge or 0) + gain, 0, 100)
+            state.ElectricalCharge = math.clamp((state.ElectricalCharge or 0) + 18, 0, 100)
             set(ctx, player, "ElectricalCharge", state.ElectricalCharge)
             return hit(ctx, player, target, 17 + state.ElectricalCharge * 0.08, "Lightning", 0.45, 48)
         elseif id == "Naoya" then
             if (state.FrameSequence or 0) <= 0 then return false end
             state.FrameSequence = math.min(24, state.FrameSequence + 1)
             set(ctx, player, "FrameSequence", state.FrameSequence)
-            local target = front(ctx, player, 10, 7, 7)
-            return hit(ctx, player, target, 11 + state.FrameSequence * 0.7, "ProjectionStrike", 0.35, 42)
+            return hit(ctx, player, front(ctx, player, 10, 7, 7), 11 + state.FrameSequence * 0.7, "ProjectionStrike", 0.35, 42)
         elseif id == "Kenjaku" then
             local target = front(ctx, player, 15, 8, 8)
-            local damage = 17 + (state.TechniqueStock or 0) * 3
-            if state.TechniqueStock and state.TechniqueStock > 0 then
+            if state.TechniqueStock > 0 then
                 state.TechniqueStock -= 1
                 set(ctx, player, "TechniqueStock", state.TechniqueStock)
             end
-            return hit(ctx, player, target, damage, "CursedSpiritBurst", 0.5, 48)
+            return hit(ctx, player, target, 17 + (state.TechniqueStock or 0) * 3, "CursedSpiritBurst", 0.5, 48)
         elseif id == "Jogo" then
             state.Heat = math.clamp((state.Heat or 0) + 20, 0, 100)
             set(ctx, player, "Heat", state.Heat)
@@ -279,19 +277,11 @@ function Factory.Build(id)
         elseif id == "Higuruma" then
             state.Evidence = math.clamp((state.Evidence or 0) + 20, 0, 100)
             set(ctx, player, "Evidence", state.Evidence)
-            if state.Evidence >= 100 then
-                state.Confiscated = true
-                set(ctx, player, "Confiscated", true)
-            end
-            return hit(ctx, player, front(ctx, player, 8, 7, 7), 16 + (state.Evidence or 0) * 0.05, "JudgmentStrike", 0.55, 36)
+            return hit(ctx, player, front(ctx, player, 8, 7, 7), 16 + state.Evidence * 0.05, "JudgmentStrike", 0.55, 36)
         elseif id == "Takaba" then
             state.ComedyContext = math.clamp((state.ComedyContext or 0) + 25, 0, 100)
             set(ctx, player, "ComedyContext", state.ComedyContext)
-            local targets = area(ctx, player, 8)
-            if #targets == 0 then return false end
-            local best = targets[1]
-            local damage = state.ComedyContext >= 75 and 30 or 12
-            return hit(ctx, player, best, damage, "Comedian", 0.5, 60)
+            return hit(ctx, player, randomTarget(ctx, player, 9), state.ComedyContext >= 75 and 30 or 12, "Comedian", 0.5, 60)
         elseif id == "Uraume" then
             state.Frost = math.clamp((state.Frost or 0) + 18, 0, 100)
             set(ctx, player, "Frost", state.Frost)
@@ -308,13 +298,10 @@ function Factory.Build(id)
             state.SkyDistortion = math.clamp((state.SkyDistortion or 0) + 20, 0, 100)
             set(ctx, player, "SkyDistortion", state.SkyDistortion)
             local target = front(ctx, player, 13, 9, 8)
-            if not target then return false end
-            target.root.CFrame = target.root.CFrame * CFrame.Angles(0, math.rad(18), 0)
             return hit(ctx, player, target, 17 + state.SkyDistortion * 0.05, "SkyManipulation", 0.5, 52)
         elseif id == "Kusakabe" then
-            local target = front(ctx, player, 9, 7, 7)
             local mult = state.SimpleDomain and 1.35 or 1
-            return hit(ctx, player, target, 18 * mult, "SimpleDomainSlash", 0.42, 46)
+            return hit(ctx, player, front(ctx, player, 9, 7, 7), 18 * mult, "SimpleDomainSlash", 0.42, 46)
         end
 
         return false
@@ -328,11 +315,9 @@ function Factory.Build(id)
                 state.BlackFlashWindow = nil
                 state.Momentum = math.min(8, (state.Momentum or 0) + 1)
                 set(ctx, player, "Momentum", state.Momentum)
-                local target = front(ctx, player, 9, 6, 6)
-                return hit(ctx, player, target, 18 + state.Momentum * 1.5, "BlackFlash", 0.7, 60)
+                return hit(ctx, player, front(ctx, player, 9, 6, 6), 18 + state.Momentum * 1.5, "BlackFlash", 0.7, 60)
             end
-            local target = front(ctx, player, 8, 6, 6)
-            return hit(ctx, player, target, 10, "BlackFlashSetup", 0.35, 28)
+            return hit(ctx, player, front(ctx, player, 8, 6, 6), 10, "BlackFlashSetup", 0.35, 28)
         elseif id == "Gojo" then
             local nextState = {Neutral="Red", Red="Purple", Purple="Neutral"}
             state.LimitlessState = nextState[state.LimitlessState] or "Neutral"
@@ -361,8 +346,8 @@ function Factory.Build(id)
             return true
         elseif id == "Yuta" then
             state.CopySlot = state.CopySlot % 3 + 1
-            set(ctx, player, "CopySlot", state.CopySlot)
             state.RikaActive = not state.RikaActive
+            set(ctx, player, "CopySlot", state.CopySlot)
             set(ctx, player, "RikaActive", state.RikaActive)
             return true
         elseif id == "Maki" or id == "Toji" then
@@ -404,18 +389,14 @@ function Factory.Build(id)
             set(ctx, player, "ElectricalCharge", state.ElectricalCharge)
             return pulse(ctx, player, 7, 9 + state.ElectricalCharge * 0.05, "ChargeBurst", 0.35, 34)
         elseif id == "Naoya" then
-            local now = os.clock()
-            if state.FrameWindowUntil < now or state.FrameSequence >= 24 then
+            local t = os.clock()
+            if state.FrameWindowUntil < t or state.FrameSequence >= 24 then
                 state.FrameSequence = 1
             else
                 state.FrameSequence += 1
             end
-            state.FrameWindowUntil = now + 0.7
+            state.FrameWindowUntil = t + 0.7
             set(ctx, player, "FrameSequence", state.FrameSequence)
-            if state.FrameSequence >= 6 then
-                local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-                if humanoid then humanoid.WalkSpeed = 24 end
-            end
             return true
         elseif id == "Kenjaku" then
             state.TechniqueStock = math.min(5, (state.TechniqueStock or 0) + 1)
@@ -513,8 +494,6 @@ function Factory.Build(id)
         elseif id == "Naoya" then
             state.FrameSequence = 24
             set(ctx, player, "FrameSequence", 24)
-        else
-            ctx.fx(id .. "Awakening", root(ctx, player))
         end
         ctx.fx("CharacterAwakening", root(ctx, player), id, profile.AwakeningName)
     end
@@ -527,6 +506,7 @@ function Factory.Build(id)
     end
 
     function M.OneTime(player, ctx)
+        local state = ctx.getState(player)
         local position = root(ctx, player)
         local damage = 44
         local radius = 16
@@ -538,8 +518,7 @@ function Factory.Build(id)
         elseif id == "Dagon" then damage, radius = 54, 20
         elseif id == "Higuruma" then damage, radius = 50, 15
         elseif id == "Ryu" then damage, radius = 62, 18
-        elseif id == "Takaba" then damage, radius = 46, 16
-        end
+        elseif id == "Takaba" then damage, radius = 46, 16 end
 
         local success = false
         for _, target in ipairs(area(ctx, player, radius)) do
@@ -552,6 +531,7 @@ function Factory.Build(id)
                 success = true
             end
         end
+
         if id == "Kashimo" then
             state.ElectricalCharge = 0
             set(ctx, player, "ElectricalCharge", 0)
@@ -562,6 +542,7 @@ function Factory.Build(id)
             state.OutputCharge = 0
             set(ctx, player, "OutputCharge", 0)
         end
+
         ctx.fx("CharacterOneTime", position, id, profile.OneTimeName)
         return true
     end
