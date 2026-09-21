@@ -9,7 +9,7 @@ local Config = {
             Stun = 0.28
         },
         Heavy = {
-            Cooldown = 1.25,
+            Cooldown = 1.15,
             Damage = 12,
             Range = 7,
             Width = 6,
@@ -44,23 +44,6 @@ local Config = {
         },
         Hitstop = 0.045
     },
-    CE = {
-        Max = 100,
-        RegenPerSecond = 7,
-        Costs = {
-            M1 = 0,
-            Heavy = 4,
-            Grab = 2,
-            Dash = 0,
-            Dodge = 2,
-            Special = 14,
-            Skill = 18,
-            Awakening = 0,
-            Domain = 60,
-            OneTime = 0,
-            ClashSpecial = 8
-        }
-    },
     Awakening = {
         Max = 100,
         MinToActivate = 100,
@@ -90,19 +73,11 @@ local Config = {
         PressurePerSpecial = 12,
         PressureToConvertNeutral = 20,
         RecoilStun = 0.2,
-        OpeningStun = 1.05
+        OpeningStun = 1.05,
+        TimeoutReset = 0.15
     },
     PerfectCombo = {
-        StepWindow = 1.15,
-        Sequences = {
-            Yuji = {"Skill", "Special", "M1", "M1"},
-            Gojo = {"Skill", "Special", "M1", "Special"},
-            Sukuna = {"Special", "Skill", "Special", "M1"}
-        }
-    },
-    OneTime = {
-        Damage = 42,
-        Radius = 16
+        StepWindow = 1.15
     },
     AntiCheat = {
         Window = 1,
@@ -110,5 +85,4 @@ local Config = {
         MaxRemotePayloadBytes = 2048
     }
 }
-
 return Config
