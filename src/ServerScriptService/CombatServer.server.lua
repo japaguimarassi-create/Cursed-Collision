@@ -131,6 +131,7 @@ function context.damage(attacker, humanoid, amount, meta)
 
     local finalAmount = CharacterService:IncomingDamage(targetPlayer, amount)
     if targetState.PerfectBlockUntil and now() <= targetState.PerfectBlockUntil then
+        targetState.PerfectBlockUntil = 0
         finalAmount = 0
         stunPlayer(attacker, Config.Combat.Block.PerfectWindow + 0.2)
         remotes.CombatFX:FireAllClients("PerfectBlock", targetCharacter.HumanoidRootPart.Position)
@@ -198,7 +199,7 @@ end
 local function canCombat(player)
     local state = states[player]
     local humanoid = humanoidOf(player)
-    return state and humanoid and humanoid.Health > 0 and state.StunnedUntil <= now() and not state.Clash
+    return state and humanoid and humanoid.Health > 0 and state.StunnedUntil <= now() and not state.Clash and not state.Blocking
 end
 
 local function m1(player)
@@ -330,6 +331,10 @@ end
 local function setBlock(player, active)
     local state = states[player]
     if not state or state.StunnedUntil > now() or state.Clash then
+        return false
+    end
+
+    if active == state.Blocking then
         return false
     end
 
@@ -486,18 +491,21 @@ local function handle(player, action)
         domain(player)
     elseif action == "OneTime" then
         oneTime(player)
-    elseif action == "ClashMove" then
-        local move = select(1, ...)
     end
 end
 
 remotes.CombatAction.OnServerEvent:Connect(function(player, action, payload)
+    if type(action) ~= "string" or #action > 32 then
+        return
+    end
+
     if action == "ClashMove" then
-        if allowAction(player) then
+        if type(payload) == "number" and allowAction(player) then
             DomainClashService:Move(player, payload)
         end
         return
     end
+
     handle(player, action)
 end)
 
