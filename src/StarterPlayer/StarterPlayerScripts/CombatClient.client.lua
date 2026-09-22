@@ -15,7 +15,14 @@ local definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local movesets = require(ReplicatedStorage.Characters.CustomMovesets)
 local Config = require(ReplicatedStorage.Shared.Config)
 local CombatVFX = require(ReplicatedStorage.Combat.CombatVFX)
-local CombatAnimationService = require(ReplicatedStorage.Combat.CombatAnimationService)
+local SFXController = require(script.Parent.Controllers.SFXController)
+local controllers = script.Parent:WaitForChild("Controllers")
+local AnimationController = require(controllers.AnimationController)
+local CameraController = require(controllers.CameraController)
+local InputController = require(controllers.InputController)
+local AbilityController = require(controllers.AbilityController)
+
+local abilityController = AbilityController.new(combatAction)
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "CursedCollisionHUD"
@@ -96,7 +103,7 @@ local function button(parent, name, textValue, size, position, strokeColor)
     return b
 end
 
-local function fireAction(action, duration)
+local function fireAction(action, duration, payload)
     local now = os.clock()
     local untilValue = tonumber(gui:GetAttribute("Cooldown_" .. action)) or 0
     if untilValue > now then
@@ -107,7 +114,7 @@ local function fireAction(action, duration)
         gui:SetAttribute("Cooldown_" .. action, now + duration)
     end
 
-    combatAction:FireServer(action)
+    abilityController:Fire(action, payload)
     return true
 end
 
@@ -129,6 +136,10 @@ local function cooldownFor(action)
         return Config.Combat.Dash.Cooldown
     elseif action == "Dodge" then
         return Config.Combat.Dodge.Cooldown
+    elseif action == "Counter" then
+        return Config.Combat.Counter.Cooldown
+    elseif action == "Slam" then
+        return Config.Combat.Air.SlamCooldown
     elseif action == "Grab" then
         return Config.Combat.Grab.Cooldown
     elseif action == "Domain" then
@@ -251,7 +262,7 @@ local healthCard = makePanel(
 local healthText = label(healthCard, "100% HP", UDim2.fromScale(0.86, 0.28), UDim2.fromScale(0.07, 0.08), Enum.Font.GothamBlack, 15)
 healthText.TextXAlignment = Enum.TextXAlignment.Right
 
-local healthBack, healthFill = makeProgress(
+local _healthBack, healthFill = makeProgress(
     healthCard,
     "HealthBar",
     UDim2.fromScale(0.07, 0.45),
@@ -260,7 +271,7 @@ local healthBack, healthFill = makeProgress(
     Color3.fromRGB(49, 24, 30)
 )
 
-local awakeningBack, awakeningFill = makeProgress(
+local _awakeningBack, awakeningFill = makeProgress(
     healthCard,
     "AwakeningBar",
     UDim2.fromScale(0.07, 0.72),
@@ -393,15 +404,18 @@ local function smallAction(name, textValue, action, position, strokeColor)
     b.Position = position
     b.TextSize = 9
     b.Activated:Connect(function()
-        fireAction(action, cooldownFor(action))
+        local payload = action == "Dash" and InputController:GetDashDirection() or nil
+        fireAction(action, cooldownFor(action), payload)
     end)
     return b
 end
 
 local heavyButton = smallAction("Heavy", "HEAVY", "Heavy", UDim2.fromScale(0.23, 0.27), Color3.fromRGB(188, 191, 205))
 local grabButton = smallAction("Grab", "GRAB", "Grab", UDim2.fromScale(0.82, 0.27), Color3.fromRGB(188, 191, 205))
+local _counterButton = smallAction("Counter", "COUNTER", "Counter", UDim2.fromScale(0.50, 0.27), Color3.fromRGB(196, 141, 255))
 local dashButton = smallAction("Dash", "DASH", "Dash", UDim2.fromScale(0.20, 0.72), accent)
 local dodgeButton = smallAction("Dodge", "DODGE", "Dodge", UDim2.fromScale(0.84, 0.72), gold)
+local _slamButton = smallAction("Slam", "SLAM", "Slam", UDim2.fromScale(0.50, 0.72), Color3.fromRGB(255, 132, 92))
 local blockButton = makeCombatButton(actionFrame, "Block", "BLOCK", blue, UDim2.fromScale(0.30, 0.19), Vector2.new(0.5, 0.5))
 blockButton.Position = UDim2.fromScale(0.27, 0.52)
 blockButton.TextSize = 9
@@ -736,6 +750,7 @@ end)
 local function bindHumanoid(character)
     local humanoid = character:WaitForChild("Humanoid")
     humanoid.HealthChanged:Connect(update)
+    AnimationController:StartIdleCombat(character, 1)
     update()
 end
 
@@ -750,6 +765,8 @@ local keyActions = {
     [Enum.KeyCode.F] = "BlockStart",
     [Enum.KeyCode.E] = "Dodge",
     [Enum.KeyCode.T] = "Grab",
+    [Enum.KeyCode.C] = "Counter",
+    [Enum.KeyCode.V] = "Slam",
     [Enum.KeyCode.One] = "Skill1",
     [Enum.KeyCode.Two] = "Skill2",
     [Enum.KeyCode.Three] = "Skill3",
@@ -779,6 +796,11 @@ UserInputService.InputBegan:Connect(function(input, processed)
     local clashMove = clashKeyMap[input.KeyCode]
     if clashMove and player:GetAttribute("InClash") then
         combatAction:FireServer("ClashMove", clashMove)
+        return
+    end
+
+    if input.KeyCode == Enum.KeyCode.Q then
+        fireAction("Dash", cooldownFor("Dash"), InputController:GetDashDirection())
         return
     end
 
@@ -869,7 +891,13 @@ combatFX.OnClientEvent:Connect(function(kind, position, payload, extra)
     if kind == "CharacterMove" then
         CombatVFX.CharacterMove(position, payload)
         if payload and payload.actor and payload.actor:IsA("Model") then
-            CombatAnimationService.Play(payload.actor, payload.move or "Special", payload.action or "Special")
+            if payload.action == "M1" or payload.action == "Heavy" or payload.action == "Grab" then
+                AnimationController:PlayAttack(payload.actor, payload.move or payload.action, payload.combo, payload.power)
+            elseif payload.action == "Dash" or payload.action == "Dodge" then
+                AnimationController:PlayAttack(payload.actor, "Dash", {pulse = 1})
+            else
+                AnimationController:PlaySkill(payload.actor, payload.move or payload.action, {power = payload.power})
+            end
         end
         return
     elseif kind == "CharacterOneTime" then
@@ -879,18 +907,42 @@ combatFX.OnClientEvent:Connect(function(kind, position, payload, extra)
         CombatVFX.Awakening(position, payload, extra)
         return
     elseif kind == "DomainStart" then
-        CombatVFX.Domain(position, payload, false)
+        CombatVFX.Domain(position, payload and payload.character or payload, false)
+        if payload and payload.actor and payload.actor:IsA("Model") then
+            AnimationController:PlayDomain(payload.actor, {pulse = 2, entry = 0.18})
+        end
         return
     elseif kind == "DomainClashStart" then
-        CombatVFX.Domain(position, payload, true)
+        CombatVFX.Domain(position, payload and payload.character or payload, true)
+        if payload and payload.actor and payload.actor:IsA("Model") then
+            AnimationController:PlayDomain(payload.actor, {pulse = 2.5, entry = 0.18})
+        end
         return
-    elseif kind == "Dash" or kind == "MeleeSwing" or kind == "Heavy" or kind == "Grab" or kind == "Block" or kind == "EnvironmentBreak" then
+    elseif kind == "Dash" or kind == "MeleeSwing" or kind == "Heavy" or kind == "Grab" or kind == "Block" or kind == "Dodge" or kind == "EnvironmentBreak" then
         CombatVFX.Utility(kind, position, payload)
+        SFXController:Universal(kind, position)
+        if kind == "Dash" or kind == "Dodge" then
+            CameraController:Dash()
+        elseif kind == "Heavy" then
+            CameraController:Heavy()
+        end
+        return
+    elseif kind == "Counter" then
+        CameraController:Impact(0.18, 3)
+        return
+    elseif kind == "WallImpact" then
+        CameraController:Impact(0.45, 7)
+        return
+    elseif kind == "DeathReaction" then
+        CameraController:StrongHit()
         return
     end
 
     if kind == "HitReaction" then
-        CombatAnimationService.HitReact(position, payload, extra)
+        AnimationController:HitReact(position, payload, extra)
+        if extra == "Heavy" or extra == "Launcher" or extra == "Slam" or extra == "Counter" then
+            CameraController:Impact(0.15, 3)
+        end
         return
     elseif kind == "DamageNumber" then
         floatingDamage(position, payload, extra)
@@ -903,10 +955,15 @@ combatFX.OnClientEvent:Connect(function(kind, position, payload, extra)
 
     if kind == "BlackFlash" then
         burst(position, 2.4, 0.05, 0.18)
+        CameraController:StrongHit()
     elseif kind == "PerfectBlock" then
         burst(position, 1.6, 0.1, 0.12)
+        CameraController:Impact(0.22, 4)
     elseif kind == "Hit" then
-        burst(position, 0.9, 0.28, 0.09)
+        burst(position, payload and payload.heavy and 1.25 or 0.9, 0.28, payload and payload.heavy and 0.12 or 0.09)
+        if payload and payload.heavy then
+            CameraController:Impact(0.12, 2)
+        end
     elseif kind == "Awakening" then
         burst(position, 3.4, 0.18, 0.25)
     elseif kind == "DomainStart" or kind == "DomainClashStart" then

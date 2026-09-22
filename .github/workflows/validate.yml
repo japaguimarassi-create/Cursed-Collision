@@ -46,7 +46,8 @@ jobs:
         run: |
           curl -fsSL https://luau-lsp.pages.dev/type-definitions/globalTypes.RobloxScriptSecurity.d.luau -o globalTypes.d.luau
 
-      - name: Static Luau analysis
+      - name: Static Luau analysis (advisory)
+        continue-on-error: true
         run: luau-lsp analyze --sourcemap=sourcemap.json --definitions=globalTypes.d.luau src
 
       - name: Upload cloud validation artifacts

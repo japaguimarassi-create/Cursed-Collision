@@ -6,7 +6,6 @@ local AnimationService = {}
 local cache = setmetatable({}, {__mode = "k"})
 local stateMachine = CombatStateMachine.new()
 local idleTokens = setmetatable({}, {__mode = "k"})
-
 local JOINT_ALIASES = {
     RootJoint = {"RootJoint", "Root"},
     Waist = {"Waist"},
@@ -85,23 +84,10 @@ local function apply(joints, transforms, duration, style, direction)
     end
 end
 
-local function reset(character, joints, duration)
+local function reset(character, joints, duration, style)
     for _, joint in pairs(joints) do
-        tween(joint, CFrame.identity, duration, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        tween(joint, CFrame.identity, duration, style or Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     end
-end
-
-local function merge(base, extra)
-    local result = {}
-    for key, value in pairs(base) do
-        result[key] = value
-    end
-    if extra then
-        for key, value in pairs(extra) do
-            result[key] = value
-        end
-    end
-    return result
 end
 
 local Poses = {
@@ -173,6 +159,46 @@ local Poses = {
             LeftElbow = pose(-20, -12, -5),
             RightHip = pose(4, 0, 5),
             LeftHip = pose(-4, 0, -5)
+        }
+    },
+    ["Counter"] = {
+        entry = 0.05, hold = 0.2, exit = 0.16,
+        pose = {
+            RootJoint = pose(-6, 0, 0),
+            Waist = pose(-5, 0, 0),
+            Neck = pose(-4, 0, 0),
+            RightShoulder = pose(-36, 12, -44),
+            RightElbow = pose(-20, -20, -6),
+            LeftShoulder = pose(-36, -12, 44),
+            LeftElbow = pose(-20, 20, 6)
+        }
+    },
+    ["Slam"] = {
+        entry = 0.06, hold = 0.12, exit = 0.2,
+        pose = {
+            RootJoint = pose(12, 0, 0),
+            Waist = pose(9, 0, 0),
+            Neck = pose(6, 0, 0),
+            RightShoulder = pose(-52, 6, -38),
+            RightElbow = pose(18, -16, 0),
+            LeftShoulder = pose(-52, -6, 38),
+            LeftElbow = pose(18, 16, 0),
+            RightHip = pose(12, 0, 6),
+            LeftHip = pose(12, 0, -6)
+        }
+    },
+    ["AirM1"] = {
+        entry = 0.045, hold = 0.04, exit = 0.12,
+        pose = {
+            RootJoint = pose(7, -6, -4),
+            Waist = pose(5, -5, -3),
+            Neck = pose(3, 0, 4),
+            RightShoulder = pose(-58, 8, -44),
+            RightElbow = pose(12, -18, -6),
+            LeftShoulder = pose(-12, -6, 24),
+            LeftElbow = pose(-8, 12, 4),
+            RightHip = pose(14, -3, 8),
+            LeftHip = pose(10, 2, -6)
         }
     },
     ["M1_1"] = {
@@ -392,9 +418,16 @@ local function playPose(character, name, options)
         return false
     end
 
-    local definition = resolve(name)
     options = options or {}
 
+    local resolvedName = tostring(name or "")
+    if resolvedName == "M1" and type(options.combo) == "number" then
+        resolvedName = "M1_" .. tostring(math.clamp(math.floor(options.combo), 1, 4))
+    elseif resolvedName == "AirM1" then
+        resolvedName = "AirM1"
+    end
+
+    local definition = resolve(resolvedName)
     local token = nextToken(character, options.state or "Attack")
     local entry = options.entry or definition.entry
     local hold = options.hold or definition.hold
@@ -480,25 +513,38 @@ function AnimationService.HitReact(character, intensity, tag)
     local amount = math.clamp(tonumber(intensity) or 1, 0.4, 2)
     local token = nextToken(character, "HitReact")
     local spread = math.random(-12, 12) * amount
-    local root = pose(10 * amount, 0, spread)
-    local neck = pose(-8 * amount, spread * 0.35, 0)
-    local right = pose(-7 * amount, 0, -spread * 0.7)
-    local left = pose(-7 * amount, 0, -spread * 0.7)
+
+    local profile = {
+        Light = {back = 7, twist = 1.0, arm = 5, recovery = 0.11},
+        Air = {back = 4, twist = 1.6, arm = 6, recovery = 0.1},
+        Heavy = {back = 13, twist = 1.3, arm = 9, recovery = 0.17},
+        Launcher = {back = 10, twist = 2.0, arm = 8, recovery = 0.16},
+        Slam = {back = 18, twist = 0.7, arm = 12, recovery = 0.2},
+        Special = {back = 14, twist = 1.7, arm = 10, recovery = 0.19},
+        Parry = {back = 5, twist = 2.8, arm = 4, recovery = 0.1},
+        Counter = {back = 12, twist = 2.1, arm = 8, recovery = 0.16},
+        Death = {back = 20, twist = 2.4, arm = 14, recovery = 0.28},
+        BlackFlash = {back = 17, twist = 2.2, arm = 12, recovery = 0.22}
+    }
+
+    local selected = profile[tag] or profile.Light
+    local root = pose(selected.back * amount, 0, spread * selected.twist)
+    local neck = pose(-8 * amount, spread * 0.25, 0)
+    local shoulder = pose(-selected.arm * amount, 0, -spread * 0.65)
 
     apply(joints, {
         RootJoint = root,
-        Waist = pose(5 * amount, 0, spread * 0.35),
+        Waist = pose(selected.back * 0.45 * amount, 0, spread * 0.35 * selected.twist),
         Neck = neck,
-        RightShoulder = right,
-        LeftShoulder = left,
-        RightElbow = pose(4 * amount, 0, 0),
-        LeftElbow = pose(4 * amount, 0, 0)
+        RightShoulder = shoulder,
+        LeftShoulder = shoulder:Inverse(),
+        RightElbow = pose(4 * amount, 0, -spread * 0.18),
+        LeftElbow = pose(4 * amount, 0, spread * 0.18)
     }, 0.035, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
-    local recovery = tag == "BlackFlash" and 0.2 or 0.12
-    task.delay(recovery, function()
+    task.delay(selected.recovery, function()
         if valid(character, token) then
-            reset(character, joints, 0.13)
+            reset(character, joints, 0.13, Enum.EasingStyle.Back)
         end
     end)
 
@@ -519,26 +565,35 @@ function AnimationService.StartIdleCombat(character, intensity)
     task.spawn(function()
         local phase = 0
         while character.Parent and idleTokens[character] == token do
-            if tokens[character] == nil then
-                tokens[character] = 0
+            if stateMachine:GetState(character) ~= "Idle" then
+                task.wait(0.08)
+                continue
             end
-            phase += 1
-            local direction = phase % 2 == 0 and 1 or -1
-            local root = pose(1.8 * amount, 0, 1.2 * amount * direction)
-            local waist = pose(-1.2 * amount, 0, 1.8 * amount * direction)
-            local neck = pose(-0.8 * amount, 0, -1.2 * amount * direction)
-            apply(joints, {
-                RootJoint = root,
-                Waist = waist,
-                Neck = neck
-            }, 0.38, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-            task.wait(0.42)
+
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            local root = character:FindFirstChild("HumanoidRootPart")
+            if humanoid and root and humanoid.Health > 0 and not character:GetAttribute("Ragdolled") then
+                phase += 1
+                local direction = phase % 2 == 0 and 1 or -1
+                local speed = root.AssemblyLinearVelocity.Magnitude
+                local movementScale = math.clamp(1 + speed / 55, 1, 1.55)
+                local rootPose = pose(1.8 * amount * movementScale, 0, 1.2 * amount * direction)
+                local waistPose = pose(-1.2 * amount * movementScale, 0, 1.8 * amount * direction)
+                local neckPose = pose(-0.8 * amount, 0, -1.2 * amount * direction)
+
+                apply(joints, {
+                    RootJoint = rootPose,
+                    Waist = waistPose,
+                    Neck = neckPose
+                }, 0.32, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+            end
+
+            task.wait(0.34)
         end
     end)
 
     return true
 end
-
 function AnimationService.StopIdleCombat(character)
     if not character then
         return
