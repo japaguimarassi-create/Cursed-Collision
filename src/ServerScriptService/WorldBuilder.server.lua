@@ -747,6 +747,67 @@ local function spawnTrainingDummy(parent, position)
     eyeStrip.Material = Enum.Material.Neon
     weldDummyPart(head, eyeStrip, "EyeStripJoint")
 
+    local hair = makeDummyBodyPart(
+        model,
+        "DummyHair",
+        Vector3.new(2.25, 1.15, 2.25),
+        pivot * CFrame.new(0, 7.05, 0),
+        Color3.fromRGB(22, 24, 31),
+        Enum.PartType.Ball,
+        false
+    )
+    hair.Material = Enum.Material.SmoothPlastic
+    weldDummyPart(head, hair, "HairJoint")
+
+    local coat = makeDummyBodyPart(
+        model,
+        "DummyCoat",
+        Vector3.new(2.75, 2.95, 1.62),
+        pivot * CFrame.new(0, 4.3, 0.08),
+        Color3.fromRGB(25, 27, 34),
+        nil,
+        false
+    )
+    weldDummyPart(torso, coat, "CoatJoint")
+
+    local collar = makeDummyBodyPart(
+        model,
+        "DummyCollar",
+        Vector3.new(1.2, 0.48, 1.7),
+        pivot * CFrame.new(0, 5.55, -0.05),
+        COLORS.CrimsonBright,
+        nil,
+        false
+    )
+    collar.Material = Enum.Material.Neon
+    weldDummyPart(torso, collar, "CollarJoint")
+
+    for side, x in ipairs({-1, 1}) do
+        local cuff = makeDummyBodyPart(
+            model,
+            side == 1 and "RightCuff" or "LeftCuff",
+            Vector3.new(1.0, 0.42, 1.0),
+            pivot * CFrame.new(1.65 * x, 3.0, 0),
+            COLORS.CrimsonBright,
+            nil,
+            false
+        )
+        cuff.Material = Enum.Material.Neon
+        weldDummyPart(side == 1 and rightArm or leftArm, cuff, side == 1 and "RightCuffJoint" or "LeftCuffJoint")
+    end
+
+    local chestStripe = makeDummyBodyPart(
+        model,
+        "DummyChestStripe",
+        Vector3.new(2.35, 0.16, 0.16),
+        pivot * CFrame.new(0, 4.75, -0.83),
+        COLORS.PurpleBright,
+        nil,
+        false
+    )
+    chestStripe.Material = Enum.Material.Neon
+    weldDummyPart(torso, chestStripe, "ChestStripeJoint")
+
     local humanoid = Instance.new("Humanoid")
     humanoid.Name = "Humanoid"
     humanoid.DisplayName = "Training Dummy"
@@ -928,6 +989,86 @@ local function addTrainingYard()
     spawnTrainingDummy(yard, Vector3.new(0, 2.25, -29.5))
 end
 
+local function addDistrictSetpieces()
+    local district = Instance.new("Folder")
+    district.Name = "Landmarks"
+    district.Parent = map
+
+    local station = Instance.new("Model")
+    station.Name = "TransitHub"
+    station.Parent = district
+    station:SetAttribute("Landmark", true)
+
+    makePart(station, "StationRoof", Vector3.new(44, 1.4, 14), Vector3.new(0, 10, -91), Enum.Material.Concrete, COLORS.ConcreteDark)
+    makePart(station, "StationPlatform", Vector3.new(40, 0.5, 10), Vector3.new(0, 5.0, -91), Enum.Material.Slate, Color3.fromRGB(56, 58, 66))
+    for _, x in ipairs({-15, -5, 5, 15}) do
+        makePart(station, "StationColumn", Vector3.new(0.9, 9, 0.9), Vector3.new(x, 5, -91), Enum.Material.Concrete, COLORS.Concrete)
+    end
+
+    local stationSign = makePart(station, "StationSign", Vector3.new(24, 3.4, 0.35), Vector3.new(0, 8.2, -98), Enum.Material.Neon, COLORS.PurpleBright, false)
+    stationSign:SetAttribute("VisualOnly", true)
+    local signGui = Instance.new("BillboardGui")
+    signGui.Name = "StationLabel"
+    signGui.Adornee = stationSign
+    signGui.Size = UDim2.fromOffset(380, 70)
+    signGui.AlwaysOnTop = true
+    signGui.Parent = stationSign
+    local signText = Instance.new("TextLabel")
+    signText.Size = UDim2.fromScale(1, 1)
+    signText.BackgroundTransparency = 1
+    signText.Text = "CURSED TRANSIT"
+    signText.Font = Enum.Font.GothamBlack
+    signText.TextSize = 22
+    signText.TextColor3 = COLORS.White
+    signText.Parent = signGui
+
+    local lower = Instance.new("Model")
+    lower.Name = "SubwayEntrance"
+    lower.Parent = district
+    makePart(lower, "EntranceFrame", Vector3.new(18, 5, 5), Vector3.new(82, 2.8, -64), Enum.Material.Concrete, COLORS.ConcreteDark)
+    makePart(lower, "EntranceHole", Vector3.new(12, 4, 3.5), Vector3.new(82, 3.0, -66.2), Enum.Material.Slate, Color3.fromRGB(17, 19, 24))
+    makePart(lower, "EntranceLight", Vector3.new(12, 0.18, 0.28), Vector3.new(82, 5.15, -68.0), Enum.Material.Neon, COLORS.CrimsonBright, false)
+
+    local rooftop = Instance.new("Model")
+    rooftop.Name = "CombatRooftop"
+    rooftop.Parent = district
+    makeBlock(rooftop, "RoofDeck", Vector3.new(-86, 16, 0), Vector3.new(28, 1.2, 22), Color3.fromRGB(54, 56, 64), 16)
+    for _, x in ipairs({-98, -86, -74}) do
+        makePart(rooftop, "RoofEdge", Vector3.new(1.1, 3.0, 22), Vector3.new(x, 17.7, 0), Enum.Material.Metal, COLORS.Metal)
+    end
+    makeStaircase(Vector3.new(-98, 1.9, 0), 12, 1)
+
+    local plaza = Instance.new("Model")
+    plaza.Name = "OpenPlaza"
+    plaza.Parent = district
+    makePart(plaza, "PlazaFloor", Vector3.new(42, 0.35, 42), Vector3.new(91, 1.0, 73), Enum.Material.Slate, Color3.fromRGB(62, 64, 72))
+    for _, pos in ipairs({
+        Vector3.new(76, 3.5, 58), Vector3.new(106, 3.5, 58),
+        Vector3.new(76, 3.5, 88), Vector3.new(106, 3.5, 88)
+    }) do
+        makePart(plaza, "PlazaPillar", Vector3.new(2.4, 5, 2.4), pos, Enum.Material.Concrete, COLORS.ConcreteDark)
+    end
+
+    for _, data in ipairs({
+        {Vector3.new(-134, 8, -18), Vector3.new(18, 16, 3), COLORS.Purple},
+        {Vector3.new(134, 8, 18), Vector3.new(18, 16, 3), COLORS.Crimson},
+        {Vector3.new(-18, 7, -134), Vector3.new(3, 14, 18), COLORS.Crimson},
+        {Vector3.new(18, 7, 134), Vector3.new(3, 14, 18), COLORS.Purple}
+    }) do
+        local wall = makeBlock(district, "LandmarkWall", data[1], data[2], data[3], 10)
+        wall:SetAttribute("Landmark", true)
+    end
+
+    for _, data in ipairs({
+        {Vector3.new(-32, 0, -32), 1.2},
+        {Vector3.new(32, 0, -32), 0.9},
+        {Vector3.new(-32, 0, 32), 1.0},
+        {Vector3.new(32, 0, 32), 1.25}
+    }) do
+        makeTree(data[1], data[2])
+    end
+end
+
 local status = Instance.new("StringValue")
 status.Name = "CursedCollisionMapStatus"
 status.Value = "Bootstrapping"
@@ -1004,6 +1145,7 @@ safeBuild("Arena cover", addCentralCover)
 safeBuild("Buildings", addBuildings)
 safeBuild("Side alleys", addSideAlleys)
 safeBuild("Street life", addStreetLife)
+safeBuild("District setpieces", addDistrictSetpieces)
 safeBuild("Training yard", addTrainingYard)
 
 local marker = makePart(
