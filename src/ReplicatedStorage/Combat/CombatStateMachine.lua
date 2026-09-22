@@ -11,10 +11,10 @@ export type Record = {
     startedAt: number,
 }
 
-export type Machine = typeof(setmetatable({} :: {
+export type Machine = {
     _states: {[Model]: Record},
     _clock: () -> number,
-}, CombatStateMachine))
+}
 
 local transitions: {[State]: {[State]: boolean}} = {
     Idle = {Attack=true, Skill=true, Awakening=true, Domain=true, HitReact=true, Dash=true, Block=true},
@@ -29,13 +29,13 @@ local transitions: {[State]: {[State]: boolean}} = {
 }
 
 function CombatStateMachine.new(clock: (() -> number)?): Machine
-    local stateStore = setmetatable({} :: {[Model]: Record}, {__mode = "k"})
+    local stateStore: {[Model]: Record} = setmetatable({}, {__mode = "k"})
     local self = setmetatable({
         _states = stateStore,
         _clock = clock or os.clock,
     }, CombatStateMachine)
 
-    return self
+    return self :: Machine
 end
 
 function CombatStateMachine:Get(character: Model): Record?
@@ -76,7 +76,7 @@ function CombatStateMachine:IsCurrent(character: Model, token: number): boolean
 end
 
 function CombatStateMachine:Finish(character: Model, token: number, nextState: State?): boolean
-    local record = self._states[character]
+    local record: Record? = self._states[character]
     if not record or record.token ~= token then
         return false
     end
@@ -91,7 +91,7 @@ function CombatStateMachine:Finish(character: Model, token: number, nextState: S
 end
 
 function CombatStateMachine:Cancel(character: Model): number?
-    local record = self._states[character]
+    local record: Record? = self._states[character]
     if not record then
         return self:Begin(character, "Idle", true)
     end
