@@ -1,4 +1,4 @@
---!strict
+-- Client animation controller
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CombatAnimationService = require(ReplicatedStorage.Combat.CombatAnimationService)
@@ -25,11 +25,11 @@ function AnimationController:PlayAttack(character, move, comboOrOptions, power)
 end
 
 function AnimationController:PlaySkill(character, skill, options)
-    return CombatAnimationService.PlaySkill(character, skill, optionsFor(options))
+    return CombatAnimationService.PlaySkill(character, skill, type(options) == "table" and options or {})
 end
 
 function AnimationController:PlayDomain(character, options)
-    return CombatAnimationService.PlayDomain(character, optionsFor(options))
+    return CombatAnimationService.PlayDomain(character, type(options) == "table" and options or {})
 end
 
 function AnimationController:HitReact(character, intensity, reaction)
