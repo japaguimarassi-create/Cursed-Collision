@@ -6,6 +6,7 @@ local AnimationService = {}
 local cache = setmetatable({}, {__mode = "k"})
 local stateMachine = CombatStateMachine.new()
 local idleTokens = setmetatable({}, {__mode = "k"})
+local tokens = setmetatable({}, {__mode = "k"})
 
 local JOINT_ALIASES = {
     RootJoint = {"RootJoint", "Root"},
@@ -480,25 +481,38 @@ function AnimationService.HitReact(character, intensity, tag)
     local amount = math.clamp(tonumber(intensity) or 1, 0.4, 2)
     local token = nextToken(character, "HitReact")
     local spread = math.random(-12, 12) * amount
-    local root = pose(10 * amount, 0, spread)
-    local neck = pose(-8 * amount, spread * 0.35, 0)
-    local right = pose(-7 * amount, 0, -spread * 0.7)
-    local left = pose(-7 * amount, 0, -spread * 0.7)
+
+    local profile = {
+        Light = {back = 7, twist = 1.0, arm = 5, recovery = 0.11},
+        Air = {back = 4, twist = 1.6, arm = 6, recovery = 0.1},
+        Heavy = {back = 13, twist = 1.3, arm = 9, recovery = 0.17},
+        Launcher = {back = 10, twist = 2.0, arm = 8, recovery = 0.16},
+        Slam = {back = 18, twist = 0.7, arm = 12, recovery = 0.2},
+        Special = {back = 14, twist = 1.7, arm = 10, recovery = 0.19},
+        Parry = {back = 5, twist = 2.8, arm = 4, recovery = 0.1},
+        Counter = {back = 12, twist = 2.1, arm = 8, recovery = 0.16},
+        Death = {back = 20, twist = 2.4, arm = 14, recovery = 0.28},
+        BlackFlash = {back = 17, twist = 2.2, arm = 12, recovery = 0.22}
+    }
+
+    local selected = profile[tag] or profile.Light
+    local root = pose(selected.back * amount, 0, spread * selected.twist)
+    local neck = pose(-8 * amount, spread * 0.25, 0)
+    local shoulder = pose(-selected.arm * amount, 0, -spread * 0.65)
 
     apply(joints, {
         RootJoint = root,
-        Waist = pose(5 * amount, 0, spread * 0.35),
+        Waist = pose(selected.back * 0.45 * amount, 0, spread * 0.35 * selected.twist),
         Neck = neck,
-        RightShoulder = right,
-        LeftShoulder = left,
-        RightElbow = pose(4 * amount, 0, 0),
-        LeftElbow = pose(4 * amount, 0, 0)
+        RightShoulder = shoulder,
+        LeftShoulder = shoulder:Inverse(),
+        RightElbow = pose(4 * amount, 0, -spread * 0.18),
+        LeftElbow = pose(4 * amount, 0, spread * 0.18)
     }, 0.035, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
-    local recovery = tag == "BlackFlash" and 0.2 or 0.12
-    task.delay(recovery, function()
+    task.delay(selected.recovery, function()
         if valid(character, token) then
-            reset(character, joints, 0.13)
+            reset(character, joints, 0.13, Enum.EasingStyle.Back)
         end
     end)
 
