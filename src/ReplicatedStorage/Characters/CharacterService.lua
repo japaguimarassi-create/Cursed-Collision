@@ -50,7 +50,9 @@ function CharacterService:GetAvailable()
                 Name = definition.Name,
                 Subtitle = definition.Subtitle,
                 Archetype = definition.Archetype,
-                SpecialName = CharacterMoves[id] and CharacterMoves[id].SpecialName or "Special"
+                SpecialName = CharacterMoves[id]
+                    and CharacterMoves[id].SpecialName
+                    or "Special"
             })
         end
     end
@@ -78,13 +80,13 @@ function CharacterService:GetModule(player: Player)
     return CharacterModules[self:GetId(player)]
 end
 
-function CharacterService:Initialize(player: Player): boolean
+function CharacterService:Initialize(player: Player): (boolean, string)
     local id = self:GetId(player)
     local definition = Definitions[id]
     local module = CharacterModules[id]
 
     if not definition or not module then
-        return false
+        return false, "InvalidCharacter"
     end
 
     player:SetAttribute("CharacterId", id)
@@ -99,10 +101,10 @@ function CharacterService:Initialize(player: Player): boolean
         module.Init(player, context)
     end
 
-    return true
+    return true, "Initialized"
 end
 
-function CharacterService:Select(player: Player, id: string)
+function CharacterService:Select(player: Player, id: string): (boolean, string)
     if not Definitions[id] or not CharacterModules[id] then
         return false, "UnknownCharacter"
     end
@@ -115,27 +117,43 @@ function CharacterService:Select(player: Player, id: string)
     return self:Initialize(player)
 end
 
+function CharacterService:GetSpecialCooldown(player: Player): number
+    local definition = Definitions[self:GetId(player)]
+
+    return math.clamp(
+        tonumber(definition and definition.SpecialCooldown) or 4,
+        0.25,
+        20
+    )
+end
+
 function CharacterService:GetSkillCooldown(player: Player, slot: number): number
     local module = self:GetModule(player)
+
     if not module or not module.GetCooldown then
         return 1
     end
+
     return module.GetCooldown("Skill", slot)
 end
 
 function CharacterService:SkillSlot(player: Player, slot: number): boolean
     local module = self:GetModule(player)
+
     if not module or not module.SkillSlot then
         return false
     end
+
     return module.SkillSlot(player, context, slot)
 end
 
 function CharacterService:Special(player: Player): boolean
     local module = self:GetModule(player)
+
     if not module or not module.Special then
         return false
     end
+
     return module.Special(player, context)
 end
 
