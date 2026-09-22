@@ -206,13 +206,13 @@ def main() -> int:
         "training_dummy_map": "TrainingDummy" in read(SRC / "ServerScriptService/WorldBuilder.server.lua") and "TrainingYard" in read(SRC / "ServerScriptService/WorldBuilder.server.lua"),
         "training_dummy_hitbox": "TrainingDummy" in read(SRC / "ReplicatedStorage/Combat/HitboxService.lua"),
         "modern_hud": "TechniqueBar" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HealthCard" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
-        "skill_animation": "AnimationController:PlaySkill" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HitReaction" in read(SRC / "ServerScriptService/CombatServer.server.lua"),
+        "skill_animation": "AnimationController:PlaySkill" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "DamageService:Apply" in read(SRC / "ServerScriptService/CombatServer.server.lua"),
         "skill_damage_reaction": "hit(ctx, player" in read(SRC / "ReplicatedStorage/Characters/CharacterFactory.lua") and "floatingDamage" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
         "custom_movesets": (
             movesets.count("Name=") >= 96
             and "function Movesets.GetMove" in movesets
             and "SkillSlot" in service
-            and 'string.match(tostring(action), "^Skill(%d)$")' in read(SRC / "ServerScriptService/CombatServer.server.lua")
+            and 'string.match(action, "^Skill(%d)$")' in read(SRC / "ServerScriptService/CombatServer.server.lua")
         ),
         "battleground_hud": (
             '"TechniqueBar"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
