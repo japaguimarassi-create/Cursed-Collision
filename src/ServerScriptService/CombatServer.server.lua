@@ -1,5 +1,4 @@
 local Players = game:GetService("Players")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
@@ -11,6 +10,7 @@ local DomainClashService = require(ReplicatedStorage.DomainClash.DomainClashServ
 local PerfectComboService = require(ReplicatedStorage.PerfectCombos.PerfectComboService)
 local OneTimeAttackService = require(ReplicatedStorage.OneTimeAttacks.OneTimeAttackService)
 local QuestService = require(ReplicatedStorage.Economy.QuestService)
+local DataService = require(ReplicatedStorage.Economy.DataService)
 
 local remotes = RemoteService:Get()
 local states = {}
@@ -132,7 +132,12 @@ function context.damage(attacker, humanoid, amount, meta)
     local attackerCharacterId = attacker:GetAttribute("CharacterId")
     QuestService:Record(attacker, "Damage", finalAmount, attackerCharacterId)
     if humanoid.Health <= 0 then
+        DataService:AddCredits(attacker, 5)
         QuestService:Record(attacker, "Kill", 1, attackerCharacterId)
+        remotes.AccountEvent:FireClient(attacker, "Notice", {
+            Message = "+5 Credits • Kill",
+            Success = true
+        })
     end
 
     if meta and meta.stun then
