@@ -1,4 +1,4 @@
---!strict
+-- Movement controller
 
 local MovementController = {}
 MovementController.__index = MovementController
@@ -39,7 +39,7 @@ end
 function MovementController:Dash(player: Player, velocity: Vector3)
     local character = player.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
-    if not root or root.Anchored then
+    if not root or not root:IsA("BasePart") or root.Anchored then
         return false
     end
     root.AssemblyLinearVelocity = Vector3.new(velocity.X, root.AssemblyLinearVelocity.Y, velocity.Z)
