@@ -16,36 +16,39 @@ local CombatService = require(script.Parent.CombatCore.CombatService)
 local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
 
 local remotes = RemoteService:Get()
-local activePlayers = {}
+local activePlayers: {[Player]: boolean} = {}
 
-local context = {}
+type Context = {
+    rootPosition: (Player) -> Vector3,
+    fx: (string, Vector3, any) -> (),
+    damage: (Player, Humanoid, number, any) -> boolean,
+    hitbox: any,
+    getState: (Player) -> any
+}
 
-function context.rootPosition(player: Player): Vector3
-    local character = player.Character
-    local root = character and character:FindFirstChild("HumanoidRootPart")
+local context: Context = {
+    rootPosition = function(player: Player): Vector3
+        local character = player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        return if root and root:IsA("BasePart")
+            then root.Position
+            else Vector3.zero
+    end,
 
-    return if root and root:IsA("BasePart") then root.Position else Vector3.zero
-end
+    fx = function(kind: string, position: Vector3, payload: any)
+        remotes.CombatFX:FireAllClients(kind, position, payload)
+    end,
 
-function context.fx(kind: string, position: Vector3, payload: any)
-    remotes.CombatFX:FireAllClients(kind, position, payload)
-end
+    damage = function(attacker: Player, humanoid: Humanoid, amount: number, meta: any): boolean
+        return DamageService:Apply(attacker, humanoid, amount, meta)
+    end,
 
-function context.damage(
-    attacker: Player,
-    humanoid: Humanoid,
-    amount: number,
-    meta: any
-)
-    return DamageService:Apply(
-        attacker,
-        humanoid,
-        amount,
-        meta
-    )
-end
+    hitbox = HitboxService,
 
-context.hitbox = HitboxService
+    getState = function(player: Player)
+        return StateManager:Get(player)
+    end
+}
 
 CharacterService:Configure(context)
 DamageService:Configure(context)
@@ -108,26 +111,27 @@ local function handle(player: Player, action: any, payload: any)
     if action == "M1" then
         combat:M1(player)
     elseif action == "Dash" then
-        combat:Dash(
-            player,
-            NetworkService:SanitizeDashDirection(payload)
-        )
+        combat:Dash(player, NetworkService:SanitizeDashDirection(payload))
     elseif action == "BlockStart" then
         combat:SetBlock(player, true)
     elseif action == "BlockEnd" then
         combat:SetBlock(player, false)
     elseif action == "Special" then
         combat:Special(player)
+    elseif action == "Skill1" then
+        combat:SkillSlot(player, 1)
+    elseif action == "Skill2" then
+        combat:SkillSlot(player, 2)
+    elseif action == "Skill3" then
+        combat:SkillSlot(player, 3)
+    elseif action == "Skill4" then
+        combat:SkillSlot(player, 4)
     elseif action == "SelectCharacter" then
         CharacterService:Select(player, payload)
     end
 end
 
-remotes.CombatAction.OnServerEvent:Connect(function(
-    player,
-    action,
-    payload
-)
+remotes.CombatAction.OnServerEvent:Connect(function(player, action, payload)
     if activePlayers[player] then
         handle(player, action, payload)
     end
