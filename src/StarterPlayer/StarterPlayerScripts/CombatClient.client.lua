@@ -262,7 +262,7 @@ local healthCard = makePanel(
 local healthText = label(healthCard, "100% HP", UDim2.fromScale(0.86, 0.28), UDim2.fromScale(0.07, 0.08), Enum.Font.GothamBlack, 15)
 healthText.TextXAlignment = Enum.TextXAlignment.Right
 
-local healthBack, healthFill = makeProgress(
+local _healthBack, healthFill = makeProgress(
     healthCard,
     "HealthBar",
     UDim2.fromScale(0.07, 0.45),
@@ -271,7 +271,7 @@ local healthBack, healthFill = makeProgress(
     Color3.fromRGB(49, 24, 30)
 )
 
-local awakeningBack, awakeningFill = makeProgress(
+local _awakeningBack, awakeningFill = makeProgress(
     healthCard,
     "AwakeningBar",
     UDim2.fromScale(0.07, 0.72),
@@ -412,10 +412,10 @@ end
 
 local heavyButton = smallAction("Heavy", "HEAVY", "Heavy", UDim2.fromScale(0.23, 0.27), Color3.fromRGB(188, 191, 205))
 local grabButton = smallAction("Grab", "GRAB", "Grab", UDim2.fromScale(0.82, 0.27), Color3.fromRGB(188, 191, 205))
-local counterButton = smallAction("Counter", "COUNTER", "Counter", UDim2.fromScale(0.50, 0.27), Color3.fromRGB(196, 141, 255))
+local _counterButton = smallAction("Counter", "COUNTER", "Counter", UDim2.fromScale(0.50, 0.27), Color3.fromRGB(196, 141, 255))
 local dashButton = smallAction("Dash", "DASH", "Dash", UDim2.fromScale(0.20, 0.72), accent)
 local dodgeButton = smallAction("Dodge", "DODGE", "Dodge", UDim2.fromScale(0.84, 0.72), gold)
-local slamButton = smallAction("Slam", "SLAM", "Slam", UDim2.fromScale(0.50, 0.72), Color3.fromRGB(255, 132, 92))
+local _slamButton = smallAction("Slam", "SLAM", "Slam", UDim2.fromScale(0.50, 0.72), Color3.fromRGB(255, 132, 92))
 local blockButton = makeCombatButton(actionFrame, "Block", "BLOCK", blue, UDim2.fromScale(0.30, 0.19), Vector2.new(0.5, 0.5))
 blockButton.Position = UDim2.fromScale(0.27, 0.52)
 blockButton.TextSize = 9
