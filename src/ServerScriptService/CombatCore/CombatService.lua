@@ -25,7 +25,6 @@ end
 local function rootOf(player: Player): BasePart?
     local character = player.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
-
     return if root and root:IsA("BasePart") then root else nil
 end
 
@@ -111,11 +110,9 @@ function CombatService:M1(player: Player): boolean
 
     if not target then
         state.RecoveryUntil = t + (final and 0.28 or 0.11)
-
         if final then
             state.Combo = 0
         end
-
         return true
     end
 
@@ -143,6 +140,34 @@ function CombatService:M1(player: Player): boolean
     return success
 end
 
+function CombatService:SkillSlot(player: Player, slot: number): boolean
+    if slot < 1 or slot > 4 or not self:CanAttack(player) then
+        return false
+    end
+
+    local state = StateManager:Get(player)
+    if not state then
+        return false
+    end
+
+    local t = now()
+    local key = "Skill" .. tostring(slot)
+    local cooldown = CharacterService:GetSkillCooldown(player, slot)
+
+    if not CooldownService:Ready(player, key, t) then
+        return false
+    end
+
+    CooldownService:Set(player, key, cooldown, t)
+    state.Phase = "Attack"
+    state.RecoveryUntil = t + math.min(
+        0.18 + cooldown * 0.12,
+        0.75
+    )
+
+    return CharacterService:SkillSlot(player, slot)
+end
+
 function CombatService:Dash(player: Player, payload: string): boolean
     local state = StateManager:Get(player)
     local root = rootOf(player)
@@ -159,8 +184,8 @@ function CombatService:Dash(player: Player, payload: string): boolean
         return false
     end
 
-    local direction
-    local speed
+    local direction: Vector3
+    local speed: number
 
     if payload == "Back" then
         direction = -root.CFrame.LookVector
@@ -284,7 +309,6 @@ function CombatService:Special(player: Player): boolean
             math.min(0.35, cooldown),
             t
         )
-
         state.RecoveryUntil = t + 0.12
     end
 
