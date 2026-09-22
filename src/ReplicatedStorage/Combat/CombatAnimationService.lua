@@ -548,7 +548,7 @@ end
 function AnimationService.Play(character, move, action)
     if action == "Domain" or action == "DomainExpansion" then
         return AnimationService.PlayDomain(character)
-    elseif action == "Skill" or action == "Special" then
+    elseif action == "Skill" or action == "Special" or string.match(tostring(action), "^Skill%d$") then
         return AnimationService.PlaySkill(character, move)
     end
     return AnimationService.PlayAttack(character, move)
