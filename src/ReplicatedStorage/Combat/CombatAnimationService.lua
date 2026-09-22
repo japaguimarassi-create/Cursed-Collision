@@ -6,8 +6,6 @@ local AnimationService = {}
 local cache = setmetatable({}, {__mode = "k"})
 local stateMachine = CombatStateMachine.new()
 local idleTokens = setmetatable({}, {__mode = "k"})
-local tokens = setmetatable({}, {__mode = "k"})
-
 local JOINT_ALIASES = {
     RootJoint = {"RootJoint", "Root"},
     Waist = {"Waist"},
@@ -86,23 +84,10 @@ local function apply(joints, transforms, duration, style, direction)
     end
 end
 
-local function reset(character, joints, duration)
+local function reset(character, joints, duration, style)
     for _, joint in pairs(joints) do
-        tween(joint, CFrame.identity, duration, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        tween(joint, CFrame.identity, duration, style or Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     end
-end
-
-local function merge(base, extra)
-    local result = {}
-    for key, value in pairs(base) do
-        result[key] = value
-    end
-    if extra then
-        for key, value in pairs(extra) do
-            result[key] = value
-        end
-    end
-    return result
 end
 
 local Poses = {
