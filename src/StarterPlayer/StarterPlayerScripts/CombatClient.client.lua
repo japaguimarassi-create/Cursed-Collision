@@ -696,7 +696,11 @@ for _, attr in ipairs({
     player:GetAttributeChangedSignal(attr):Connect(update)
 end
 
-UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(update)
+UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
+    setResponsiveLayout()
+    setButtonKeys()
+    update()
+end)
 
 local function bindHumanoid(character)
     local humanoid = character:WaitForChild("Humanoid")
