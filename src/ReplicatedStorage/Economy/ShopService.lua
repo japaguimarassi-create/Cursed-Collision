@@ -110,10 +110,8 @@ function ShopService:GiveAllSkins(player)
         return false
     end
 
-    for id, item in pairs(Shop.Skins) do
-        if item.Character == (player:GetAttribute("CharacterId") or "") then
-            data.OwnedSkins[id] = true
-        end
+    for id in pairs(Shop.Skins) do
+        data.OwnedSkins[id] = true
     end
     DataService:MarkDirty(player)
     return true
