@@ -534,9 +534,16 @@ function Factory.Build(id)
         local state = ctx.getState(player)
         announceMove(ctx, player, id, "Skill" .. tostring(slot), move.Name, 1.0)
 
+        local function finish(success, radius)
+            if success and ctx.environmentImpact and (move.Damage or 0) >= 20 then
+                ctx.environmentImpact(root(ctx, player), math.clamp(radius or 6, 4, 12), move.Damage)
+            end
+            return success
+        end
+
         if move.Type == "Melee" then
             local target = front(ctx, player, move.Range or 9, 8, 8)
-            return hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback)
+            return finish(hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback), math.min((move.Range or 9) * 0.5, 8))
         elseif move.Type == "Projectile" then
             local target = front(ctx, player, move.Range or 24, 7, 8)
             local success = hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback)
@@ -546,7 +553,7 @@ function Factory.Build(id)
                     target.root.AssemblyLinearVelocity = direction.Unit * math.max(18, move.Knockback or 36) + Vector3.new(0, 10, 0)
                 end
             end
-            return success
+            return finish(success, math.min((move.Range or 24) * 0.28, 9))
         elseif move.Type == "Area" or move.Type == "Burst" then
             local radius = move.Radius or 12
             local damage = move.Damage
@@ -559,7 +566,7 @@ function Factory.Build(id)
             elseif id == "Ryu" then
                 damage += math.floor((state.OutputCharge or 0) * 0.08)
             end
-            return pulse(ctx, player, radius, damage, move.Tag, move.Stun, move.Knockback)
+            return finish(pulse(ctx, player, radius, damage, move.Tag, move.Stun, move.Knockback), radius * 0.7)
         elseif move.Type == "Control" then
             if id == "Todo" and move.Tag == "ClapSwap" then
                 local targets = area(ctx, player, move.Range or 20)
@@ -578,14 +585,14 @@ function Factory.Build(id)
                     target.root.AssemblyLinearVelocity = delta.Unit * move.Pull + Vector3.new(0, 8, 0)
                 end
             end
-            return success
+            return finish(success, move.Radius or 7)
         elseif move.Type == "Mobility" then
             local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
             if rootPart then
                 rootPart.AssemblyLinearVelocity = rootPart.CFrame.LookVector * 58 + Vector3.new(0, 8, 0)
             end
             local target = front(ctx, player, move.Range or 11, 8, 8)
-            return hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback)
+            return finish(hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback), 7)
         elseif move.Type == "Utility" then
             if move.Tag == "ClapSwap" then
                 local targets = area(ctx, player, move.Range or 20)
@@ -594,7 +601,7 @@ function Factory.Build(id)
                     return swapPositions(player, target.player)
                 end
             end
-            return hit(ctx, player, front(ctx, player, move.Range or 10, 7, 7), move.Damage, move.Tag, move.Stun, move.Knockback)
+            return finish(hit(ctx, player, front(ctx, player, move.Range or 10, 7, 7), move.Damage, move.Tag, move.Stun, move.Knockback), 6)
         end
 
         return false
