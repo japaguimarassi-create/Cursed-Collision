@@ -91,32 +91,35 @@ function context.damage(attacker, humanoid, amount, meta)
 
     local targetCharacter = humanoid.Parent
     local targetPlayer = targetCharacter and Players:GetPlayerFromCharacter(targetCharacter)
-    if not targetPlayer or targetPlayer == attacker then
+    local isTrainingDummy = targetCharacter and targetCharacter:GetAttribute("TrainingDummy") == true
+
+    if not targetCharacter or (not targetPlayer and not isTrainingDummy) or targetPlayer == attacker then
         return false
     end
 
-    local targetState = states[targetPlayer]
-    if not targetState then return false end
+    local targetState = targetPlayer and states[targetPlayer] or nil
 
-    if targetState.Dodging and targetState.DodgeUntil > now() then
-        remotes.ServerEvent:FireClient(attacker, "DodgeEvaded", targetPlayer.UserId)
-        return false
-    end
+    if targetState then
+        if targetState.Dodging and targetState.DodgeUntil > now() then
+            remotes.ServerEvent:FireClient(attacker, "DodgeEvaded", targetPlayer.UserId)
+            return false
+        end
 
-    if targetState.Clash then
-        return false
+        if targetState.Clash then
+            return false
+        end
     end
 
     local finalAmount
-    if targetState.PerfectBlockUntil and now() <= targetState.PerfectBlockUntil then
+    if targetState and targetState.PerfectBlockUntil and now() <= targetState.PerfectBlockUntil then
         targetState.PerfectBlockUntil = 0
         finalAmount = 0
         stunPlayer(attacker, Config.Combat.Block.PerfectWindow + 0.2)
         local root = targetCharacter:FindFirstChild("HumanoidRootPart")
         if root then remotes.CombatFX:FireAllClients("PerfectBlock", root.Position) end
     else
-        finalAmount = tonumber(CharacterService:IncomingDamage(targetPlayer, amount)) or amount
-        if targetState.Blocking then
+        finalAmount = targetPlayer and (tonumber(CharacterService:IncomingDamage(targetPlayer, amount)) or amount) or amount
+        if targetState and targetState.Blocking then
             finalAmount *= 1 - Config.Combat.Block.DamageReduction
         end
     end
@@ -127,27 +130,36 @@ function context.damage(attacker, humanoid, amount, meta)
 
     humanoid:TakeDamage(finalAmount)
     addAwakening(attacker, Config.Awakening.GainDamageDealt)
-    addAwakening(targetPlayer, Config.Awakening.GainDamageTaken)
+
+    if targetPlayer then
+        addAwakening(targetPlayer, Config.Awakening.GainDamageTaken)
+    end
 
     local attackerCharacterId = attacker:GetAttribute("CharacterId")
     QuestService:Record(attacker, "Damage", finalAmount, attackerCharacterId)
-    if humanoid.Health <= 0 then
+
+    if humanoid.Health <= 0 and targetPlayer then
         DataService:AddCredits(attacker, 5)
         QuestService:Record(attacker, "Kill", 1, attackerCharacterId)
         remotes.AccountEvent:FireClient(attacker, "Notice", {
             Message = "+5 Credits • Kill",
             Success = true
         })
+    elseif humanoid.Health <= 0 and isTrainingDummy then
+        remotes.AccountEvent:FireClient(attacker, "Notice", {
+            Message = "Training Dummy • K.O.",
+            Success = true
+        })
     end
 
-    if meta and meta.stun then
+    if meta and meta.stun and targetPlayer then
         stunPlayer(targetPlayer, meta.stun)
     end
 
     if meta and meta.knockback and meta.knockback > 0 then
         local attackerRoot = rootOf(attacker)
         local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
-        if attackerRoot and targetRoot then
+        if attackerRoot and targetRoot and not targetRoot.Anchored then
             local delta = targetRoot.Position - attackerRoot.Position
             if delta.Magnitude > 0.01 then
                 targetRoot.AssemblyLinearVelocity = delta.Unit * meta.knockback + Vector3.new(0, 24, 0)
