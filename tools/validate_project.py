@@ -166,7 +166,7 @@ account_client = read("StarterPlayer/StarterPlayerScripts/AccountClient.client.l
 owner_client = read("StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua")
 cross_platform = read("StarterPlayer/StarterPlayerScripts/CrossPlatformInput.client.lua")
 remote_bootstrap = read("ServerScriptService/RemoteBootstrap.server.lua")
-for token in ("M1", "DASH", "BLOCK", "SPECIAL", "CombatAction:FireServer", 'WaitForChild("Remotes", 30)'):
+for token in ("M1", "DASH", "BLOCK", "SPECIAL", "combatAction:FireServer", 'WaitForChild("Remotes", 30)'):
     if token not in client:
         fail(f"combat HUD/input missing expected element: {token}")
 
