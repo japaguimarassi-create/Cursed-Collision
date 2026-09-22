@@ -199,8 +199,8 @@ stroke(questIdBox, Color3.fromRGB(68, 71, 88), 1)
 local completeQuest = actionButton("CompleteQuest", "COMPLETE QUEST", 0, 0.65)
 
 local announcement = Instance.new("TextBox")
-announcement.Size = UDim2.fromScale(0.97, 0.13)
-announcement.Position = UDim2.fromScale(0, 0.78)
+announcement.Size = UDim2.fromScale(0.97, 0.105)
+announcement.Position = UDim2.fromScale(0, 0.77)
 announcement.BackgroundColor3 = Color3.fromRGB(22, 25, 34)
 announcement.BorderSizePixel = 0
 announcement.TextColor3 = textColor
@@ -215,8 +215,8 @@ announcement.Parent = toolsFrame
 corner(announcement, 9)
 stroke(announcement, Color3.fromRGB(68, 71, 88), 1)
 
-local broadcast = actionButton("Broadcast", "BROADCAST", 0, 0.93)
-local kick = actionButton("Kick", "KICK TARGET", 0.51, 0.93)
+local broadcast = actionButton("Broadcast", "BROADCAST", 0, 0.89)
+local kick = actionButton("Kick", "KICK TARGET", 0.51, 0.89)
 
 local playerList = {}
 
