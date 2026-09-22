@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Profiles = require(ReplicatedStorage.Characters.CharacterDefinitions)
-local Moves = require(ReplicatedStorage.Characters.CharacterMoves)
 
 local Factory = {}
 
