@@ -441,7 +441,9 @@ local function setResponsiveLayout()
         dashButton.Position = UDim2.fromScale(0.20, 0.72)
         dodgeButton.Position = UDim2.fromScale(0.86, 0.72)
 
-        oneTime.Position = UDim2.fromScale(0.355, 0.872)
+        oneTime.Position = UDim2.fromScale(0.375, 0.865)
+        awakeningAction.Position = UDim2.fromScale(0.50, 0.865)
+        domainButton.Position = UDim2.fromScale(0.625, 0.865)
     else
         techniqueFrame.Size = UDim2.fromScale(0.47, 0.11)
         techniqueFrame.Position = UDim2.fromScale(0.50, 0.972)
@@ -457,7 +459,9 @@ local function setResponsiveLayout()
         dashButton.Position = UDim2.fromScale(0.20, 0.74)
         dodgeButton.Position = UDim2.fromScale(0.84, 0.74)
 
-        oneTime.Position = UDim2.fromScale(0.405, 0.872)
+        oneTime.Position = UDim2.fromScale(0.395, 0.872)
+        awakeningAction.Position = UDim2.fromScale(0.50, 0.872)
+        domainButton.Position = UDim2.fromScale(0.605, 0.872)
     end
 
     local scale = gui:FindFirstChildOfClass("UIScale")
