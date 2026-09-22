@@ -16,7 +16,7 @@ function CharacterService:Configure(newContext)
 end
 
 function CharacterService:GetAvailable()
-    local result = {}
+    local result: {any} = {}
 
     for id, definition in pairs(Definitions) do
         table.insert(result, {
@@ -27,7 +27,7 @@ function CharacterService:GetAvailable()
         })
     end
 
-    table.sort(result, function(a, b)
+    table.sort(result, function(a: any, b: any)
         return a.Id < b.Id
     end)
 

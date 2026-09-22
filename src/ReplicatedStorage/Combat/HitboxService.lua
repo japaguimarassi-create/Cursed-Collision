@@ -4,6 +4,14 @@ local Players = game:GetService("Players")
 
 local HitboxService = {}
 
+type Target = {
+    player: Player?,
+    model: Model,
+    humanoid: Humanoid,
+    root: BasePart,
+    distance: number
+}
+
 local function getRoot(model: Model): BasePart?
     local root = model:FindFirstChild("HumanoidRootPart")
     return if root and root:IsA("BasePart") then root else nil
@@ -22,8 +30,12 @@ function HitboxService:TargetsInBox(
     boxCFrame: CFrame,
     boxSize: Vector3,
     maxParts: number?
-)
-    local exclude = attacker.Character and {attacker.Character} or {}
+): {Target}
+    local exclude: {Instance} = {}
+
+    if attacker.Character then
+        table.insert(exclude, attacker.Character)
+    end
 
     local overlap = OverlapParams.new()
     overlap.FilterType = Enum.RaycastFilterType.Exclude
@@ -32,8 +44,8 @@ function HitboxService:TargetsInBox(
     overlap.RespectCanCollide = false
 
     local parts = workspace:GetPartBoundsInBox(boxCFrame, boxSize, overlap)
-    local targets = {}
-    local seen = {}
+    local targets: {Target} = {}
+    local seen: {[Model]: boolean} = {}
 
     for _, part in ipairs(parts) do
         local model = part:FindFirstAncestorOfClass("Model")
@@ -56,7 +68,7 @@ function HitboxService:TargetsInBox(
         end
     end
 
-    table.sort(targets, function(a, b)
+    table.sort(targets, function(a: Target, b: Target)
         return a.distance < b.distance
     end)
 
@@ -68,7 +80,7 @@ function HitboxService:NearestTargetInFront(
     range: number,
     width: number,
     height: number
-)
+): Target?
     local character = attacker.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
 

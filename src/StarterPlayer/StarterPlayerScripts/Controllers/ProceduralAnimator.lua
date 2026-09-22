@@ -13,7 +13,7 @@ type Keyframe = {
 type ActiveState = {
     name: string,
     joints: {[string]: Motor6D?},
-    track: {Keyframe}?,
+    track: any,
     started: number
 }
 
@@ -48,7 +48,7 @@ local function ease(alpha: number): number
     return alpha * alpha * (3 - 2 * alpha)
 end
 
-local function sample(track: {Keyframe}, time: number)
+local function sample(track: any, time: number): {[string]: CFrame}
     if #track == 0 then
         return {}
     end
@@ -99,7 +99,7 @@ local function apply(data: ActiveState, pose: {[string]: CFrame})
     end
 end
 
-local function attackTrack(combo: number)
+local function attackTrack(combo: number): any
     local yaw = ({-0.24, 0.18, -0.28, 0.10})[combo] or 0
     local arm = ({-0.55, 0.44, -0.62, 0.72})[combo] or 0.4
 
@@ -130,7 +130,7 @@ local function attackTrack(combo: number)
     }
 end
 
-local function dashTrack(direction: string)
+local function dashTrack(direction: string): any
     local lean = direction == "Back" and 0.12 or 0.28
     local side = direction == "Right"
         and -0.22

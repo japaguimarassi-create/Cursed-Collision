@@ -12,7 +12,7 @@ local MovementController = require(script.Parent.MovementController)
 local CombatService = {}
 CombatService.__index = CombatService
 
-function CombatService.new(context)
+function CombatService.new(context: any)
     return setmetatable({
         Context = context
     }, CombatService)

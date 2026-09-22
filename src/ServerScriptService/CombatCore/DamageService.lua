@@ -104,12 +104,15 @@ function DamageService:Apply(
         local direction = meta.direction
 
         if typeof(direction) ~= "Vector3" or direction.Magnitude < 0.01 then
-            local attackerRoot = attacker.Character
-                and attacker.Character:FindFirstChild("HumanoidRootPart")
+            local attackerCharacter = attacker.Character
+            local attackerRoot = attackerCharacter
+                and attackerCharacter:FindFirstChild("HumanoidRootPart")
 
-            direction = attackerRoot
-                and attackerRoot.CFrame.LookVector
-                or Vector3.zAxis
+            if attackerRoot and attackerRoot:IsA("BasePart") then
+                direction = attackerRoot.CFrame.LookVector
+            else
+                direction = Vector3.zAxis
+            end
         end
 
         if meta.knockback then
