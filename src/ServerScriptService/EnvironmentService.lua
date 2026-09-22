@@ -1,4 +1,3 @@
-local Debris = game:GetService("Debris")
 local Workspace = game:GetService("Workspace")
 
 local EnvironmentService = {}
@@ -88,9 +87,6 @@ function EnvironmentService:Impact(origin, radius, power)
                     restore(part, broken[part])
                 end)
 
-                if changed <= 8 then
-                    Debris:AddItem(part:Clone(), 0)
-                end
             end
         end
     end
