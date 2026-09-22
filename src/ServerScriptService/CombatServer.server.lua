@@ -458,14 +458,31 @@ local function characterAction(player, action)
         return DomainClashService:Special(player)
     end
 
-    if action ~= "Special" and action ~= "Skill" then return false end
+    local slot = tonumber(string.match(action, "^Skill(%d)$"))
+    if action ~= "Special" and action ~= "Skill" and not slot then return false end
+    if slot and (slot < 1 or slot > 4) then return false end
     if not canCombat(player) or not ready(player, action) then return false end
 
-    setCooldown(player, action, CharacterService:GetCooldown(player, action))
-    local success = CharacterService:Special(player, action)
+    local cooldown = CharacterService:GetCooldown(player, action)
+    if slot and slot >= 3 then
+        local moduleCooldown = CharacterService:GetModule(player)
+        if moduleCooldown and moduleCooldown.GetSkillSlotCooldown then
+            cooldown = moduleCooldown.GetSkillSlotCooldown(slot)
+        end
+    end
+
+    setCooldown(player, action, cooldown)
+    local success
+    if slot then
+        success = CharacterService:SkillSlot(player, slot)
+    else
+        success = CharacterService:Special(player, action)
+    end
     if success then
-        PerfectComboService:Record(player, action)
-        QuestService:Record(player, action, 1, player:GetAttribute("CharacterId"))
+        local comboAction = slot == 1 and "Special" or "Skill"
+        if not slot then comboAction = action end
+        PerfectComboService:Record(player, comboAction)
+        QuestService:Record(player, "Skill", 1, player:GetAttribute("CharacterId"))
     end
     return success
 end
@@ -498,7 +515,7 @@ local function handle(player, action)
         setBlock(player, true)
     elseif action == "BlockEnd" then
         setBlock(player, false)
-    elseif action == "Special" or action == "Skill" then
+    elseif action == "Special" or action == "Skill" or string.match(action, "^Skill[1-4]$") then
         characterAction(player, action)
     elseif action == "Awaken" then
         awaken(player)
