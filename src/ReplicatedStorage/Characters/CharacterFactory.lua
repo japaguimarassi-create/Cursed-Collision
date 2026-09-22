@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Profiles = require(ReplicatedStorage.Characters.CharacterDefinitions)
+local Moves = require(ReplicatedStorage.Characters.CharacterMoves)
 
 local Factory = {}
 
@@ -28,6 +29,25 @@ end
 
 local function set(ctx, player, name, value)
     ctx.setAttribute(player, name, value)
+end
+
+local function announceMove(ctx, player, action, move, power, target)
+    local character = player.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        return
+    end
+
+    local data = {
+        character = id,
+        action = action,
+        move = move,
+        power = power or 1,
+        direction = rootPart.CFrame.LookVector,
+        target = target
+    }
+
+    ctx.fx("CharacterMove", rootPart.Position, data)
 end
 
 local function pulse(ctx, player, radius, damage, tag, stun, knockback)
@@ -154,6 +174,24 @@ function Factory.Build(id)
 
     function M.Special(player, ctx)
         local state = ctx.getState(player)
+        local move = profile.SpecialName or "Special"
+
+        if id == "Gojo" then
+            local gojoMoves = {
+                Neutral = "Lapse Blue",
+                Red = "Reversal Red",
+                Purple = "Hollow Purple"
+            }
+            move = gojoMoves[state.LimitlessState] or move
+        elseif id == "Sukuna" then
+            move = state.SlashAdaptation == "Fire" and "Fire Arrow" or "Cursed Slash"
+        elseif id == "Megumi" then
+            move = state.ShikigamiMode or move
+        elseif id == "Maki" or id == "Toji" then
+            move = (state.WeaponMode or "Katana").." Strike"
+        end
+
+        announceMove(ctx, player, "Special", move, 1)
 
         if id == "Yuji" then
             local target = front(ctx, player, 8, 6, 6)
@@ -179,7 +217,13 @@ function Factory.Build(id)
                 return ok
             else
                 local ok = hit(ctx, player, target, 18, "Blue", 0.45, 50)
-                if ok then ctx.fx("GojoBlue", target.root.Position) end
+                if ok then
+                    local delta = root(ctx, player) - target.root.Position
+                    if delta.Magnitude > 0.01 then
+                        target.root.AssemblyLinearVelocity = delta.Unit * 76 + Vector3.new(0, 12, 0)
+                    end
+                    ctx.fx("GojoBlue", target.root.Position)
+                end
                 return ok
             end
         elseif id == "Sukuna" then
@@ -190,6 +234,15 @@ function Factory.Build(id)
             local damage = mode == "Cleave" and 22 or mode == "Fire" and 19 or 15
             if distance < 6 then damage += 7 end
             if distance > 11 then damage -= 2 end
+            if mode == "Cleave" then
+                local success = false
+                for _, nearby in ipairs(area(ctx, player, 11)) do
+                    if hit(ctx, player, nearby, damage, "Cleave", 0.42, 34) then
+                        success = true
+                    end
+                end
+                return success
+            end
             return hit(ctx, player, target, damage, mode, 0.45, mode == "Fire" and 54 or 30)
         elseif id == "Megumi" then
             local mode = state.ShikigamiMode or "Divine Dogs"
@@ -309,6 +362,19 @@ function Factory.Build(id)
 
     function M.Skill(player, ctx)
         local state = ctx.getState(player)
+        local move = profile.SkillName or "Skill"
+
+        if id == "Gojo" then
+            move = "Limitless Shift"
+        elseif id == "Sukuna" then
+            move = state.SlashAdaptation == "Fire" and "Fire Arrow" or "Shrine Stance"
+        elseif id == "Megumi" then
+            move = "Ten Shadows • "..tostring(state.ShikigamiMode or "Divine Dogs")
+        elseif id == "Maki" or id == "Toji" then
+            move = "Arsenal • "..tostring(state.WeaponMode or "Katana")
+        end
+
+        announceMove(ctx, player, "Skill", move, 1.15)
 
         if id == "Yuji" then
             if state.BlackFlashWindow and os.clock() <= state.BlackFlashWindow then
