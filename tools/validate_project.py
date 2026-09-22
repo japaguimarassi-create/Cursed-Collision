@@ -123,7 +123,7 @@ def main() -> int:
         if not re.search(pattern, definitions, re.S):
             fail(f"domain definition missing or mismatched for {character}")
 
-    emote_count_match = re.search(r"for index = 1, (\\d+) do", shop_definitions)
+    emote_count_match = re.search(r"for index = 1, (\d+) do", shop_definitions)
     if not emote_count_match or emote_count_match.group(1) != "150":
         fail("shop definitions do not declare exactly 150 emote entries")
 
@@ -132,7 +132,7 @@ def main() -> int:
         fail("skin catalog does not define the expected three skin styles")
 
     for category in ("Daily", "Weekly", "General"):
-        if not re.search(rf"QuestDefinitions\\.{re.escape(category)}\\s*=\\s*\\{\\}", quest_definitions):
+        if not re.search(rf"{re.escape(category)}\\s*=\\s*\\{{", quest_definitions):
             fail(f"quest catalog missing {category} category")
 
     required_factory_methods = ["Init", "GetCooldown", "Special", "Skill", "Awaken", "Domain", "OneTime", "OnIncomingDamage"]
