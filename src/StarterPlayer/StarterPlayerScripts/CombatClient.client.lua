@@ -389,6 +389,7 @@ player:GetAttributeChangedSignal("CCHUD_MenuOpen"):Connect(function()
     if open and player:GetAttribute("LocalBlocking") == true then
         player:SetAttribute("LocalBlocking", false)
         block.Text = "BLOCK"
+        combatAction:FireServer("BlockEnd")
     end
 end)
 
