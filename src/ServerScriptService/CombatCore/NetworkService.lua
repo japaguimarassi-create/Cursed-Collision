@@ -22,7 +22,13 @@ local ACTIONS = {
 }
 
 function NetworkService:IsKnownAction(action: any): boolean
-    return type(action) == "string" and #action <= 32 and ACTIONS[action] == true
+    if type(action) ~= "string" or #action > 32 then
+        return false
+    end
+    if ACTIONS[action] then
+        return true
+    end
+    return string.match(action, "^Skill[1-4]$") ~= nil
 end
 
 function NetworkService:ValidatePayload(action: string, payload: any): boolean
