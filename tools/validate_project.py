@@ -179,6 +179,9 @@ def main() -> int:
         "owner_only_admin": "player.UserId == game.CreatorId" in read(SRC / "ReplicatedStorage/Admin/AdminService.lua"),
         "console_input": "ContextActionService" in read(SRC / "StarterPlayer/StarterPlayerScripts/CrossPlatformInput.client.lua"),
         "account_server": "AccountAction.OnServerEvent" in read(SRC / "ServerScriptService/AccountServer.server.lua"),
+        "training_dummy_map": "TrainingDummy" in read(SRC / "ServerScriptService/WorldBuilder.server.lua") and "TrainingYard" in read(SRC / "ServerScriptService/WorldBuilder.server.lua"),
+        "training_dummy_hitbox": "TrainingDummy" in read(SRC / "ReplicatedStorage/Combat/HitboxService.lua"),
+        "modern_hud": "TechniqueBar" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HealthCard" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
     if missing_runtime:
@@ -195,6 +198,8 @@ def main() -> int:
     print("PASS: daily, weekly, and general quest catalogs present")
     print("PASS: persistent economy, owner-only admin, and cross-platform input detected")
     print("PASS: server-authoritative runtime integrations detected")
+    print("PASS: training yard, respawning dummy, and dummy hitbox integration detected")
+    print("PASS: modern compact HUD integration detected")
     print("NOT VERIFIED: Roblox Studio gameplay, replication under live physics, animation/assets, exploit testing, and publishing")
     return 0
 

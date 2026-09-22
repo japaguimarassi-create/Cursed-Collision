@@ -90,7 +90,7 @@ panel.Parent = gui
 corner(panel, 18)
 stroke(panel, accent, 1.5)
 
-local header = label(panel, "PROFILE • SHOP • MISSIONS", UDim2.fromScale(0.65, 0.08), UDim2.fromScale(0.035, 0.025), Enum.Font.GothamBlack, 19)
+local _header = label(panel, "PROFILE • SHOP • MISSIONS", UDim2.fromScale(0.65, 0.08), UDim2.fromScale(0.035, 0.025), Enum.Font.GothamBlack, 19)
 local creditsLabel = label(panel, "500 CREDITS", UDim2.fromScale(0.24, 0.06), UDim2.fromScale(0.68, 0.028), Enum.Font.GothamBold, 14)
 creditsLabel.TextXAlignment = Enum.TextXAlignment.Right
 local platformLabel = label(panel, "PC", UDim2.fromScale(0.30, 0.045), UDim2.fromScale(0.68, 0.085), Enum.Font.Gotham, 11)
@@ -157,7 +157,7 @@ local function itemButton(parent, item, owned, equipped, category)
     local b = button(parent, item.Id, "", UDim2.new(1, -8, 0, 58), UDim2.new())
     b.LayoutOrder = tonumber(item.Id:match("%d+")) or 0
 
-    local name = label(b, text, UDim2.new(0.65, 0, 0.56, 0), UDim2.fromScale(0.025, 0.04), Enum.Font.GothamBold, 13)
+    local _name = label(b, text, UDim2.new(0.65, 0, 0.56, 0), UDim2.fromScale(0.025, 0.04), Enum.Font.GothamBold, 13)
     local rarity = label(b, item.Rarity or "ITEM", UDim2.new(0.42, 0, 0.30, 0), UDim2.fromScale(0.025, 0.58), Enum.Font.Gotham, 9)
     rarity.TextColor3 = muted
 

@@ -1,5 +1,4 @@
 local ContextActionService = game:GetService("ContextActionService")
-local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
