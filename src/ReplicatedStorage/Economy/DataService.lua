@@ -62,9 +62,18 @@ function DataService:Initialize(player)
         return true
     end
 
-    local success, loaded = pcall(function()
-        return STORE:GetAsync(keyFor(player))
-    end)
+    local success = false
+    local loaded = nil
+
+    for attempt = 1, 3 do
+        success, loaded = pcall(function()
+            return STORE:GetAsync(keyFor(player))
+        end)
+        if success then
+            break
+        end
+        task.wait(attempt * 0.75)
+    end
 
     local data = normalize(success and loaded or nil)
     sessions[player] = data
