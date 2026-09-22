@@ -1,4 +1,4 @@
---!strict
+-- UI controller
 
 local TweenService = game:GetService("TweenService")
 
@@ -15,15 +15,17 @@ function UIController:Pulse(guiObject: GuiObject, scale: number?)
         guiObject:SetAttribute("UIOriginalScale", original)
     end
 
-    local value = guiObject:FindFirstChildOfClass("UIScale")
+    local value = guiObject:FindFirstChildOfClass("UIScale") :: UIScale?
     if not value then
-        value = Instance.new("UIScale")
-        value.Scale = original
-        value.Parent = guiObject
+        local created = Instance.new("UIScale")
+        created.Scale = original
+        created.Parent = guiObject
+        value = created
     end
 
-    value.Scale = original + (scale or 0.06)
-    TweenService:Create(value, TweenInfo.new(0.13, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    local uiScale = value :: UIScale
+    uiScale.Scale = original + (scale or 0.06)
+    TweenService:Create(uiScale, TweenInfo.new(0.13, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Scale = original
     }):Play()
 end
