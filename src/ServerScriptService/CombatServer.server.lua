@@ -202,6 +202,15 @@ local function m1(player)
     state.Combo = math.clamp(state.Combo + 1, 1, Config.Combat.Combo.Max)
     state.LastM1 = t
 
+    local attackRoot = rootOf(player)
+    if attackRoot then
+        remotes.CombatFX:FireAllClients("MeleeSwing", attackRoot.Position, {
+            character=player:GetAttribute("CharacterId"),
+            combo=state.Combo,
+            direction=attackRoot.CFrame.LookVector
+        })
+    end
+
     local target = HitboxService.NearestTargetInFront(player, Config.Combat.M1.Range, Config.Combat.M1.Width, Config.Combat.M1.Height)
     if not target then return false end
 
@@ -235,6 +244,13 @@ end
 local function heavy(player)
     if not canCombat(player) or not ready(player, "Heavy") then return false end
     setCooldown(player, "Heavy", Config.Combat.Heavy.Cooldown)
+    local attackRoot = rootOf(player)
+    if attackRoot then
+        remotes.CombatFX:FireAllClients("Heavy", attackRoot.Position, {
+            character=player:GetAttribute("CharacterId"),
+            direction=attackRoot.CFrame.LookVector
+        })
+    end
     local target = HitboxService.NearestTargetInFront(player, Config.Combat.Heavy.Range, Config.Combat.Heavy.Width, Config.Combat.Heavy.Height)
     if not target then return false end
     return context.damage(player, target.humanoid, Config.Combat.Heavy.Damage, {
@@ -253,6 +269,10 @@ local function dash(player)
     state.Dodging = true
     state.DodgeUntil = now() + Config.Combat.Dash.Duration
     root.AssemblyLinearVelocity = root.CFrame.LookVector * Config.Combat.Dash.Speed
+    remotes.CombatFX:FireAllClients("Dash", root.Position, {
+        character=player:GetAttribute("CharacterId"),
+        direction=root.CFrame.LookVector
+    })
 
     task.delay(Config.Combat.Dash.Duration, function()
         if state then state.Dodging = false end
@@ -277,6 +297,13 @@ end
 local function grab(player)
     if not canCombat(player) or not ready(player, "Grab") then return false end
     setCooldown(player, "Grab", Config.Combat.Grab.Cooldown)
+    local attackRoot = rootOf(player)
+    if attackRoot then
+        remotes.CombatFX:FireAllClients("Grab", attackRoot.Position, {
+            character=player:GetAttribute("CharacterId"),
+            direction=attackRoot.CFrame.LookVector
+        })
+    end
     local target = HitboxService.NearestTargetInFront(player, Config.Combat.Grab.Range, Config.Combat.Grab.Width, Config.Combat.Grab.Height)
     if not target then return false end
     return context.damage(player, target.humanoid, Config.Combat.Grab.Damage, {
@@ -295,6 +322,12 @@ local function setBlock(player, active)
     player:SetAttribute("Blocking", active)
 
     if active then
+        local attackRoot = rootOf(player)
+        if attackRoot then
+            remotes.CombatFX:FireAllClients("Block", attackRoot.Position, {
+                character=player:GetAttribute("CharacterId")
+            })
+        end
         state.PerfectBlockUntil = now() + Config.Combat.Block.PerfectWindow
         setMovement(player, 8, 0)
     else
