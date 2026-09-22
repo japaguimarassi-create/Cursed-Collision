@@ -1,4 +1,4 @@
---!strict
+-- Camera controller
 
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -9,7 +9,6 @@ local shake = 0
 local shakeSpeed = 26
 local fovBase = 70
 local fovKick = 0
-local fovVelocity = 0
 local connection: RBXScriptConnection?
 
 local function ensure()
@@ -17,7 +16,7 @@ local function ensure()
         return
     end
 
-    connection = RunService.RenderStepped:Connect(function(dt)
+    connection = RunService.RenderStepped:Connect(function(dt: number)
         local camera = Workspace.CurrentCamera
         if not camera then
             return
