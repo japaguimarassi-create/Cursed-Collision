@@ -201,6 +201,7 @@ remotes.AccountAction.OnServerEvent:Connect(function(player, action, payload)
             Id = id,
             Name = emote.Name,
             Animation = emote.Animation,
+            AnimationId = emote.AnimationId or 0,
             Accent = emote.Accent,
             Rarity = emote.Rarity
         })
