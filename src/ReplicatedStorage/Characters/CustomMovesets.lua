@@ -1,4 +1,10 @@
 local Movesets = {
+    PotentialMan = {
+        {Name="Shadow Jab", Type="Melee", Range=8, Damage=14, Stun=0.34, Knockback=24, Cooldown=0.55, Tag="ShadowJab"},
+        {Name="Shade Step", Type="Mobility", Range=10, Damage=16, Stun=0.35, Knockback=34, Cooldown=1.2, Tag="ShadeStep"},
+        {Name="Shadow Bind", Type="Control", Range=13, Damage=12, Stun=0.85, Knockback=0, Cooldown=2.4, Tag="ShadowBind"},
+        {Name="Shadow Burst", Type="Burst", Radius=11, Damage=30, Stun=0.72, Knockback=68, Cooldown=5.0, Tag="ShadowBurst"}
+    },
     Yuji = {
         {Name="Divergent Fist", Type="Melee", Range=8, Damage=14, Stun=0.32, Knockback=18, Cooldown=0.45, Tag="CursedStrikes"},
         {Name="Black Flash", Type="Melee", Range=8, Damage=18, Stun=0.44, Knockback=30, Cooldown=0.7, Tag="DivergentFist"},
