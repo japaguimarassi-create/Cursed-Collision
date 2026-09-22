@@ -1,0 +1,30 @@
+name: Roblox Connection Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      universe_id:
+        description: "Roblox Universe ID"
+        required: true
+        type: string
+        default: "5290480963"
+      place_id:
+        description: "Roblox Place ID"
+        required: true
+        type: string
+        default: "15338267657"
+
+permissions:
+  contents: read
+
+jobs:
+  connection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Test Roblox connection
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+        run: bash tools/roblox_connection.sh "${{ inputs.universe_id }}" "${{ inputs.place_id }}"
