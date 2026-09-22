@@ -30,7 +30,7 @@ local function set(ctx, player, name, value)
     ctx.setAttribute(player, name, value)
 end
 
-local function announceMove(ctx, player, action, move, power, target)
+local function announceMove(ctx, player, characterId, action, move, power, target)
     local character = player.Character
     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
     if not rootPart then
@@ -38,7 +38,7 @@ local function announceMove(ctx, player, action, move, power, target)
     end
 
     local data = {
-        character = id,
+        character = characterId,
         action = action,
         move = move,
         power = power or 1,
@@ -190,7 +190,7 @@ function Factory.Build(id)
             move = (state.WeaponMode or "Katana").." Strike"
         end
 
-        announceMove(ctx, player, "Special", move, 1)
+        announceMove(ctx, player, id, "Special", move, 1)
 
         if id == "Yuji" then
             local target = front(ctx, player, 8, 6, 6)
@@ -373,7 +373,7 @@ function Factory.Build(id)
             move = "Arsenal • "..tostring(state.WeaponMode or "Katana")
         end
 
-        announceMove(ctx, player, "Skill", move, 1.15)
+        announceMove(ctx, player, id, "Skill", move, 1.15)
 
         if id == "Yuji" then
             if state.BlackFlashWindow and os.clock() <= state.BlackFlashWindow then
