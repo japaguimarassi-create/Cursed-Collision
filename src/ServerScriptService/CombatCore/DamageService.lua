@@ -122,9 +122,15 @@ function DamageService:Apply(
         end
     end
 
+    local hitPosition = targetModel:GetPivot().Position
+
+    if root and root:IsA("BasePart") then
+        hitPosition = root.Position
+    end
+
     context.fx(
         "Hit",
-        root and root.Position or targetModel:GetPivot().Position,
+        hitPosition,
         {
             actor = targetModel,
             attacker = attacker.Character,
@@ -138,7 +144,7 @@ function DamageService:Apply(
     if target.Health <= 0 then
         context.fx(
             "Death",
-            root and root.Position or targetModel:GetPivot().Position,
+            hitPosition,
             {
                 actor = targetModel,
                 attacker = attacker.Character

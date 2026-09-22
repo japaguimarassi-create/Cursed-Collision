@@ -17,7 +17,8 @@ type ActiveState = {
     started: number
 }
 
-local active = setmetatable({}, {__mode = "k"})
+local active: {[Model]: ActiveState} =
+    setmetatable({}, {__mode = "k"}) :: any
 
 local function findJoint(character: Model, names: {string}): Motor6D?
     for _, name in ipairs(names) do
@@ -103,7 +104,7 @@ local function attackTrack(combo: number): any
     local yaw = ({-0.24, 0.18, -0.28, 0.10})[combo] or 0
     local arm = ({-0.55, 0.44, -0.62, 0.72})[combo] or 0.4
 
-    return {
+    local track: {any} = {
         {t=0.00, pose={
             Waist=CFrame.Angles(0, -yaw * 0.5, 0),
             LeftShoulder=CFrame.Angles(0, 0, arm * 0.25),
@@ -128,6 +129,8 @@ local function attackTrack(combo: number): any
             Root=CFrame.identity
         }}
     }
+
+    return track
 end
 
 local function dashTrack(direction: string): any
@@ -138,7 +141,7 @@ local function dashTrack(direction: string): any
         and 0.22
         or 0
 
-    return {
+    local track: {any} = {
         {t=0.00, pose={
             Waist=CFrame.Angles(lean, side, 0),
             Root=CFrame.Angles(0, side * 0.7, 0)
@@ -152,6 +155,8 @@ local function dashTrack(direction: string): any
             Root=CFrame.identity
         }}
     }
+
+    return track
 end
 
 function ProceduralAnimator:Bind(character: Model)
