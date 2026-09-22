@@ -25,7 +25,10 @@ local function getOwner(model: Model): Player?
     return Players:GetPlayerFromCharacter(model)
 end
 
-local function collect(attacker: Player, parts: {BasePart}, origin: Vector3): {Target}
+local function collect(
+    parts: {BasePart},
+    origin: Vector3
+): {Target}
     local targets: {Target} = {}
     local seen: {[Model]: boolean} = {}
 
@@ -57,31 +60,31 @@ local function collect(attacker: Player, parts: {BasePart}, origin: Vector3): {T
     return targets
 end
 
+local function excludeCharacter(attacker: Player): {Instance}
+    local exclude: {Instance} = {}
+    local character = attacker.Character
+
+    if character then
+        table.insert(exclude, character)
+    end
+
+    return exclude
+end
+
 function HitboxService:TargetsInBox(
     attacker: Player,
     boxCFrame: CFrame,
     boxSize: Vector3,
     maxParts: number?
 ): {Target}
-    local exclude: {Instance} = {}
-
-    if attacker.Character then
-        table.insert(exclude, attacker.Character)
-    end
-
     local overlap = OverlapParams.new()
     overlap.FilterType = Enum.RaycastFilterType.Exclude
-    overlap.FilterDescendantsInstances = exclude
+    overlap.FilterDescendantsInstances = excludeCharacter(attacker)
     overlap.MaxParts = math.max(1, math.floor(maxParts or 64))
     overlap.RespectCanCollide = false
 
     return collect(
-        attacker,
-        workspace:GetPartBoundsInBox(
-            boxCFrame,
-            boxSize,
-            overlap
-        ),
+        workspace:GetPartBoundsInBox(boxCFrame, boxSize, overlap),
         boxCFrame.Position
     )
 end
@@ -97,15 +100,13 @@ function HitboxService:TargetsInRadius(
         return {}
     end
 
-    local exclude: {Instance} = {character}
     local overlap = OverlapParams.new()
     overlap.FilterType = Enum.RaycastFilterType.Exclude
-    overlap.FilterDescendantsInstances = exclude
+    overlap.FilterDescendantsInstances = excludeCharacter(attacker)
     overlap.MaxParts = 96
     overlap.RespectCanCollide = false
 
     return collect(
-        attacker,
         workspace:GetPartBoundsInRadius(
             root.Position,
             math.clamp(radius, 1, 64),
