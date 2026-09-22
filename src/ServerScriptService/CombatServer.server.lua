@@ -76,7 +76,15 @@ end
 context.hitbox = HitboxService
 context.domain = DomainService
 context.environmentImpact = function(origin, radius, power)
-    return EnvironmentService:Impact(origin, radius, power)
+    local changed = EnvironmentService:Impact(origin, radius, power)
+    if changed > 0 then
+        remotes.CombatFX:FireAllClients("EnvironmentBreak", origin, {
+            radius = radius,
+            count = changed,
+            power = power
+        })
+    end
+    return changed
 end
 
 function context.rootPosition(player)
