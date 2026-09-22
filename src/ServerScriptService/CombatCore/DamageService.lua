@@ -1,4 +1,4 @@
---!strict
+-- Authoritative damage service
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
@@ -13,7 +13,7 @@ local MovementController = require(script.Parent.MovementController)
 local RagdollService = require(script.Parent.RagdollService)
 
 local DamageService = {}
-local context = {}
+local context = {} :: any
 
 function DamageService:Configure(newContext)
     context = newContext or {}
@@ -62,7 +62,7 @@ local function detectWall(root: BasePart, direction: Vector3): boolean
     return result ~= nil
 end
 
-function DamageService:Apply(attacker: Player, humanoid: Humanoid, amount: number, meta)
+function DamageService:Apply(attacker: Player, humanoid: Humanoid, amount: number, meta: any)
     meta = meta or {}
 
     if not humanoid or humanoid.Health <= 0 or type(amount) ~= "number" or amount <= 0 then
@@ -101,7 +101,7 @@ function DamageService:Apply(attacker: Player, humanoid: Humanoid, amount: numbe
             targetState.CounterUntil = 0
 
             local attackerRoot = attacker.Character and attacker.Character:FindFirstChild("HumanoidRootPart")
-            if attackerRoot then
+            if attackerRoot and attackerRoot:IsA("BasePart") then
                 attackerRoot.AssemblyLinearVelocity = -attackerRoot.CFrame.LookVector * Config.Combat.Counter.Knockback + Vector3.new(0, 14, 0)
             end
 
@@ -228,8 +228,6 @@ function DamageService:Apply(attacker: Player, humanoid: Humanoid, amount: numbe
     if humanoid.Health <= 0 then
         if targetPlayer then
             DataService:AddCredits(attacker, 5)
-            DataService:AddKill(attacker)
-            DataService:AddDeath(targetPlayer)
             QuestService:Record(attacker, "Kill", 1, attackerCharacterId)
             context.fx("KillFeed", Vector3.zero, {
                 attackerName = attacker:GetAttribute("CharacterName") or attacker.Name,
