@@ -1,2 +1,6 @@
-local Factory = require(game:GetService("ReplicatedStorage").Characters.CharacterFactory)
-return Factory.Build("Kashimo")
+--!strict
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CharacterKit = require(ReplicatedStorage.Characters.CharacterKit)
+
+return CharacterKit.Build("Kashimo")
