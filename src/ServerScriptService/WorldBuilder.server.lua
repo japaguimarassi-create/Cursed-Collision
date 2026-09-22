@@ -792,6 +792,50 @@ local function addTrainingYard()
     spawnTrainingDummy(yard, Vector3.new(0, 2.25, -29.5))
 end
 
+local status = Instance.new("StringValue")
+status.Name = "CursedCollisionMapStatus"
+status.Value = "Bootstrapping"
+status.Parent = Workspace
+
+local function setMapStatus(value)
+    status.Value = value
+    print("[Cursed Collision] Map status: " .. value)
+end
+
+local function safeBuild(stage, callback)
+    local ok, err = pcall(callback)
+    if ok then
+        setMapStatus(stage .. " ready")
+        return true
+    end
+    warn("[Cursed Collision] Map stage failed: " .. stage .. " :: " .. tostring(err))
+    setMapStatus(stage .. " failed")
+    return false
+end
+
+-- Build a guaranteed playable base before optional visual stages.
+local baseGround = makePart(
+    map,
+    "GuaranteedGround",
+    Vector3.new(370, 2, 370),
+    Vector3.new(0, -1, 0),
+    Enum.Material.Asphalt,
+    COLORS.Asphalt
+)
+baseGround:SetAttribute("Foundation", true)
+
+local spawn = Instance.new("SpawnLocation")
+spawn.Name = "CursedCollisionSpawn"
+spawn.Size = Vector3.new(10, 1, 10)
+spawn.Position = Vector3.new(0, 4, 0)
+spawn.Anchored = true
+spawn.Neutral = true
+spawn.AllowTeamChangeOnTouch = false
+spawn.Material = Enum.Material.Neon
+spawn.Color = COLORS.PurpleBright
+spawn.Transparency = 0.35
+spawn.Parent = Workspace
+
 local function configureLighting()
     Lighting.ClockTime = 17.4
     Lighting.Brightness = 2
@@ -815,26 +859,16 @@ local function configureLighting()
     atmosphere.Parent = Lighting
 end
 
-configureLighting()
-addWorldBounds()
-addRoadNetwork()
-addArena()
-addCentralCover()
-addBuildings()
-addSideAlleys()
-addStreetLife()
-addTrainingYard()
-
-local spawn = Instance.new("SpawnLocation")
-spawn.Name = "CursedCollisionSpawn"
-spawn.Size = Vector3.new(10, 1, 10)
-spawn.Position = Vector3.new(0, 3, 0)
-spawn.Anchored = true
-spawn.Neutral = true
-spawn.Material = Enum.Material.Neon
-spawn.Color = COLORS.PurpleBright
-spawn.Transparency = 0.35
-spawn.Parent = Workspace
+setMapStatus("Base ready")
+safeBuild("Lighting", configureLighting)
+safeBuild("World bounds", addWorldBounds)
+safeBuild("Road network", addRoadNetwork)
+safeBuild("Arena", addArena)
+safeBuild("Arena cover", addCentralCover)
+safeBuild("Buildings", addBuildings)
+safeBuild("Side alleys", addSideAlleys)
+safeBuild("Street life", addStreetLife)
+safeBuild("Training yard", addTrainingYard)
 
 local marker = makePart(
     map,
@@ -858,4 +892,5 @@ local banner = makePart(
 )
 banner:SetAttribute("VisualOnly", true)
 
+setMapStatus("Ready")
 print("[Cursed Collision] Urban battle map generated.")
