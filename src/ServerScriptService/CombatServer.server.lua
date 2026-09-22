@@ -12,11 +12,17 @@ local OneTimeAttackService = require(ReplicatedStorage.OneTimeAttacks.OneTimeAtt
 local QuestService = require(ReplicatedStorage.Economy.QuestService)
 local DataService = require(ReplicatedStorage.Economy.DataService)
 local EnvironmentService = require(script.Parent.EnvironmentService)
+local StateManager = require(script.Parent.CombatCore.StateManager)
+local CooldownService = require(script.Parent.CombatCore.CooldownService)
+local NetworkService = require(script.Parent.CombatCore.NetworkService)
+local AntiExploitService = require(script.Parent.CombatCore.AntiExploitService)
+local MovementController = require(script.Parent.CombatCore.MovementController)
+local DamageService = require(script.Parent.CombatCore.DamageService)
+local CombatController = require(script.Parent.CombatCore.CombatController)
 
 local remotes = RemoteService:Get()
 local states = {}
-local actionWindows = {}
-local cooldowns = {}
+local combatController = CombatController.new()
 
 local function now()
     return os.clock()
@@ -32,12 +38,8 @@ local function humanoidOf(player)
     return character and character:FindFirstChildOfClass("Humanoid")
 end
 
-local function setMovement(player, speed, jump)
-    local humanoid = humanoidOf(player)
-    if humanoid then
-        humanoid.WalkSpeed = speed
-        humanoid.JumpPower = jump
-    end
+local function setMovement(player, speed, jump, autoRotate)
+    MovementController:Set(player, speed, jump, autoRotate)
 end
 
 local function stunPlayer(player, duration)
@@ -96,109 +98,12 @@ function context.fx(kind, ...)
     remotes.CombatFX:FireAllClients(kind, ...)
 end
 
+function context.account(player, eventName, payload)
+    remotes.AccountEvent:FireClient(player, eventName, payload)
+end
+
 function context.damage(attacker, humanoid, amount, meta)
-    if not humanoid or humanoid.Health <= 0 or type(amount) ~= "number" or amount <= 0 then
-        return false
-    end
-
-    local targetCharacter = humanoid.Parent
-    local targetPlayer = targetCharacter and Players:GetPlayerFromCharacter(targetCharacter)
-    local isTrainingDummy = targetCharacter and targetCharacter:GetAttribute("TrainingDummy") == true
-
-    if not targetCharacter or (not targetPlayer and not isTrainingDummy) or targetPlayer == attacker then
-        return false
-    end
-
-    local targetState = targetPlayer and states[targetPlayer] or nil
-
-    if targetState then
-        if targetState.Dodging and targetState.DodgeUntil > now() then
-            remotes.ServerEvent:FireClient(attacker, "DodgeEvaded", targetPlayer.UserId)
-            return false
-        end
-
-        if targetState.Clash then
-            return false
-        end
-    end
-
-    local finalAmount
-    if targetState and targetState.PerfectBlockUntil and now() <= targetState.PerfectBlockUntil then
-        targetState.PerfectBlockUntil = 0
-        finalAmount = 0
-        stunPlayer(attacker, Config.Combat.Block.PerfectWindow + 0.2)
-        local root = targetCharacter:FindFirstChild("HumanoidRootPart")
-        if root then remotes.CombatFX:FireAllClients("PerfectBlock", root.Position) end
-    else
-        finalAmount = targetPlayer and (tonumber(CharacterService:IncomingDamage(targetPlayer, amount)) or amount) or amount
-        if targetState and targetState.Blocking then
-            finalAmount *= 1 - Config.Combat.Block.DamageReduction
-        end
-    end
-
-    if finalAmount <= 0 then
-        return false
-    end
-
-    humanoid:TakeDamage(finalAmount)
-
-    local reactionIntensity = math.clamp(finalAmount / 18, 0.55, 1.8)
-    remotes.CombatFX:FireAllClients(
-        "HitReaction",
-        targetCharacter,
-        reactionIntensity,
-        meta and meta.tag or "Hit"
-    )
-    remotes.CombatFX:FireAllClients(
-        "DamageNumber",
-        targetCharacter,
-        math.max(1, math.floor(finalAmount + 0.5)),
-        meta and meta.tag or "Hit"
-    )
-
-    addAwakening(attacker, Config.Awakening.GainDamageDealt)
-
-    if targetPlayer then
-        addAwakening(targetPlayer, Config.Awakening.GainDamageTaken)
-    end
-
-    local attackerCharacterId = attacker:GetAttribute("CharacterId")
-    QuestService:Record(attacker, "Damage", finalAmount, attackerCharacterId)
-
-    if humanoid.Health <= 0 and targetPlayer then
-        DataService:AddCredits(attacker, 5)
-        QuestService:Record(attacker, "Kill", 1, attackerCharacterId)
-        remotes.AccountEvent:FireClient(attacker, "Notice", {
-            Message = "+5 Credits • Kill",
-            Success = true
-        })
-    elseif humanoid.Health <= 0 and isTrainingDummy then
-        remotes.AccountEvent:FireClient(attacker, "Notice", {
-            Message = "Training Dummy • K.O.",
-            Success = true
-        })
-    end
-
-    if meta and meta.stun and targetPlayer then
-        stunPlayer(targetPlayer, meta.stun)
-    end
-
-    if meta and meta.knockback and meta.knockback > 0 then
-        local attackerRoot = rootOf(attacker)
-        local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
-        if attackerRoot and targetRoot and not targetRoot.Anchored then
-            local delta = targetRoot.Position - attackerRoot.Position
-            if delta.Magnitude > 0.01 then
-                targetRoot.AssemblyLinearVelocity = delta.Unit * meta.knockback + Vector3.new(0, 24, 0)
-            end
-        end
-    end
-
-    local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
-    if targetRoot then
-        remotes.CombatFX:FireAllClients("Hit", targetRoot.Position, meta and meta.tag or "Hit")
-    end
-    return true
+    return DamageService:Apply(attacker, humanoid, amount, meta)
 end
 
 function context.setBlackFlashWindow(player, duration)
@@ -211,32 +116,35 @@ end
 CharacterService:Configure(context)
 DomainService:Configure(context)
 DomainClashService:Configure(context)
+DamageService:Configure(context)
 
 local function setCooldown(player, action, duration)
-    cooldowns[player] = cooldowns[player] or {}
-    cooldowns[player][action] = now() + duration
+    CooldownService:Set(player, action, duration, now())
 end
 
 local function ready(player, action)
-    local tableForPlayer = cooldowns[player]
-    return not tableForPlayer or not tableForPlayer[action] or tableForPlayer[action] <= now()
+    return CooldownService:Ready(player, action, now())
 end
 
 local function allowAction(player)
-    local bucket = actionWindows[player]
-    local t = now()
-    if not bucket or t - bucket.start >= Config.AntiCheat.Window then
-        actionWindows[player] = {start=t, count=1}
-        return true
-    end
-    bucket.count += 1
-    return bucket.count <= Config.AntiCheat.MaxActions
+    return AntiExploitService:AllowAction(player, Config.AntiCheat.MaxActions, Config.AntiCheat.Window)
 end
 
 local function canCombat(player)
     local state = states[player]
     local humanoid = humanoidOf(player)
     return state and humanoid and humanoid.Health > 0 and state.StunnedUntil <= now() and not state.Clash and not state.Blocking
+end
+
+local function isAirborne(player)
+    local humanoid = humanoidOf(player)
+    if not humanoid then
+        return false
+    end
+    local current = humanoid:GetState()
+    return current == Enum.HumanoidStateType.Jumping
+        or current == Enum.HumanoidStateType.Freefall
+        or current == Enum.HumanoidStateType.FallingDown
 end
 
 local function m1(player)
@@ -274,15 +182,23 @@ local function m1(player)
     local target = HitboxService.NearestTargetInFront(player, Config.Combat.M1.Range, Config.Combat.M1.Width, Config.Combat.M1.Height)
     if not target then return false end
 
-    local damage = Config.Combat.M1.Damage[state.Combo]
+    local airborne = isAirborne(player)
+    local damageTable = airborne and Config.Combat.M1.AirDamage or Config.Combat.M1.Damage
+    local damage = damageTable[state.Combo]
     if player:GetAttribute("CharacterId") == "Yuji" then
         damage += state.Momentum or 0
     end
 
+    local finisher = state.Combo == 4
     local hit = context.damage(player, target.humanoid, damage, {
-        stun=Config.Combat.M1.Stun,
-        knockback=state.Combo == 4 and 32 or 10,
-        tag="M1"
+        stun = airborne and Config.Combat.M1.AirStun or Config.Combat.M1.Stun,
+        knockback = finisher and (airborne and 18 or 32) or 10,
+        lift = finisher and 7 or 3,
+        launch = finisher and not airborne,
+        launchPower = Config.Combat.M1.LauncherPower,
+        wallCheck = finisher,
+        reaction = airborne and "Air" or (finisher and "Launcher" or "Light"),
+        tag = airborne and "AirM1" or "M1"
     })
 
     if hit and state.Combo == 3 and player:GetAttribute("CharacterId") == "Yuji" then
@@ -324,50 +240,201 @@ local function heavy(player)
     end
     local target = HitboxService.NearestTargetInFront(player, Config.Combat.Heavy.Range, Config.Combat.Heavy.Width, Config.Combat.Heavy.Height)
     if not target then return false end
-    return context.damage(player, target.humanoid, Config.Combat.Heavy.Damage, {
-        stun=Config.Combat.Heavy.Stun,
-        knockback=Config.Combat.Heavy.Knockback,
-        tag="Heavy"
+
+    local airborne = isAirborne(player)
+    return context.damage(player, target.humanoid, airborne and Config.Combat.Heavy.AirDamage or Config.Combat.Heavy.Damage, {
+        stun = airborne and 0.42 or Config.Combat.Heavy.Stun,
+        knockback = airborne and Config.Combat.Heavy.AirKnockback or Config.Combat.Heavy.Knockback,
+        lift = airborne and 2 or 10,
+        launch = not airborne,
+        launchPower = Config.Combat.Heavy.LauncherPower,
+        wallCheck = true,
+        ragdoll = true,
+        reaction = airborne and "Slam" or "Heavy",
+        tag = airborne and "AirHeavy" or "Heavy"
     })
 end
 
-local function dash(player)
+local function dashVector(root, direction)
+    if direction == "Back" then
+        return -root.CFrame.LookVector
+    elseif direction == "Left" then
+        return -root.CFrame.RightVector
+    elseif direction == "Right" then
+        return root.CFrame.RightVector
+    end
+
+    local humanoid = root.Parent and root.Parent:FindFirstChildOfClass("Humanoid")
+    if humanoid and humanoid.MoveDirection.Magnitude > 0.1 then
+        return humanoid.MoveDirection.Unit
+    end
+
+    return root.CFrame.LookVector
+end
+
+local function dash(player, direction)
     local state = states[player]
     local root = rootOf(player)
     if not state or not root or not canCombat(player) or not ready(player, "Dash") then return false end
 
     setCooldown(player, "Dash", Config.Combat.Dash.Cooldown)
     QuestService:Record(player, "Dash", 1, player:GetAttribute("CharacterId"))
+
     state.Dodging = true
     state.DodgeUntil = now() + Config.Combat.Dash.Duration
-    root.AssemblyLinearVelocity = root.CFrame.LookVector * Config.Combat.Dash.Speed
+
+    direction = NetworkService:SanitizeDashDirection(direction)
+    local dashDir = dashVector(root, direction)
+    local speed = direction == "Back" and Config.Combat.Dash.BackSpeed
+        or (direction == "Forward" and Config.Combat.Dash.Speed or Config.Combat.Dash.SideSpeed)
+
+    root.AssemblyLinearVelocity = dashDir * speed + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+
     remotes.CombatFX:FireAllClients("Dash", root.Position, {
         character=player:GetAttribute("CharacterId"),
-        direction=root.CFrame.LookVector
+        direction=dashDir,
+        dashType=direction,
+        actor=player.Character
+    })
+
+    remotes.CombatFX:FireAllClients("CharacterMove", root.Position, {
+        character=player:GetAttribute("CharacterId"),
+        action="Dash",
+        move="Dash",
+        actor=player.Character,
     })
 
     task.delay(Config.Combat.Dash.Duration, function()
-        if state then state.Dodging = false end
+        if state then
+            state.Dodging = false
+        end
     end)
+
+    if direction == "Forward" then
+        local hitTarget = HitboxService.NearestTargetInFront(player, Config.Combat.Dash.AttackRange, Config.Combat.Dash.AttackWidth, Config.Combat.Dash.AttackHeight)
+        if hitTarget and ready(player, "DashAttack") then
+            setCooldown(player, "DashAttack", Config.Combat.Dash.Cooldown)
+            context.damage(player, hitTarget.humanoid, 8, {
+                stun=0.22,
+                knockback=24,
+                reaction="Light",
+                tag="DashStrike"
+            })
+        end
+    end
+
     return true
 end
 
 local function dodge(player)
     local state = states[player]
-    if not state or not canCombat(player) or not ready(player, "Dodge") then return false end
+    local root = rootOf(player)
+    if not state or not root or not canCombat(player) or not ready(player, "Dodge") then return false end
 
     setCooldown(player, "Dodge", Config.Combat.Dodge.Cooldown)
     QuestService:Record(player, "Dodge", 1, player:GetAttribute("CharacterId"))
     state.Dodging = true
     state.DodgeUntil = now() + Config.Combat.Dodge.IFrame
 
+    local humanoid = humanoidOf(player)
+    local move = humanoid and humanoid.MoveDirection or Vector3.zero
+    local direction = move.Magnitude > 0.1 and move.Unit or root.CFrame.LookVector
+    root.AssemblyLinearVelocity = direction * Config.Combat.Dodge.Speed + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+
+    remotes.CombatFX:FireAllClients("Dodge", root.Position, {
+        character=player:GetAttribute("CharacterId"),
+        direction=direction,
+        actor=player.Character
+    })
+
+    remotes.CombatFX:FireAllClients("CharacterMove", root.Position, {
+        character=player:GetAttribute("CharacterId"),
+        action="Dodge",
+        move="Dash",
+        actor=player.Character
+    })
+
     task.delay(Config.Combat.Dodge.IFrame, function()
-        if state then state.Dodging = false end
+        if state then
+            state.Dodging = false
+        end
     end)
+
     return true
 end
 
-local function grab(player)
+local function counter(player)
+    local state = states[player]
+    if not state or not canCombat(player) or not ready(player, "Counter") then return false end
+
+    setCooldown(player, "Counter", Config.Combat.Counter.Cooldown)
+    state.CounterUntil = now() + Config.Combat.Counter.Window
+    state.Phase = "Attack"
+
+    local root = rootOf(player)
+    if root then
+        remotes.CombatFX:FireAllClients("CharacterMove", root.Position, {
+            character=player:GetAttribute("CharacterId"),
+            action="Skill",
+            move="Counter",
+            actor=player.Character,
+            reaction="Counter"
+        })
+    end
+
+    task.delay(Config.Combat.Counter.Window, function()
+        if state and state.CounterUntil <= now() then
+            state.CounterUntil = 0
+        end
+    end)
+
+    return true
+end
+
+local function slam(player)
+    local state = states[player]
+    local root = rootOf(player)
+    if not state or not root or not isAirborne(player) or not ready(player, "Slam") then return false end
+
+    setCooldown(player, "Slam", Config.Combat.Air.SlamCooldown)
+    state.Phase = "Attack"
+    root.AssemblyLinearVelocity = Vector3.new(
+        root.AssemblyLinearVelocity.X,
+        -Config.Combat.Air.SlamSpeed,
+        root.AssemblyLinearVelocity.Z
+    )
+
+    local targets = HitboxService.AreaTargets(
+        player,
+        root.Position - Vector3.new(0, 2.5, 0),
+        Config.Combat.M1.SlamRadius,
+        6
+    )
+
+    for _, target in ipairs(targets) do
+        context.damage(player, target.humanoid, Config.Combat.M1.SlamDamage, {
+            stun=0.65,
+            knockback=12,
+            slam=true,
+            slamPower=74,
+            ragdoll=true,
+            ragdollDuration=0.65,
+            reaction="Slam",
+            tag="Slam"
+        })
+    end
+
+    remotes.CombatFX:FireAllClients("CharacterMove", root.Position, {
+        character=player:GetAttribute("CharacterId"),
+        action="Skill",
+        move="Slam",
+        actor=player.Character
+    })
+
+    return true
+end
+
+local function grab(player)(player)
     if not canCombat(player) or not ready(player, "Grab") then return false end
     setCooldown(player, "Grab", Config.Combat.Grab.Cooldown)
     QuestService:Record(player, "Grab", 1, player:GetAttribute("CharacterId"))
@@ -502,47 +569,67 @@ local function oneTime(player)
     return success
 end
 
-local function handle(player, action)
-    if type(action) ~= "string" or #action > 32 or not states[player] then return end
-    if not allowAction(player) then return end
+local function handle(player, action, payload)
+    if type(action) ~= "string" or #action > 32 or not states[player] then
+        return false
+    end
+
+    if not allowAction(player) then
+        return false
+    end
 
     if action == "M1" then
-        m1(player)
+        return m1(player)
     elseif action == "Heavy" then
-        heavy(player)
+        return heavy(player)
     elseif action == "Dash" then
-        dash(player)
+        return dash(player, payload)
     elseif action == "Dodge" then
-        dodge(player)
+        return dodge(player)
+    elseif action == "Counter" then
+        return counter(player)
+    elseif action == "Slam" then
+        return slam(player)
+    elseif action == "DashAttack" then
+        return dash(player, payload)
     elseif action == "Grab" then
-        grab(player)
+        return grab(player)
     elseif action == "BlockStart" then
-        setBlock(player, true)
+        return setBlock(player, true)
     elseif action == "BlockEnd" then
-        setBlock(player, false)
+        return setBlock(player, false)
     elseif action == "Special" or action == "Skill" or string.match(action, "^Skill[1-4]$") then
-        characterAction(player, action)
+        return characterAction(player, action)
     elseif action == "Awaken" then
-        awaken(player)
+        return awaken(player)
     elseif action == "Domain" then
-        domain(player)
+        return domain(player)
     elseif action == "OneTime" then
-        oneTime(player)
+        return oneTime(player)
     end
+
+    return false
 end
 
 remotes.CombatAction.OnServerEvent:Connect(function(player, action, payload)
-    if type(action) ~= "string" or #action > 32 or not states[player] then return end
-    if payload ~= nil and type(payload) ~= "number" and type(payload) ~= "string" and type(payload) ~= "boolean" then return end
+    if not NetworkService:IsKnownAction(action) or not states[player] then
+        AntiExploitService:Flag(player)
+        return
+    end
+
+    if not NetworkService:ValidatePayload(action, payload) then
+        AntiExploitService:Flag(player)
+        return
+    end
 
     if action == "ClashMove" then
-        if type(payload) == "number" and allowAction(player) then
+        if allowAction(player) then
             DomainClashService:Move(player, payload)
         end
         return
     end
 
-    handle(player, action)
+    handle(player, action, payload)
 end)
 
 remotes.Selection.OnServerEvent:Connect(function(player, characterId)
@@ -551,23 +638,9 @@ remotes.Selection.OnServerEvent:Connect(function(player, characterId)
 end)
 
 local function setupPlayer(player)
-    states[player] = {
-        Combo=0,
-        LastM1=0,
-        StunnedUntil=0,
-        Blocking=false,
-        Dodging=false,
-        DodgeUntil=0,
-        PerfectBlockUntil=0,
-        Awakening=false,
-        Clash=false,
-        Domain=false,
-        Momentum=0,
-        BlackFlashWindow=nil
-    }
-
-    actionWindows[player] = nil
-    cooldowns[player] = {}
+    local state = StateManager:Init(player)
+    states[player] = state
+    player:SetAttribute("CombatValidationWarnings", 0)
 
     CharacterService:Initialize(player)
     OneTimeAttackService:Initialize(player)
@@ -593,7 +666,8 @@ local function setupPlayer(player)
         state.Momentum=0
         state.BlackFlashWindow=nil
 
-        cooldowns[player] = {}
+        CooldownService:Clear(player)
+        StateManager:ResetCombat(player)
         player:SetAttribute("Awakening", 0)
         player:SetAttribute("AwakeningActive", false)
         player:SetAttribute("DomainActive", false)
@@ -614,9 +688,10 @@ Players.PlayerRemoving:Connect(function(player)
     DomainService:Stop(player)
     PerfectComboService:Reset(player)
     OneTimeAttackService:End(player)
+    CooldownService:Clear(player)
+    AntiExploitService:Clear(player)
+    StateManager:Clear(player)
     states[player]=nil
-    actionWindows[player]=nil
-    cooldowns[player]=nil
 end)
 
 for _, player in ipairs(Players:GetPlayers()) do
