@@ -1,28 +1,34 @@
 local Profiles = {
+    PotentialMan = {
+        Id="PotentialMan", Name="Potential Man", Subtitle="Shadow Potential",
+        SpecialCooldown=4.0, SkillCooldown=0.85,
+        Unique="Shadow Potential", Archetype="Close-range pressure / displacement",
+        OriginalSlot="Megumi"
+    },
     Yuji = {
         Id="Yuji", Name="Yuji Itadori", Subtitle="Black Flash Momentum",
-        SpecialCooldown=0.55, SkillCooldown=0.7, AwakeningName="Divergent Soul", Domain="YujiDomain", DomainRadius=34, DomainDuration=18,
-        Unique="Momentum", PerfectCombo={"Skill","Special","M1","M1"}, OneTimeName="Soul Impact"
+        SpecialCooldown=0.55, SkillCooldown=0.7, AwakeningName="Divergent Soul", Domain="YujiDomain",
+        DomainRadius=34, DomainDuration=18, Unique="Momentum", PerfectCombo={"Skill","Special","M1","M1"}, OneTimeName="Soul Impact"
     },
     Gojo = {
         Id="Gojo", Name="Satoru Gojo", Subtitle="Infinity Management",
-        SpecialCooldown=0.65, SkillCooldown=0.5, AwakeningName="Six Eyes Unleashed", Domain="UnlimitedVoid", DomainRadius=36, DomainDuration=18,
-        Unique="Infinity", PerfectCombo={"Skill","Special","M1","Special"}, OneTimeName="Hollow Purple: Maximum"
+        SpecialCooldown=0.65, SkillCooldown=0.5, AwakeningName="Six Eyes Unleashed", Domain="UnlimitedVoid",
+        DomainRadius=36, DomainDuration=18, Unique="Infinity", PerfectCombo={"Skill","Special","M1","Special"}, OneTimeName="Hollow Purple: Maximum"
     },
     Sukuna = {
         Id="Sukuna", Name="Ryomen Sukuna", Subtitle="Shrine / Slash Adaptation",
-        SpecialCooldown=0.58, SkillCooldown=0.65, AwakeningName="King of Curses", Domain="MalevolentShrine", DomainRadius=40, DomainDuration=18,
-        Unique="Slash Adaptation", PerfectCombo={"Special","Skill","Special","M1"}, OneTimeName="World Cutting Shrine"
+        SpecialCooldown=0.58, SkillCooldown=0.65, AwakeningName="King of Curses", Domain="MalevolentShrine",
+        DomainRadius=40, DomainDuration=18, Unique="Slash Adaptation", PerfectCombo={"Special","Skill","Special","M1"}, OneTimeName="World Cutting Shrine"
     },
     Megumi = {
         Id="Megumi", Name="Megumi Fushiguro", Subtitle="Ten Shadows / Shikigami Management",
-        SpecialCooldown=0.72, SkillCooldown=0.55, AwakeningName="Chimera Shadow", Domain="ChimeraShadowGarden", DomainRadius=34, DomainDuration=18,
-        Unique="Shikigami", PerfectCombo={"Skill","Special","Skill","M1"}, OneTimeName="Mahoraga Adaptation"
+        SpecialCooldown=0.72, SkillCooldown=0.55, AwakeningName="Chimera Shadow", Domain="ChimeraShadowGarden",
+        DomainRadius=34, DomainDuration=18, Unique="Shikigami", PerfectCombo={"Skill","Special","Skill","M1"}, OneTimeName="Mahoraga Adaptation"
     },
     Yuta = {
         Id="Yuta", Name="Yuta Okkotsu", Subtitle="Rika / Copy Slots",
-        SpecialCooldown=0.62, SkillCooldown=0.62, AwakeningName="Rika Unleashed", Domain="AuthenticLove", DomainRadius=35, DomainDuration=18,
-        Unique="Copy Slots", PerfectCombo={"Special","Skill","M1","Special"}, OneTimeName="Copy Barrage"
+        SpecialCooldown=0.62, SkillCooldown=0.62, AwakeningName="Rika Unleashed", Domain="AuthenticLove",
+        DomainRadius=35, DomainDuration=18, Unique="Copy Slots", PerfectCombo={"Special","Skill","M1","Special"}, OneTimeName="Copy Barrage"
     },
     Maki = {
         Id="Maki", Name="Maki Zenin", Subtitle="Heavenly Restriction / Cursed Tools",
@@ -36,8 +42,8 @@ local Profiles = {
     },
     Mahito = {
         Id="Mahito", Name="Mahito", Subtitle="Soul Integrity / Idle Transfiguration",
-        SpecialCooldown=0.68, SkillCooldown=0.65, AwakeningName="Instant Spirit Body", Domain="SelfEmbodiment", DomainRadius=32, DomainDuration=16,
-        Unique="Soul Integrity", PerfectCombo={"Skill","Special","M1","Skill"}, OneTimeName="Instant Spirit Collapse"
+        SpecialCooldown=0.68, SkillCooldown=0.65, AwakeningName="Instant Spirit Body", Domain="SelfEmbodiment",
+        DomainRadius=32, DomainDuration=16, Unique="Soul Integrity", PerfectCombo={"Skill","Special","M1","Skill"}, OneTimeName="Instant Spirit Collapse"
     },
     Todo = {
         Id="Todo", Name="Aoi Todo", Subtitle="Boogie Woogie",
@@ -46,8 +52,8 @@ local Profiles = {
     },
     Hakari = {
         Id="Hakari", Name="Kinji Hakari", Subtitle="Jackpot Probability",
-        SpecialCooldown=0.62, SkillCooldown=0.72, AwakeningName="Jackpot", Domain="IdleDeathGamble", DomainRadius=32, DomainDuration=22,
-        Unique="Jackpot", PerfectCombo={"Special","Skill","Special","M1"}, OneTimeName="Unlimited Jackpot"
+        SpecialCooldown=0.62, SkillCooldown=0.72, AwakeningName="Jackpot", Domain="IdleDeathGamble",
+        DomainRadius=32, DomainDuration=22, Unique="Jackpot", PerfectCombo={"Special","Skill","Special","M1"}, OneTimeName="Unlimited Jackpot"
     },
     Choso = {
         Id="Choso", Name="Choso", Subtitle="Blood Management",
@@ -66,18 +72,18 @@ local Profiles = {
     },
     Kenjaku = {
         Id="Kenjaku", Name="Kenjaku", Subtitle="Cursed Spirit Arsenal",
-        SpecialCooldown=0.7, SkillCooldown=0.65, AwakeningName="Technique Extraction", Domain="WombProfusion", DomainRadius=37, DomainDuration=18,
-        Unique="Technique Stock", PerfectCombo={"Skill","Special","M1","Skill"}, OneTimeName="Maximum Uzumaki"
+        SpecialCooldown=0.7, SkillCooldown=0.65, AwakeningName="Technique Extraction", Domain="WombProfusion",
+        DomainRadius=37, DomainDuration=18, Unique="Technique Stock", PerfectCombo={"Skill","Special","M1","Skill"}, OneTimeName="Maximum Uzumaki"
     },
     Jogo = {
         Id="Jogo", Name="Jogo", Subtitle="Volcanic Heat",
-        SpecialCooldown=0.57, SkillCooldown=0.6, AwakeningName="Volcanic Caldera", Domain="CoffinOfTheIronMountain", DomainRadius=34, DomainDuration=18,
-        Unique="Heat", PerfectCombo={"Special","Skill","M1","Special"}, OneTimeName="Meteor"
+        SpecialCooldown=0.57, SkillCooldown=0.6, AwakeningName="Volcanic Caldera", Domain="CoffinOfTheIronMountain",
+        DomainRadius=34, DomainDuration=18, Unique="Heat", PerfectCombo={"Special","Skill","M1","Special"}, OneTimeName="Meteor"
     },
     Dagon = {
         Id="Dagon", Name="Dagon", Subtitle="Oceanic Shikigami",
-        SpecialCooldown=0.65, SkillCooldown=0.62, AwakeningName="Horizon of Captivating Skandha", Domain="HorizonOfCaptivatingSkandha", DomainRadius=38, DomainDuration=18,
-        Unique="Tide", PerfectCombo={"Skill","Special","Skill","M1"}, OneTimeName="Death Swarm"
+        SpecialCooldown=0.65, SkillCooldown=0.62, AwakeningName="Horizon of Captivating Skandha", Domain="HorizonOfCaptivatingSkandha",
+        DomainRadius=38, DomainDuration=18, Unique="Tide", PerfectCombo={"Skill","Special","Skill","M1"}, OneTimeName="Death Swarm"
     },
     Hanami = {
         Id="Hanami", Name="Hanami", Subtitle="Roots / Disaster Plants",
@@ -86,8 +92,8 @@ local Profiles = {
     },
     Higuruma = {
         Id="Higuruma", Name="Hiromi Higuruma", Subtitle="Evidence / Deadly Sentencing",
-        SpecialCooldown=0.62, SkillCooldown=0.7, AwakeningName="Execution", Domain="DeadlySentencing", DomainRadius=30, DomainDuration=18,
-        Unique="Evidence", PerfectCombo={"Skill","Special","M1","Special"}, OneTimeName="Executioner Sword"
+        SpecialCooldown=0.62, SkillCooldown=0.7, AwakeningName="Execution", Domain="DeadlySentencing",
+        DomainRadius=30, DomainDuration=18, Unique="Evidence", PerfectCombo={"Skill","Special","M1","Special"}, OneTimeName="Executioner Sword"
     },
     Takaba = {
         Id="Takaba", Name="Fumihiko Takaba", Subtitle="Comedian Context",

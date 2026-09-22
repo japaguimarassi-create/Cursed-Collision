@@ -1,9 +1,12 @@
+--!strict
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
-local CustomMovesets = require(ReplicatedStorage.Characters.CustomMovesets)
+local CharacterMoves = require(ReplicatedStorage.Characters.CharacterMoves)
 
 local CharacterModules = {
+    PotentialMan = require(ReplicatedStorage.Characters.PotentialMan),
     Yuji = require(ReplicatedStorage.Characters.Yuji),
     Gojo = require(ReplicatedStorage.Characters.Gojo),
     Sukuna = require(ReplicatedStorage.Characters.Sukuna),
@@ -31,174 +34,127 @@ local CharacterModules = {
 }
 
 local CharacterService = {}
-local ctx
+local context: any = nil
 
-function CharacterService:Configure(context)
-    ctx = context
+function CharacterService:Configure(newContext: any)
+    context = newContext
 end
 
 function CharacterService:GetAvailable()
-    local result = {}
+    local result: {any} = {}
+
     for id, definition in pairs(Definitions) do
-        table.insert(result, {
-            Id = id,
-            Name = definition.Name,
-            Subtitle = definition.Subtitle,
-            Unique = definition.Unique,
-            Domain = definition.Domain,
-            Awakening = definition.AwakeningName
-        })
+        if CharacterModules[id] then
+            table.insert(result, {
+                Id = id,
+                Name = definition.Name,
+                Subtitle = definition.Subtitle,
+                Archetype = definition.Archetype,
+                SpecialName = CharacterMoves[id]
+                    and CharacterMoves[id].SpecialName
+                    or "Special"
+            })
+        end
     end
-    table.sort(result, function(a, b)
+
+    table.sort(result, function(a: any, b: any)
         return a.Id < b.Id
     end)
+
     return result
 end
 
-function CharacterService:GetId(player)
+function CharacterService:GetId(player: Player): string
     local id = player:GetAttribute("CharacterId")
-    return Definitions[id] and id or "Yuji"
+
+    if type(id) == "string"
+        and Definitions[id]
+        and CharacterModules[id] then
+        return id
+    end
+
+    return "PotentialMan"
 end
 
-function CharacterService:GetModule(player)
+function CharacterService:GetModule(player: Player)
     return CharacterModules[self:GetId(player)]
 end
 
-function CharacterService:GetCooldown(player, action)
-    local slot = tonumber(string.match(tostring(action), "^Skill(%d)$"))
-    if slot then
-        local move = CustomMovesets.GetMove(self:GetId(player), slot)
-        return move and move.Cooldown or 0.6
-    end
-
-    local module = self:GetModule(player)
-    if module and module.GetCooldown then
-        return module.GetCooldown(action)
-    end
-    return 0.6
-end
-
-function CharacterService:Initialize(player)
+function CharacterService:Initialize(player: Player): (boolean, string)
     local id = self:GetId(player)
-    local definition = Definitions[id] or Definitions.Yuji
-    local state = ctx.getState(player)
+    local definition = Definitions[id]
+    local module = CharacterModules[id]
 
-    state.CharacterId = definition.Id
-    state.Momentum = 0
-    state.BlackFlashWindow = nil
-    state.Infinity = false
-    state.InfinityBreakUntil = 0
-    state.LimitlessState = "Neutral"
-    state.SlashAdaptation = "Dismantle"
-    state.Clash = false
-    state.Domain = false
-
-    player:SetAttribute("CharacterId", definition.Id)
-    player:SetAttribute("CharacterName", definition.Name)
-    player:SetAttribute("CharacterTitle", definition.Subtitle)
-    player:SetAttribute("UniqueState", definition.Unique)
-    player:SetAttribute("AwakeningName", definition.AwakeningName)
-    player:SetAttribute("DomainName", definition.Domain or "None")
-    player:SetAttribute("Awakening", 0)
-    player:SetAttribute("AwakeningActive", false)
-    player:SetAttribute("DomainActive", false)
-    player:SetAttribute("InClash", false)
-    player:SetAttribute("ClashOpponent", nil)
-    player:SetAttribute("ClashOpening", false)
-    player:SetAttribute("Blocking", false)
-
-    local module = CharacterModules[definition.Id]
-    if module and module.Init then
-        module.Init(player, ctx)
-    end
-end
-
-function CharacterService:Select(player, id)
-    if not CharacterModules[id] or not Definitions[id] then
-        return false, "UnknownCharacter"
-    end
-
-    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    local state = ctx.getState(player)
-
-    if not state or state.Clash or state.Awakening or state.StunnedUntil > os.clock() then
-        return false, "Busy"
-    end
-
-    if player:GetAttribute("DomainActive") or player:GetAttribute("ClashOpening") then
-        return false, "Busy"
-    end
-
-    if humanoid and humanoid.Health > 0 and humanoid.Health < humanoid.MaxHealth then
-        return false, "InCombat"
+    if not definition or not module then
+        return false, "InvalidCharacter"
     end
 
     player:SetAttribute("CharacterId", id)
-    self:Initialize(player)
-    ctx.fx("CharacterSelected", ctx.rootPosition(player), id)
-    return true
+    player:SetAttribute("CharacterName", definition.Name)
+    player:SetAttribute("CharacterTitle", definition.Subtitle)
+    player:SetAttribute(
+        "SpecialName",
+        CharacterMoves[id] and CharacterMoves[id].SpecialName or "Special"
+    )
+
+    if module.Init then
+        module.Init(player, context)
+    end
+
+    return true, "Initialized"
 end
 
-function CharacterService:SkillSlot(player, slot)
+function CharacterService:Select(player: Player, id: string): (boolean, string)
+    if not Definitions[id] or not CharacterModules[id] then
+        return false, "UnknownCharacter"
+    end
+
+    if player:GetAttribute("CombatStunned") then
+        return false, "Busy"
+    end
+
+    player:SetAttribute("CharacterId", id)
+    return self:Initialize(player)
+end
+
+function CharacterService:GetSpecialCooldown(player: Player): number
+    local definition = Definitions[self:GetId(player)]
+
+    return math.clamp(
+        tonumber(definition and definition.SpecialCooldown) or 4,
+        0.25,
+        20
+    )
+end
+
+function CharacterService:GetSkillCooldown(player: Player, slot: number): number
     local module = self:GetModule(player)
-    slot = tonumber(slot)
-    if not module or not slot or slot < 1 or slot > 4 then
+
+    if not module or not module.GetCooldown then
+        return 1
+    end
+
+    return module.GetCooldown("Skill", slot)
+end
+
+function CharacterService:SkillSlot(player: Player, slot: number): boolean
+    local module = self:GetModule(player)
+
+    if not module or not module.SkillSlot then
         return false
     end
-    if slot == 1 and module.Special then
-        return module.Special(player, ctx)
-    elseif slot == 2 and module.Skill then
-        return module.Skill(player, ctx)
-    elseif module.SkillSlot then
-        return module.SkillSlot(player, ctx, slot)
-    end
-    return false
+
+    return module.SkillSlot(player, context, slot)
 end
 
-function CharacterService:Special(player, action)
+function CharacterService:Special(player: Player): boolean
     local module = self:GetModule(player)
-    if not module then
+
+    if not module or not module.Special then
         return false
     end
-    if action == "Special" and module.Special then
-        return module.Special(player, ctx)
-    elseif action == "Skill" and module.Skill then
-        return module.Skill(player, ctx)
-    end
-    return false
-end
 
-function CharacterService:Awaken(player)
-    local module = self:GetModule(player)
-    if module and module.Awaken then
-        module.Awaken(player, ctx)
-        return true
-    end
-    return false
-end
-
-function CharacterService:Domain(player)
-    local module = self:GetModule(player)
-    if module and module.Domain then
-        return module.Domain(player, ctx)
-    end
-    return false
-end
-
-function CharacterService:OneTime(player)
-    local module = self:GetModule(player)
-    if module and module.OneTime then
-        return module.OneTime(player, ctx)
-    end
-    return false
-end
-
-function CharacterService:IncomingDamage(player, amount)
-    local module = self:GetModule(player)
-    if module and module.OnIncomingDamage then
-        return module.OnIncomingDamage(player, ctx, amount)
-    end
-    return amount
+    return module.Special(player, context)
 end
 
 return CharacterService

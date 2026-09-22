@@ -4,54 +4,59 @@ local NetworkService = {}
 
 local ACTIONS = {
     M1 = true,
-    Heavy = true,
-    Grab = true,
     Dash = true,
-    DashAttack = true,
-    Dodge = true,
-    Counter = true,
-    Slam = true,
     BlockStart = true,
     BlockEnd = true,
     Special = true,
-    Skill = true,
-    Awaken = true,
-    Domain = true,
-    OneTime = true,
-    ClashMove = true,
+    Skill1 = true,
+    Skill2 = true,
+    Skill3 = true,
+    Skill4 = true,
+    SelectCharacter = true
 }
 
 function NetworkService:IsKnownAction(action: any): boolean
-    if type(action) ~= "string" or #action > 32 then
-        return false
-    end
-    if ACTIONS[action] then
-        return true
-    end
-    return string.match(action, "^Skill[1-4]$") ~= nil
+    return type(action) == "string"
+        and #action <= 40
+        and ACTIONS[action] == true
 end
 
 function NetworkService:ValidatePayload(action: string, payload: any): boolean
-    if payload == nil then
-        return true
+    if action == "M1"
+        or action == "BlockStart"
+        or action == "BlockEnd"
+        or action == "Special"
+        or action == "Skill1"
+        or action == "Skill2"
+        or action == "Skill3"
+        or action == "Skill4" then
+        return payload == nil
     end
 
-    if action == "ClashMove" then
-        return type(payload) == "number" and payload >= 1 and payload <= 4 and payload % 1 == 0
-    end
-
-    if action == "Dash" or action == "DashAttack" then
+    if action == "Dash" then
         return type(payload) == "string"
-            and (payload == "Forward" or payload == "Back" or payload == "Left" or payload == "Right")
+            and (
+                payload == "Forward"
+                or payload == "Back"
+                or payload == "Left"
+                or payload == "Right"
+            )
     end
 
-    return type(payload) == "string" or type(payload) == "number" or type(payload) == "boolean"
+    if action == "SelectCharacter" then
+        return type(payload) == "string" and #payload <= 32
+    end
+
+    return false
 end
 
 function NetworkService:SanitizeDashDirection(payload: any): string
-    if payload == "Back" or payload == "Left" or payload == "Right" then
+    if payload == "Back"
+        or payload == "Left"
+        or payload == "Right" then
         return payload
     end
+
     return "Forward"
 end
 

@@ -1,4 +1,5 @@
 local Moves = {
+    PotentialMan = {SpecialName="Shadow Potential", SkillName="Shadow Jab"},
     Yuji = {SpecialName="Divergent Fist", SkillName="Black Flash"},
     Gojo = {SpecialName="Lapse Blue", SkillName="Limitless Shift"},
     Sukuna = {SpecialName="Cursed Slash", SkillName="Shrine Stance"},
