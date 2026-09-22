@@ -65,11 +65,6 @@ function QuestService:Initialize(player)
         DataService:MarkDirty(player)
     end
 
-    if data.LastLoginRewardStamp ~= today then
-        data.LastLoginRewardStamp = today
-        DataService:AddCredits(player, 250)
-        DataService:MarkDirty(player)
-    end
 end
 
 function QuestService:GetActive()
