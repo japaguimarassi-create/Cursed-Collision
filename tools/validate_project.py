@@ -63,6 +63,8 @@ REQUIRED_FILES = [
     "ServerScriptService/CombatCore/AntiExploitService.lua",
     "ServerScriptService/CombatCore/MovementController.lua",
     "ServerScriptService/CombatCore/DamageService.lua",
+    "ServerScriptService/CombatCore/RagdollService.lua",
+    "ServerScriptService/CombatCore/DestructionService.lua",
     "ServerScriptService/CombatCore/CombatController.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/CameraController.lua",
@@ -230,7 +232,7 @@ def main() -> int:
             and '"DummyCollar"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
         ),
         "environment_destruction": (
-            "EnvironmentService:Impact" in read(SRC / "ServerScriptService/CombatServer.server.lua")
+            "DestructionService:Impact" in read(SRC / "ServerScriptService/CombatServer.server.lua")
             and '"EnvironmentBreak"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
             and "GetPartBoundsInRadius" in read(SRC / "ServerScriptService/EnvironmentService.lua")
         ),
@@ -244,6 +246,36 @@ def main() -> int:
             and "GetHumanoidDescriptionFromUserIdAsync" in read(SRC / "ServerScriptService/DummyAppearanceService.lua")
             and "HumanoidRigType.R15" in read(SRC / "ServerScriptService/DummyAppearanceService.lua")
             and "RealRobloxAvatar" in read(SRC / "ServerScriptService/DummyAppearanceService.lua")
+        ),
+        "modular_server_combat": all(
+            token in read(SRC / "ServerScriptService/CombatServer.server.lua")
+            for token in ("StateManager", "CooldownService", "NetworkService", "DamageService", "CombatController")
+        ),
+        "advanced_reactions": all(
+            token in read(SRC / "ServerScriptService/CombatCore/DamageService.lua")
+            for token in ("PerfectBlockUntil", "CounterUntil", "WallImpact", "RagdollService:Apply")
+        ),
+        "advanced_actions": all(
+            token in read(SRC / "ServerScriptService/CombatServer.server.lua")
+            for token in ("Counter", "Slam", "DashAttack", "isAirborne", "dashVector")
+        ),
+        "modular_client_combat": all(
+            token in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
+            for token in ("AnimationController", "CameraController", "InputController", "AbilityController", "SFXController")
+        ),
+        "controller_modules": all(
+            (SRC / "StarterPlayer/StarterPlayerScripts/Controllers" / filename).is_file()
+            for filename in (
+                "AnimationController.lua",
+                "CameraController.lua",
+                "VFXController.lua",
+                "SFXController.lua",
+                "UIController.lua",
+                "InputController.lua",
+                "CharacterController.lua",
+                "MovementController.lua",
+                "AbilityController.lua",
+            )
         ),
         "modular_server_combat": all(
             token in read(SRC / "ServerScriptService/CombatServer.server.lua")
