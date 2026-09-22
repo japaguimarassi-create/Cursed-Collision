@@ -187,17 +187,17 @@ def main() -> int:
         "modern_hud": "TechniqueBar" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HealthCard" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
         "skill_animation": "CombatAnimationService.Play" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HitReaction" in read(SRC / "ServerScriptService/CombatServer.server.lua"),
         "skill_damage_reaction": "hit(ctx, player" in read(SRC / "ReplicatedStorage/Characters/CharacterFactory.lua") and "floatingDamage" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
-        "custom_movesets": all(
-            movesets.count("Name=") >= 96,
-            "GetMove" in movesets,
-            "SkillSlot" in service,
-            'string.match(tostring(action), "^Skill(%d)$")' in read(SRC / "ServerScriptService/CombatServer.server.lua"),
+        "custom_movesets": (
+            movesets.count("Name=") >= 96
+            and "GetMove" in movesets
+            and "SkillSlot" in service
+            and 'string.match(tostring(action), "^Skill(%d)$")' in read(SRC / "ServerScriptService/CombatServer.server.lua")
         ),
-        "battleground_hud": all(
-            '"TechniqueBar"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
-            '"Skill1"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
-            '"Skill4"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
-            '"AwakeningAction"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+        "battleground_hud": (
+            '"TechniqueBar"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
+            and '"Skill1"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
+            and '"Skill4"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
+            and '"AwakeningAction"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
         ),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
