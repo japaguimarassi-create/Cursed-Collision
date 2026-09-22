@@ -92,7 +92,8 @@ function HitboxService.FindTargets(
 ): {Target}
     local overlap = OverlapParams.new()
     overlap.FilterType = Enum.RaycastFilterType.Exclude
-    overlap.FilterDescendantsInstances = {attacker.Character}
+    local character = attacker.Character
+    overlap.FilterDescendantsInstances = if character then {character} else {}
     overlap.MaxParts = MAX_BOX_PARTS
 
     local parts = workspace:GetPartBoundsInBox(boxCFrame, boxSize, overlap)
@@ -157,7 +158,8 @@ function HitboxService.AreaTargets(
 
     local overlap = OverlapParams.new()
     overlap.FilterType = Enum.RaycastFilterType.Exclude
-    overlap.FilterDescendantsInstances = {attacker.Character}
+    local character = attacker.Character
+    overlap.FilterDescendantsInstances = if character then {character} else {}
     overlap.MaxParts = MAX_RADIUS_PARTS
 
     local parts = workspace:GetPartBoundsInRadius(position, radius, overlap)
