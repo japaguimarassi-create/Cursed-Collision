@@ -103,6 +103,7 @@ local function closeOwner()
             ownerPanel.Visible = false
         end
     end
+    player:SetAttribute("CCHUD_OwnerPanelOpen", false)
 end
 
 local menuButton = button(gui, "MenuButton", "MENU", UDim2.fromScale(0.105, 0.06), UDim2.fromScale(0.875, 0.022))
