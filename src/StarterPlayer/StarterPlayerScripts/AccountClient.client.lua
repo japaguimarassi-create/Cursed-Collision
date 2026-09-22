@@ -131,7 +131,7 @@ local panelScale = Instance.new("UIScale")
 panelScale.Scale = 0.96
 panelScale.Parent = panel
 
-local header = label(panel, "Cursed Collision", UDim2.fromScale(0.48, 0.075), UDim2.fromScale(0.035, 0.025), Enum.Font.GothamBlack, 20)
+local _header = label(panel, "Cursed Collision", UDim2.fromScale(0.48, 0.075), UDim2.fromScale(0.035, 0.025), Enum.Font.GothamBlack, 20)
 local subheader = label(panel, "PROFILE • SHOP • MISSIONS", UDim2.fromScale(0.52, 0.05), UDim2.fromScale(0.035, 0.092), Enum.Font.Gotham, 9)
 subheader.TextColor3 = muted
 
@@ -198,7 +198,7 @@ local function itemButton(parent: Instance, item, owned: boolean, equipped: bool
     local b = button(parent, item.Id, "", UDim2.new(1, -8, 0, 58), UDim2.new())
     b.LayoutOrder = tonumber(item.Id:match("%d+")) or 0
 
-    local name = label(b, item.Name, UDim2.new(0.64, 0, 0.56, 0), UDim2.fromScale(0.025, 0.04), Enum.Font.GothamBold, 13)
+    local _name = label(b, item.Name, UDim2.new(0.64, 0, 0.56, 0), UDim2.fromScale(0.025, 0.04), Enum.Font.GothamBold, 13)
     local rarity = label(b, item.Rarity or "ITEM", UDim2.new(0.42, 0, 0.30, 0), UDim2.fromScale(0.025, 0.58), Enum.Font.Gotham, 9)
     rarity.TextColor3 = muted
 
