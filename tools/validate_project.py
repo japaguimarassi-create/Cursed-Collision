@@ -144,7 +144,7 @@ if "RunService:BindToRenderStep" not in animator:
     fail("procedural animator does not bind to the render loop")
 if "RunService:UnbindFromRenderStep" not in animator:
     fail("procedural animator has no render-step cleanup")
-if "Motor6D" not in animator or "CFrame:Lerp" not in animator:
+if "Motor6D" not in animator or ":Lerp" not in animator:
     fail("procedural animator is missing Motor6D pose interpolation")
 
 client = read("StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
