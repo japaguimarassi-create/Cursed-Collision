@@ -25,25 +25,7 @@ local function getOwner(model: Model): Player?
     return Players:GetPlayerFromCharacter(model)
 end
 
-function HitboxService:TargetsInBox(
-    attacker: Player,
-    boxCFrame: CFrame,
-    boxSize: Vector3,
-    maxParts: number?
-): {Target}
-    local exclude: {Instance} = {}
-
-    if attacker.Character then
-        table.insert(exclude, attacker.Character)
-    end
-
-    local overlap = OverlapParams.new()
-    overlap.FilterType = Enum.RaycastFilterType.Exclude
-    overlap.FilterDescendantsInstances = exclude
-    overlap.MaxParts = math.max(1, math.floor(maxParts or 64))
-    overlap.RespectCanCollide = false
-
-    local parts = workspace:GetPartBoundsInBox(boxCFrame, boxSize, overlap)
+local function collect(attacker: Player, parts: {BasePart}, origin: Vector3): {Target}
     local targets: {Target} = {}
     local seen: {[Model]: boolean} = {}
 
@@ -62,7 +44,7 @@ function HitboxService:TargetsInBox(
                     model = model,
                     humanoid = humanoid,
                     root = root,
-                    distance = (root.Position - boxCFrame.Position).Magnitude
+                    distance = (root.Position - origin).Magnitude
                 })
             end
         end
@@ -73,6 +55,64 @@ function HitboxService:TargetsInBox(
     end)
 
     return targets
+end
+
+function HitboxService:TargetsInBox(
+    attacker: Player,
+    boxCFrame: CFrame,
+    boxSize: Vector3,
+    maxParts: number?
+): {Target}
+    local exclude: {Instance} = {}
+
+    if attacker.Character then
+        table.insert(exclude, attacker.Character)
+    end
+
+    local overlap = OverlapParams.new()
+    overlap.FilterType = Enum.RaycastFilterType.Exclude
+    overlap.FilterDescendantsInstances = exclude
+    overlap.MaxParts = math.max(1, math.floor(maxParts or 64))
+    overlap.RespectCanCollide = false
+
+    return collect(
+        attacker,
+        workspace:GetPartBoundsInBox(
+            boxCFrame,
+            boxSize,
+            overlap
+        ),
+        boxCFrame.Position
+    )
+end
+
+function HitboxService:TargetsInRadius(
+    attacker: Player,
+    radius: number
+): {Target}
+    local character = attacker.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+
+    if not root or not root:IsA("BasePart") then
+        return {}
+    end
+
+    local exclude: {Instance} = {character}
+    local overlap = OverlapParams.new()
+    overlap.FilterType = Enum.RaycastFilterType.Exclude
+    overlap.FilterDescendantsInstances = exclude
+    overlap.MaxParts = 96
+    overlap.RespectCanCollide = false
+
+    return collect(
+        attacker,
+        workspace:GetPartBoundsInRadius(
+            root.Position,
+            math.clamp(radius, 1, 64),
+            overlap
+        ),
+        root.Position
+    )
 end
 
 function HitboxService:NearestTargetInFront(
