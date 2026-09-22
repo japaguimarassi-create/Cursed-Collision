@@ -42,6 +42,7 @@ REQUIRED_FILES = [
     "ReplicatedStorage/Shared/Config.lua",
     "ReplicatedStorage/Shared/RemoteService.lua",
     "ServerScriptService/CombatServer.server.lua",
+    "ServerScriptService/EnvironmentService.lua",
     "ServerScriptService/WorldBuilder.server.lua",
     "ReplicatedStorage/Economy/DataService.lua",
     "ReplicatedStorage/Economy/ShopDefinitions.lua",
@@ -210,6 +211,11 @@ def main() -> int:
             and '"DummyCoat"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
             and '"DummyCollar"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
         ),
+        "environment_destruction": (
+            "EnvironmentService:Impact" in read(SRC / "ServerScriptService/CombatServer.server.lua")
+            and '"EnvironmentBreak"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
+            and "GetPartBoundsInRadius" in read(SRC / "ServerScriptService/EnvironmentService.lua")
+        ),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
     if missing_runtime:
@@ -231,6 +237,7 @@ def main() -> int:
     print("PASS: skill animation, damage, and hit-reaction integration detected")
     print("PASS: 24 four-slot custom movesets and battleground HUD detected")
     print("PASS: urban landmarks, vertical combat space, and skinned training dummy detected")
+    print("PASS: controlled environment destruction and impact feedback detected")
     print("NOT VERIFIED: Roblox Studio gameplay, replication under live physics, animation/assets, exploit testing, and publishing")
     return 0
 
