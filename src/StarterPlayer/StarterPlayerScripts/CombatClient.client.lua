@@ -262,7 +262,7 @@ end
 local _specialButton, specialHint, specialMove, specialKey = techniqueButton("SPECIAL", "1", "Special", 1)
 local _skillButton, skillHint, skillMove, skillKey = techniqueButton("SKILL", "2", "Skill", 2)
 local _awakenButton, awakenHint, awakenMove, awakenKey = techniqueButton("AWAKEN", "3", "Awaken", 3)
-local _domainButton, domainHint, domainMove, domainKey = techniqueButton("DOMAIN", "4", "Domain", 4)
+local domainButton, domainHint, domainMove, domainKey = techniqueButton("DOMAIN", "4", "Domain", 4)
 
 local oneTime = button(gui, "OneTime", "OT  READY", UDim2.fromScale(0.105, 0.055), UDim2.fromScale(0.155, 0.866), Color3.fromRGB(244, 96, 140))
 oneTime.TextSize = 11
