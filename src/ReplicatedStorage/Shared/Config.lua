@@ -36,6 +36,29 @@ local Config = {
         WalkSpeed = 16,
         JumpPower = 50
     },
+    PerfectCombo = {
+        StepWindow = 1.15
+    },
+    Clash = {
+        DecisionWindow = 1.8,
+        Moves = {
+            [1] = "Crush",
+            [2] = "Counter",
+            [3] = "Feint",
+            [4] = "Break"
+        },
+        Beats = {
+            [1] = 2,
+            [2] = 3,
+            [3] = 4,
+            [4] = 1
+        },
+        PressurePerSpecial = 12,
+        PressureToConvertNeutral = 20,
+        RecoilStun = 0.2,
+        OpeningStun = 1.05,
+        TimeoutReset = 0.15
+    },
     AntiCheat = {
         Window = 1,
         MaxActions = 18,

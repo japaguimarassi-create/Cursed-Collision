@@ -197,7 +197,7 @@ function ProceduralAnimator:Bind(character: Model)
 end
 
 function ProceduralAnimator:Play(character: Model, action: string, payload: any)
-    local data = active[character]
+    local data = active[character] :: any
 
     if not data then
         self:Bind(character)

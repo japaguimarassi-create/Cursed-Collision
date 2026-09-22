@@ -107,7 +107,7 @@ fighter.Parent = root
 corner(fighter, 14)
 stroke(fighter, 0.48)
 
-local nameLabel = label(
+local _nameLabel = label(
     fighter,
     "Potential Man",
     UDim2.fromScale(0.80, 0.44),
