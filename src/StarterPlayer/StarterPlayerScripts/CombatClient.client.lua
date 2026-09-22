@@ -15,7 +15,7 @@ local definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local movesets = require(ReplicatedStorage.Characters.CustomMovesets)
 local Config = require(ReplicatedStorage.Shared.Config)
 local CombatVFX = require(ReplicatedStorage.Combat.CombatVFX)
-local CombatSFX = require(ReplicatedStorage.Combat.CombatSFX)
+local SFXController = require(script.Parent.Controllers.SFXController)
 local controllers = script.Parent:WaitForChild("Controllers")
 local AnimationController = require(controllers.AnimationController)
 local CameraController = require(controllers.CameraController)
@@ -916,7 +916,7 @@ combatFX.OnClientEvent:Connect(function(kind, position, payload, extra)
         return
     elseif kind == "Dash" or kind == "MeleeSwing" or kind == "Heavy" or kind == "Grab" or kind == "Block" or kind == "Dodge" or kind == "EnvironmentBreak" then
         CombatVFX.Utility(kind, position, payload)
-        CombatSFX.Universal(kind, position)
+        SFXController:Universal(kind, position)
         if kind == "Dash" or kind == "Dodge" then
             CameraController:Dash()
         elseif kind == "Heavy" then
