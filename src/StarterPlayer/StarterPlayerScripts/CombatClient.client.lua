@@ -244,8 +244,7 @@ local dodge = button(actionFrame, "Dodge", "DODGE", UDim2.fromScale(0.24, 0.15),
 dodge.TextSize = 10
 dodge.Activated:Connect(function() combatAction:FireServer("Dodge") end)
 
-local oneTime = button(actionFrame, "OneTime", "ONE
-TIME", UDim2.fromScale(0.22, 0.17), UDim2.fromScale(0.39, 0.80), Color3.fromRGB(244, 96, 140))
+local oneTime = button(actionFrame, "OneTime", "ONE TIME", UDim2.fromScale(0.22, 0.17), UDim2.fromScale(0.39, 0.80), Color3.fromRGB(244, 96, 140))
 oneTime.TextSize = 10
 oneTime.Activated:Connect(function() combatAction:FireServer("OneTime") end)
 
