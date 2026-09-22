@@ -396,7 +396,9 @@ function Factory.Build(id)
             set(ctx, player, "LimitlessState", state.LimitlessState)
             set(ctx, player, "Infinity", state.Infinity)
             ctx.fx("GojoState", root(ctx, player), state.LimitlessState, state.Infinity)
-            return true
+            local target = front(ctx, player, 12, 8, 7)
+            local damage = state.LimitlessState == "Purple" and 20 or state.LimitlessState == "Red" and 16 or 12
+            return hit(ctx, player, target, damage, "GojoShift", 0.38, state.LimitlessState == "Red" and 48 or 30)
         elseif id == "Sukuna" then
             local nextMode = {Dismantle="Cleave", Cleave="Fire", Fire="Dismantle"}
             state.SlashAdaptation = nextMode[state.SlashAdaptation] or "Dismantle"
@@ -404,27 +406,29 @@ function Factory.Build(id)
             if state.SlashAdaptation == "Fire" then
                 return pulse(ctx, player, 11, 20, "FireArrow", 0.58, 66)
             end
-            return true
+            return hit(ctx, player, front(ctx, player, 12, 7, 7), 13, "ShrineStance", 0.4, 32)
         elseif id == "Megumi" then
             local modes = {"Divine Dogs","Nue","Toad","Rabbit Escape","Max Elephant","Mahoraga"}
             local current = table.find(modes, state.ShikigamiMode) or 1
             current = current % #modes + 1
             state.ShikigamiMode = modes[current]
             set(ctx, player, "Shikigami", state.ShikigamiMode)
-            return true
+            local damage = state.ShikigamiMode == "Mahoraga" and 22 or state.ShikigamiMode == "Nue" and 14 or state.ShikigamiMode == "Max Elephant" and 18 or 10
+            return pulse(ctx, player, state.ShikigamiMode == "Rabbit Escape" and 10 or 9, damage, "TenShadowsSetup", 0.38, 34)
         elseif id == "Yuta" then
             state.CopySlot = state.CopySlot % 3 + 1
             state.RikaActive = not state.RikaActive
             set(ctx, player, "CopySlot", state.CopySlot)
             set(ctx, player, "RikaActive", state.RikaActive)
-            return true
+            return hit(ctx, player, front(ctx, player, 10, 7, 7), state.RikaActive and 15 or 11, "CopyStrike", 0.42, 38)
         elseif id == "Maki" or id == "Toji" then
             local modes = id == "Maki" and {"Katana","Spear","Naginata"} or {"Katana","Chain","Spear"}
             local current = table.find(modes, state.WeaponMode) or 1
             current = current % #modes + 1
             state.WeaponMode = modes[current]
             set(ctx, player, "WeaponMode", state.WeaponMode)
-            return true
+            local damage = state.WeaponMode == "Spear" and 15 or state.WeaponMode == "Chain" and 12 or 10
+            return hit(ctx, player, front(ctx, player, id == "Toji" and 11 or 9, 7, 7), damage, "ArsenalStrike", 0.4, 42)
         elseif id == "Mahito" then
             state.SoulIntegrity = math.max(0, (state.SoulIntegrity or 100) - 12)
             set(ctx, player, "SoulIntegrity", state.SoulIntegrity)
@@ -438,7 +442,7 @@ function Factory.Build(id)
             state.SwapReady = not state.SwapReady
             set(ctx, player, "SwapReady", state.SwapReady)
             ctx.fx("TodoClap", root(ctx, player), state.SwapReady)
-            return true
+            return pulse(ctx, player, 8, 9, "TodoClapShock", 0.35, 28)
         elseif id == "Hakari" then
             state.JackpotRoll = math.random(1,100)
             set(ctx, player, "JackpotRoll", state.JackpotRoll)
@@ -447,7 +451,7 @@ function Factory.Build(id)
                 state.JackpotUntil = os.clock() + 14
                 set(ctx, player, "Jackpot", true)
             end
-            return true
+            return hit(ctx, player, front(ctx, player, 9, 7, 7), state.Jackpot and 18 or 10, "JackpotRoll", 0.38, 34)
         elseif id == "Choso" then
             state.Blood = math.clamp((state.Blood or 0) + 24, 0, 100)
             set(ctx, player, "Blood", state.Blood)
@@ -465,7 +469,8 @@ function Factory.Build(id)
             end
             state.FrameWindowUntil = t + 0.7
             set(ctx, player, "FrameSequence", state.FrameSequence)
-            return true
+            local damage = 9 + state.FrameSequence * 0.35
+            return hit(ctx, player, front(ctx, player, 12, 7, 7), damage, "FrameStep", 0.32, 38)
         elseif id == "Kenjaku" then
             state.TechniqueStock = math.min(5, (state.TechniqueStock or 0) + 1)
             set(ctx, player, "TechniqueStock", state.TechniqueStock)
@@ -489,7 +494,7 @@ function Factory.Build(id)
                 state.Confiscated = true
                 set(ctx, player, "Confiscated", true)
             end
-            return true
+            return hit(ctx, player, front(ctx, player, 9, 7, 7), 12 + state.Evidence * 0.03, "EvidenceGavel", 0.42, 30)
         elseif id == "Takaba" then
             state.ComedyContext = math.min(100, (state.ComedyContext or 0) + 35)
             set(ctx, player, "ComedyContext", state.ComedyContext)
@@ -505,15 +510,15 @@ function Factory.Build(id)
         elseif id == "Ryu" then
             state.OutputCharge = math.min(100, (state.OutputCharge or 0) + 35)
             set(ctx, player, "OutputCharge", state.OutputCharge)
-            return true
+            return hit(ctx, player, front(ctx, player, 18, 6, 7), 10 + state.OutputCharge * 0.05, "OutputCharge", 0.35, 46)
         elseif id == "Uro" then
             state.SkyDistortion = math.min(100, (state.SkyDistortion or 0) + 30)
             set(ctx, player, "SkyDistortion", state.SkyDistortion)
-            return true
+            return hit(ctx, player, front(ctx, player, 14, 8, 8), 11 + state.SkyDistortion * 0.05, "SkyDistortion", 0.38, 42)
         elseif id == "Kusakabe" then
             state.SimpleDomain = not state.SimpleDomain
             set(ctx, player, "SimpleDomain", state.SimpleDomain)
-            return true
+            return hit(ctx, player, front(ctx, player, 9, 7, 7), state.SimpleDomain and 15 or 10, "SimpleDomainSlash", 0.38, 38)
         end
 
         return false
