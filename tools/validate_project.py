@@ -184,7 +184,7 @@ def main() -> int:
         "training_dummy_hitbox": "TrainingDummy" in read(SRC / "ReplicatedStorage/Combat/HitboxService.lua"),
         "modern_hud": "TechniqueBar" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HealthCard" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
         "skill_animation": "CombatAnimationService.Play" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HitReaction" in read(SRC / "ServerScriptService/CombatServer.server.lua"),
-        "skill_damage_reaction": "context.damage(player" in read(SRC / "ReplicatedStorage/Characters/CharacterFactory.lua") and "floatingDamage" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+        "skill_damage_reaction": "hit(ctx, player" in read(SRC / "ReplicatedStorage/Characters/CharacterFactory.lua") and "floatingDamage" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
     if missing_runtime:
