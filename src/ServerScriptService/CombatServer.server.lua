@@ -60,6 +60,64 @@ local function canCombat(player)
     return state and humanoid and humanoid.Health > 0 and state.StunnedUntil <= now() and not state.Clash and not state.Blocking
 end
 
+local context = {}
+
+function context.getState(player)
+    return states[player]
+end
+
+function context.setAttribute(player, name, value)
+    player:SetAttribute(name, value)
+    local state = states[player]
+    if state then
+        state[name] = value
+    end
+end
+
+context.hitbox = HitboxService
+context.domain = DomainService
+
+context.environmentImpact = function(origin, radius, power)
+    local changed = DestructionService:Impact(origin, radius, power)
+    if changed > 0 then
+        remotes.CombatFX:FireAllClients("EnvironmentBreak", origin, {
+            radius = radius,
+            count = changed,
+            power = power,
+        })
+    end
+    return changed
+end
+
+function context.rootPosition(player)
+    local root = rootOf(player)
+    return root and root.Position or Vector3.zero
+end
+
+function context.fx(kind, ...)
+    remotes.CombatFX:FireAllClients(kind, ...)
+end
+
+function context.account(player, eventName, payload)
+    remotes.AccountEvent:FireClient(player, eventName, payload)
+end
+
+function context.damage(attacker, humanoid, amount, meta)
+    return DamageService:Apply(attacker, humanoid, amount, meta)
+end
+
+function context.setBlackFlashWindow(player, duration)
+    local state = states[player]
+    if state then
+        state.BlackFlashWindow = now() + duration
+    end
+end
+
+CharacterService:Configure(context)
+DomainService:Configure(context)
+DomainClashService:Configure(context)
+DamageService:Configure(context)
+
 local function isAirborne(player)
     local humanoid = humanoidOf(player)
     if not humanoid then
@@ -447,7 +505,12 @@ local function domain(player)
     setCooldown(player, "Domain", Config.Domain.Cooldown)
     local started = DomainClashService:TryStart(player)
     QuestService:Record(player, "Domain", 1, player:GetAttribute("CharacterId"))
-    remotes.CombatFX:FireAllClients(started and "DomainClashStart" or "DomainStart", context.rootPosition(player), player:GetAttribute("CharacterId"))
+    remotes.CombatFX:FireAllClients(started and "DomainClashStart" or "DomainStart", context.rootPosition(player), {
+        character = player:GetAttribute("CharacterId"),
+        actor = player.Character,
+        action = "Domain",
+        move = "Domain Expansion"
+    })
     return true
 end
 
