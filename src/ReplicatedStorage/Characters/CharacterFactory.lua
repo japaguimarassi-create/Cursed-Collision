@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Profiles = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local Moves = require(ReplicatedStorage.Characters.CharacterMoves)
+local CustomMovesets = require(ReplicatedStorage.Characters.CustomMovesets)
 
 local Factory = {}
 
@@ -519,6 +520,81 @@ function Factory.Build(id)
             state.SimpleDomain = not state.SimpleDomain
             set(ctx, player, "SimpleDomain", state.SimpleDomain)
             return hit(ctx, player, front(ctx, player, 9, 7, 7), state.SimpleDomain and 15 or 10, "SimpleDomainSlash", 0.38, 38)
+        end
+
+        return false
+    end
+
+    function M.SkillSlot(player, ctx, slot)
+        local move = CustomMovesets.GetMove(id, slot)
+        if not move or slot < 3 then
+            return false
+        end
+
+        local state = ctx.getState(player)
+        announceMove(ctx, player, id, "Skill" .. tostring(slot), move.Name, 1.0)
+
+        if move.Type == "Melee" then
+            local target = front(ctx, player, move.Range or 9, 8, 8)
+            return hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback)
+        elseif move.Type == "Projectile" then
+            local target = front(ctx, player, move.Range or 24, 7, 8)
+            local success = hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback)
+            if success and target and target.root then
+                local direction = target.root.Position - root(ctx, player)
+                if direction.Magnitude > 0.01 then
+                    target.root.AssemblyLinearVelocity = direction.Unit * math.max(18, move.Knockback or 36) + Vector3.new(0, 10, 0)
+                end
+            end
+            return success
+        elseif move.Type == "Area" or move.Type == "Burst" then
+            local radius = move.Radius or 12
+            local damage = move.Damage
+            if id == "Hakari" and state.Jackpot then
+                damage += 5
+            elseif id == "Choso" then
+                damage += math.floor((state.Blood or 0) * 0.04)
+            elseif id == "Kashimo" then
+                damage += math.floor((state.ElectricalCharge or 0) * 0.05)
+            elseif id == "Ryu" then
+                damage += math.floor((state.OutputCharge or 0) * 0.08)
+            end
+            return pulse(ctx, player, radius, damage, move.Tag, move.Stun, move.Knockback)
+        elseif move.Type == "Control" then
+            if id == "Todo" and move.Tag == "ClapSwap" then
+                local targets = area(ctx, player, move.Range or 20)
+                if #targets > 0 and targets[1].player then
+                    state.SwapReady = not state.SwapReady
+                    set(ctx, player, "SwapReady", state.SwapReady)
+                    ctx.fx("TodoClap", root(ctx, player), state.SwapReady)
+                    return true
+                end
+            end
+            local target = move.Radius and randomTarget(ctx, player, move.Radius) or front(ctx, player, move.Range or 14, 9, 8)
+            local success = hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback)
+            if success and move.Pull and target and target.root then
+                local delta = root(ctx, player) - target.root.Position
+                if delta.Magnitude > 0.01 then
+                    target.root.AssemblyLinearVelocity = delta.Unit * move.Pull + Vector3.new(0, 8, 0)
+                end
+            end
+            return success
+        elseif move.Type == "Mobility" then
+            local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if rootPart then
+                rootPart.AssemblyLinearVelocity = rootPart.CFrame.LookVector * 58 + Vector3.new(0, 8, 0)
+            end
+            local target = front(ctx, player, move.Range or 11, 8, 8)
+            return hit(ctx, player, target, move.Damage, move.Tag, move.Stun, move.Knockback)
+        elseif move.Type == "Utility" then
+            if move.Tag == "ClapSwap" then
+                local targets = area(ctx, player, move.Range or 20)
+                local target = targets[1]
+                if target and target.player then
+                    return swapPositions(player, target.player)
+                end
+            end
+            return hit(ctx, player, front(ctx, player, move.Range or 10, 7, 7), move.Damage, move.Tag, move.Stun, move.Knockback)
         end
 
         return false
