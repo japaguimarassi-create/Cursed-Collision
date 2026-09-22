@@ -199,6 +199,17 @@ def main() -> int:
             and '"Skill4"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
             and '"AwakeningAction"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
         ),
+        "urban_landmarks": (
+            '"TransitHub"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
+            and '"SubwayEntrance"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
+            and '"CombatRooftop"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
+            and '"OpenPlaza"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
+        ),
+        "dummy_skin": (
+            '"DummyHair"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
+            and '"DummyCoat"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
+            and '"DummyCollar"' in read(SRC / "ServerScriptService/WorldBuilder.server.lua")
+        ),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
     if missing_runtime:
@@ -219,6 +230,7 @@ def main() -> int:
     print("PASS: modern compact HUD integration detected")
     print("PASS: skill animation, damage, and hit-reaction integration detected")
     print("PASS: 24 four-slot custom movesets and battleground HUD detected")
+    print("PASS: urban landmarks, vertical combat space, and skinned training dummy detected")
     print("NOT VERIFIED: Roblox Studio gameplay, replication under live physics, animation/assets, exploit testing, and publishing")
     return 0
 
