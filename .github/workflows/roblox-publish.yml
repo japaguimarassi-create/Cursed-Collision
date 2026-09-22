@@ -1,6 +1,12 @@
 name: Cursed Collision Roblox Publisher
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/publish/request.json"
+
   workflow_dispatch:
     inputs:
       confirm:
@@ -20,7 +26,7 @@ on:
         default: "15338267657"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: cursed-collision-roblox-publisher
@@ -29,41 +35,110 @@ concurrency:
 jobs:
   publish:
     name: Build and publish
-    if: ${{ inputs.confirm == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[cursed-collision:auto-reset]')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+          fetch-depth: 1
 
-      - name: Verify target
+      - name: Resolve publication request
+        id: request
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          CONFIRM: ${{ inputs.confirm }}
+          INPUT_UNIVERSE_ID: ${{ inputs.universe_id }}
+          INPUT_PLACE_ID: ${{ inputs.place_id }}
         run: |
           set -euo pipefail
 
-          [[ "${{ inputs.universe_id }}" =~ ^[0-9]+$ ]] || exit 1
-          [[ "${{ inputs.place_id }}" =~ ^[0-9]+$ ]] || exit 1
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
 
-          if [[ "${{ inputs.universe_id }}" != "5290480963" ]]; then
-            echo "::error::Universe ID is not the Cursed Collision Universe."
-            exit 1
-          fi
+          event = os.environ.get("EVENT_NAME", "")
+          confirm = os.environ.get("CONFIRM", "").lower() == "true"
+          input_universe = os.environ.get("INPUT_UNIVERSE_ID", "")
+          input_place = os.environ.get("INPUT_PLACE_ID", "")
 
-          if [[ "${{ inputs.place_id }}" != "15338267657" ]]; then
-            echo "::error::Place ID is not the Cursed Collision Place."
-            exit 1
-          fi
+          expected_universe = "5290480963"
+          expected_place = "15338267657"
 
-          echo "Target verified: Universe ${{ inputs.universe_id }}, Place ${{ inputs.place_id }}"
+          if event == "push":
+              path = Path(".github/publish/request.json")
+
+              if not path.is_file():
+                  print("No publication request file found; nothing to publish.")
+                  Path(os.environ["GITHUB_OUTPUT"]).write_text(
+                      "publish=false\n", encoding="utf-8"
+                  )
+                  sys.exit(0)
+
+              try:
+                  request = json.loads(path.read_text(encoding="utf-8"))
+              except json.JSONDecodeError as exc:
+                  raise SystemExit(f"Invalid publish request JSON: {exc}")
+
+              if request.get("publish") is not True:
+                  print("Publication request is not armed; nothing will be published.")
+                  Path(os.environ["GITHUB_OUTPUT"]).write_text(
+                      "publish=false\n", encoding="utf-8"
+                  )
+                  sys.exit(0)
+
+              universe = str(request.get("universe_id", ""))
+              place = str(request.get("place_id", ""))
+
+          elif event == "workflow_dispatch":
+              if not confirm:
+                  print("Manual publication was not confirmed; nothing will be published.")
+                  Path(os.environ["GITHUB_OUTPUT"]).write_text(
+                      "publish=false\n", encoding="utf-8"
+                  )
+                  sys.exit(0)
+
+              universe = input_universe
+              place = input_place
+
+          else:
+              raise SystemExit(f"Unsupported event: {event}")
+
+          if universe != expected_universe:
+              raise SystemExit(f"Unexpected Universe ID: {universe}")
+
+          if place != expected_place:
+              raise SystemExit(f"Unexpected Place ID: {place}")
+
+          output = Path(os.environ["GITHUB_OUTPUT"])
+          output.write_text(
+              f"publish=true\nuniverse_id={universe}\nplace_id={place}\n",
+              encoding="utf-8",
+          )
+
+          print(f"Publication armed for Universe {universe}, Place {place}")
+          PY
+
+      - name: Stop without publishing when not armed
+        if: ${{ steps.request.outputs.publish != 'true' }}
+        shell: bash
+        run: echo "No publication requested."
 
       - name: Install Roblox toolchain
+        if: ${{ steps.request.outputs.publish == 'true' }}
         uses: Roblox/setup-foreman@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           allow-external-github-orgs: true
 
       - name: Install Roblox tools
+        if: ${{ steps.request.outputs.publish == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -71,12 +146,14 @@ jobs:
           rojo --version
 
       - name: Validate project
+        if: ${{ steps.request.outputs.publish == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           python3 tools/validate_project.py
 
       - name: Build place
+        if: ${{ steps.request.outputs.publish == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -96,22 +173,23 @@ jobs:
           fi
 
       - name: Publish to Roblox
+        if: ${{ steps.request.outputs.publish == 'true' }}
         shell: bash
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          UNIVERSE_ID: ${{ inputs.universe_id }}
-          PLACE_ID: ${{ inputs.place_id }}
+          UNIVERSE_ID: ${{ steps.request.outputs.universe_id }}
+          PLACE_ID: ${{ steps.request.outputs.place_id }}
         run: |
           set -euo pipefail
 
           if [[ -z "${ROBLOX_API_KEY}" ]]; then
-            echo "::error::ROBLOX_API_KEY is missing."
+            echo "::error::ROBLOX_API_KEY repository secret is missing."
             exit 1
           fi
 
           endpoint="https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published"
 
-          echo "Uploading Cursed Collision..."
+          echo "Publishing Cursed Collision..."
           echo "Universe: ${UNIVERSE_ID}"
           echo "Place: ${PLACE_ID}"
 
@@ -129,36 +207,53 @@ jobs:
           fi
 
           python3 - <<'PY'
-import json
-from pathlib import Path
+          import json
+          from pathlib import Path
 
-path = Path("build/publish-response.json")
-payload = json.loads(path.read_text(encoding="utf-8"))
+          payload = json.loads(
+              Path("build/publish-response.json").read_text(encoding="utf-8")
+          )
 
-version = payload.get("versionNumber")
+          version = payload.get("versionNumber")
 
-if not isinstance(version, int) or version <= 0:
-    raise SystemExit("Roblox did not return a valid versionNumber.")
+          if not isinstance(version, int) or version <= 0:
+              raise SystemExit("Roblox did not return a valid versionNumber.")
 
-print(f"Published Roblox place version: {version}")
-PY
+          print(f"Published Roblox place version: {version}")
+          PY
+
+      - name: Reset automatic publish request
+        if: ${{ github.event_name == 'push' && steps.request.outputs.publish == 'true' && success() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path(".github/publish/request.json")
+          data = json.loads(path.read_text(encoding="utf-8"))
+          data["publish"] = False
+          data["status"] = "consumed"
+          path.write_text(
+              json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/publish/request.json
+          git commit -m "[cursed-collision:auto-reset] consume Roblox publish request"
+          git push
 
       - name: Upload publication artifacts
-        if: always()
+        if: ${{ always() && steps.request.outputs.publish == 'true' }}
         uses: actions/upload-artifact@v6
         with:
-          name: cursed-collision-publish
+          name: cursed-collision-roblox-publish
           path: |
             build/CursedCollision.rbxl
             build/publish-response.json
           if-no-files-found: warn
-
-  not-confirmed:
-    name: Publication not authorized
-    if: ${{ inputs.confirm != true }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Stop safely
-        run: |
-          echo "No Roblox publication was performed."
-          echo "Set confirm=true to authorize publication."
