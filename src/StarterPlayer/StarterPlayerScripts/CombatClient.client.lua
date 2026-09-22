@@ -146,147 +146,210 @@ local function cooldownFor(action)
     return 0
 end
 
-local fighterCard = Instance.new("Frame")
-fighterCard.Name = "FighterCard"
-fighterCard.Size = UDim2.fromScale(0.28, 0.105)
-fighterCard.Position = UDim2.fromScale(0.018, 0.018)
-fighterCard.BackgroundColor3 = panel
-fighterCard.BackgroundTransparency = 0.08
-fighterCard.BorderSizePixel = 0
-fighterCard.Parent = gui
-corner(fighterCard, 12)
-stroke(fighterCard, Color3.fromRGB(72, 76, 92), 1, 0.3)
+local function makePanel(name, size, position, parent, transparency)
+    local frame = Instance.new("Frame")
+    frame.Name = name
+    frame.Size = size
+    frame.Position = position
+    frame.BackgroundColor3 = panel
+    frame.BackgroundTransparency = transparency or 0.12
+    frame.BorderSizePixel = 0
+    frame.Parent = parent
+    corner(frame, 12)
+    stroke(frame, Color3.fromRGB(72, 76, 92), 1, 0.3)
+    return frame
+end
 
-local title = label(fighterCard, "CURSED COLLISION", UDim2.fromScale(0.72, 0.2), UDim2.fromScale(0.05, 0.06), Enum.Font.GothamBlack, 11)
+local function makeProgress(parent, name, position, size, fillColor, backColor)
+    local back = Instance.new("Frame")
+    back.Name = name
+    back.Size = size
+    back.Position = position
+    back.BackgroundColor3 = backColor
+    back.BorderSizePixel = 0
+    back.ClipsDescendants = true
+    back.Parent = parent
+    corner(back, 5)
+
+    local fill = Instance.new("Frame")
+    fill.Name = "Fill"
+    fill.Size = UDim2.fromScale(1, 1)
+    fill.BackgroundColor3 = fillColor
+    fill.BorderSizePixel = 0
+    fill.Parent = back
+    corner(fill, 5)
+
+    return back, fill
+end
+
+local function makeCombatButton(parent, name, textValue, accentColor, scale, anchor)
+    local b = Instance.new("TextButton")
+    b.Name = name
+    b.AnchorPoint = anchor or Vector2.new(0.5, 0.5)
+    b.Size = scale
+    b.BackgroundColor3 = tile
+    b.BackgroundTransparency = 0.05
+    b.BorderSizePixel = 0
+    b.Font = Enum.Font.GothamBlack
+    b.Text = textValue
+    b.TextColor3 = text
+    b.TextSize = 12
+    b.AutoButtonColor = false
+    b.Selectable = true
+    b.Parent = parent
+    corner(b, 16)
+    stroke(b, accentColor, 1.4, 0.22)
+
+    b.MouseEnter:Connect(function()
+        TweenService:Create(b, TweenInfo.new(0.08), {
+            BackgroundColor3 = tileHover,
+            Size = scale + UDim2.fromOffset(3, 3)
+        }):Play()
+    end)
+
+    b.MouseLeave:Connect(function()
+        TweenService:Create(b, TweenInfo.new(0.08), {
+            BackgroundColor3 = tile,
+            Size = scale
+        }):Play()
+    end)
+
+    return b
+end
+
+gui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+gui.ClipToDeviceSafeArea = true
+
+local topLeft = makePanel(
+    "FighterCard",
+    UDim2.fromScale(0.255, 0.093),
+    UDim2.fromScale(0.018, 0.018),
+    gui,
+    0.10
+)
+
+local title = label(topLeft, "CURSED COLLISION", UDim2.fromScale(0.70, 0.20), UDim2.fromScale(0.06, 0.08), Enum.Font.GothamBlack, 10)
 title.TextColor3 = muted
-local characterLabel = label(fighterCard, "Yuji Itadori", UDim2.fromScale(0.82, 0.28), UDim2.fromScale(0.05, 0.24), Enum.Font.GothamBold, 16)
-local uniqueLabel = label(fighterCard, "", UDim2.fromScale(0.82, 0.22), UDim2.fromScale(0.05, 0.49), Enum.Font.Gotham, 10)
+local characterLabel = label(topLeft, "Yuji Itadori", UDim2.fromScale(0.86, 0.34), UDim2.fromScale(0.06, 0.25), Enum.Font.GothamBlack, 17)
+local uniqueLabel = label(topLeft, "", UDim2.fromScale(0.86, 0.22), UDim2.fromScale(0.06, 0.62), Enum.Font.Gotham, 9)
 uniqueLabel.TextColor3 = muted
+corner(topLeft, 13)
 
-local rosterButton = button(gui, "RosterButton", "≡", UDim2.fromScale(0.045, 0.055), UDim2.fromScale(0.305, 0.03), accent)
-rosterButton.TextSize = 20
+local rosterButton = makeCombatButton(gui, "RosterButton", "≡", accent, UDim2.fromScale(0.048, 0.068), Vector2.new(0.5, 0.5))
+rosterButton.Position = UDim2.fromScale(0.286, 0.054)
+rosterButton.TextSize = 22
 rosterButton.BackgroundColor3 = panel
 
-local healthCard = Instance.new("Frame")
-healthCard.Name = "HealthCard"
-healthCard.Size = UDim2.fromScale(0.205, 0.105)
-healthCard.Position = UDim2.fromScale(0.67, 0.018)
-healthCard.BackgroundColor3 = panel
-healthCard.BackgroundTransparency = 0.08
-healthCard.BorderSizePixel = 0
-healthCard.Parent = gui
-corner(healthCard, 12)
-stroke(healthCard, Color3.fromRGB(72, 76, 92), 1, 0.3)
+local healthCard = makePanel(
+    "HealthCard",
+    UDim2.fromScale(0.255, 0.093),
+    UDim2.fromScale(0.727, 0.018),
+    gui,
+    0.10
+)
 
-local healthText = label(healthCard, "100% HP", UDim2.fromScale(0.88, 0.27), UDim2.fromScale(0.06, 0.08), Enum.Font.GothamBlack, 14)
+local healthText = label(healthCard, "100% HP", UDim2.fromScale(0.86, 0.28), UDim2.fromScale(0.07, 0.08), Enum.Font.GothamBlack, 15)
 healthText.TextXAlignment = Enum.TextXAlignment.Right
 
-local healthBack = Instance.new("Frame")
-healthBack.Size = UDim2.fromScale(0.88, 0.18)
-healthBack.Position = UDim2.fromScale(0.06, 0.46)
-healthBack.BackgroundColor3 = Color3.fromRGB(54, 29, 35)
-healthBack.BorderSizePixel = 0
-healthBack.Parent = healthCard
-corner(healthBack, 5)
+local healthBack, healthFill = makeProgress(
+    healthCard,
+    "HealthBar",
+    UDim2.fromScale(0.07, 0.45),
+    UDim2.fromScale(0.86, 0.18),
+    red,
+    Color3.fromRGB(49, 24, 30)
+)
 
-local healthFill = Instance.new("Frame")
-healthFill.Size = UDim2.fromScale(1, 1)
-healthFill.BackgroundColor3 = red
-healthFill.BorderSizePixel = 0
-healthFill.Parent = healthBack
-corner(healthFill, 5)
+local awakeningBack, awakeningFill = makeProgress(
+    healthCard,
+    "AwakeningBar",
+    UDim2.fromScale(0.07, 0.72),
+    UDim2.fromScale(0.86, 0.11),
+    accent,
+    Color3.fromRGB(35, 27, 54)
+)
 
-local awakeningBack = Instance.new("Frame")
-awakeningBack.Name = "AwakeningBar"
-awakeningBack.Size = UDim2.fromScale(0.88, 0.12)
-awakeningBack.Position = UDim2.fromScale(0.06, 0.73)
-awakeningBack.BackgroundColor3 = Color3.fromRGB(42, 32, 61)
-awakeningBack.BorderSizePixel = 0
-awakeningBack.Parent = healthCard
-corner(awakeningBack, 4)
-
-local awakeningFill = Instance.new("Frame")
-awakeningFill.Size = UDim2.fromScale(0, 1)
-awakeningFill.BackgroundColor3 = accent
-awakeningFill.BorderSizePixel = 0
-awakeningFill.Parent = awakeningBack
-corner(awakeningFill, 4)
-
-local awakeningText = label(healthCard, "0%", UDim2.fromScale(0.28, 0.2), UDim2.fromScale(0.06, 0.82), Enum.Font.GothamBold, 9)
+local awakeningText = label(healthCard, "AWAKEN 0%", UDim2.fromScale(0.54, 0.18), UDim2.fromScale(0.07, 0.84), Enum.Font.GothamBold, 8)
 awakeningText.TextColor3 = accentBright
 
-local stateLabel = label(gui, "READY", UDim2.fromScale(0.30, 0.04), UDim2.fromScale(0.35, 0.025), Enum.Font.GothamBlack, 11)
+local stateLabel = label(gui, "READY", UDim2.fromScale(0.34, 0.034), UDim2.fromScale(0.33, 0.038), Enum.Font.GothamBlack, 11)
 stateLabel.TextXAlignment = Enum.TextXAlignment.Center
-stateLabel.TextColor3 = Color3.fromRGB(225, 226, 236)
+stateLabel.TextColor3 = Color3.fromRGB(230, 231, 240)
 
 local techniqueFrame = Instance.new("Frame")
 techniqueFrame.Name = "TechniqueBar"
-techniqueFrame.Size = UDim2.fromScale(0.47, 0.13)
-techniqueFrame.Position = UDim2.fromScale(0.265, 0.835)
+techniqueFrame.AnchorPoint = Vector2.new(0.5, 1)
+techniqueFrame.Size = UDim2.fromScale(0.50, 0.115)
+techniqueFrame.Position = UDim2.fromScale(0.50, 0.972)
 techniqueFrame.BackgroundTransparency = 1
 techniqueFrame.Parent = gui
 
 local techniqueLayout = Instance.new("UIGridLayout")
-techniqueLayout.CellSize = UDim2.new(0.238, 0, 0.92, 0)
-techniqueLayout.CellPadding = UDim2.new(0.016, 0, 0, 0)
+techniqueLayout.CellSize = UDim2.new(0.235, 0, 0.92, 0)
+techniqueLayout.CellPadding = UDim2.new(0.02, 0, 0, 0)
 techniqueLayout.FillDirectionMaxCells = 4
+techniqueLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 techniqueLayout.SortOrder = Enum.SortOrder.LayoutOrder
 techniqueLayout.Parent = techniqueFrame
 
 local function techniqueButton(name, keyText, action, order)
     local b = button(techniqueFrame, name, "", UDim2.new(), UDim2.new(), accent)
     b.LayoutOrder = order
+    b.BackgroundColor3 = Color3.fromRGB(18, 21, 28)
+    b.BackgroundTransparency = 0.08
+    stroke(b, accent, 1.15, 0.3)
 
-    local key = label(b, keyText, UDim2.fromScale(0.26, 0.26), UDim2.fromScale(0.06, 0.07), Enum.Font.GothamBlack, 10)
+    local key = label(b, keyText, UDim2.fromScale(0.24, 0.25), UDim2.fromScale(0.07, 0.07), Enum.Font.GothamBlack, 10)
     key.TextColor3 = accentBright
 
-    local move = label(b, name, UDim2.fromScale(0.82, 0.34), UDim2.fromScale(0.09, 0.30), Enum.Font.GothamBold, 12)
+    local move = label(b, name, UDim2.fromScale(0.84, 0.34), UDim2.fromScale(0.08, 0.30), Enum.Font.GothamBlack, 11)
     move.TextXAlignment = Enum.TextXAlignment.Center
 
-    local hint = label(b, "READY", UDim2.fromScale(0.82, 0.22), UDim2.fromScale(0.09, 0.68), Enum.Font.Gotham, 8)
+    local hint = label(b, "READY", UDim2.fromScale(0.84, 0.22), UDim2.fromScale(0.08, 0.69), Enum.Font.Gotham, 8)
     hint.TextXAlignment = Enum.TextXAlignment.Center
     hint.TextColor3 = muted
 
     b.Activated:Connect(function()
-        if action == "Awaken" then
-            fireAction(action)
-        elseif action == "Domain" then
-            fireAction(action, cooldownFor(action))
-        else
-            fireAction(action, cooldownFor(action))
-        end
+        fireAction(action, action == "Awaken" and 0 or cooldownFor(action))
     end)
 
     return b, hint, move, key
 end
 
-local _specialButton, specialHint, specialMove, specialKey = techniqueButton("SPECIAL", "1", "Special", 1)
-local _skillButton, skillHint, skillMove, skillKey = techniqueButton("SKILL", "2", "Skill", 2)
-local _awakenButton, awakenHint, awakenMove, awakenKey = techniqueButton("AWAKEN", "3", "Awaken", 3)
+local specialButton, specialHint, specialMove, specialKey = techniqueButton("SPECIAL", "1", "Special", 1)
+local skillButton, skillHint, skillMove, skillKey = techniqueButton("SKILL", "2", "Skill", 2)
+local awakenButton, awakenHint, awakenMove, awakenKey = techniqueButton("AWAKEN", "3", "Awaken", 3)
 local domainButton, domainHint, domainMove, domainKey = techniqueButton("DOMAIN", "4", "Domain", 4)
 
-local oneTime = button(gui, "OneTime", "OT  READY", UDim2.fromScale(0.105, 0.055), UDim2.fromScale(0.155, 0.866), Color3.fromRGB(244, 96, 140))
-oneTime.TextSize = 11
-oneTime.Activated:Connect(function()
-    fireAction("OneTime")
-end)
+local oneTime = makeCombatButton(
+    gui,
+    "OneTime",
+    "OT",
+    Color3.fromRGB(244, 96, 140),
+    UDim2.fromScale(0.076, 0.065),
+    Vector2.new(0.5, 0.5)
+)
+oneTime.Position = UDim2.fromScale(0.423, 0.872)
+oneTime.TextSize = 10
 
 local actionFrame = Instance.new("Frame")
 actionFrame.Name = "CombatActions"
-actionFrame.Size = UDim2.fromScale(0.245, 0.34)
-actionFrame.Position = UDim2.fromScale(0.745, 0.59)
+actionFrame.Size = UDim2.fromScale(0.26, 0.36)
+actionFrame.Position = UDim2.fromScale(0.735, 0.585)
 actionFrame.BackgroundTransparency = 1
 actionFrame.Parent = gui
 
-local m1 = button(actionFrame, "M1", "M1", UDim2.fromScale(0.44, 0.50), UDim2.fromScale(0.28, 0.39), red)
+local m1 = makeCombatButton(actionFrame, "M1", "M1", red, UDim2.fromScale(0.34, 0.34), Vector2.new(0.5, 0.5))
+m1.Position = UDim2.fromScale(0.67, 0.62)
 m1.TextSize = 22
-stroke(m1, red, 1.6, 0.06)
+stroke(m1, red, 1.8, 0.05)
 m1.Activated:Connect(function()
     fireAction("M1", cooldownFor("M1"))
 end)
 
 local function smallAction(name, textValue, action, position, strokeColor)
-    local b = button(actionFrame, name, textValue, UDim2.fromScale(0.27, 0.18), position, strokeColor)
+    local b = makeCombatButton(actionFrame, name, textValue, strokeColor, UDim2.fromScale(0.23, 0.18), Vector2.new(0.5, 0.5))
+    b.Position = position
     b.TextSize = 9
     b.Activated:Connect(function()
         fireAction(action, cooldownFor(action))
@@ -294,11 +357,12 @@ local function smallAction(name, textValue, action, position, strokeColor)
     return b
 end
 
-local _heavy = smallAction("Heavy", "HEAVY", "Heavy", UDim2.fromScale(0.02, 0.19), Color3.fromRGB(175, 177, 193))
-local _grab = smallAction("Grab", "GRAB", "Grab", UDim2.fromScale(0.71, 0.19), Color3.fromRGB(175, 177, 193))
-local _dash = smallAction("Dash", "DASH", "Dash", UDim2.fromScale(0.02, 0.70), accent)
-local _dodge = smallAction("Dodge", "DODGE", "Dodge", UDim2.fromScale(0.71, 0.70), gold)
-local blockButton = button(actionFrame, "Block", "BLOCK", UDim2.fromScale(0.27, 0.18), UDim2.fromScale(0.36, 0.00), blue)
+local heavyButton = smallAction("Heavy", "HEAVY", "Heavy", UDim2.fromScale(0.23, 0.27), Color3.fromRGB(188, 191, 205))
+local grabButton = smallAction("Grab", "GRAB", "Grab", UDim2.fromScale(0.82, 0.27), Color3.fromRGB(188, 191, 205))
+local dashButton = smallAction("Dash", "DASH", "Dash", UDim2.fromScale(0.20, 0.72), accent)
+local dodgeButton = smallAction("Dodge", "DODGE", "Dodge", UDim2.fromScale(0.84, 0.72), gold)
+local blockButton = makeCombatButton(actionFrame, "Block", "BLOCK", blue, UDim2.fromScale(0.30, 0.19), Vector2.new(0.5, 0.5))
+blockButton.Position = UDim2.fromScale(0.27, 0.52)
 blockButton.TextSize = 9
 
 local mobileBlock = false
@@ -308,6 +372,85 @@ blockButton.Activated:Connect(function()
     combatAction:FireServer(mobileBlock and "BlockStart" or "BlockEnd")
 end)
 
+local function isTouch()
+    return UserInputService.PreferredInput == Enum.PreferredInput.Touch
+end
+
+local function isGamepad()
+    return UserInputService.PreferredInput == Enum.PreferredInput.Gamepad
+end
+
+local function setResponsiveLayout()
+    local touch = isTouch()
+    local gamepad = isGamepad()
+
+    if touch then
+        techniqueFrame.Size = UDim2.fromScale(0.60, 0.105)
+        techniqueFrame.Position = UDim2.fromScale(0.51, 0.972)
+        actionFrame.Size = UDim2.fromScale(0.31, 0.42)
+        actionFrame.Position = UDim2.fromScale(0.695, 0.525)
+
+        m1.Size = UDim2.fromScale(0.38, 0.31)
+        m1.Position = UDim2.fromScale(0.70, 0.62)
+        blockButton.Size = UDim2.fromScale(0.25, 0.18)
+        blockButton.Position = UDim2.fromScale(0.27, 0.44)
+
+        heavyButton.Position = UDim2.fromScale(0.28, 0.20)
+        grabButton.Position = UDim2.fromScale(0.82, 0.20)
+        dashButton.Position = UDim2.fromScale(0.20, 0.72)
+        dodgeButton.Position = UDim2.fromScale(0.86, 0.72)
+
+        oneTime.Position = UDim2.fromScale(0.355, 0.872)
+    else
+        techniqueFrame.Size = UDim2.fromScale(0.47, 0.11)
+        techniqueFrame.Position = UDim2.fromScale(0.50, 0.972)
+        actionFrame.Size = UDim2.fromScale(0.255, 0.34)
+        actionFrame.Position = UDim2.fromScale(0.735, 0.59)
+
+        m1.Size = UDim2.fromScale(0.36, 0.36)
+        m1.Position = UDim2.fromScale(0.66, 0.63)
+        blockButton.Position = UDim2.fromScale(0.27, 0.50)
+
+        heavyButton.Position = UDim2.fromScale(0.23, 0.25)
+        grabButton.Position = UDim2.fromScale(0.82, 0.25)
+        dashButton.Position = UDim2.fromScale(0.20, 0.74)
+        dodgeButton.Position = UDim2.fromScale(0.84, 0.74)
+
+        oneTime.Position = UDim2.fromScale(0.405, 0.872)
+    end
+
+    local scale = gui:FindFirstChildOfClass("UIScale")
+    if not scale then
+        scale = Instance.new("UIScale")
+        scale.Parent = gui
+    end
+    scale.Scale = touch and 0.96 or gamepad and 1.0 or 0.94
+end
+
+local function setButtonKeys()
+    local touch = isTouch()
+    local gamepad = isGamepad()
+
+    if touch then
+        specialKey.Text = "TAP"
+        skillKey.Text = "TAP"
+        awakenKey.Text = "TAP"
+        domainKey.Text = domainButton.Text == "NO DOMAIN" and "—" or "TAP"
+    elseif gamepad then
+        specialKey.Text = "X"
+        skillKey.Text = "Y"
+        awakenKey.Text = "↑"
+        domainKey.Text = domainButton.Text == "NO DOMAIN" and "—" or "↓"
+    else
+        specialKey.Text = "1"
+        skillKey.Text = "2"
+        awakenKey.Text = "G"
+        domainKey.Text = domainButton.Text == "NO DOMAIN" and "—" or "H"
+    end
+end
+
+setResponsiveLayout()
+setButtonKeys()
 local rosterOverlay = Instance.new("Frame")
 rosterOverlay.Name = "RosterOverlay"
 rosterOverlay.Size = UDim2.fromScale(0.78, 0.78)
