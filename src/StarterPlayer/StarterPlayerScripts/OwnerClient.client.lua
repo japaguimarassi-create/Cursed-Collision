@@ -221,9 +221,9 @@ local kick = actionButton("Kick", "KICK TARGET", 0.51, 0.89)
 local playerList = {}
 
 local function send(action: string, payload: {[string]: any}?)
-    payload = payload or {}
-    payload.targetUserId = selectedUserId
-    adminAction:FireServer(action, payload)
+    local data: {[string]: any} = payload or {}
+    data.targetUserId = selectedUserId
+    adminAction:FireServer(action, data)
 end
 
 actionButtons.GrantCredits.Activated:Connect(function()
