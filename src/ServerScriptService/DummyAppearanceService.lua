@@ -13,7 +13,7 @@ export type Options = {
     fallbackUserId: number?
 }
 
-local descriptionCache: {[string]: HumanoidDescription} = setmetatable({}, {__mode = "v"})
+local descriptionCache = setmetatable({}, {__mode = "v"})
 
 local function cacheKey(mode: string, id: number): string
     return mode .. ":" .. tostring(id)
