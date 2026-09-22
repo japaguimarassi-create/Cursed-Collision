@@ -1,44 +1,69 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local Shop = require(ReplicatedStorage.Economy.ShopDefinitions)
-
 local CosmeticService = {}
 
-local function setPartAppearance(part, bodyColor, material)
-    if not part:IsA("BasePart") then
+local originals = {}
+
+local function remember(character)
+    if originals[character] then
+        return originals[character]
+    end
+
+    local snapshot = {}
+    for _, descendant in ipairs(character:GetDescendants()) do
+        if descendant:IsA("BasePart") and descendant.Name ~= "HumanoidRootPart" then
+            snapshot[descendant] = {
+                Color = descendant.Color,
+                Material = descendant.Material
+            }
+        end
+    end
+    originals[character] = snapshot
+    return snapshot
+end
+
+local function restore(character)
+    local snapshot = originals[character]
+    if not snapshot then
         return
     end
 
-    if part.Name ~= "HumanoidRootPart" then
-        part.Color = bodyColor
-        if material then
-            part.Material = material
+    for part, values in pairs(snapshot) do
+        if part and part.Parent then
+            part.Color = values.Color
+            part.Material = values.Material
         end
     end
 end
 
-function CosmeticService:ApplySkin(player, skinId)
-    local skin = Shop.Skins[skinId]
-    local character = player.Character
-
-    if not skin or not character then
-        return false
-    end
-
-    if skin.Character ~= (player:GetAttribute("CharacterId") or "") then
-        return false
-    end
-
-    for _, descendant in ipairs(character:GetDescendants()) do
-        setPartAppearance(descendant, skin.BodyColor, skin.Material)
-    end
-
+local function removeHighlight(character)
     local highlight = character:FindFirstChild("CursedCollisionSkin")
     if highlight then
         highlight:Destroy()
     end
+end
 
-    highlight = Instance.new("Highlight")
+local function applyParts(character, bodyColor, material)
+    for _, descendant in ipairs(character:GetDescendants()) do
+        if descendant:IsA("BasePart") and descendant.Name ~= "HumanoidRootPart" then
+            descendant.Color = bodyColor
+            if material then
+                descendant.Material = material
+            end
+        end
+    end
+end
+
+function CosmeticService:ApplySkin(player, skin)
+    local character = player.Character
+    if not character or type(skin) ~= "table" then
+        return false
+    end
+
+    remember(character)
+    applyParts(character, skin.BodyColor, skin.Material)
+
+    removeHighlight(character)
+
+    local highlight = Instance.new("Highlight")
     highlight.Name = "CursedCollisionSkin"
     highlight.FillColor = skin.AccentColor
     highlight.FillTransparency = 0.82
@@ -47,7 +72,7 @@ function CosmeticService:ApplySkin(player, skinId)
     highlight.DepthMode = Enum.HighlightDepthMode.Occluded
     highlight.Parent = character
 
-    player:SetAttribute("EquippedSkin", skinId)
+    player:SetAttribute("EquippedSkin", skin.Id or "")
     return true
 end
 
@@ -57,12 +82,14 @@ function CosmeticService:ClearSkin(player)
         return
     end
 
-    local highlight = character:FindFirstChild("CursedCollisionSkin")
-    if highlight then
-        highlight:Destroy()
-    end
-
+    remember(character)
+    restore(character)
+    removeHighlight(character)
     player:SetAttribute("EquippedSkin", "")
+end
+
+function CosmeticService:ResetCharacter(character)
+    originals[character] = nil
 end
 
 return CosmeticService
