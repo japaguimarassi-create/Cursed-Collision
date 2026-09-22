@@ -136,6 +136,10 @@ local function cooldownFor(action)
         return Config.Combat.Dash.Cooldown
     elseif action == "Dodge" then
         return Config.Combat.Dodge.Cooldown
+    elseif action == "Counter" then
+        return Config.Combat.Counter.Cooldown
+    elseif action == "Slam" then
+        return Config.Combat.Air.SlamCooldown
     elseif action == "Grab" then
         return Config.Combat.Grab.Cooldown
     elseif action == "Domain" then
