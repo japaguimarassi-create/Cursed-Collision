@@ -29,7 +29,10 @@ function RemoteService:Get()
         ServerEvent = ensure(folder, "RemoteEvent", "ServerEvent"),
         CombatFX = ensure(folder, "RemoteEvent", "CombatFX"),
         ClashEvent = ensure(folder, "RemoteEvent", "ClashEvent"),
-        Selection = ensure(folder, "RemoteEvent", "Selection")
+        Selection = ensure(folder, "RemoteEvent", "Selection"),
+        AccountAction = ensure(folder, "RemoteEvent", "AccountAction"),
+        AccountEvent = ensure(folder, "RemoteEvent", "AccountEvent"),
+        AdminAction = ensure(folder, "RemoteEvent", "AdminAction")
     }
 end
 
