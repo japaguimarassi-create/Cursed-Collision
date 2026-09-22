@@ -80,7 +80,6 @@ function EnvironmentService:Impact(origin, radius, power)
             local effective = power * (1 - math.clamp(distance / math.max(radius, 1), 0, 1))
             if effective >= resistance and hide(part) then
                 changed += 1
-                local size = part.Size
                 local restoreTime = tonumber(part:GetAttribute("RestoreTime")) or 12
 
                 task.delay(restoreTime, function()
