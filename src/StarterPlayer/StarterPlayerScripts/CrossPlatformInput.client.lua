@@ -38,16 +38,3 @@ ContextActionService:BindAction("CC_Gamepad_Block", function(_, state)
     return Enum.ContextActionResult.Pass
 end, false, Enum.KeyCode.ButtonL2)
 
-local function platform()
-    local preferred = UserInputService.PreferredInput
-    if preferred == Enum.PreferredInput.Touch then
-        return "MOBILE"
-    elseif preferred == Enum.PreferredInput.Gamepad then
-        return "CONSOLE"
-    end
-    return "PC"
-end
-
-UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
-    remotes.AccountEvent:FireClient(game:GetService("Players").LocalPlayer, "Platform", platform())
-end)
