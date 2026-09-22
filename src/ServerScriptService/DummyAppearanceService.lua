@@ -9,7 +9,8 @@ export type Options = {
     position: Vector3,
     sourceUserId: number?,
     sourceOutfitId: number?,
-    sourceMode: "Creator" | "User" | "Outfit"?
+    sourceMode: "Creator" | "User" | "Outfit"?,
+    fallbackUserId: number?
 }
 
 local descriptionCache: {[string]: HumanoidDescription} = setmetatable({}, {__mode = "v"})
@@ -46,7 +47,11 @@ local function fetchDescription(options: Options): (HumanoidDescription?, string
     end
 
     if mode == "Creator" then
-        id = Players.LocalPlayer and Players.LocalPlayer.UserId or game.CreatorId
+        if game.CreatorType == Enum.CreatorType.User then
+            id = game.CreatorId
+        else
+            id = options.fallbackUserId or 1
+        end
     end
 
     if id <= 0 then
@@ -99,7 +104,9 @@ local function addTargetPresentation(model: Model)
             descendant.CanQuery = true
             descendant.CanTouch = true
             descendant.CastShadow = true
-            descendant:SetNetworkOwner(nil)
+            pcall(function()
+                descendant:SetNetworkOwner(nil)
+            end)
         end
     end
 
