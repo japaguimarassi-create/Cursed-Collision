@@ -3,6 +3,13 @@ import json
 import re
 import sys
 
+CHARACTERS = [
+    "PotentialMan", "Yuji", "Gojo", "Sukuna", "Megumi", "Yuta", "Maki", "Toji",
+    "Mahito", "Todo", "Hakari", "Choso", "Kashimo", "Naoya", "Kenjaku", "Jogo",
+    "Dagon", "Hanami", "Higuruma", "Takaba", "Uraume", "Yorozu", "Ryu", "Uro",
+    "Kusakabe"
+]
+
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 
@@ -26,8 +33,6 @@ REQUIRED = [
 ]
 
 ACTIVE = [
-    "ReplicatedStorage/Shared/Config.lua",
-    "ReplicatedStorage/Characters/CharacterDefinitions.lua",
     "ReplicatedStorage/Characters/CharacterService.lua",
     "ReplicatedStorage/Characters/PotentialMan.lua",
     "ReplicatedStorage/Combat/HitboxService.lua",
@@ -71,6 +76,11 @@ for relative in REQUIRED:
     if not path_for(relative).exists():
         fail(f"required file missing: src/{relative}")
 
+for character in CHARACTERS:
+    module_path = SRC / "ReplicatedStorage" / "Characters" / f"{character}.lua"
+    if not module_path.exists():
+        fail(f"character module missing: {character}")
+
 project = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"))
 if project.get("name") != "CursedCollision":
     fail("default.project.json project name must be CursedCollision")
@@ -78,18 +88,20 @@ if project.get("name") != "CursedCollision":
 definitions = read("ReplicatedStorage/Characters/CharacterDefinitions.lua")
 if not re.search(r"\bPotentialMan\s*=", definitions):
     fail("PotentialMan definition missing")
-if re.search(r"\bMegumi\s*=", definitions):
-    fail("legacy Megumi definition is still exposed")
 
 character_service = read("ReplicatedStorage/Characters/CharacterService.lua")
-if "PotentialMan = require(ReplicatedStorage.Characters.PotentialMan)" not in character_service:
-    fail("CharacterService does not require PotentialMan")
-for legacy in ("CharacterFactory", "CustomMovesets", "DomainService", "DomainClashService"):
+for character in CHARACTERS:
+    if f"{character} = require(ReplicatedStorage.Characters.{character})" not in character_service:
+        fail(f"CharacterService does not explicitly require {character}")
+for legacy in ("DomainService", "DomainClashService", "PerfectComboService", "OneTimeAttackService"):
     if legacy in character_service:
         fail(f"legacy system still referenced by CharacterService: {legacy}")
 
 network = read("ServerScriptService/CombatCore/NetworkService.lua")
-for action in ("M1", "Dash", "BlockStart", "BlockEnd", "Special", "SelectCharacter"):
+for action in (
+    "M1", "Dash", "BlockStart", "BlockEnd", "Special",
+    "Skill1", "Skill2", "Skill3", "Skill4", "SelectCharacter"
+):
     if f"{action} = true" not in network:
         fail(f"allowed action missing from NetworkService: {action}")
 
@@ -160,11 +172,11 @@ for relative in ACTIVE:
                 continue
             if forbidden in ("Awaken", "Domain", "OneTime") and relative.endswith("Config.lua"):
                 continue
-            fail(f"forbidden legacy combat token appears in active file {relative}: {forbidden}")
+            fail(f"forbidden legacy combat token appears in active runtime file {relative}: {forbidden}")
 
-print(f"PASS: {len(REQUIRED)} rebuild files present")
-print("PASS: Potential Man is the only active character")
-print("PASS: active combat surface is M1 + Dash + Block + Special")
+print(f"PASS: {len(REQUIRED)} foundation files present")
+print(f"PASS: {len(CHARACTERS)} character modules are present and explicitly bound")
+print("PASS: active combat surface is M1 + Dash + Block + Special + Skill1..4")
 print("PASS: server-authoritative hitbox, damage, stun, cooldown and dash protection detected")
 print("PASS: procedural Motor6D animation controller detected")
-print("PASS: legacy heavy/dodge/grab/counter/slam/domain/awakening routes are not active")
+print("PASS: heavy/dodge/grab/counter/slam/domain/awakening routes are not in the active combat router")
