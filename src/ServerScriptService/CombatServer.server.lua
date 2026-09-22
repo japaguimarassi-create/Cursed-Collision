@@ -129,6 +129,21 @@ function context.damage(attacker, humanoid, amount, meta)
     end
 
     humanoid:TakeDamage(finalAmount)
+
+    local reactionIntensity = math.clamp(finalAmount / 18, 0.55, 1.8)
+    remotes.CombatFX:FireAllClients(
+        "HitReaction",
+        targetCharacter,
+        reactionIntensity,
+        meta and meta.tag or "Hit"
+    )
+    remotes.CombatFX:FireAllClients(
+        "DamageNumber",
+        targetCharacter,
+        math.max(1, math.floor(finalAmount + 0.5)),
+        meta and meta.tag or "Hit"
+    )
+
     addAwakening(attacker, Config.Awakening.GainDamageDealt)
 
     if targetPlayer then
