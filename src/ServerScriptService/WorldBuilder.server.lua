@@ -446,6 +446,7 @@ local function addArena()
 end
 
 local function addCentralCover()
+addTrainingYard()
     for _, data in ipairs({
         {Vector3.new(-17, 3.2, -13), Vector3.new(10, 6.4, 4), COLORS.ConcreteDark},
         {Vector3.new(17, 3.2, -13), Vector3.new(10, 6.4, 4), COLORS.ConcreteDark},
@@ -590,6 +591,206 @@ local function addRoadNetwork()
     makePart(map, "CentralRoadZ", Vector3.new(16, 0.5, 236), Vector3.new(0, 0.27, 0), Enum.Material.Asphalt, COLORS.Road)
 
     addRoadMarkings()
+end
+
+local function makeDummyBodyPart(parent, name, size, cframe, color, shape, canCollide)
+    local part = Instance.new("Part")
+    part.Name = name
+    part.Size = size
+    part.CFrame = cframe
+    part.Anchored = false
+    part.CanCollide = canCollide ~= false
+    part.CanTouch = true
+    part.CanQuery = true
+    part.Material = Enum.Material.SmoothPlastic
+    part.Color = color
+    part.CastShadow = true
+    if shape then
+        part.Shape = shape
+    end
+    part.Parent = parent
+    return part
+end
+
+local function weldDummyPart(base, part)
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = base
+    weld.Part1 = part
+    weld.Parent = base
+end
+
+local function spawnTrainingDummy(parent, position)
+    local model = Instance.new("Model")
+    model.Name = "TrainingDummy"
+    model:SetAttribute("TrainingDummy", true)
+    model:SetAttribute("Respawns", true)
+    model.Parent = parent
+
+    local pivot = CFrame.new(position)
+
+    local root = makeDummyBodyPart(
+        model,
+        "HumanoidRootPart",
+        Vector3.new(2, 2, 1),
+        pivot * CFrame.new(0, 2.9, 0),
+        COLORS.ConcreteDark,
+        nil,
+        false
+    )
+    root.Transparency = 1
+
+    local torso = makeDummyBodyPart(
+        model,
+        "Torso",
+        Vector3.new(2.4, 2.7, 1.4),
+        pivot * CFrame.new(0, 4.25, 0),
+        Color3.fromRGB(120, 82, 72)
+    )
+    local head = makeDummyBodyPart(
+        model,
+        "Head",
+        Vector3.new(2, 2, 2),
+        pivot * CFrame.new(0, 6.15, 0),
+        Color3.fromRGB(200, 160, 132),
+        Enum.PartType.Ball
+    )
+    local leftArm = makeDummyBodyPart(
+        model,
+        "Left Arm",
+        Vector3.new(0.85, 2.6, 0.85),
+        pivot * CFrame.new(-1.65, 4.2, 0),
+        Color3.fromRGB(200, 160, 132)
+    )
+    local rightArm = makeDummyBodyPart(
+        model,
+        "Right Arm",
+        Vector3.new(0.85, 2.6, 0.85),
+        pivot * CFrame.new(1.65, 4.2, 0),
+        Color3.fromRGB(200, 160, 132)
+    )
+    local leftLeg = makeDummyBodyPart(
+        model,
+        "Left Leg",
+        Vector3.new(0.95, 2.6, 1),
+        pivot * CFrame.new(-0.65, 1.3, 0),
+        Color3.fromRGB(45, 48, 56)
+    )
+    local rightLeg = makeDummyBodyPart(
+        model,
+        "Right Leg",
+        Vector3.new(0.95, 2.6, 1),
+        pivot * CFrame.new(0.65, 1.3, 0),
+        Color3.fromRGB(45, 48, 56)
+    )
+
+    weldDummyPart(root, torso)
+    weldDummyPart(root, head)
+    weldDummyPart(root, leftArm)
+    weldDummyPart(root, rightArm)
+    weldDummyPart(root, leftLeg)
+    weldDummyPart(root, rightLeg)
+
+    local humanoid = Instance.new("Humanoid")
+    humanoid.Name = "Humanoid"
+    humanoid.DisplayName = "Training Dummy"
+    humanoid.MaxHealth = 1000
+    humanoid.Health = 1000
+    humanoid.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOn
+    humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
+    humanoid.NameDisplayDistance = 90
+    humanoid.BreakJointsOnDeath = false
+    humanoid.RequiresNeck = false
+    humanoid.Parent = model
+
+    model.PrimaryPart = root
+
+    local halo = Instance.new("Part")
+    halo.Name = "DummyMarker"
+    halo.Shape = Enum.PartType.Cylinder
+    halo.Size = Vector3.new(6.5, 0.16, 6.5)
+    halo.CFrame = pivot * CFrame.new(0, 0.14, 0)
+    halo.Anchored = true
+    halo.CanCollide = false
+    halo.CanTouch = false
+    halo.CanQuery = false
+    halo.Material = Enum.Material.Neon
+    halo.Color = COLORS.CrimsonBright
+    halo.Transparency = 0.25
+    halo.Parent = parent
+
+    humanoid.Died:Connect(function()
+        halo:Destroy()
+        task.delay(2.5, function()
+            if not parent.Parent then
+                return
+            end
+            if model.Parent then
+                model:Destroy()
+            end
+            spawnTrainingDummy(parent, position)
+        end)
+    end)
+
+    return model
+end
+
+local function addTrainingYard()
+    local yard = Instance.new("Folder")
+    yard.Name = "TrainingYard"
+    yard.Parent = map
+    yard:SetAttribute("Purpose", "CombatTraining")
+
+    makePart(
+        yard,
+        "TrainingFloor",
+        Vector3.new(30, 0.28, 20),
+        Vector3.new(0, 1.98, -28),
+        Enum.Material.Slate,
+        Color3.fromRGB(48, 50, 58)
+    )
+
+    for _, data in ipairs({
+        {Vector3.new(-14, 2.55, -28), Vector3.new(1, 1.1, 20)},
+        {Vector3.new(14, 2.55, -28), Vector3.new(1, 1.1, 20)},
+        {Vector3.new(0, 2.55, -38), Vector3.new(28, 1.1, 1)},
+        {Vector3.new(0, 2.55, -18), Vector3.new(28, 1.1, 1)}
+    }) do
+        local border = makeBlock(yard, "TrainingBorder", data[1], data[2], COLORS.ConcreteDark, 12)
+        border:SetAttribute("TrainingOnly", true)
+    end
+
+    local sign = makePart(
+        yard,
+        "TrainingSign",
+        Vector3.new(16, 4.5, 0.35),
+        Vector3.new(0, 7.3, -17.5),
+        Enum.Material.Neon,
+        COLORS.PurpleBright,
+        false
+    )
+    sign:SetAttribute("VisualOnly", true)
+
+    local practiceText = Instance.new("BillboardGui")
+    practiceText.Name = "TrainingLabel"
+    practiceText.Adornee = sign
+    practiceText.Size = UDim2.fromOffset(360, 86)
+    practiceText.StudsOffset = Vector3.new(0, 0, -0.1)
+    practiceText.AlwaysOnTop = true
+    practiceText.Parent = sign
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.fromScale(1, 1)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "TRAINING YARD\nDUMMY • COMBO PRACTICE"
+    textLabel.Font = Enum.Font.GothamBlack
+    textLabel.TextSize = 22
+    textLabel.TextColor3 = Color3.fromRGB(245, 245, 250)
+    textLabel.TextStrokeTransparency = 0.65
+    textLabel.TextWrapped = true
+    textLabel.TextYAlignment = Enum.TextYAlignment.Center
+    textLabel.Parent = practiceText
+
+    spawnTrainingDummy(yard, Vector3.new(0, 2.25, -29.5))
 end
 
 local function configureLighting()
