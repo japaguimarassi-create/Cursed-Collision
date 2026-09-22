@@ -608,6 +608,24 @@ function VFX.Utility(kind, position, payload)
         shards(position, payload and payload.direction or Vector3.zAxis, white, 5, 4, 0.2, 0.17)
     elseif kind == "Block" then
         disc(position, 2.5, 0.12, Color3.fromRGB(96, 182, 255), 0.15, 5.5)
+    elseif kind == "EnvironmentBreak" then
+        local count = math.clamp(tonumber(payload and payload.count) or 4, 1, 10)
+        local radius = math.clamp(tonumber(payload and payload.radius) or 8, 4, 16)
+        for i = 1, count do
+            local angle = (i / count) * math.pi * 2
+            local offset = Vector3.new(math.cos(angle), 0.45 + math.random() * 1.2, math.sin(angle)) * (radius * (0.25 + math.random() * 0.35))
+            local fragment = part(position + offset, Vector3.new(0.7, 0.45, 0.7), Color3.fromRGB(108, 110, 118), Enum.Material.Concrete, 0.1)
+            fragment.CFrame = CFrame.new(fragment.Position) * CFrame.Angles(math.random(), math.random(), math.random())
+            local target = fragment.Position + offset.Unit * 3 + Vector3.new(0, 2 + math.random() * 3, 0)
+            local tween = TweenService:Create(fragment, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Position = target,
+                Transparency = 1
+            })
+            tween:Play()
+            cleanup(fragment, 0.5)
+        end
+        disc(position, math.min(radius, 10), 0.22, Color3.fromRGB(210, 210, 220), 0.3, 16)
+        cameraKick(2.2, 0.12)
     end
 end
 
