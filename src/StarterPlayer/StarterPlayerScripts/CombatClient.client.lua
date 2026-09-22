@@ -12,6 +12,8 @@ local combatFX = remotes:WaitForChild("CombatFX")
 local clashEvent = remotes:WaitForChild("ClashEvent")
 local selection = remotes:WaitForChild("Selection")
 local definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
+local moves = require(ReplicatedStorage.Characters.CharacterMoves)
+local CombatVFX = require(ReplicatedStorage.Combat.CombatVFX)
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "CursedCollisionHUD"
@@ -202,10 +204,10 @@ local function techniqueButton(name, keyLabel, action, order)
     return b, hint, move
 end
 
-local specialButton, specialHint = techniqueButton("SPECIAL", "1", "Special", 1)
-local skillButton, skillHint = techniqueButton("SKILL", "2", "Skill", 2)
-local awakenButton, awakenHint = techniqueButton("AWAKEN", "3", "Awaken", 3)
-local domainButton, domainHint = techniqueButton("DOMAIN", "4", "Domain", 4)
+local specialButton, specialHint, specialMove = techniqueButton("SPECIAL", "1", "Special", 1)
+local skillButton, skillHint, skillMove = techniqueButton("SKILL", "2", "Skill", 2)
+local awakenButton, awakenHint, awakenMove = techniqueButton("AWAKEN", "3", "Awaken", 3)
+local domainButton, domainHint, domainMove = techniqueButton("DOMAIN", "4", "Domain", 4)
 
 local actionFrame = Instance.new("Frame")
 actionFrame.Name = "CombatActions"
@@ -417,6 +419,13 @@ local function update()
     local aw = player:GetAttribute("Awakening") or 0
     local id = player:GetAttribute("CharacterId") or "Yuji"
     local definition = definitions[id]
+    local moveSet = moves[id]
+
+    if moveSet then
+        specialMove.Text = moveSet.SpecialName or "SPECIAL"
+        skillMove.Text = moveSet.SkillName or "SKILL"
+    end
+    awakenMove.Text = player:GetAttribute("AwakeningName") or (definition and definition.AwakeningName) or "AWAKEN"
 
     characterLabel.Text = (player:GetAttribute("CharacterName") or (definition and definition.Name) or id)
     uniqueLabel.Text = (definition and definition.Subtitle or "Fighter").."  •  "..uniqueText()
@@ -442,6 +451,7 @@ local function update()
     status.Text = state
 
     local hasDomain = definition and definition.Domain ~= nil
+    domainMove.Text = hasDomain and (definition.Domain or "DOMAIN") or "NO DOMAIN"
     domainButton.Text = hasDomain and "DOMAIN" or "NO DOMAIN"
     domainButton.AutoButtonColor = hasDomain
     domainHint.Text = hasDomain and "READY" or "LOCKED"
@@ -549,7 +559,27 @@ local function burst(position, size, transparency, duration)
     Debris:AddItem(part, duration + 0.1)
 end
 
-combatFX.OnClientEvent:Connect(function(kind, position)
+combatFX.OnClientEvent:Connect(function(kind, position, payload, extra)
+    if kind == "CharacterMove" then
+        CombatVFX.CharacterMove(position, payload)
+        return
+    elseif kind == "CharacterOneTime" then
+        CombatVFX.CharacterOneTime(position, payload, extra)
+        return
+    elseif kind == "CharacterAwakening" then
+        CombatVFX.Awakening(position, payload, extra)
+        return
+    elseif kind == "DomainStart" then
+        CombatVFX.Domain(position, payload, false)
+        return
+    elseif kind == "DomainClashStart" then
+        CombatVFX.Domain(position, payload, true)
+        return
+    elseif kind == "Dash" or kind == "MeleeSwing" or kind == "Heavy" or kind == "Grab" or kind == "Block" then
+        CombatVFX.Utility(kind, position, payload)
+        return
+    end
+
     if typeof(position) ~= "Vector3" then
         return
     end
