@@ -791,6 +791,7 @@ local function spawnTrainingDummy(parent, position)
         Color3.fromRGB(34, 36, 43),
         true
     )
+    base.Parent = model
     base.Shape = Enum.PartType.Cylinder
     base:SetAttribute("TrainingOnly", true)
     base:SetAttribute("VisualOnly", true)
@@ -804,6 +805,7 @@ local function spawnTrainingDummy(parent, position)
         COLORS.PurpleBright,
         false
     )
+    ring.Parent = model
     ring.Shape = Enum.PartType.Cylinder
     ring:SetAttribute("VisualOnly", true)
 
