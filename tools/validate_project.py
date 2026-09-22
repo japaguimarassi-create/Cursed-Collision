@@ -41,7 +41,17 @@ REQUIRED_FILES = [
     "ReplicatedStorage/Shared/RemoteService.lua",
     "ServerScriptService/CombatServer.server.lua",
     "ServerScriptService/WorldBuilder.server.lua",
+    "ReplicatedStorage/Economy/DataService.lua",
+    "ReplicatedStorage/Economy/ShopDefinitions.lua",
+    "ReplicatedStorage/Economy/ShopService.lua",
+    "ReplicatedStorage/Economy/QuestDefinitions.lua",
+    "ReplicatedStorage/Economy/QuestService.lua",
+    "ReplicatedStorage/Economy/CosmeticService.lua",
+    "ReplicatedStorage/Admin/AdminService.lua",
+    "ServerScriptService/AccountServer.server.lua",
     "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/AccountClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/CrossPlatformInput.client.lua",
 ]
 
 FORBIDDEN = [
@@ -82,6 +92,8 @@ def main() -> int:
     definitions = read(SRC / "ReplicatedStorage/Characters/CharacterDefinitions.lua")
     factory = read(SRC / "ReplicatedStorage/Characters/CharacterFactory.lua")
     service = read(SRC / "ReplicatedStorage/Characters/CharacterService.lua")
+    shop_definitions = read(SRC / "ReplicatedStorage/Economy/ShopDefinitions.lua")
+    quest_definitions = read(SRC / "ReplicatedStorage/Economy/QuestDefinitions.lua")
 
     definition_ids = set(re.findall(r"\n\s*([A-Za-z][A-Za-z0-9_]*)\s*=\s*\{\n\s*Id\s*=\s*\"([A-Za-z][A-Za-z0-9_]*)\"",
                                      definitions))
@@ -110,6 +122,18 @@ def main() -> int:
         pattern = rf"{re.escape(character)}\s*=\s*\{{.*?Domain\s*=\s*\"{re.escape(domain)}\""
         if not re.search(pattern, definitions, re.S):
             fail(f"domain definition missing or mismatched for {character}")
+
+    emote_count_match = re.search(r"for index = 1, (\\d+) do", shop_definitions)
+    if not emote_count_match or emote_count_match.group(1) != "150":
+        fail("shop definitions do not declare exactly 150 emote entries")
+
+    skin_style_count = len(re.findall(r'key = "(?:Shadow|Crimson|Eclipse)"', shop_definitions))
+    if skin_style_count != 3:
+        fail("skin catalog does not define the expected three skin styles")
+
+    for category in ("Daily", "Weekly", "General"):
+        if not re.search(rf"QuestDefinitions\\.{re.escape(category)}\\s*=\\s*\\{\\}", quest_definitions):
+            fail(f"quest catalog missing {category} category")
 
     required_factory_methods = ["Init", "GetCooldown", "Special", "Skill", "Awaken", "Domain", "OneTime", "OnIncomingDamage"]
     for method in required_factory_methods:
@@ -151,6 +175,10 @@ def main() -> int:
         "perfect_combo": "PerfectComboService:Record" in read(SRC / "ServerScriptService/CombatServer.server.lua"),
         "one_time_service": "OneTimeAttackService:TryUse" in read(SRC / "ServerScriptService/CombatServer.server.lua"),
         "mobile_ui": "UserInputService" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+        "persistent_economy": "DataStoreService" in read(SRC / "ReplicatedStorage/Economy/DataService.lua"),
+        "owner_only_admin": "player.UserId == game.CreatorId" in read(SRC / "ReplicatedStorage/Admin/AdminService.lua"),
+        "console_input": "ContextActionService" in read(SRC / "StarterPlayer/StarterPlayerScripts/CrossPlatformInput.client.lua"),
+        "account_server": "AccountAction.OnServerEvent" in read(SRC / "ServerScriptService/AccountServer.server.lua"),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
     if missing_runtime:
@@ -163,6 +191,9 @@ def main() -> int:
     print("PASS: universal energy meter references absent")
     print("PASS: critical stub markers absent")
     print("PASS: Rojo project mappings validated")
+    print("PASS: 150-emote and skin catalog structure validated")
+    print("PASS: daily, weekly, and general quest catalogs present")
+    print("PASS: persistent economy, owner-only admin, and cross-platform input detected")
     print("PASS: server-authoritative runtime integrations detected")
     print("NOT VERIFIED: Roblox Studio gameplay, replication under live physics, animation/assets, exploit testing, and publishing")
     return 0
