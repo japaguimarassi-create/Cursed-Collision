@@ -1,0 +1,164 @@
+name: Cursed Collision Roblox Publisher
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Publish the validated build to Roblox"
+        required: true
+        type: boolean
+        default: false
+      universe_id:
+        description: "Roblox Universe ID"
+        required: true
+        type: string
+        default: "5290480963"
+      place_id:
+        description: "Roblox Place ID"
+        required: true
+        type: string
+        default: "15338267657"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cursed-collision-roblox-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish
+    if: ${{ inputs.confirm == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Verify target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          [[ "${{ inputs.universe_id }}" =~ ^[0-9]+$ ]] || exit 1
+          [[ "${{ inputs.place_id }}" =~ ^[0-9]+$ ]] || exit 1
+
+          if [[ "${{ inputs.universe_id }}" != "5290480963" ]]; then
+            echo "::error::Universe ID is not the Cursed Collision Universe."
+            exit 1
+          fi
+
+          if [[ "${{ inputs.place_id }}" != "15338267657" ]]; then
+            echo "::error::Place ID is not the Cursed Collision Place."
+            exit 1
+          fi
+
+          echo "Target verified: Universe ${{ inputs.universe_id }}, Place ${{ inputs.place_id }}"
+
+      - name: Install Roblox toolchain
+        uses: Roblox/setup-foreman@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allow-external-github-orgs: true
+
+      - name: Install Roblox tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          foreman install
+          rojo --version
+
+      - name: Validate project
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_project.py
+
+      - name: Build place
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build
+          mkdir -p build
+
+          rojo build default.project.json --output build/CursedCollision.rbxl
+
+          test -s build/CursedCollision.rbxl
+
+          size="$(stat -c '%s' build/CursedCollision.rbxl)"
+          echo "Build size: ${size} bytes"
+
+          if (( size < 1024 )); then
+            echo "::error::The generated RBXL is unexpectedly small."
+            exit 1
+          fi
+
+      - name: Publish to Roblox
+        shell: bash
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          UNIVERSE_ID: ${{ inputs.universe_id }}
+          PLACE_ID: ${{ inputs.place_id }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${ROBLOX_API_KEY}" ]]; then
+            echo "::error::ROBLOX_API_KEY is missing."
+            exit 1
+          fi
+
+          endpoint="https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published"
+
+          echo "Uploading Cursed Collision..."
+          echo "Universe: ${UNIVERSE_ID}"
+          echo "Place: ${PLACE_ID}"
+
+          http_code="$(
+            curl               --silent               --show-error               --location               --request POST               --url "${endpoint}"               --header "x-api-key: ${ROBLOX_API_KEY}"               --header "Content-Type: application/octet-stream"               --data-binary "@build/CursedCollision.rbxl"               --output build/publish-response.json               --write-out "%{http_code}"
+          )"
+
+          echo "Roblox HTTP status: ${http_code}"
+
+          if [[ ! "${http_code}" =~ ^2[0-9][0-9]$ ]]; then
+            echo "::error::Roblox rejected the publish request."
+            echo "Response body:"
+            cat build/publish-response.json
+            exit 1
+          fi
+
+          python3 - <<'PY'
+import json
+from pathlib import Path
+
+path = Path("build/publish-response.json")
+payload = json.loads(path.read_text(encoding="utf-8"))
+
+version = payload.get("versionNumber")
+
+if not isinstance(version, int) or version <= 0:
+    raise SystemExit("Roblox did not return a valid versionNumber.")
+
+print(f"Published Roblox place version: {version}")
+PY
+
+      - name: Upload publication artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cursed-collision-publish
+          path: |
+            build/CursedCollision.rbxl
+            build/publish-response.json
+          if-no-files-found: warn
+
+  not-confirmed:
+    name: Publication not authorized
+    if: ${{ inputs.confirm != true }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stop safely
+        run: |
+          echo "No Roblox publication was performed."
+          echo "Set confirm=true to authorize publication."
