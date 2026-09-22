@@ -6,11 +6,30 @@ local function getCharacterRoot(character)
     return character and character:FindFirstChild("HumanoidRootPart")
 end
 
+local function isValidTarget(attacker, model)
+    if not model or model == attacker.Character then
+        return false
+    end
+
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    local root = getCharacterRoot(model)
+    if not humanoid or humanoid.Health <= 0 or not root then
+        return false
+    end
+
+    local player = Players:GetPlayerFromCharacter(model)
+    if player then
+        return player ~= attacker
+    end
+
+    return model:GetAttribute("TrainingDummy") == true
+end
+
 function HitboxService.FindTargets(attacker, boxCFrame, boxSize, maxTargets)
     local overlap = OverlapParams.new()
     overlap.FilterType = Enum.RaycastFilterType.Exclude
     overlap.FilterDescendantsInstances = {attacker.Character}
-    overlap.MaxParts = 80
+    overlap.MaxParts = 120
 
     local parts = workspace:GetPartBoundsInBox(boxCFrame, boxSize, overlap)
     local targets = {}
@@ -18,16 +37,19 @@ function HitboxService.FindTargets(attacker, boxCFrame, boxSize, maxTargets)
 
     for _, part in ipairs(parts) do
         local model = part:FindFirstAncestorOfClass("Model")
-        if model and not seen[model] then
+        if model and not seen[model] and isValidTarget(attacker, model) then
             local player = Players:GetPlayerFromCharacter(model)
             local humanoid = model:FindFirstChildOfClass("Humanoid")
             local root = getCharacterRoot(model)
-            if player and player ~= attacker and humanoid and humanoid.Health > 0 and root then
-                seen[model] = true
-                table.insert(targets, {player = player, humanoid = humanoid, root = root})
-                if maxTargets and #targets >= maxTargets then
-                    break
-                end
+            seen[model] = true
+            table.insert(targets, {
+                player = player,
+                model = model,
+                humanoid = humanoid,
+                root = root
+            })
+            if maxTargets and #targets >= maxTargets then
+                break
             end
         end
     end
@@ -57,7 +79,7 @@ function HitboxService.AreaTargets(attacker, position, radius)
     local overlap = OverlapParams.new()
     overlap.FilterType = Enum.RaycastFilterType.Exclude
     overlap.FilterDescendantsInstances = {attacker.Character}
-    overlap.MaxParts = 120
+    overlap.MaxParts = 180
 
     local parts = workspace:GetPartBoundsInRadius(position, radius, overlap)
     local targets = {}
@@ -65,14 +87,17 @@ function HitboxService.AreaTargets(attacker, position, radius)
 
     for _, part in ipairs(parts) do
         local model = part:FindFirstAncestorOfClass("Model")
-        if model and not seen[model] then
+        if model and not seen[model] and isValidTarget(attacker, model) then
             local player = Players:GetPlayerFromCharacter(model)
             local humanoid = model:FindFirstChildOfClass("Humanoid")
             local root = getCharacterRoot(model)
-            if player and player ~= attacker and humanoid and humanoid.Health > 0 and root then
-                seen[model] = true
-                table.insert(targets, {player = player, humanoid = humanoid, root = root})
-            end
+            seen[model] = true
+            table.insert(targets, {
+                player = player,
+                model = model,
+                humanoid = humanoid,
+                root = root
+            })
         end
     end
 
