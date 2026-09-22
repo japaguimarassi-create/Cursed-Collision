@@ -611,11 +611,15 @@ local function makeDummyBodyPart(parent, name, size, cframe, color, shape, canCo
     return part
 end
 
-local function weldDummyPart(base, part)
-    local weld = Instance.new("WeldConstraint")
-    weld.Part0 = base
-    weld.Part1 = part
-    weld.Parent = base
+local function weldDummyPart(base, part, jointName)
+    local motor = Instance.new("Motor6D")
+    motor.Name = jointName or (part.Name .. "Joint")
+    motor.Part0 = base
+    motor.Part1 = part
+    motor.C0 = base.CFrame:ToObjectSpace(part.CFrame)
+    motor.C1 = CFrame.identity
+    motor.Parent = base
+    return motor
 end
 
 local function spawnTrainingDummy(parent, position)
@@ -682,12 +686,66 @@ local function spawnTrainingDummy(parent, position)
         Color3.fromRGB(45, 48, 56)
     )
 
-    weldDummyPart(root, torso)
-    weldDummyPart(root, head)
-    weldDummyPart(root, leftArm)
-    weldDummyPart(root, rightArm)
-    weldDummyPart(root, leftLeg)
-    weldDummyPart(root, rightLeg)
+    weldDummyPart(root, torso, "RootJoint")
+    weldDummyPart(root, head, "Neck")
+    weldDummyPart(root, leftArm, "Left Shoulder")
+    weldDummyPart(root, rightArm, "Right Shoulder")
+    weldDummyPart(root, leftLeg, "Left Hip")
+    weldDummyPart(root, rightLeg, "Right Hip")
+
+    local chestCore = makeDummyBodyPart(
+        model,
+        "TrainingCore",
+        Vector3.new(0.78, 0.92, 0.18),
+        pivot * CFrame.new(0, 4.32, -0.77),
+        COLORS.CrimsonBright,
+        nil,
+        false
+    )
+    chestCore.Material = Enum.Material.Neon
+    weldDummyPart(torso, chestCore, "CoreJoint")
+
+    local belt = makeDummyBodyPart(
+        model,
+        "TargetBelt",
+        Vector3.new(2.7, 0.36, 1.55),
+        pivot * CFrame.new(0, 3.05, 0),
+        COLORS.ConcreteDark
+    )
+    belt.Material = Enum.Material.Metal
+    weldDummyPart(torso, belt, "BeltJoint")
+
+    local shoulderLeft = makeDummyBodyPart(
+        model,
+        "LeftShoulderPad",
+        Vector3.new(1.18, 0.48, 1.25),
+        pivot * CFrame.new(-1.55, 5.15, 0),
+        COLORS.ConcreteDark
+    )
+    shoulderLeft.Material = Enum.Material.Metal
+    weldDummyPart(torso, shoulderLeft, "LeftShoulderPadJoint")
+
+    local shoulderRight = makeDummyBodyPart(
+        model,
+        "RightShoulderPad",
+        Vector3.new(1.18, 0.48, 1.25),
+        pivot * CFrame.new(1.55, 5.15, 0),
+        COLORS.ConcreteDark
+    )
+    shoulderRight.Material = Enum.Material.Metal
+    weldDummyPart(torso, shoulderRight, "RightShoulderPadJoint")
+
+    local eyeStrip = makeDummyBodyPart(
+        model,
+        "TargetEyes",
+        Vector3.new(1.05, 0.2, 0.16),
+        pivot * CFrame.new(0, 6.22, -0.95),
+        COLORS.PurpleBright,
+        nil,
+        false
+    )
+    eyeStrip.Material = Enum.Material.Neon
+    weldDummyPart(head, eyeStrip, "EyeStripJoint")
 
     local humanoid = Instance.new("Humanoid")
     humanoid.Name = "Humanoid"
@@ -700,6 +758,12 @@ local function spawnTrainingDummy(parent, position)
     humanoid.BreakJointsOnDeath = false
     humanoid.RequiresNeck = false
     humanoid.Parent = model
+
+    local animator = Instance.new("Animator")
+    animator.Parent = humanoid
+
+    humanoid.AutoRotate = true
+    humanoid.PlatformStand = false
 
     model.PrimaryPart = root
 
@@ -715,7 +779,77 @@ local function spawnTrainingDummy(parent, position)
     halo.Material = Enum.Material.Neon
     halo.Color = COLORS.CrimsonBright
     halo.Transparency = 0.25
+    halo.Material = Enum.Material.Neon
     halo.Parent = parent
+
+    local base = makePart(
+        parent,
+        "DummyBase",
+        Vector3.new(7.2, 0.55, 7.2),
+        pivot * CFrame.new(0, 0.28, 0),
+        Enum.Material.Metal,
+        Color3.fromRGB(34, 36, 43),
+        true
+    )
+    base.Shape = Enum.PartType.Cylinder
+    base:SetAttribute("TrainingOnly", true)
+    base:SetAttribute("VisualOnly", true)
+
+    local ring = makePart(
+        parent,
+        "DummyBaseRing",
+        Vector3.new(6.3, 0.14, 6.3),
+        pivot * CFrame.new(0, 0.6, 0),
+        Enum.Material.Neon,
+        COLORS.PurpleBright,
+        false
+    )
+    ring.Shape = Enum.PartType.Cylinder
+    ring:SetAttribute("VisualOnly", true)
+
+    local statusGui = Instance.new("BillboardGui")
+    statusGui.Name = "DummyStatus"
+    statusGui.Adornee = head
+    statusGui.Size = UDim2.fromOffset(220, 62)
+    statusGui.StudsOffset = Vector3.new(0, 2.0, 0)
+    statusGui.AlwaysOnTop = true
+    statusGui.LightInfluence = 0
+    statusGui.Parent = head
+
+    local statusFrame = Instance.new("Frame")
+    statusFrame.Size = UDim2.fromScale(1, 1)
+    statusFrame.BackgroundTransparency = 0.18
+    statusFrame.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
+    statusFrame.BorderSizePixel = 0
+    statusFrame.Parent = statusGui
+
+    local statusCorner = Instance.new("UICorner")
+    statusCorner.CornerRadius = UDim.new(0, 9)
+    statusCorner.Parent = statusFrame
+
+    local statusTitle = Instance.new("TextLabel")
+    statusTitle.Size = UDim2.fromScale(1, 0.46)
+    statusTitle.BackgroundTransparency = 1
+    statusTitle.Text = "TRAINING TARGET"
+    statusTitle.Font = Enum.Font.GothamBlack
+    statusTitle.TextSize = 15
+    statusTitle.TextColor3 = COLORS.White
+    statusTitle.Parent = statusFrame
+
+    local statusSub = Instance.new("TextLabel")
+    statusSub.Size = UDim2.fromScale(1, 0.34)
+    statusSub.Position = UDim2.fromScale(0, 0.45)
+    statusSub.BackgroundTransparency = 1
+    statusSub.Text = "COMBO / SKILL TEST"
+    statusSub.Font = Enum.Font.GothamBold
+    statusSub.TextSize = 9
+    statusSub.TextColor3 = COLORS.PurpleBright
+    statusSub.Parent = statusFrame
+
+    humanoid.HealthChanged:Connect(function(health)
+        local ratio = math.clamp(health / humanoid.MaxHealth, 0, 1)
+        statusSub.Text = string.format("COMBO / SKILL TEST  •  %d%%", math.floor(ratio * 100 + 0.5))
+    end)
 
     humanoid.Died:Connect(function()
         halo:Destroy()
