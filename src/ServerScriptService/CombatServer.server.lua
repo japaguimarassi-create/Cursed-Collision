@@ -569,48 +569,35 @@ local function oneTime(player)
     return success
 end
 
+combatController:Register("M1", function(player) return m1(player) end)
+combatController:Register("Heavy", function(player) return heavy(player) end)
+combatController:Register("Dash", function(player, payload) return dash(player, payload) end)
+combatController:Register("DashAttack", function(player, payload) return dash(player, payload) end)
+combatController:Register("Dodge", function(player) return dodge(player) end)
+combatController:Register("Counter", function(player) return counter(player) end)
+combatController:Register("Slam", function(player) return slam(player) end)
+combatController:Register("Grab", function(player) return grab(player) end)
+combatController:Register("BlockStart", function(player) return setBlock(player, true) end)
+combatController:Register("BlockEnd", function(player) return setBlock(player, false) end)
+combatController:Register("Special", function(player) return characterAction(player, "Special") end)
+combatController:Register("Skill", function(player) return characterAction(player, "Skill") end)
+combatController:Register("Skill1", function(player) return characterAction(player, "Skill1") end)
+combatController:Register("Skill2", function(player) return characterAction(player, "Skill2") end)
+combatController:Register("Skill3", function(player) return characterAction(player, "Skill3") end)
+combatController:Register("Skill4", function(player) return characterAction(player, "Skill4") end)
+combatController:Register("Awaken", function(player) return awaken(player) end)
+combatController:Register("Domain", function(player) return domain(player) end)
+combatController:Register("OneTime", function(player) return oneTime(player) end)
+
 local function handle(player, action, payload)
     if type(action) ~= "string" or #action > 32 or not states[player] then
         return false
     end
-
     if not allowAction(player) then
         return false
     end
-
-    if action == "M1" then
-        return m1(player)
-    elseif action == "Heavy" then
-        return heavy(player)
-    elseif action == "Dash" then
-        return dash(player, payload)
-    elseif action == "Dodge" then
-        return dodge(player)
-    elseif action == "Counter" then
-        return counter(player)
-    elseif action == "Slam" then
-        return slam(player)
-    elseif action == "DashAttack" then
-        return dash(player, payload)
-    elseif action == "Grab" then
-        return grab(player)
-    elseif action == "BlockStart" then
-        return setBlock(player, true)
-    elseif action == "BlockEnd" then
-        return setBlock(player, false)
-    elseif action == "Special" or action == "Skill" or string.match(action, "^Skill[1-4]$") then
-        return characterAction(player, action)
-    elseif action == "Awaken" then
-        return awaken(player)
-    elseif action == "Domain" then
-        return domain(player)
-    elseif action == "OneTime" then
-        return oneTime(player)
-    end
-
-    return false
+    return combatController:Dispatch(player, action, payload)
 end
-
 remotes.CombatAction.OnServerEvent:Connect(function(player, action, payload)
     if not NetworkService:IsKnownAction(action) or not states[player] then
         AntiExploitService:Flag(player)
