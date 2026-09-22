@@ -7,9 +7,9 @@ local function remember(character)
         return originals[character]
     end
 
-    local snapshot = {}
+    local snapshot = originals[character] or {}
     for _, descendant in ipairs(character:GetDescendants()) do
-        if descendant:IsA("BasePart") and descendant.Name ~= "HumanoidRootPart" then
+        if descendant:IsA("BasePart") and descendant.Name ~= "HumanoidRootPart" and not snapshot[descendant] then
             snapshot[descendant] = {
                 Color = descendant.Color,
                 Material = descendant.Material
