@@ -15,6 +15,7 @@ local definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local moves = require(ReplicatedStorage.Characters.CharacterMoves)
 local Config = require(ReplicatedStorage.Shared.Config)
 local CombatVFX = require(ReplicatedStorage.Combat.CombatVFX)
+local CombatAnimationService = require(ReplicatedStorage.Combat.CombatAnimationService)
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "CursedCollisionHUD"
@@ -613,6 +614,51 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
+local function floatingDamage(target, amount, tag)
+    if not target or not target.Parent then
+        return
+    end
+
+    local head = target:FindFirstChild("Head") or target:FindFirstChild("HumanoidRootPart")
+    if not head then
+        return
+    end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "DamageNumber"
+    billboard.Adornee = head
+    billboard.Size = UDim2.fromOffset(92, 42)
+    billboard.StudsOffset = Vector3.new((math.random() - 0.5) * 1.2, 2.5, 0)
+    billboard.AlwaysOnTop = true
+    billboard.LightInfluence = 0
+    billboard.Parent = head
+
+    local value = Instance.new("TextLabel")
+    value.Size = UDim2.fromScale(1, 1)
+    value.BackgroundTransparency = 1
+    value.Text = "-" .. tostring(math.floor(tonumber(amount) or 0))
+    value.Font = Enum.Font.GothamBlack
+    value.TextSize = tag == "BlackFlash" and 25 or 20
+    value.TextColor3 = tag == "BlackFlash" and Color3.fromRGB(235, 235, 255) or Color3.fromRGB(255, 238, 238)
+    value.TextStrokeTransparency = 0.35
+    value.TextStrokeColor3 = Color3.fromRGB(10, 10, 15)
+    value.Parent = billboard
+
+    local move = TweenService:Create(
+        billboard,
+        TweenInfo.new(0.42, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {StudsOffset = billboard.StudsOffset + Vector3.new(0, 1.6, 0)}
+    )
+    local fade = TweenService:Create(
+        value,
+        TweenInfo.new(0.42, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        {TextTransparency = 1, TextStrokeTransparency = 1}
+    )
+    move:Play()
+    fade:Play()
+    Debris:AddItem(billboard, 0.48)
+end
+
 local function burst(position, size, transparency, duration)
     if typeof(position) ~= "Vector3" then
         return
@@ -642,6 +688,9 @@ end
 combatFX.OnClientEvent:Connect(function(kind, position, payload, extra)
     if kind == "CharacterMove" then
         CombatVFX.CharacterMove(position, payload)
+        if payload and payload.actor and payload.actor:IsA("Model") then
+            CombatAnimationService.Play(payload.actor, payload.move or "Special", payload.action or "Special")
+        end
         return
     elseif kind == "CharacterOneTime" then
         CombatVFX.CharacterOneTime(position, payload, extra)
@@ -657,6 +706,14 @@ combatFX.OnClientEvent:Connect(function(kind, position, payload, extra)
         return
     elseif kind == "Dash" or kind == "MeleeSwing" or kind == "Heavy" or kind == "Grab" or kind == "Block" then
         CombatVFX.Utility(kind, position, payload)
+        return
+    end
+
+    if kind == "HitReaction" then
+        CombatAnimationService.HitReact(position, payload, extra)
+        return
+    elseif kind == "DamageNumber" then
+        floatingDamage(position, payload, extra)
         return
     end
 
