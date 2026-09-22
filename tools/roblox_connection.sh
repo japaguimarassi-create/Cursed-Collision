@@ -26,15 +26,18 @@ log "Target Place: $PLACE_ID"
 for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
   log "HTTPS connectivity attempt $attempt/$MAX_ATTEMPTS"
 
-  if curl --fail --silent --show-error --location --max-time 15 \
+  http_code="$(curl --silent --show-error --location --max-time 15 \
       --output /dev/null \
-      "$ROBLOX_HOST"; then
-    log "Roblox API host is reachable."
+      --write-out '%{http_code}' \
+      "$ROBLOX_HOST" || true)"
+
+  if [[ "$http_code" =~ ^[1-5][0-9][0-9]$ ]]; then
+    log "Roblox API host is reachable (HTTP $http_code)."
     break
   fi
 
   if [[ "$attempt" -eq "$MAX_ATTEMPTS" ]]; then
-    fail "Could not reach $ROBLOX_HOST after $MAX_ATTEMPTS attempts."
+    fail "Could not establish HTTPS connectivity to $ROBLOX_HOST after $MAX_ATTEMPTS attempts."
   fi
 
   sleep "$DELAY_SECONDS"
