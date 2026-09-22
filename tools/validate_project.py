@@ -57,6 +57,22 @@ REQUIRED_FILES = [
     "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/AccountClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/CrossPlatformInput.client.lua",
+    "ServerScriptService/CombatCore/StateManager.lua",
+    "ServerScriptService/CombatCore/CooldownService.lua",
+    "ServerScriptService/CombatCore/NetworkService.lua",
+    "ServerScriptService/CombatCore/AntiExploitService.lua",
+    "ServerScriptService/CombatCore/MovementController.lua",
+    "ServerScriptService/CombatCore/DamageService.lua",
+    "ServerScriptService/CombatCore/CombatController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/CameraController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/VFXController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/SFXController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/UIController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/InputController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/CharacterController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/MovementController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AbilityController.lua",
 ]
 
 FORBIDDEN = [
@@ -229,6 +245,36 @@ def main() -> int:
             and "HumanoidRigType.R15" in read(SRC / "ServerScriptService/DummyAppearanceService.lua")
             and "RealRobloxAvatar" in read(SRC / "ServerScriptService/DummyAppearanceService.lua")
         ),
+        "modular_server_combat": all(
+            token in read(SRC / "ServerScriptService/CombatServer.server.lua")
+            for token in ("StateManager", "CooldownService", "NetworkService", "DamageService", "CombatController")
+        ),
+        "advanced_reactions": all(
+            token in read(SRC / "ServerScriptService/CombatCore/DamageService.lua")
+            for token in ("PerfectBlockUntil", "CounterUntil", "WallImpact", "RagdollService:Apply")
+        ),
+        "advanced_actions": all(
+            token in read(SRC / "ServerScriptService/CombatServer.server.lua")
+            for token in ("Counter", "Slam", "DashAttack", "isAirborne", "dashVector")
+        ),
+        "modular_client_combat": all(
+            token in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
+            for token in ("AnimationController", "CameraController", "InputController", "AbilityController", "SFXController")
+        ),
+        "controller_modules": all(
+            (SRC / "StarterPlayer/StarterPlayerScripts/Controllers" / filename).is_file()
+            for filename in (
+                "AnimationController.lua",
+                "CameraController.lua",
+                "VFXController.lua",
+                "SFXController.lua",
+                "UIController.lua",
+                "InputController.lua",
+                "CharacterController.lua",
+                "MovementController.lua",
+                "AbilityController.lua",
+            )
+        ),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
     if missing_runtime:
@@ -252,6 +298,7 @@ def main() -> int:
     print("PASS: urban landmarks, vertical combat space, and skinned training dummy detected")
     print("PASS: controlled environment destruction and impact feedback detected")
     print("PASS: typed combat animation state machine and real Roblox avatar dummy detected")
+    print("PASS: modular server/client combat architecture and advanced reaction paths detected")
     print("NOT VERIFIED: Roblox Studio gameplay, replication under live physics, animation/assets, exploit testing, and publishing")
     return 0
 
