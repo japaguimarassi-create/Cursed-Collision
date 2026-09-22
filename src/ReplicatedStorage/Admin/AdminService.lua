@@ -42,7 +42,9 @@ function AdminService:Execute(actor, action, payload, announce)
 
     elseif action == "RemoveCredits" then
         amount = math.clamp(amount, 1, 1000000000)
-        DataService:SpendCredits(target, amount)
+        if not DataService:SpendCredits(target, amount) then
+            return false, "Target does not have enough Credits."
+        end
         DataService:Save(target)
         return true, "Removed " .. tostring(amount) .. " Credits."
 
