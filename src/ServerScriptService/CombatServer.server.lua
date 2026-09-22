@@ -11,13 +11,13 @@ local PerfectComboService = require(ReplicatedStorage.PerfectCombos.PerfectCombo
 local OneTimeAttackService = require(ReplicatedStorage.OneTimeAttacks.OneTimeAttackService)
 local QuestService = require(ReplicatedStorage.Economy.QuestService)
 local DataService = require(ReplicatedStorage.Economy.DataService)
-local EnvironmentService = require(script.Parent.EnvironmentService)
 local StateManager = require(script.Parent.CombatCore.StateManager)
 local CooldownService = require(script.Parent.CombatCore.CooldownService)
 local NetworkService = require(script.Parent.CombatCore.NetworkService)
 local AntiExploitService = require(script.Parent.CombatCore.AntiExploitService)
 local MovementController = require(script.Parent.CombatCore.MovementController)
 local DamageService = require(script.Parent.CombatCore.DamageService)
+local DestructionService = require(script.Parent.CombatCore.DestructionService)
 local CombatController = require(script.Parent.CombatCore.CombatController)
 
 local remotes = RemoteService:Get()
@@ -78,7 +78,7 @@ end
 context.hitbox = HitboxService
 context.domain = DomainService
 context.environmentImpact = function(origin, radius, power)
-    local changed = EnvironmentService:Impact(origin, radius, power)
+    local changed = DestructionService:Impact(origin, radius, power)
     if changed > 0 then
         remotes.CombatFX:FireAllClients("EnvironmentBreak", origin, {
             radius = radius,
