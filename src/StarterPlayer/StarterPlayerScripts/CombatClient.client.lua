@@ -12,7 +12,7 @@ local combatFX = remotes:WaitForChild("CombatFX")
 local clashEvent = remotes:WaitForChild("ClashEvent")
 local selection = remotes:WaitForChild("Selection")
 local definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
-local moves = require(ReplicatedStorage.Characters.CharacterMoves)
+local movesets = require(ReplicatedStorage.Characters.CustomMovesets)
 local Config = require(ReplicatedStorage.Shared.Config)
 local CombatVFX = require(ReplicatedStorage.Combat.CombatVFX)
 local CombatAnimationService = require(ReplicatedStorage.Combat.CombatAnimationService)
@@ -136,11 +136,11 @@ local function cooldownFor(action)
     end
 
     local id = player:GetAttribute("CharacterId") or "Yuji"
-    local definition = definitions[id]
-    if action == "Special" then
-        return definition and definition.SpecialCooldown or 0.6
-    elseif action == "Skill" then
-        return definition and definition.SkillCooldown or 0.6
+    local slot = tonumber(string.match(tostring(action), "^Skill(%d)$"))
+    if slot then
+        local moveSet = movesets[id] or movesets.Yuji
+        local move = moveSet[slot]
+        return move and move.Cooldown or 0.6
     end
 
     return 0
@@ -292,45 +292,86 @@ techniqueLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 techniqueLayout.SortOrder = Enum.SortOrder.LayoutOrder
 techniqueLayout.Parent = techniqueFrame
 
-local function techniqueButton(name, keyText, action, order)
-    local b = button(techniqueFrame, name, "", UDim2.new(), UDim2.new(), accent)
-    b.LayoutOrder = order
+local skillButtons = {}
+local skillHints = {}
+local skillNames = {}
+local skillKeys = {}
+
+local function techniqueButton(slot)
+    local moveSet = movesets[player:GetAttribute("CharacterId") or "Yuji"] or movesets.Yuji
+    local move = moveSet[slot]
+    local b = button(techniqueFrame, "Skill" .. tostring(slot), "", UDim2.new(), UDim2.new(), accent)
+    b.LayoutOrder = slot
     b.BackgroundColor3 = Color3.fromRGB(18, 21, 28)
     b.BackgroundTransparency = 0.08
     stroke(b, accent, 1.15, 0.3)
 
-    local key = label(b, keyText, UDim2.fromScale(0.24, 0.25), UDim2.fromScale(0.07, 0.07), Enum.Font.GothamBlack, 10)
+    local key = label(b, tostring(slot), UDim2.fromScale(0.24, 0.25), UDim2.fromScale(0.07, 0.07), Enum.Font.GothamBlack, 10)
     key.TextColor3 = accentBright
 
-    local move = label(b, name, UDim2.fromScale(0.84, 0.34), UDim2.fromScale(0.08, 0.30), Enum.Font.GothamBlack, 11)
-    move.TextXAlignment = Enum.TextXAlignment.Center
+    local moveLabel = label(b, move and move.Name or ("SKILL " .. tostring(slot)), UDim2.fromScale(0.84, 0.34), UDim2.fromScale(0.08, 0.30), Enum.Font.GothamBlack, 11)
+    moveLabel.TextXAlignment = Enum.TextXAlignment.Center
 
     local hint = label(b, "READY", UDim2.fromScale(0.84, 0.22), UDim2.fromScale(0.08, 0.69), Enum.Font.Gotham, 8)
     hint.TextXAlignment = Enum.TextXAlignment.Center
     hint.TextColor3 = muted
 
     b.Activated:Connect(function()
-        fireAction(action, action == "Awaken" and 0 or cooldownFor(action))
+        local action = "Skill" .. tostring(slot)
+        fireAction(action, cooldownFor(action))
     end)
 
-    return b, hint, move, key
+    skillButtons[slot] = b
+    skillHints[slot] = hint
+    skillNames[slot] = moveLabel
+    skillKeys[slot] = key
 end
 
-local specialButton, specialHint, specialMove, specialKey = techniqueButton("SPECIAL", "1", "Special", 1)
-local skillButton, skillHint, skillMove, skillKey = techniqueButton("SKILL", "2", "Skill", 2)
-local awakenButton, awakenHint, awakenMove, awakenKey = techniqueButton("AWAKEN", "3", "Awaken", 3)
-local domainButton, domainHint, domainMove, domainKey = techniqueButton("DOMAIN", "4", "Domain", 4)
+for slot = 1, 4 do
+    techniqueButton(slot)
+end
 
 local oneTime = makeCombatButton(
     gui,
     "OneTime",
-    "OT",
+    "OT  READY",
     Color3.fromRGB(244, 96, 140),
-    UDim2.fromScale(0.076, 0.065),
+    UDim2.fromScale(0.086, 0.055),
     Vector2.new(0.5, 0.5)
 )
-oneTime.Position = UDim2.fromScale(0.423, 0.872)
-oneTime.TextSize = 10
+oneTime.Position = UDim2.fromScale(0.395, 0.872)
+oneTime.TextSize = 9
+oneTime.Activated:Connect(function()
+    fireAction("OneTime")
+end)
+
+local awakeningAction = makeCombatButton(
+    gui,
+    "AwakeningAction",
+    "AWAKEN",
+    gold,
+    UDim2.fromScale(0.086, 0.055),
+    Vector2.new(0.5, 0.5)
+)
+awakeningAction.Position = UDim2.fromScale(0.50, 0.872)
+awakeningAction.TextSize = 9
+awakeningAction.Activated:Connect(function()
+    fireAction("Awaken")
+end)
+
+local domainButton = makeCombatButton(
+    gui,
+    "DomainAction",
+    "DOMAIN",
+    blue,
+    UDim2.fromScale(0.086, 0.055),
+    Vector2.new(0.5, 0.5)
+)
+domainButton.Position = UDim2.fromScale(0.605, 0.872)
+domainButton.TextSize = 9
+domainButton.Activated:Connect(function()
+    fireAction("Domain", cooldownFor("Domain"))
+end)
 
 local actionFrame = Instance.new("Frame")
 actionFrame.Name = "CombatActions"
@@ -430,22 +471,16 @@ end
 local function setButtonKeys()
     local touch = isTouch()
     local gamepad = isGamepad()
+    local gamepadKeys = {"X", "Y", "RB", "LB"}
 
-    if touch then
-        specialKey.Text = "TAP"
-        skillKey.Text = "TAP"
-        awakenKey.Text = "TAP"
-        domainKey.Text = domainButton.Text == "NO DOMAIN" and "—" or "TAP"
-    elseif gamepad then
-        specialKey.Text = "X"
-        skillKey.Text = "Y"
-        awakenKey.Text = "↑"
-        domainKey.Text = domainButton.Text == "NO DOMAIN" and "—" or "↓"
-    else
-        specialKey.Text = "1"
-        skillKey.Text = "2"
-        awakenKey.Text = "G"
-        domainKey.Text = domainButton.Text == "NO DOMAIN" and "—" or "H"
+    for slot = 1, 4 do
+        if touch then
+            skillKeys[slot].Text = "TAP"
+        elseif gamepad then
+            skillKeys[slot].Text = gamepadKeys[slot]
+        else
+            skillKeys[slot].Text = tostring(slot)
+        end
     end
 end
 
@@ -609,16 +644,14 @@ local function update()
     local aw = tonumber(player:GetAttribute("Awakening") or 0) or 0
     local id = player:GetAttribute("CharacterId") or "Yuji"
     local definition = definitions[id]
-    local moveSet = moves[id]
+    local moveSet = movesets[id] or movesets.Yuji
     local hpRatio = healthPercent()
 
-    if moveSet then
-        specialMove.Text = moveSet.SpecialName or "SPECIAL"
-        skillMove.Text = moveSet.SkillName or "SKILL"
+    for slot = 1, 4 do
+        local move = moveSet[slot]
+        skillNames[slot].Text = move and move.Name or ("SKILL " .. tostring(slot))
     end
 
-    awakenMove.Text = player:GetAttribute("AwakeningName") or (definition and definition.AwakeningName) or "AWAKEN"
-    domainMove.Text = definition and definition.Domain or "NO DOMAIN"
     characterLabel.Text = player:GetAttribute("CharacterName") or (definition and definition.Name) or id
     uniqueLabel.Text = (definition and definition.Subtitle or "Fighter") .. " • " .. uniqueText()
 
@@ -644,29 +677,22 @@ local function update()
     local hasDomain = definition and definition.Domain ~= nil
     domainButton.Text = hasDomain and "DOMAIN" or "NO DOMAIN"
     domainButton.BackgroundTransparency = hasDomain and 0.04 or 0.45
-    domainHint.Text = hasDomain and "READY" or "LOCKED"
-    domainHint.TextColor3 = hasDomain and muted or Color3.fromRGB(106, 109, 123)
-
-    awakenHint.Text = awakeningRatio >= 1 and "READY" or "CHARGE"
+    domainButton.Active = hasDomain
+    awakeningAction.Text = awakeningRatio >= 1 and "AWAKEN" or "CHARGE"
     oneTime.Text = player:GetAttribute("OneTimeAttackReady") and "OT  READY" or "OT  USED"
 
     local preferred = UserInputService.PreferredInput
     local touch = preferred == Enum.PreferredInput.Touch
-    if touch then
-        specialKey.Text = "TAP"
-        skillKey.Text = "TAP"
-        awakenKey.Text = "TAP"
-        domainKey.Text = hasDomain and "TAP" or "—"
-    elseif preferred == Enum.PreferredInput.Gamepad then
-        specialKey.Text = "X"
-        skillKey.Text = "Y"
-        awakenKey.Text = "↑"
-        domainKey.Text = hasDomain and "↓" or "—"
-    else
-        specialKey.Text = "Z"
-        skillKey.Text = "X"
-        awakenKey.Text = "G"
-        domainKey.Text = hasDomain and "H" or "—"
+    local gamepad = preferred == Enum.PreferredInput.Gamepad
+    local gamepadKeys = {"X", "Y", "RB", "LB"}
+    for slot = 1, 4 do
+        if touch then
+            skillKeys[slot].Text = "TAP"
+        elseif gamepad then
+            skillKeys[slot].Text = gamepadKeys[slot]
+        else
+            skillKeys[slot].Text = tostring(slot)
+        end
     end
 end
 
@@ -683,9 +709,10 @@ local function refreshCooldownHints()
         end
     end
 
-    hintFor("Special", specialHint, "READY")
-    hintFor("Skill", skillHint, "READY")
-    hintFor("Domain", domainHint, domainButton.Text == "NO DOMAIN" and "LOCKED" or "READY")
+    for slot = 1, 4 do
+        local action = "Skill" .. tostring(slot)
+        hintFor(action, skillHints[slot], "READY")
+    end
 end
 
 for _, attr in ipairs({
@@ -719,8 +746,10 @@ local keyActions = {
     [Enum.KeyCode.F] = "BlockStart",
     [Enum.KeyCode.E] = "Dodge",
     [Enum.KeyCode.T] = "Grab",
-    [Enum.KeyCode.Z] = "Special",
-    [Enum.KeyCode.X] = "Skill",
+    [Enum.KeyCode.One] = "Skill1",
+    [Enum.KeyCode.Two] = "Skill2",
+    [Enum.KeyCode.Three] = "Skill3",
+    [Enum.KeyCode.Four] = "Skill4",
     [Enum.KeyCode.G] = "Awaken",
     [Enum.KeyCode.H] = "Domain",
     [Enum.KeyCode.J] = "OneTime"
