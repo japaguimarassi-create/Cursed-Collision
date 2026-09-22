@@ -246,7 +246,16 @@ local function m1(player)
         remotes.CombatFX:FireAllClients("MeleeSwing", attackRoot.Position, {
             character=player:GetAttribute("CharacterId"),
             combo=state.Combo,
-            direction=attackRoot.CFrame.LookVector
+            direction=attackRoot.CFrame.LookVector,
+            actor=player.Character
+        })
+    end
+    if attackRoot then
+        remotes.CombatFX:FireAllClients("CharacterMove", attackRoot.Position, {
+            character=player:GetAttribute("CharacterId"),
+            action="M1",
+            move="M1",
+            actor=player.Character
         })
     end
 
@@ -289,7 +298,16 @@ local function heavy(player)
     if attackRoot then
         remotes.CombatFX:FireAllClients("Heavy", attackRoot.Position, {
             character=player:GetAttribute("CharacterId"),
-            direction=attackRoot.CFrame.LookVector
+            direction=attackRoot.CFrame.LookVector,
+            actor=player.Character
+        })
+    end
+    if attackRoot then
+        remotes.CombatFX:FireAllClients("CharacterMove", attackRoot.Position, {
+            character=player:GetAttribute("CharacterId"),
+            action="Heavy",
+            move="Heavy",
+            actor=player.Character
         })
     end
     local target = HitboxService.NearestTargetInFront(player, Config.Combat.Heavy.Range, Config.Combat.Heavy.Width, Config.Combat.Heavy.Height)
@@ -345,7 +363,16 @@ local function grab(player)
     if attackRoot then
         remotes.CombatFX:FireAllClients("Grab", attackRoot.Position, {
             character=player:GetAttribute("CharacterId"),
-            direction=attackRoot.CFrame.LookVector
+            direction=attackRoot.CFrame.LookVector,
+            actor=player.Character
+        })
+    end
+    if attackRoot then
+        remotes.CombatFX:FireAllClients("CharacterMove", attackRoot.Position, {
+            character=player:GetAttribute("CharacterId"),
+            action="Grab",
+            move="Grab",
+            actor=player.Character
         })
     end
     local target = HitboxService.NearestTargetInFront(player, Config.Combat.Grab.Range, Config.Combat.Grab.Width, Config.Combat.Grab.Height)
