@@ -582,9 +582,35 @@ accountEvent.OnClientEvent:Connect(function(event, payload)
         local humanoid = character and character:FindFirstChildOfClass("Humanoid")
         if humanoid then
             task.spawn(function()
-                pcall(function()
-                    humanoid:PlayEmoteAsync(info.Animation or "Wave")
-                end)
+                local played = false
+                local animationId = tonumber(info.AnimationId) or 0
+                if animationId > 0 then
+                    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
+                    animator.Parent = humanoid
+                    local animation = Instance.new("Animation")
+                    animation.AnimationId = "rbxassetid://" .. tostring(animationId)
+                    local ok, track = pcall(function()
+                        return animator:LoadAnimation(animation)
+                    end)
+                    if ok and track then
+                        track:Play()
+                        played = true
+                        task.delay(10, function()
+                            if track.IsPlaying then
+                                track:Stop(0.15)
+                            end
+                            animation:Destroy()
+                        end)
+                    else
+                        animation:Destroy()
+                    end
+                end
+
+                if not played then
+                    pcall(function()
+                        humanoid:PlayEmoteAsync(info.Animation or "Wave")
+                    end)
+                end
             end)
         end
         emoteVFX(info.Accent or accent, info.Name or "EMOTE")
