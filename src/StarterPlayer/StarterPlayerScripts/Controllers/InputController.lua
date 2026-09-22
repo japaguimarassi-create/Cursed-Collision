@@ -17,7 +17,7 @@ end
 function InputController:GetDashDirection(): string
     local move = self:GetMoveVector()
     if math.abs(move.Y) >= math.abs(move.X) then
-        return move.Y > 0 and "Forward" or "Back"
+        return move.Y < 0 and "Forward" or "Back"
     end
     return move.X > 0 and "Right" or "Left"
 end
