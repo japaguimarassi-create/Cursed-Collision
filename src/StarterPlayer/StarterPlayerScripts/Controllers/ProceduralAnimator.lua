@@ -5,11 +5,6 @@ local RunService = game:GetService("RunService")
 local ProceduralAnimator = {}
 ProceduralAnimator.__index = ProceduralAnimator
 
-type Keyframe = {
-    t: number,
-    pose: {[string]: CFrame}
-}
-
 type ActiveState = {
     name: string,
     joints: {[string]: Motor6D?},
@@ -23,12 +18,10 @@ local active: {[Model]: ActiveState} =
 local function findJoint(character: Model, names: {string}): Motor6D?
     for _, name in ipairs(names) do
         local object = character:FindFirstChild(name, true)
-
         if object and object:IsA("Motor6D") then
             return object
         end
     end
-
     return nil
 end
 
@@ -68,8 +61,8 @@ local function sample(track: any, time: number): {[string]: CFrame}
                 / math.max(0.0001, b.t - a.t)
             )
 
-            local pose = {}
-            local keys = {}
+            local pose: {[string]: CFrame} = {}
+            local keys: {[string]: boolean} = {}
 
             for key in pairs(a.pose) do
                 keys[key] = true
@@ -104,7 +97,7 @@ local function attackTrack(combo: number): any
     local yaw = ({-0.24, 0.18, -0.28, 0.10})[combo] or 0
     local arm = ({-0.55, 0.44, -0.62, 0.72})[combo] or 0.4
 
-    local track: {any} = {
+    return {
         {t=0.00, pose={
             Waist=CFrame.Angles(0, -yaw * 0.5, 0),
             LeftShoulder=CFrame.Angles(0, 0, arm * 0.25),
@@ -129,8 +122,6 @@ local function attackTrack(combo: number): any
             Root=CFrame.identity
         }}
     }
-
-    return track
 end
 
 local function dashTrack(direction: string): any
@@ -141,7 +132,7 @@ local function dashTrack(direction: string): any
         and 0.22
         or 0
 
-    local track: {any} = {
+    return {
         {t=0.00, pose={
             Waist=CFrame.Angles(lean, side, 0),
             Root=CFrame.Angles(0, side * 0.7, 0)
@@ -155,8 +146,45 @@ local function dashTrack(direction: string): any
             Root=CFrame.identity
         }}
     }
+end
 
-    return track
+local function skillTrack(slot: number): any
+    local accents = {0.20, -0.24, 0.34, -0.38}
+    local reaches = {0.38, 0.55, 0.70, 0.88}
+
+    local accent = accents[slot] or 0.2
+    local reach = reaches[slot] or 0.38
+
+    return {
+        {
+            t=0.00,
+            pose={
+                Waist=CFrame.Angles(0.08, accent * 0.25, 0),
+                LeftShoulder=CFrame.Angles(-0.12, 0, -reach * 0.45),
+                RightShoulder=CFrame.Angles(-0.12, 0, reach * 0.45)
+            }
+        },
+        {
+            t=0.09,
+            pose={
+                Waist=CFrame.Angles(-0.10, accent, 0),
+                LeftShoulder=CFrame.Angles(-0.32, 0, reach),
+                RightShoulder=CFrame.Angles(-0.36, 0, -reach)
+            }
+        },
+        {
+            t=0.18,
+            pose={
+                Waist=CFrame.Angles(0.05, -accent * 0.35, 0),
+                LeftShoulder=CFrame.Angles(0.20, 0, -reach * 0.25),
+                RightShoulder=CFrame.Angles(0.20, 0, reach * 0.25)
+            }
+        },
+        {
+            t=0.30,
+            pose={}
+        }
+    }
 end
 
 function ProceduralAnimator:Bind(character: Model)
@@ -196,7 +224,11 @@ function ProceduralAnimator:Bind(character: Model)
     )
 end
 
-function ProceduralAnimator:Play(character: Model, action: string, payload: any)
+function ProceduralAnimator:Play(
+    character: Model,
+    action: string,
+    payload: any
+)
     local data = active[character] :: any
 
     if not data then
@@ -209,25 +241,29 @@ function ProceduralAnimator:Play(character: Model, action: string, payload: any)
     end
 
     if action == "M1" then
-        data.track = attackTrack(math.clamp(
-            tonumber(payload and payload.combo) or 1,
-            1,
-            4
-        ))
+        data.track = attackTrack(
+            math.clamp(
+                tonumber(payload and payload.combo) or 1,
+                1,
+                4
+            )
+        )
         data.started = os.clock()
     elseif action == "Dash" then
         data.track = dashTrack(
             tostring(payload and payload.dashDirection or "Forward")
         )
         data.started = os.clock()
+    elseif string.sub(action, 1, 5) == "Skill" then
+        data.track = skillTrack(math.clamp(
+            tonumber(string.sub(action, 6)) or 1,
+            1,
+            4
+        ))
+        data.started = os.clock()
     elseif action == "BlockStart" then
         data.track = {
             {t=0.00, pose={
-                Waist=CFrame.Angles(0.10, 0, 0),
-                LeftShoulder=CFrame.Angles(-0.45, 0, 0.55),
-                RightShoulder=CFrame.Angles(-0.45, 0, -0.55)
-            }},
-            {t=0.14, pose={
                 Waist=CFrame.Angles(0.10, 0, 0),
                 LeftShoulder=CFrame.Angles(-0.45, 0, 0.55),
                 RightShoulder=CFrame.Angles(-0.45, 0, -0.55)
