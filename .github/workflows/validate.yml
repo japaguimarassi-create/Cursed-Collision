@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - mobile-hardening
+      - "rebuild/**"
   pull_request:
     branches:
       - main
@@ -46,8 +47,7 @@ jobs:
         run: |
           curl -fsSL https://luau-lsp.pages.dev/type-definitions/globalTypes.RobloxScriptSecurity.d.luau -o globalTypes.d.luau
 
-      - name: Static Luau analysis (advisory)
-        continue-on-error: true
+      - name: Static Luau analysis
         run: luau-lsp analyze --sourcemap=sourcemap.json --definitions=globalTypes.d.luau src
 
       - name: Upload cloud validation artifacts
