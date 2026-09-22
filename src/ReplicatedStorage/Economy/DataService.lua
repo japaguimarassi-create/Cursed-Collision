@@ -9,7 +9,7 @@ local ready = {}
 
 local DEFAULT = {
     Version = 2,
-    Credits = 500,
+    Credits = 0,
     OwnedEmotes = {emote_001 = true},
     OwnedSkins = {},
     EquippedEmote = "emote_001",
