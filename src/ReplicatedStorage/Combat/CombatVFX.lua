@@ -33,7 +33,6 @@ local palette = {
 }
 
 local white = Color3.fromRGB(255, 255, 255)
-local black = Color3.fromRGB(12, 12, 17)
 local activeShakes = 0
 local shakeMagnitude = 0
 local shakeUntil = 0
