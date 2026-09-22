@@ -11,6 +11,7 @@ local PerfectComboService = require(ReplicatedStorage.PerfectCombos.PerfectCombo
 local OneTimeAttackService = require(ReplicatedStorage.OneTimeAttacks.OneTimeAttackService)
 local QuestService = require(ReplicatedStorage.Economy.QuestService)
 local DataService = require(ReplicatedStorage.Economy.DataService)
+local EnvironmentService = require(script.Parent.EnvironmentService)
 
 local remotes = RemoteService:Get()
 local states = {}
@@ -74,6 +75,9 @@ end
 
 context.hitbox = HitboxService
 context.domain = DomainService
+context.environmentImpact = function(origin, radius, power)
+    return EnvironmentService:Impact(origin, radius, power)
+end
 
 function context.rootPosition(player)
     local root = rootOf(player)
