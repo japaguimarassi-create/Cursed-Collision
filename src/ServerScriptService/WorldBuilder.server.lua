@@ -1,7 +1,11 @@
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local DummyAppearanceService = require(script.Parent.DummyAppearanceService)
 
 local MAP_NAME = "CursedCollisionMap"
+
+local spawnTrainingDummy
 
 local previousMap = Workspace:FindFirstChild(MAP_NAME)
 if previousMap then
@@ -622,7 +626,7 @@ local function weldDummyPart(base, part, jointName)
     return motor
 end
 
-local function spawnTrainingDummy(parent, position)
+local function spawnProceduralDummyFallback(parent, position)
     local model = Instance.new("Model")
     model.Name = "TrainingDummy"
     model:SetAttribute("TrainingDummy", true)
@@ -928,6 +932,42 @@ local function spawnTrainingDummy(parent, position)
     end)
 
     return model
+end
+
+local function configureDummyRespawn(model: Model, parent: Instance, position: Vector3)
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        model:Destroy()
+        return
+    end
+
+    humanoid.Died:Connect(function()
+        task.delay(2.5, function()
+            if not parent.Parent then
+                return
+            end
+            if model.Parent then
+                model:Destroy()
+            end
+            spawnTrainingDummy(parent, position)
+        end)
+    end)
+end
+
+spawnTrainingDummy = function(parent, position)
+    local model, err = DummyAppearanceService.Create({
+        parent = parent,
+        position = position,
+        sourceMode = "Creator",
+    })
+
+    if model then
+        configureDummyRespawn(model, parent, position)
+        return model
+    end
+
+    warn("[Cursed Collision] Real avatar dummy failed: " .. tostring(err))
+    return spawnProceduralDummyFallback(parent, position)
 end
 
 local function addTrainingYard()
