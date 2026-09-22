@@ -121,7 +121,7 @@ content.Parent = panel
 
 local state = {
     economy = {Credits=0, OwnedEmotes={}, OwnedSkins={}, EquippedEmote="", EquippedSkin=""},
-    quests = {Daily={}, Weekly={}, General={}, Totals={}},
+    quests = {Daily={}, Weekly={}, General={}, Totals={Daily=24, Weekly=24, General=24}},
     isOwner = false,
     adminPlayers = {},
     activeTab = "Shop",
