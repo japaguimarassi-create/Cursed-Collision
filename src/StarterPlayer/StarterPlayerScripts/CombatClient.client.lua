@@ -6,7 +6,6 @@ local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
-local RemoteService = require(ReplicatedStorage.Shared.RemoteService)
 local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local CharacterMoves = require(ReplicatedStorage.Characters.CharacterMoves)
 local CustomMovesets = require(ReplicatedStorage.Characters.CustomMovesets)
@@ -14,13 +13,62 @@ local InputController = require(script.Parent.Controllers.InputController)
 local ProceduralAnimator = require(script.Parent.Controllers.ProceduralAnimator)
 
 local player = Players.LocalPlayer
-local remotes = RemoteService:Get()
+local playerGui = player:WaitForChild("PlayerGui")
+local remotesFolder = ReplicatedStorage:WaitForChild("Remotes", 30)
+if not remotesFolder then
+    return
+end
+
+local combatAction = remotesFolder:WaitForChild("CombatAction", 15)
+local combatFX = remotesFolder:WaitForChild("CombatFX", 15)
+if not combatAction or not combatFX then
+    return
+end
+
+local oldGui = playerGui:FindFirstChild("CursedCollisionCombatHUD")
+if oldGui then
+    oldGui:Destroy()
+end
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "CursedCollisionCombatHUD"
 gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
 gui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.DisplayOrder = 5
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Enabled = true
+gui.Parent = playerGui
+
+local root = Instance.new("Frame")
+root.Name = "Root"
+root.Size = UDim2.fromScale(1, 1)
+root.BackgroundTransparency = 1
+root.Parent = gui
+
+local scale = Instance.new("UIScale")
+scale.Name = "ResponsiveScale"
+scale.Scale = 1
+scale.Parent = root
+
+local function refreshScale()
+    local camera = workspace.CurrentCamera
+    if not camera then
+        return
+    end
+    local viewport = camera.ViewportSize
+    local factor = math.clamp(viewport.Y / 800, 0.78, 1.16)
+    if viewport.X < viewport.Y then
+        factor = math.clamp(factor, 0.82, 1.08)
+    end
+    scale.Scale = factor
+end
+
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(refreshScale)
+if workspace.CurrentCamera then
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(refreshScale)
+end
+refreshScale()
 
 local function corner(object: GuiObject, radius: number)
     local ui = Instance.new("UICorner")
@@ -44,22 +92,25 @@ local function button(parent: Instance, textValue: string, size: UDim2, position
     object.TextSize = 12
     object.TextColor3 = Color3.fromRGB(240, 241, 246)
     object.BackgroundColor3 = Color3.fromRGB(24, 26, 33)
-    object.BackgroundTransparency = 0.06
+    object.BackgroundTransparency = 0.04
     object.AutoButtonColor = false
+    object.Active = true
+    object.Selectable = true
     object.Parent = parent
     corner(object, 13)
-    stroke(object, 0.55)
+    stroke(object, 0.52)
 
-    object.MouseButton1Down:Connect(function()
-        TweenService:Create(object, TweenInfo.new(0.06), {
-            Size = size + UDim2.fromOffset(2, 2)
-        }):Play()
-    end)
+    local buttonScale = Instance.new("UIScale")
+    buttonScale.Scale = 1
+    buttonScale.Parent = object
 
-    object.MouseButton1Up:Connect(function()
-        TweenService:Create(object, TweenInfo.new(0.08), {
-            Size = size
-        }):Play()
+    object.Activated:Connect(function()
+        TweenService:Create(buttonScale, TweenInfo.new(0.06), {Scale = 0.96}):Play()
+        task.delay(0.06, function()
+            if buttonScale.Parent then
+                TweenService:Create(buttonScale, TweenInfo.new(0.11, Enum.EasingStyle.Back), {Scale = 1}):Play()
+            end
+        end)
     end)
 
     return object
@@ -79,11 +130,6 @@ local function label(parent: Instance, textValue: string, size: UDim2, position:
     return object
 end
 
-local root = Instance.new("Frame")
-root.Size = UDim2.fromScale(1, 1)
-root.BackgroundTransparency = 1
-root.Parent = gui
-
 local roster = {}
 for id in pairs(Definitions) do
     table.insert(roster, id)
@@ -98,59 +144,41 @@ end
 local currentIndex = findCurrentIndex()
 
 local fighter = Instance.new("Frame")
-fighter.Size = UDim2.fromScale(0.34, 0.105)
+fighter.Name = "CharacterCard"
+fighter.Size = UDim2.fromScale(0.31, 0.095)
 fighter.Position = UDim2.fromScale(0.018, 0.018)
 fighter.BackgroundColor3 = Color3.fromRGB(13, 15, 21)
-fighter.BackgroundTransparency = 0.08
+fighter.BackgroundTransparency = 0.06
 fighter.Parent = root
 corner(fighter, 14)
 stroke(fighter, 0.48)
 
-local previousCharacter = button(
-    fighter,
-    "<",
-    UDim2.fromScale(0.14, 0.68),
-    UDim2.fromScale(0.02, 0.16)
-)
+local previousCharacter = button(fighter, "<", UDim2.fromScale(0.15, 0.68), UDim2.fromScale(0.015, 0.16))
+local nextCharacter = button(fighter, ">", UDim2.fromScale(0.15, 0.68), UDim2.fromScale(0.835, 0.16))
 
-local nextCharacter = button(
-    fighter,
-    ">",
-    UDim2.fromScale(0.14, 0.68),
-    UDim2.fromScale(0.84, 0.16)
-)
-
-local nameLabel = label(
-    fighter,
-    "Potential Man",
-    UDim2.fromScale(0.66, 0.40),
-    UDim2.fromScale(0.17, 0.06),
-    15
-)
+local nameLabel = label(fighter, "Potential Man", UDim2.fromScale(0.66, 0.38), UDim2.fromScale(0.17, 0.07), 15)
 nameLabel.TextXAlignment = Enum.TextXAlignment.Center
 
-local titleLabel = label(
-    fighter,
-    "Shadow Potential",
-    UDim2.fromScale(0.66, 0.25),
-    UDim2.fromScale(0.17, 0.56),
-    8
-)
+local titleLabel = label(fighter, "Shadow Potential", UDim2.fromScale(0.66, 0.25), UDim2.fromScale(0.17, 0.56), 8)
 titleLabel.TextColor3 = Color3.fromRGB(150, 154, 168)
 titleLabel.TextXAlignment = Enum.TextXAlignment.Center
 
-local stateLabel = label(
-    root,
-    "READY",
-    UDim2.fromScale(0.30, 0.035),
-    UDim2.fromScale(0.35, 0.022),
-    11
-)
+local stateCard = Instance.new("Frame")
+stateCard.Size = UDim2.fromScale(0.20, 0.05)
+stateCard.Position = UDim2.fromScale(0.40, 0.018)
+stateCard.BackgroundColor3 = Color3.fromRGB(12, 14, 20)
+stateCard.BackgroundTransparency = 0.18
+stateCard.Parent = root
+corner(stateCard, 10)
+stroke(stateCard, 0.72)
+
+local stateLabel = label(stateCard, "READY", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 10)
 stateLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 local skillFrame = Instance.new("Frame")
-skillFrame.Size = UDim2.fromScale(0.70, 0.13)
-skillFrame.Position = UDim2.fromScale(0.50, 0.80)
+skillFrame.Name = "Skills"
+skillFrame.Size = UDim2.fromScale(0.92, 0.12)
+skillFrame.Position = UDim2.fromScale(0.50, 0.815)
 skillFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 skillFrame.BackgroundTransparency = 1
 skillFrame.Parent = root
@@ -160,44 +188,38 @@ local skillCooldowns = {}
 
 for slot = 1, 4 do
     local x = (slot - 0.5) / 4
-
-    local skillButton = button(
-        skillFrame,
-        tostring(slot),
-        UDim2.fromScale(0.235, 0.84),
-        UDim2.fromScale(x, 0.08)
-    )
+    local skillButton = button(skillFrame, tostring(slot), UDim2.fromScale(0.235, 0.88), UDim2.fromScale(x, 0.06))
     skillButton.AnchorPoint = Vector2.new(0.5, 0)
+    skillButton.TextScaled = false
+    skillButton.TextSize = 11
     skillButtons[slot] = skillButton
 
-    skillCooldowns[slot] = label(
-        skillButton,
-        "READY",
-        UDim2.fromScale(0.84, 0.23),
-        UDim2.fromScale(0.08, 0.71),
-        7
-    )
-    skillCooldowns[slot].TextColor3 = Color3.fromRGB(150, 154, 168)
+    local cooldown = label(skillButton, "READY", UDim2.fromScale(0.84, 0.22), UDim2.fromScale(0.08, 0.73), 7)
+    cooldown.TextColor3 = Color3.fromRGB(150, 154, 168)
+    cooldown.TextXAlignment = Enum.TextXAlignment.Center
+    skillCooldowns[slot] = cooldown
 end
 
 local baseFrame = Instance.new("Frame")
-baseFrame.Size = UDim2.fromScale(0.30, 0.30)
-baseFrame.Position = UDim2.fromScale(0.72, 0.54)
+baseFrame.Name = "BaseActions"
+baseFrame.Size = UDim2.fromScale(0.31, 0.29)
+baseFrame.Position = UDim2.fromScale(0.715, 0.545)
 baseFrame.BackgroundTransparency = 1
 baseFrame.Parent = root
 
-local m1 = button(baseFrame, "M1", UDim2.fromScale(0.44, 0.44), UDim2.fromScale(0.62, 0.50))
+local m1 = button(baseFrame, "M1", UDim2.fromScale(0.46, 0.46), UDim2.fromScale(0.62, 0.50))
 m1.AnchorPoint = Vector2.new(0.5, 0.5)
 m1.TextSize = 22
 
-local dash = button(baseFrame, "DASH", UDim2.fromScale(0.32, 0.20), UDim2.fromScale(0.18, 0.62))
+local dash = button(baseFrame, "DASH", UDim2.fromScale(0.34, 0.20), UDim2.fromScale(0.18, 0.63))
 dash.AnchorPoint = Vector2.new(0.5, 0.5)
 
-local block = button(baseFrame, "BLOCK", UDim2.fromScale(0.32, 0.20), UDim2.fromScale(0.18, 0.34))
+local block = button(baseFrame, "BLOCK", UDim2.fromScale(0.34, 0.20), UDim2.fromScale(0.18, 0.34))
 block.AnchorPoint = Vector2.new(0.5, 0.5)
 
-local special = button(root, "SPECIAL", UDim2.fromScale(0.17, 0.07), UDim2.fromScale(0.50, 0.925))
+local special = button(root, "SPECIAL", UDim2.fromScale(0.17, 0.065), UDim2.fromScale(0.50, 0.934))
 special.AnchorPoint = Vector2.new(0.5, 0.5)
+special.TextSize = 11
 
 local localCooldowns: {[string]: number} = {}
 
@@ -226,26 +248,24 @@ local function moveCooldown(action: string): number
 end
 
 local function fire(action: string, payload: any)
-    if action ~= "BlockStart"
-        and action ~= "BlockEnd"
-        and remaining(action) > 0 then
+    if player:GetAttribute("CCHUD_MenuOpen") == true then
         return
     end
 
-    local duration = if action == "BlockStart" or action == "BlockEnd"
-        then 0
-        else moveCooldown(action)
+    if action ~= "BlockStart" and action ~= "BlockEnd" and remaining(action) > 0 then
+        return
+    end
 
+    local duration = if action == "BlockStart" or action == "BlockEnd" then 0 else moveCooldown(action)
     if duration > 0 then
         localCooldowns[action] = os.clock() + duration
     end
 
-    remotes.CombatAction:FireServer(action, payload)
+    combatAction:FireServer(action, payload)
 end
 
 local function refreshCharacter()
     currentIndex = findCurrentIndex()
-
     local id = player:GetAttribute("CharacterId") or roster[currentIndex]
     local profile = Definitions[id]
     local moves = CustomMovesets.Get(id)
@@ -255,25 +275,22 @@ local function refreshCharacter()
 
     for slot = 1, 4 do
         local move = moves[slot]
-        skillButtons[slot].Text =
-            tostring(slot) .. "\n" .. (move and move.Name or "Skill")
+        skillButtons[slot].Text = tostring(slot) .. "\n" .. (move and move.Name or "Skill")
     end
 
-    special.Text =
-        (CharacterMoves[id] and CharacterMoves[id].SpecialName or "SPECIAL")
-        .. "\nSPECIAL"
-
+    special.Text = (CharacterMoves[id] and CharacterMoves[id].SpecialName or "SPECIAL") .. "\nSPECIAL"
     localCooldowns = {}
 end
 
 local function selectCharacter(index: number)
+    if #roster == 0 then
+        return
+    end
+
     currentIndex = ((index - 1) % #roster) + 1
     local id = roster[currentIndex]
-
-    refreshCharacter()
-
     player:SetAttribute("LocalPendingCharacter", id)
-    remotes.CombatAction:FireServer("SelectCharacter", id)
+    combatAction:FireServer("SelectCharacter", id)
 end
 
 previousCharacter.Activated:Connect(function()
@@ -298,11 +315,14 @@ dash.Activated:Connect(function()
     fire("Dash", InputController:GetDashDirection())
 end)
 
-block.Activated:Connect(function()
-    local active = player:GetAttribute("LocalBlocking") ~= true
+local function setBlocking(active: boolean)
     player:SetAttribute("LocalBlocking", active)
     block.Text = active and "BLOCKING" or "BLOCK"
     fire(active and "BlockStart" or "BlockEnd")
+end
+
+block.Activated:Connect(function()
+    setBlocking(player:GetAttribute("LocalBlocking") ~= true)
 end)
 
 special.Activated:Connect(function()
@@ -317,7 +337,7 @@ local keySkills = {
 }
 
 UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then
+    if processed or player:GetAttribute("CCHUD_MenuOpen") == true then
         return
     end
 
@@ -342,20 +362,14 @@ UserInputService.InputBegan:Connect(function(input, processed)
         return
     end
 
-    if input.KeyCode == Enum.KeyCode.F
-        and player:GetAttribute("LocalBlocking") ~= true then
-        player:SetAttribute("LocalBlocking", true)
-        block.Text = "BLOCKING"
-        fire("BlockStart")
+    if input.KeyCode == Enum.KeyCode.F and player:GetAttribute("LocalBlocking") ~= true then
+        setBlocking(true)
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.F
-        and player:GetAttribute("LocalBlocking") == true then
-        player:SetAttribute("LocalBlocking", false)
-        block.Text = "BLOCK"
-        fire("BlockEnd")
+    if input.KeyCode == Enum.KeyCode.F and player:GetAttribute("LocalBlocking") == true then
+        setBlocking(false)
     end
 end)
 
@@ -369,45 +383,49 @@ end
 
 player:GetAttributeChangedSignal("CharacterId"):Connect(refreshCharacter)
 
-remotes.CombatFX.OnClientEvent:Connect(function(kind, _position, payload)
+player:GetAttributeChangedSignal("CCHUD_MenuOpen"):Connect(function()
+    local open = player:GetAttribute("CCHUD_MenuOpen") == true
+    root.Visible = not open
+    if open and player:GetAttribute("LocalBlocking") == true then
+        player:SetAttribute("LocalBlocking", false)
+        block.Text = "BLOCK"
+        combatAction:FireServer("BlockEnd")
+    end
+end)
+
+combatFX.OnClientEvent:Connect(function(kind, _position, payload)
     if kind == "CombatAction"
         and payload
         and payload.actor
         and payload.actor:IsA("Model") then
 
-        ProceduralAnimator:Play(
-            payload.actor,
-            tostring(payload.action or ""),
-            payload
-        )
-
-        stateLabel.Text =
-            string.upper(tostring(payload.action or "ACTION"))
+        ProceduralAnimator:Play(payload.actor, tostring(payload.action or ""), payload)
+        stateLabel.Text = string.upper(tostring(payload.action or "ACTION"))
 
         task.delay(0.18, function()
             if stateLabel.Parent then
                 stateLabel.Text = "READY"
             end
         end)
+
     elseif kind == "BlockImpact" then
         stateLabel.Text = "BLOCKED"
-
         task.delay(0.22, function()
             if stateLabel.Parent then
                 stateLabel.Text = "READY"
             end
         end)
+
     elseif kind == "Hit" and payload then
         stateLabel.Text = payload.final and "FINISHER" or "HIT"
-
         task.delay(0.18, function()
             if stateLabel.Parent then
                 stateLabel.Text = "READY"
             end
         end)
+
     elseif kind == "ProjectileImpact" then
         stateLabel.Text = "IMPACT"
-
         task.delay(0.16, function()
             if stateLabel.Parent then
                 stateLabel.Text = "READY"
@@ -420,13 +438,11 @@ task.spawn(function()
     while gui.Parent do
         for slot = 1, 4 do
             local left = remaining("Skill" .. tostring(slot))
-            skillCooldowns[slot].Text =
-                left <= 0.05
-                and "READY"
-                or string.format("%.1fs", left)
+            skillCooldowns[slot].Text = left <= 0.05 and "READY" or string.format("%.1fs", left)
         end
-        task.wait(0.05)
+        task.wait(0.08)
     end
 end)
 
 refreshCharacter()
+root.Visible = player:GetAttribute("CCHUD_MenuOpen") ~= true

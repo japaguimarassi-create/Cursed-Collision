@@ -43,9 +43,11 @@ local function sendAdminPlayers()
                     DisplayName = player.DisplayName
                 })
             end
+
             table.sort(list, function(a, b)
                 return a.Name < b.Name
             end)
+
             remotes.AccountEvent:FireClient(owner, "AdminPlayers", list)
         end
     end
@@ -124,6 +126,13 @@ remotes.AccountAction.OnServerEvent:Connect(function(player, action, payload)
 
     if action == "Sync" then
         safeSync(player)
+        return
+    end
+
+    if action == "SyncOwner" then
+        if AdminService:IsOwner(player) then
+            sendAdminPlayers()
+        end
         return
     end
 
@@ -246,12 +255,15 @@ end)
 task.spawn(function()
     while true do
         task.wait(45)
+
         for _, player in ipairs(Players:GetPlayers()) do
             QuestService:Initialize(player)
         end
+
         for _, owner in ipairs(Players:GetPlayers()) do
             if AdminService:IsOwner(owner) then
                 safeSync(owner)
+                sendAdminPlayers()
             end
         end
     end

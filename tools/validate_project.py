@@ -30,6 +30,8 @@ REQUIRED = [
     "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/InputController.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/ProceduralAnimator.lua",
+    "StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua",
+    "ServerScriptService/RemoteBootstrap.server.lua",
 ]
 
 ACTIVE = [
@@ -160,9 +162,30 @@ if "Motor6D" not in animator or ":Lerp" not in animator:
     fail("procedural animator is missing Motor6D pose interpolation")
 
 client = read("StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
-for token in ("M1", "DASH", "BLOCK", "SPECIAL", "CombatAction:FireServer"):
+account_client = read("StarterPlayer/StarterPlayerScripts/AccountClient.client.lua")
+owner_client = read("StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua")
+cross_platform = read("StarterPlayer/StarterPlayerScripts/CrossPlatformInput.client.lua")
+remote_bootstrap = read("ServerScriptService/RemoteBootstrap.server.lua")
+for token in ("M1", "DASH", "BLOCK", "SPECIAL", "combatAction:FireServer", 'WaitForChild("Remotes", 30)'):
     if token not in client:
         fail(f"combat HUD/input missing expected element: {token}")
+
+for token in ('"MenuButton"', '"AccountPanel"', 'CCHUD_MenuOpen'):
+    if token not in account_client:
+        fail(f"main menu separation token missing: {token}")
+if '"AdminTab"' in account_client or "AdminAction:FireServer" in account_client:
+    fail("owner controls still embedded in AccountClient")
+
+for token in ('"OwnerButton"', '"OwnerPanel"', "CCHUD_OwnerPanelOpen", 'GetAttribute("IsGameOwner")'):
+    if token not in owner_client:
+        fail(f"owner UI authorization/separation token missing: {token}")
+
+for forbidden in ("Heavy", "Dodge", "Grab", "Awaken", "Domain", "OneTime"):
+    if forbidden in cross_platform:
+        fail(f"unsupported gamepad action remains in CrossPlatformInput: {forbidden}")
+
+if 'RemoteService:Get()' not in remote_bootstrap:
+    fail("RemoteBootstrap does not initialize server remotes")
 
 for relative in ACTIVE:
     source = read(relative)
@@ -179,4 +202,7 @@ print(f"PASS: {len(CHARACTERS)} character modules are present and explicitly bou
 print("PASS: active combat surface is M1 + Dash + Block + Special + Skill1..4")
 print("PASS: server-authoritative hitbox, damage, stun, cooldown and dash protection detected")
 print("PASS: procedural Motor6D animation controller detected")
+print("PASS: combat HUD, main menu and Owner UI are isolated")
+print("PASS: Owner UI is server-authorized and not embedded in the main menu")
+print("PASS: mobile/gamepad action routes match the active NetworkService")
 print("PASS: heavy/dodge/grab/counter/slam/domain/awakening routes are not in the active combat router")
