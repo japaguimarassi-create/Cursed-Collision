@@ -132,6 +132,22 @@ function CharacterService:Select(player, id)
     return true
 end
 
+function CharacterService:SkillSlot(player, slot)
+    local module = self:GetModule(player)
+    slot = tonumber(slot)
+    if not module or not slot or slot < 1 or slot > 4 then
+        return false
+    end
+    if slot == 1 and module.Special then
+        return module.Special(player, ctx)
+    elseif slot == 2 and module.Skill then
+        return module.Skill(player, ctx)
+    elseif module.SkillSlot then
+        return module.SkillSlot(player, ctx, slot)
+    end
+    return false
+end
+
 function CharacterService:Special(player, action)
     local module = self:GetModule(player)
     if not module then
