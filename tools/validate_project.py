@@ -132,7 +132,7 @@ def main() -> int:
         fail("skin catalog does not define the expected three skin styles")
 
     for category in ("Daily", "Weekly", "General"):
-        if not re.search(rf"{re.escape(category)}\\s*=\\s*\\{{", quest_definitions):
+        if not re.search(rf"{re.escape(category)}\s*=\s*\{", quest_definitions):
             fail(f"quest catalog missing {category} category")
 
     required_factory_methods = ["Init", "GetCooldown", "Special", "Skill", "Awaken", "Domain", "OneTime", "OnIncomingDamage"]
