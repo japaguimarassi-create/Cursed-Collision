@@ -29,8 +29,9 @@ local transitions: {[State]: {[State]: boolean}} = {
 }
 
 function CombatStateMachine.new(clock: (() -> number)?): Machine
+    local stateStore = setmetatable({} :: {[Model]: Record}, {__mode = "k"})
     local self = setmetatable({
-        _states = {},
+        _states = stateStore,
         _clock = clock or os.clock,
     }, CombatStateMachine)
 
