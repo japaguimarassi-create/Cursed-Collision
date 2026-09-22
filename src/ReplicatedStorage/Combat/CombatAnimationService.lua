@@ -369,8 +369,16 @@ local function resolve(name)
         return Poses["Grab"]
     elseif string.find(lower, "heavy") then
         return Poses["Heavy"]
-    elseif string.find(lower, "dash") then
+    elseif string.find(lower, "dash") or string.find(lower, "ambush") or string.find(lower, "rush") then
         return Poses["Dash"]
+    elseif string.find(lower, "kick") then
+        return Poses["Heavy"]
+    elseif string.find(lower, "palm") or string.find(lower, "punch") or string.find(lower, "strike") then
+        return Poses["Divergent Fist"]
+    elseif string.find(lower, "sphere") or string.find(lower, "blast") or string.find(lower, "meteor") or string.find(lower, "uzumaki") then
+        return Poses["Hollow Purple"]
+    elseif string.find(lower, "gravity") or string.find(lower, "domain") or string.find(lower, "garden") then
+        return Poses["Domain Expansion"]
     end
     return Poses["M1_1"]
 end
