@@ -2,263 +2,550 @@ local TweenService = game:GetService("TweenService")
 
 local AnimationService = {}
 
-local activeTokens = {}
+local cache = setmetatable({}, {__mode = "k"})
+local tokens = setmetatable({}, {__mode = "k"})
+local idleTokens = setmetatable({}, {__mode = "k"})
+
+local JOINT_ALIASES = {
+    RootJoint = {"RootJoint", "Root"},
+    Waist = {"Waist"},
+    Neck = {"Neck"},
+    LeftShoulder = {"Left Shoulder", "LeftShoulder"},
+    RightShoulder = {"Right Shoulder", "RightShoulder"},
+    LeftElbow = {"Left Elbow", "LeftElbow"},
+    RightElbow = {"Right Elbow", "RightElbow"},
+    LeftHip = {"Left Hip", "LeftHip"},
+    RightHip = {"Right Hip", "RightHip"}
+}
+
+local function rad(x)
+    return math.rad(x)
+end
+
+local function pose(rx, ry, rz)
+    return CFrame.Angles(rad(rx or 0), rad(ry or 0), rad(rz or 0))
+end
 
 local function getJoints(character)
-    local joints = {}
-    for _, instance in ipairs(character:GetDescendants()) do
-        if instance:IsA("Motor6D") then
-            local name = instance.Name
-            if name == "RootJoint" or name == "Root" or name == "Waist" or name == "Neck"
-                or name == "Left Shoulder" or name == "Right Shoulder"
-                or name == "LeftShoulder" or name == "RightShoulder"
-                or name == "Left Elbow" or name == "Right Elbow"
-                or name == "LeftElbow" or name == "RightElbow"
-                or name == "Left Hip" or name == "Right Hip"
-                or name == "LeftHip" or name == "RightHip" then
-                joints[name] = instance
+    local cached = cache[character]
+    if cached then
+        local valid = false
+        for _, joint in pairs(cached) do
+            if joint and joint.Parent then
+                valid = true
+                break
+            end
+        end
+        if valid then
+            return cached
+        end
+    end
+
+    local result = {}
+    for key, aliases in pairs(JOINT_ALIASES) do
+        for _, alias in ipairs(aliases) do
+            local joint = character:FindFirstChild(alias, true)
+            if joint and joint:IsA("Motor6D") then
+                result[key] = joint
+                break
             end
         end
     end
-    return joints
+
+    cache[character] = result
+    return result
 end
 
-local function tweenJoint(joint, transform, duration, style, direction)
-    if not joint then
-        return
-    end
-    local info = TweenInfo.new(duration, style or Enum.EasingStyle.Quart, direction or Enum.EasingDirection.Out)
-    TweenService:Create(joint, info, {Transform = transform}):Play()
+local function nextToken(character)
+    local token = (tokens[character] or 0) + 1
+    tokens[character] = token
+    return token
 end
 
-local function pulseJoints(joints, poses, inTime, holdTime, outTime)
-    for name, pose in pairs(poses) do
-        tweenJoint(joints[name], pose, inTime)
-    end
-    task.wait(inTime + holdTime)
-    for name in pairs(poses) do
-        tweenJoint(joints[name], CFrame.identity, outTime, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-    end
-    task.wait(outTime)
+local function valid(character, token)
+    return character and character.Parent and tokens[character] == token
 end
 
-local attackPoses = {
+local function tween(joint, target, duration, style, direction)
+    if not joint or not joint.Parent then
+        return nil
+    end
+    local info = TweenInfo.new(
+        math.max(0, duration or 0.08),
+        style or Enum.EasingStyle.Quart,
+        direction or Enum.EasingDirection.Out
+    )
+    local t = TweenService:Create(joint, info, {Transform = target})
+    t:Play()
+    return t
+end
+
+local function apply(joints, transforms, duration, style, direction)
+    for key, transform in pairs(transforms) do
+        tween(joints[key], transform, duration, style, direction)
+    end
+end
+
+local function reset(character, joints, duration)
+    for _, joint in pairs(joints) do
+        tween(joint, CFrame.identity, duration, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    end
+end
+
+local function merge(base, extra)
+    local result = {}
+    for key, value in pairs(base) do
+        result[key] = value
+    end
+    if extra then
+        for key, value in pairs(extra) do
+            result[key] = value
+        end
+    end
+    return result
+end
+
+local Poses = {
     ["Divergent Fist"] = {
-        Right = CFrame.Angles(math.rad(-18), math.rad(8), math.rad(-35)),
-        Left = CFrame.Angles(math.rad(8), math.rad(-6), math.rad(14)),
-        Root = CFrame.Angles(math.rad(-4), 0, math.rad(-5))
+        entry = 0.07, hold = 0.06, exit = 0.16,
+        pose = {
+            RootJoint = pose(-6, 0, -4),
+            Waist = pose(2, 0, -3),
+            Neck = pose(-2, 0, 3),
+            RightShoulder = pose(-42, 8, -42),
+            RightElbow = pose(0, -18, -8),
+            LeftShoulder = pose(10, -7, 20),
+            LeftElbow = pose(-8, 12, 4),
+            RightHip = pose(3, 0, 4),
+            LeftHip = pose(-3, 0, -2)
+        }
     },
     ["Black Flash"] = {
-        Right = CFrame.Angles(math.rad(-40), math.rad(-12), math.rad(-55)),
-        Left = CFrame.Angles(math.rad(14), math.rad(10), math.rad(24)),
-        Root = CFrame.Angles(math.rad(-10), 0, math.rad(-9)),
-        Neck = CFrame.Angles(math.rad(-4), 0, math.rad(4))
+        entry = 0.055, hold = 0.075, exit = 0.18,
+        pose = {
+            RootJoint = pose(-13, 0, -8),
+            Waist = pose(-8, -3, -5),
+            Neck = pose(-7, 0, 6),
+            RightShoulder = pose(-68, -18, -54),
+            RightElbow = pose(18, -28, -6),
+            LeftShoulder = pose(17, 10, 28),
+            LeftElbow = pose(-10, 15, 8),
+            RightHip = pose(5, -2, 7),
+            LeftHip = pose(-4, 1, -5)
+        }
     },
     ["Lapse Blue"] = {
-        Right = CFrame.Angles(math.rad(-75), 0, math.rad(-26)),
-        Left = CFrame.Angles(math.rad(-40), math.rad(12), math.rad(30)),
-        Root = CFrame.Angles(0, 0, math.rad(-8))
+        entry = 0.1, hold = 0.16, exit = 0.22,
+        pose = {
+            RootJoint = pose(-5, 0, -10),
+            Waist = pose(-10, 0, -5),
+            Neck = pose(-8, 0, 8),
+            RightShoulder = pose(-82, 4, -30),
+            RightElbow = pose(-8, -18, -6),
+            LeftShoulder = pose(-52, 12, 34),
+            LeftElbow = pose(-12, 20, 5),
+            RightHip = pose(5, 0, 7),
+            LeftHip = pose(-5, 0, -7)
+        }
     },
     ["Reversal Red"] = {
-        Right = CFrame.Angles(math.rad(-30), 0, math.rad(50)),
-        Left = CFrame.Angles(math.rad(-30), 0, math.rad(-50)),
-        Root = CFrame.Angles(math.rad(-5), 0, 0)
+        entry = 0.09, hold = 0.14, exit = 0.2,
+        pose = {
+            RootJoint = pose(-7, 0, 0),
+            Waist = pose(-5, 0, 0),
+            Neck = pose(-4, 0, 0),
+            RightShoulder = pose(-35, 0, 58),
+            RightElbow = pose(-15, 22, 0),
+            LeftShoulder = pose(-35, 0, -58),
+            LeftElbow = pose(-15, -22, 0),
+            RightHip = pose(3, 0, 4),
+            LeftHip = pose(-3, 0, -4)
+        }
     },
-    ["Hollow Purple"] = {
-        Right = CFrame.Angles(math.rad(-65), math.rad(-8), math.rad(-20)),
-        Left = CFrame.Angles(math.rad(-65), math.rad(8), math.rad(20)),
-        Root = CFrame.Angles(math.rad(-12), 0, 0),
-        Neck = CFrame.Angles(math.rad(-7), 0, 0)
+    ["Domain Expansion"] = {
+        entry = 0.18, hold = 0.35, exit = 0.28,
+        pose = {
+            RootJoint = pose(-4, 0, 0),
+            Waist = pose(-8, 0, 0),
+            Neck = pose(-10, 0, 0),
+            RightShoulder = pose(-72, 0, -34),
+            RightElbow = pose(-20, 12, 5),
+            LeftShoulder = pose(-72, 0, 34),
+            LeftElbow = pose(-20, -12, -5),
+            RightHip = pose(4, 0, 5),
+            LeftHip = pose(-4, 0, -5)
+        }
+    },
+    ["M1_1"] = {
+        entry = 0.045, hold = 0.035, exit = 0.11,
+        pose = {
+            RootJoint = pose(-4, 0, -3),
+            Waist = pose(-3, -4, -2),
+            RightShoulder = pose(-45, -8, -48),
+            RightElbow = pose(8, -18, -6),
+            LeftShoulder = pose(8, 6, 18),
+            LeftElbow = pose(-6, 10, 3)
+        }
+    },
+    ["M1_2"] = {
+        entry = 0.045, hold = 0.035, exit = 0.11,
+        pose = {
+            RootJoint = pose(-3, 8, 5),
+            Waist = pose(-3, 7, 4),
+            RightShoulder = pose(10, -8, 18),
+            RightElbow = pose(-10, 18, 5),
+            LeftShoulder = pose(-52, 10, -52),
+            LeftElbow = pose(8, -18, -4)
+        }
+    },
+    ["M1_3"] = {
+        entry = 0.05, hold = 0.04, exit = 0.12,
+        pose = {
+            RootJoint = pose(-6, -8, -5),
+            Waist = pose(-4, -7, -4),
+            RightShoulder = pose(-58, -12, -38),
+            RightElbow = pose(10, -20, -5),
+            LeftShoulder = pose(12, 5, 22),
+            LeftElbow = pose(-5, 10, 4)
+        }
+    },
+    ["M1_4"] = {
+        entry = 0.055, hold = 0.05, exit = 0.14,
+        pose = {
+            RootJoint = pose(-11, 0, 7),
+            Waist = pose(-7, 0, 6),
+            Neck = pose(-6, 0, -5),
+            RightShoulder = pose(-70, 6, -42),
+            RightElbow = pose(16, -22, -5),
+            LeftShoulder = pose(20, -4, 25),
+            LeftElbow = pose(-10, 14, 5)
+        }
+    },
+    ["Heavy"] = {
+        entry = 0.08, hold = 0.08, exit = 0.18,
+        pose = {
+            RootJoint = pose(-14, 0, -7),
+            Waist = pose(-10, 0, -5),
+            Neck = pose(-5, 0, 4),
+            RightShoulder = pose(-78, -10, -52),
+            RightElbow = pose(22, -28, -5),
+            LeftShoulder = pose(22, 8, 28),
+            LeftElbow = pose(-12, 18, 5)
+        }
+    },
+    ["Grab"] = {
+        entry = 0.07, hold = 0.12, exit = 0.17,
+        pose = {
+            RootJoint = pose(-8, 0, 0),
+            Waist = pose(-6, 0, 0),
+            RightShoulder = pose(-44, 0, -48),
+            RightElbow = pose(-18, 22, 0),
+            LeftShoulder = pose(-44, 0, 48),
+            LeftElbow = pose(-18, -22, 0)
+        }
+    },
+    ["Dash"] = {
+        entry = 0.055, hold = 0.09, exit = 0.14,
+        pose = {
+            RootJoint = pose(8, 0, -4),
+            Waist = pose(8, 0, -3),
+            Neck = pose(4, 0, 3),
+            RightShoulder = pose(-35, 0, -28),
+            LeftShoulder = pose(18, 0, 26),
+            RightHip = pose(16, 0, 12),
+            LeftHip = pose(-12, 0, -10)
+        }
+    },
+    ["Divergent"] = {
+        entry = 0.07, hold = 0.06, exit = 0.16,
+        pose = {
+            RootJoint = pose(-6, 0, -4),
+            Waist = pose(2, 0, -3),
+            RightShoulder = pose(-42, 8, -42),
+            LeftShoulder = pose(10, -7, 20)
+        }
     },
     ["Cursed Slash"] = {
-        Right = CFrame.Angles(math.rad(-70), math.rad(18), math.rad(-55)),
-        Left = CFrame.Angles(math.rad(12), math.rad(-12), math.rad(22)),
-        Root = CFrame.Angles(0, math.rad(-12), math.rad(-8))
+        entry = 0.06, hold = 0.05, exit = 0.15,
+        pose = {
+            RootJoint = pose(-5, -12, -7),
+            Waist = pose(-4, -10, -6),
+            Neck = pose(-3, -8, 4),
+            RightShoulder = pose(-74, 18, -56),
+            RightElbow = pose(8, -24, -8),
+            LeftShoulder = pose(12, -10, 22),
+            LeftElbow = pose(-8, 14, 4)
+        }
     },
     ["Fire Arrow"] = {
-        Right = CFrame.Angles(math.rad(-80), 0, math.rad(-12)),
-        Left = CFrame.Angles(math.rad(-25), 0, math.rad(16)),
-        Root = CFrame.Angles(math.rad(-4), 0, math.rad(4))
-    },
-    ["Rika Sword"] = {
-        Right = CFrame.Angles(math.rad(-50), math.rad(12), math.rad(-40)),
-        Left = CFrame.Angles(math.rad(-24), math.rad(-10), math.rad(25)),
-        Root = CFrame.Angles(math.rad(-6), math.rad(6), math.rad(-7))
+        entry = 0.1, hold = 0.18, exit = 0.2,
+        pose = {
+            RootJoint = pose(-5, 0, 4),
+            Waist = pose(-4, 0, 3),
+            RightShoulder = pose(-84, 0, -15),
+            RightElbow = pose(-18, -10, 0),
+            LeftShoulder = pose(-28, 0, 18),
+            LeftElbow = pose(-10, 16, 0)
+        }
     },
     ["Piercing Blood"] = {
-        Right = CFrame.Angles(math.rad(-58), 0, math.rad(-12)),
-        Left = CFrame.Angles(math.rad(-42), 0, math.rad(26)),
-        Root = CFrame.Angles(math.rad(-5), 0, math.rad(-4))
-    },
-    ["Lightning"] = {
-        Right = CFrame.Angles(math.rad(-68), math.rad(-10), math.rad(-35)),
-        Left = CFrame.Angles(math.rad(-42), math.rad(8), math.rad(30)),
-        Root = CFrame.Angles(math.rad(-7), 0, math.rad(-6))
-    },
-    ["ProjectionStrike"] = {
-        Right = CFrame.Angles(math.rad(-54), math.rad(-10), math.rad(-40)),
-        Left = CFrame.Angles(math.rad(-28), math.rad(6), math.rad(22)),
-        Root = CFrame.Angles(math.rad(-10), math.rad(-14), math.rad(-7))
+        entry = 0.09, hold = 0.14, exit = 0.19,
+        pose = {
+            RootJoint = pose(-6, 0, -4),
+            Waist = pose(-4, 0, -3),
+            RightShoulder = pose(-62, 0, -16),
+            RightElbow = pose(-8, -16, 0),
+            LeftShoulder = pose(-45, 0, 28),
+            LeftElbow = pose(-8, 18, 0)
+        }
     },
     ["Gravity"] = {
-        Right = CFrame.Angles(math.rad(-38), 0, math.rad(-52)),
-        Left = CFrame.Angles(math.rad(-38), 0, math.rad(52)),
-        Root = CFrame.Angles(math.rad(-8), 0, 0)
+        entry = 0.1, hold = 0.18, exit = 0.2,
+        pose = {
+            RootJoint = pose(-10, 0, 0),
+            Waist = pose(-7, 0, 0),
+            Neck = pose(-5, 0, 0),
+            RightShoulder = pose(-42, 0, -54),
+            LeftShoulder = pose(-42, 0, 54),
+            RightElbow = pose(-12, 16, 0),
+            LeftElbow = pose(-12, -16, 0)
+        }
     },
-    ["VolcanicBurst"] = {
-        Right = CFrame.Angles(math.rad(-48), 0, math.rad(-55)),
-        Left = CFrame.Angles(math.rad(-48), 0, math.rad(55)),
-        Root = CFrame.Angles(math.rad(-12), 0, 0)
-    },
-    ["DeathSwarm"] = {
-        Right = CFrame.Angles(math.rad(-64), math.rad(-12), math.rad(-35)),
-        Left = CFrame.Angles(math.rad(-40), math.rad(12), math.rad(35)),
-        Root = CFrame.Angles(math.rad(-6), 0, 0)
-    },
-    ["RootGrab"] = {
-        Right = CFrame.Angles(math.rad(-35), 0, math.rad(-48)),
-        Left = CFrame.Angles(math.rad(-35), 0, math.rad(48)),
-        Root = CFrame.Angles(math.rad(-8), 0, 0)
-    },
-    ["IceFormation"] = {
-        Right = CFrame.Angles(math.rad(-62), 0, math.rad(-24)),
-        Left = CFrame.Angles(math.rad(-62), 0, math.rad(24)),
-        Root = CFrame.Angles(math.rad(-9), 0, 0)
-    },
-    ["GraniteShot"] = {
-        Right = CFrame.Angles(math.rad(-60), 0, math.rad(-18)),
-        Left = CFrame.Angles(math.rad(-30), 0, math.rad(18)),
-        Root = CFrame.Angles(math.rad(-14), 0, 0)
-    },
-    ["SkyStrike"] = {
-        Right = CFrame.Angles(math.rad(-48), math.rad(-12), math.rad(-36)),
-        Left = CFrame.Angles(math.rad(-50), math.rad(12), math.rad(36)),
-        Root = CFrame.Angles(math.rad(-7), 0, math.rad(-7))
-    },
-    ["New Shadow Slash"] = {
-        Right = CFrame.Angles(math.rad(-76), math.rad(14), math.rad(-42)),
-        Left = CFrame.Angles(math.rad(-22), math.rad(-8), math.rad(18)),
-        Root = CFrame.Angles(math.rad(-9), math.rad(-8), math.rad(-6))
+    ["Ice Formation"] = {
+        entry = 0.1, hold = 0.18, exit = 0.2,
+        pose = {
+            RootJoint = pose(-8, 0, 0),
+            Waist = pose(-6, 0, 0),
+            RightShoulder = pose(-66, 0, -28),
+            LeftShoulder = pose(-66, 0, 28),
+            RightElbow = pose(-16, 18, 0),
+            LeftElbow = pose(-16, -18, 0)
+        }
     }
 }
 
-local function resolvePose(move)
-    local pose = attackPoses[move]
-    if pose then
-        return pose
+local ALIASES = {
+    ["BlackFlash"] = "Black Flash",
+    ["Domain"] = "Domain Expansion",
+    ["DomainExpansion"] = "Domain Expansion",
+    ["Blue"] = "Lapse Blue",
+    ["Red"] = "Reversal Red",
+    ["DivergentFist"] = "Divergent Fist",
+    ["CursedSlash"] = "Cursed Slash",
+    ["IceFormation"] = "Ice Formation",
+    ["PiercingBlood"] = "Piercing Blood",
+    ["FireArrow"] = "Fire Arrow"
+}
+
+local function resolve(name)
+    name = tostring(name or "")
+    if Poses[name] then
+        return Poses[name]
     end
-    local text = string.lower(move or "")
-    if string.find(text, "strike") or string.find(text, "slash") or string.find(text, "sword") then
-        return attackPoses["Cursed Slash"]
-    elseif string.find(text, "blood") then
-        return attackPoses["Piercing Blood"]
-    elseif string.find(text, "fire") or string.find(text, "volcan") then
-        return attackPoses["VolcanicBurst"]
-    elseif string.find(text, "ice") or string.find(text, "frost") then
-        return attackPoses["IceFormation"]
-    elseif string.find(text, "shot") or string.find(text, "blast") then
-        return attackPoses["GraniteShot"]
+    local alias = ALIASES[name]
+    if alias and Poses[alias] then
+        return Poses[alias]
     end
-    return attackPoses["Divergent Fist"]
+    local lower = string.lower(name)
+    if string.find(lower, "black") and string.find(lower, "flash") then
+        return Poses["Black Flash"]
+    elseif string.find(lower, "divergent") then
+        return Poses["Divergent Fist"]
+    elseif string.find(lower, "domain") then
+        return Poses["Domain Expansion"]
+    elseif string.find(lower, "blue") then
+        return Poses["Lapse Blue"]
+    elseif string.find(lower, "red") then
+        return Poses["Reversal Red"]
+    elseif string.find(lower, "slash") then
+        return Poses["Cursed Slash"]
+    elseif string.find(lower, "blood") then
+        return Poses["Piercing Blood"]
+    elseif string.find(lower, "fire") then
+        return Poses["Fire Arrow"]
+    elseif string.find(lower, "ice") then
+        return Poses["Ice Formation"]
+    elseif string.find(lower, "grab") then
+        return Poses["Grab"]
+    elseif string.find(lower, "heavy") then
+        return Poses["Heavy"]
+    elseif string.find(lower, "dash") then
+        return Poses["Dash"]
+    end
+    return Poses["M1_1"]
 end
 
-local function remapPose(pose, joints)
-    local mapped = {}
-    local right = joints["Right Shoulder"] or joints.RightShoulder
-    local left = joints["Left Shoulder"] or joints.LeftShoulder
-    local root = joints.RootJoint or joints.Root or joints.Waist
-    local neck = joints.Neck
-    if pose.Right then mapped[right and (right.Name) or ""] = pose.Right end
-    if pose.Left then mapped[left and (left.Name) or ""] = pose.Left end
-    if pose.Root then mapped[root and (root.Name) or ""] = pose.Root end
-    if pose.Neck and neck then mapped[neck.Name] = pose.Neck end
-    return mapped
-end
-
-function AnimationService.Play(character, move, action)
+local function playPose(character, name, options)
     if not character or not character.Parent then
-        return
+        return false
     end
 
     local joints = getJoints(character)
-    if not next(joints) then
-        return
+    if not joints.RootJoint and not joints.Waist and not joints.Neck then
+        return false
     end
 
-    local token = (activeTokens[character] or 0) + 1
-    activeTokens[character] = token
+    local definition = resolve(name)
+    options = options or {}
 
-    local pose = resolvePose(move)
-    local mapped = remapPose(pose, joints)
+    local token = nextToken(character)
+    local entry = options.entry or definition.entry
+    local hold = options.hold or definition.hold
+    local exit = options.exit or definition.exit
+    local style = options.style or Enum.EasingStyle.Quart
+    local direction = options.direction or Enum.EasingDirection.Out
+    local transforms = definition.pose
 
-    for name, jointPose in pairs(mapped) do
-        local joint = joints[name]
-        tweenJoint(joint, jointPose, 0.055, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    end
+    apply(joints, transforms, entry, style, direction)
 
-    task.delay(0.095, function()
-        if activeTokens[character] ~= token or not character.Parent then
+    task.delay(entry + hold, function()
+        if not valid(character, token) then
             return
         end
-        for name in pairs(mapped) do
-            tweenJoint(joints[name], CFrame.identity, 0.14, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        end
-    end)
 
-    if action == "Skill" then
-        task.delay(0.17, function()
-            if activeTokens[character] == token and character.Parent then
-                for name, jointPose in pairs(mapped) do
-                    tweenJoint(joints[name], jointPose * CFrame.Angles(math.rad(4), 0, math.rad(4)), 0.08)
+        if options.pulse then
+            local accent = {}
+            for key, value in pairs(transforms) do
+                accent[key] = value * pose(options.pulse, 0, options.pulse * 0.35)
+            end
+            apply(joints, accent, 0.05, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            task.delay(0.05, function()
+                if valid(character, token) then
+                    apply(joints, transforms, 0.06, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 end
-                task.delay(0.09, function()
-                    if activeTokens[character] == token and character.Parent then
-                        for name in pairs(mapped) do
-                            tweenJoint(joints[name], CFrame.identity, 0.12)
-                        end
-                    end
-                end)
+            end)
+        end
+
+        task.delay(options.exitDelay or 0, function()
+            if valid(character, token) then
+                reset(character, joints, exit)
             end
         end)
+    end)
+
+    return true, token
+end
+
+function AnimationService.Cancel(character)
+    if character then
+        nextToken(character)
+        idleTokens[character] = (idleTokens[character] or 0) + 1
     end
+end
+
+function AnimationService.ResetJoints(character, duration)
+    if not character then
+        return
+    end
+    AnimationService.Cancel(character)
+    local joints = getJoints(character)
+    reset(character, joints, duration or 0.12)
+end
+
+function AnimationService.PlayAttack(character, move, options)
+    options = options or {}
+    options.pulse = options.pulse or 2
+    return playPose(character, move, options)
+end
+
+function AnimationService.PlaySkill(character, skill, options)
+    options = options or {}
+    options.pulse = options.pulse or 3
+    options.style = options.style or Enum.EasingStyle.Back
+    return playPose(character, skill, options)
+end
+
+function AnimationService.PlayDomain(character, options)
+    options = options or {}
+    options.pulse = options.pulse or 2
+    options.entry = options.entry or 0.2
+    options.hold = options.hold or 0.4
+    return playPose(character, "Domain Expansion", options)
 end
 
 function AnimationService.HitReact(character, intensity, tag)
     if not character or not character.Parent then
-        return
+        return false
     end
 
     local joints = getJoints(character)
-    if not next(joints) then
-        return
+    local amount = math.clamp(tonumber(intensity) or 1, 0.4, 2)
+    local token = nextToken(character)
+    local spread = math.random(-12, 12) * amount
+    local root = pose(10 * amount, 0, spread)
+    local neck = pose(-8 * amount, spread * 0.35, 0)
+    local right = pose(-7 * amount, 0, -spread * 0.7)
+    local left = pose(-7 * amount, 0, -spread * 0.7)
+
+    apply(joints, {
+        RootJoint = root,
+        Waist = pose(5 * amount, 0, spread * 0.35),
+        Neck = neck,
+        RightShoulder = right,
+        LeftShoulder = left,
+        RightElbow = pose(4 * amount, 0, 0),
+        LeftElbow = pose(4 * amount, 0, 0)
+    }, 0.035, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+    local recovery = tag == "BlackFlash" and 0.2 or 0.12
+    task.delay(recovery, function()
+        if valid(character, token) then
+            reset(character, joints, 0.13)
+        end
+    end)
+
+    return true
+end
+
+function AnimationService.StartIdleCombat(character, intensity)
+    if not character or not character.Parent then
+        return false
     end
 
-    local token = (activeTokens[character] or 0) + 1
-    activeTokens[character] = token
+    local joints = getJoints(character)
+    local token = (idleTokens[character] or 0) + 1
+    idleTokens[character] = token
+    local amount = math.clamp(tonumber(intensity) or 1, 0.5, 1.4)
 
-    local root = joints.RootJoint or joints.Root or joints.Waist
-    local neck = joints.Neck
-    local right = joints["Right Shoulder"] or joints.RightShoulder
-    local left = joints["Left Shoulder"] or joints.LeftShoulder
-
-    local amount = math.clamp(tonumber(intensity) or 1, 0.4, 1.8)
-    local backwards = CFrame.Angles(math.rad(12 * amount), 0, math.rad((math.random() - 0.5) * 12 * amount))
-    local shoulders = CFrame.Angles(math.rad(-8 * amount), 0, math.rad((math.random() - 0.5) * 18 * amount))
-
-    tweenJoint(root, backwards, 0.035, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    tweenJoint(neck, CFrame.Angles(math.rad(-10 * amount), 0, 0), 0.035, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    tweenJoint(right, shoulders, 0.035, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    tweenJoint(left, shoulders:Inverse(), 0.035, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-    task.delay(tag == "BlackFlash" and 0.18 or 0.12, function()
-        if activeTokens[character] ~= token or not character.Parent then
-            return
+    task.spawn(function()
+        local phase = 0
+        while character.Parent and idleTokens[character] == token do
+            if tokens[character] == nil then
+                tokens[character] = 0
+            end
+            phase += 1
+            local direction = phase % 2 == 0 and 1 or -1
+            local root = pose(1.8 * amount, 0, 1.2 * amount * direction)
+            local waist = pose(-1.2 * amount, 0, 1.8 * amount * direction)
+            local neck = pose(-0.8 * amount, 0, -1.2 * amount * direction)
+            apply(joints, {
+                RootJoint = root,
+                Waist = waist,
+                Neck = neck
+            }, 0.38, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+            task.wait(0.42)
         end
-        tweenJoint(root, CFrame.identity, 0.11, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        tweenJoint(neck, CFrame.identity, 0.11, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        tweenJoint(right, CFrame.identity, 0.11, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        tweenJoint(left, CFrame.identity, 0.11, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     end)
+
+    return true
 end
+
+function AnimationService.StopIdleCombat(character)
+    if not character then
+        return
+    end
+    idleTokens[character] = (idleTokens[character] or 0) + 1
+end
+
+function AnimationService.Play(character, move, action)
+    if action == "Domain" or action == "DomainExpansion" then
+        return AnimationService.PlayDomain(character)
+    elseif action == "Skill" or action == "Special" then
+        return AnimationService.PlaySkill(character, move)
+    end
+    return AnimationService.PlayAttack(character, move)
+end
+
+AnimationService.Poses = Poses
 
 return AnimationService
