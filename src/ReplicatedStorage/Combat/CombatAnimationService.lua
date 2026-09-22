@@ -433,9 +433,16 @@ local function playPose(character, name, options)
         return false
     end
 
-    local definition = resolve(name)
     options = options or {}
 
+    local resolvedName = tostring(name or "")
+    if resolvedName == "M1" and type(options.combo) == "number" then
+        resolvedName = "M1_" .. tostring(math.clamp(math.floor(options.combo), 1, 4))
+    elseif resolvedName == "AirM1" then
+        resolvedName = "AirM1"
+    end
+
+    local definition = resolve(resolvedName)
     local token = nextToken(character, options.state or "Attack")
     local entry = options.entry or definition.entry
     local hold = options.hold or definition.hold
@@ -573,26 +580,35 @@ function AnimationService.StartIdleCombat(character, intensity)
     task.spawn(function()
         local phase = 0
         while character.Parent and idleTokens[character] == token do
-            if tokens[character] == nil then
-                tokens[character] = 0
+            if stateMachine:GetState(character) ~= "Idle" then
+                task.wait(0.08)
+                continue
             end
-            phase += 1
-            local direction = phase % 2 == 0 and 1 or -1
-            local root = pose(1.8 * amount, 0, 1.2 * amount * direction)
-            local waist = pose(-1.2 * amount, 0, 1.8 * amount * direction)
-            local neck = pose(-0.8 * amount, 0, -1.2 * amount * direction)
-            apply(joints, {
-                RootJoint = root,
-                Waist = waist,
-                Neck = neck
-            }, 0.38, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-            task.wait(0.42)
+
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            local root = character:FindFirstChild("HumanoidRootPart")
+            if humanoid and root and humanoid.Health > 0 and not character:GetAttribute("Ragdolled") then
+                phase += 1
+                local direction = phase % 2 == 0 and 1 or -1
+                local speed = root.AssemblyLinearVelocity.Magnitude
+                local movementScale = math.clamp(1 + speed / 55, 1, 1.55)
+                local rootPose = pose(1.8 * amount * movementScale, 0, 1.2 * amount * direction)
+                local waistPose = pose(-1.2 * amount * movementScale, 0, 1.8 * amount * direction)
+                local neckPose = pose(-0.8 * amount, 0, -1.2 * amount * direction)
+
+                apply(joints, {
+                    RootJoint = rootPose,
+                    Waist = waistPose,
+                    Neck = neckPose
+                }, 0.32, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+            end
+
+            task.wait(0.34)
         end
     end)
 
     return true
 end
-
 function AnimationService.StopIdleCombat(character)
     if not character then
         return
