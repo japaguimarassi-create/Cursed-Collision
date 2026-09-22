@@ -464,13 +464,6 @@ local function characterAction(player, action)
     if not canCombat(player) or not ready(player, action) then return false end
 
     local cooldown = CharacterService:GetCooldown(player, action)
-    if slot and slot >= 3 then
-        local moduleCooldown = CharacterService:GetModule(player)
-        if moduleCooldown and moduleCooldown.GetSkillSlotCooldown then
-            cooldown = moduleCooldown.GetSkillSlotCooldown(slot)
-        end
-    end
-
     setCooldown(player, action, cooldown)
     local success
     if slot then
