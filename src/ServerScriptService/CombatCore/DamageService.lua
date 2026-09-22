@@ -99,12 +99,23 @@ function DamageService:Apply(attacker: Player, humanoid: Humanoid, amount: numbe
 
         if targetState.CounterUntil > t and not meta.bypassCounter then
             targetState.CounterUntil = 0
+
             local attackerRoot = attacker.Character and attacker.Character:FindFirstChild("HumanoidRootPart")
             if attackerRoot then
-                attackerRoot.AssemblyLinearVelocity = -attackerRoot.CFrame.LookVector * 24 + Vector3.new(0, 10, 0)
+                attackerRoot.AssemblyLinearVelocity = -attackerRoot.CFrame.LookVector * Config.Combat.Counter.Knockback + Vector3.new(0, 14, 0)
             end
+
             stun(attacker, Config.Combat.Counter.Stun)
-            context.fx("Counter", rootOfCharacter(targetCharacter) and rootOfCharacter(targetCharacter).Position or targetCharacter:GetPivot().Position, {
+
+            local attackerHumanoid = attacker.Character and attacker.Character:FindFirstChildOfClass("Humanoid")
+            if attackerHumanoid and attackerHumanoid.Health > 0 then
+                attackerHumanoid:TakeDamage(Config.Combat.Counter.Damage)
+                context.fx("HitReaction", attacker.Character, 1.1, "Counter")
+                context.fx("DamageNumber", attacker.Character, Config.Combat.Counter.Damage, "Counter")
+            end
+
+            local counterRoot = rootOfCharacter(targetCharacter)
+            context.fx("Counter", counterRoot and counterRoot.Position or targetCharacter:GetPivot().Position, {
                 actor = targetCharacter,
                 attacker = attacker.Character
             })
