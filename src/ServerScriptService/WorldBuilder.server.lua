@@ -1,6 +1,5 @@
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
 local DummyAppearanceService = require(script.Parent.DummyAppearanceService)
 
 local MAP_NAME = "CursedCollisionMap"
