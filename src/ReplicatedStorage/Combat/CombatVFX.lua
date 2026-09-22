@@ -561,6 +561,19 @@ function VFX.CharacterOneTime(origin, character, move)
     end
 end
 
+function VFX.Awakening(origin, character, name)
+    if typeof(origin) ~= "Vector3" then
+        return
+    end
+
+    local color = palette[character] or Color3.fromRGB(170, 140, 220)
+    sphere(origin + Vector3.new(0, 1.5, 0), 2.8, color, 0.3)
+    disc(origin, 6, 0.15, color, 0.38, 20)
+    orbit(origin + Vector3.new(0, 1.5, 0), 4.5, white, 10, 0.42)
+    shards(origin + Vector3.new(0, 1.5, 0), Vector3.yAxis, color, 18, 10, 0.24, 0.45)
+    cameraKick(5, 0.28)
+end
+
 function VFX.Domain(origin, character, clash)
     if typeof(origin) ~= "Vector3" then
         return
