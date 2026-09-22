@@ -5,7 +5,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local combatAction = remotes:WaitForChild("CombatAction")
 
+local function combatMenuOpen()
+    local playerGui = game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui")
+    local accountGui = playerGui and playerGui:FindFirstChild("CursedCollisionAccountUI")
+    local accountPanel = accountGui and accountGui:FindFirstChild("AccountPanel")
+    return accountPanel and accountPanel.Visible == true
+end
+
 local function fire(action)
+    if combatMenuOpen() then
+        return
+    end
     combatAction:FireServer(action)
 end
 
