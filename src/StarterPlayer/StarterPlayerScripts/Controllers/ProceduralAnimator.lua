@@ -42,8 +42,15 @@ local function ease(alpha: number): number
     return alpha * alpha * (3 - 2 * alpha)
 end
 
+local function keyframe(t: number, pose: {[string]: CFrame}): any
+    return {
+        t=t,
+        pose=pose
+    }
+end
+
 local function sample(track: any, time: number): {[string]: CFrame}
-    if #track == 0 then
+    if not track or #track == 0 then
         return {}
     end
 
@@ -72,10 +79,10 @@ local function sample(track: any, time: number): {[string]: CFrame}
                 keys[key] = true
             end
 
-            for key in pairs(keys) do
-                local from = a.pose[key] or CFrame.identity
-                local to = b.pose[key] or CFrame.identity
-                pose[key] = from:Lerp(to, alpha)
+            for name in pairs(keys) do
+                local from = a.pose[name] or CFrame.identity
+                local to = b.pose[name] or CFrame.identity
+                pose[name] = from:Lerp(to, alpha)
             end
 
             return pose
@@ -96,32 +103,36 @@ end
 local function attackTrack(combo: number): any
     local yaw = ({-0.24, 0.18, -0.28, 0.10})[combo] or 0
     local arm = ({-0.55, 0.44, -0.62, 0.72})[combo] or 0.4
+    local track: any = {}
 
-    return {
-        {t=0.00, pose={
-            Waist=CFrame.Angles(0, -yaw * 0.5, 0),
-            LeftShoulder=CFrame.Angles(0, 0, arm * 0.25),
-            RightShoulder=CFrame.Angles(0, 0, -arm * 0.55),
-            Root=CFrame.Angles(0, yaw * 0.35, 0)
-        }},
-        {t=0.07, pose={
-            Waist=CFrame.Angles(-0.10, yaw, 0),
-            LeftShoulder=CFrame.Angles(-0.20, 0, -arm),
-            RightShoulder=CFrame.Angles(-0.34, 0, arm)
-        }},
-        {t=0.13, pose={
-            Waist=CFrame.Angles(0.06, -yaw * 0.35, 0),
-            LeftShoulder=CFrame.Angles(0.34, 0, arm * 0.45),
-            RightShoulder=CFrame.Angles(-0.58, 0, -arm * 0.95),
-            Root=CFrame.Angles(0, -yaw * 0.5, 0)
-        }},
-        {t=0.24, pose={
-            Waist=CFrame.identity,
-            LeftShoulder=CFrame.identity,
-            RightShoulder=CFrame.identity,
-            Root=CFrame.identity
-        }}
-    }
+    table.insert(track, keyframe(0.00, {
+        Waist=CFrame.Angles(0, -yaw * 0.5, 0),
+        LeftShoulder=CFrame.Angles(0, 0, arm * 0.25),
+        RightShoulder=CFrame.Angles(0, 0, -arm * 0.55),
+        Root=CFrame.Angles(0, yaw * 0.35, 0)
+    }))
+
+    table.insert(track, keyframe(0.07, {
+        Waist=CFrame.Angles(-0.10, yaw, 0),
+        LeftShoulder=CFrame.Angles(-0.20, 0, -arm),
+        RightShoulder=CFrame.Angles(-0.34, 0, arm)
+    }))
+
+    table.insert(track, keyframe(0.13, {
+        Waist=CFrame.Angles(0.06, -yaw * 0.35, 0),
+        LeftShoulder=CFrame.Angles(0.34, 0, arm * 0.45),
+        RightShoulder=CFrame.Angles(-0.58, 0, -arm * 0.95),
+        Root=CFrame.Angles(0, -yaw * 0.5, 0)
+    }))
+
+    table.insert(track, keyframe(0.24, {
+        Waist=CFrame.identity,
+        LeftShoulder=CFrame.identity,
+        RightShoulder=CFrame.identity,
+        Root=CFrame.identity
+    }))
+
+    return track
 end
 
 local function dashTrack(direction: string): any
@@ -131,60 +142,109 @@ local function dashTrack(direction: string): any
         or direction == "Left"
         and 0.22
         or 0
+    local track: any = {}
 
-    return {
-        {t=0.00, pose={
-            Waist=CFrame.Angles(lean, side, 0),
-            Root=CFrame.Angles(0, side * 0.7, 0)
-        }},
-        {t=0.08, pose={
-            Waist=CFrame.Angles(-lean * 0.4, side * 0.35, 0),
-            Root=CFrame.Angles(0, side, 0)
-        }},
-        {t=0.18, pose={
-            Waist=CFrame.identity,
-            Root=CFrame.identity
-        }}
-    }
+    table.insert(track, keyframe(0.00, {
+        Waist=CFrame.Angles(lean, side, 0),
+        Root=CFrame.Angles(0, side * 0.7, 0)
+    }))
+
+    table.insert(track, keyframe(0.08, {
+        Waist=CFrame.Angles(-lean * 0.4, side * 0.35, 0),
+        Root=CFrame.Angles(0, side, 0)
+    }))
+
+    table.insert(track, keyframe(0.18, {
+        Waist=CFrame.identity,
+        Root=CFrame.identity
+    }))
+
+    return track
 end
 
 local function skillTrack(slot: number): any
     local accents = {0.20, -0.24, 0.34, -0.38}
     local reaches = {0.38, 0.55, 0.70, 0.88}
-
     local accent = accents[slot] or 0.2
     local reach = reaches[slot] or 0.38
+    local track: any = {}
 
-    return {
-        {
-            t=0.00,
-            pose={
-                Waist=CFrame.Angles(0.08, accent * 0.25, 0),
-                LeftShoulder=CFrame.Angles(-0.12, 0, -reach * 0.45),
-                RightShoulder=CFrame.Angles(-0.12, 0, reach * 0.45)
-            }
-        },
-        {
-            t=0.09,
-            pose={
-                Waist=CFrame.Angles(-0.10, accent, 0),
-                LeftShoulder=CFrame.Angles(-0.32, 0, reach),
-                RightShoulder=CFrame.Angles(-0.36, 0, -reach)
-            }
-        },
-        {
-            t=0.18,
-            pose={
-                Waist=CFrame.Angles(0.05, -accent * 0.35, 0),
-                LeftShoulder=CFrame.Angles(0.20, 0, -reach * 0.25),
-                RightShoulder=CFrame.Angles(0.20, 0, reach * 0.25)
-            }
-        },
-        {
-            t=0.30,
-            pose={}
-        }
-    }
+    table.insert(track, keyframe(0.00, {
+        Waist=CFrame.Angles(0.08, accent * 0.25, 0),
+        LeftShoulder=CFrame.Angles(-0.12, 0, -reach * 0.45),
+        RightShoulder=CFrame.Angles(-0.12, 0, reach * 0.45)
+    }))
+
+    table.insert(track, keyframe(0.09, {
+        Waist=CFrame.Angles(-0.10, accent, 0),
+        LeftShoulder=CFrame.Angles(-0.32, 0, reach),
+        RightShoulder=CFrame.Angles(-0.36, 0, -reach)
+    }))
+
+    table.insert(track, keyframe(0.18, {
+        Waist=CFrame.Angles(0.05, -accent * 0.35, 0),
+        LeftShoulder=CFrame.Angles(0.20, 0, -reach * 0.25),
+        RightShoulder=CFrame.Angles(0.20, 0, reach * 0.25)
+    }))
+
+    table.insert(track, keyframe(0.30, {}))
+
+    return track
+end
+
+local function blockStartTrack(): any
+    local track: any = {}
+
+    table.insert(track, keyframe(0.00, {
+        Waist=CFrame.Angles(0.10, 0, 0),
+        LeftShoulder=CFrame.Angles(-0.45, 0, 0.55),
+        RightShoulder=CFrame.Angles(-0.45, 0, -0.55)
+    }))
+
+    table.insert(track, keyframe(0.14, {
+        Waist=CFrame.Angles(0.10, 0, 0),
+        LeftShoulder=CFrame.Angles(-0.45, 0, 0.55),
+        RightShoulder=CFrame.Angles(-0.45, 0, -0.55)
+    }))
+
+    return track
+end
+
+local function blockEndTrack(): any
+    local track: any = {}
+
+    table.insert(track, keyframe(0.00, {
+        Waist=CFrame.Angles(0.10, 0, 0)
+    }))
+
+    table.insert(track, keyframe(0.10, {}))
+
+    return track
+end
+
+local function specialTrack(): any
+    local track: any = {}
+
+    table.insert(track, keyframe(0.00, {
+        Waist=CFrame.Angles(0.15, 0, 0),
+        Root=CFrame.Angles(0, -0.18, 0)
+    }))
+
+    table.insert(track, keyframe(0.18, {
+        Waist=CFrame.Angles(-0.14, 0.20, 0),
+        LeftShoulder=CFrame.Angles(-0.65, 0, 0.25),
+        RightShoulder=CFrame.Angles(-0.65, 0, -0.25)
+    }))
+
+    table.insert(track, keyframe(0.36, {
+        Waist=CFrame.Angles(0.08, -0.28, 0),
+        LeftShoulder=CFrame.Angles(0.38, 0, -0.75),
+        RightShoulder=CFrame.Angles(0.38, 0, 0.75)
+    }))
+
+    table.insert(track, keyframe(0.60, {}))
+
+    return track
 end
 
 function ProceduralAnimator:Bind(character: Model)
@@ -195,10 +255,10 @@ function ProceduralAnimator:Bind(character: Model)
     local name = "CC_Procedural_" .. character:GetDebugId()
 
     active[character] = {
-        name = name,
-        joints = collectJoints(character),
-        track = nil,
-        started = 0
+        name=name,
+        joints=collectJoints(character),
+        track=nil,
+        started=0
     }
 
     RunService:BindToRenderStep(
@@ -241,13 +301,11 @@ function ProceduralAnimator:Play(
     end
 
     if action == "M1" then
-        data.track = attackTrack(
-            math.clamp(
-                tonumber(payload and payload.combo) or 1,
-                1,
-                4
-            )
-        )
+        data.track = attackTrack(math.clamp(
+            tonumber(payload and payload.combo) or 1,
+            1,
+            4
+        ))
         data.started = os.clock()
     elseif action == "Dash" then
         data.track = dashTrack(
@@ -262,38 +320,13 @@ function ProceduralAnimator:Play(
         ))
         data.started = os.clock()
     elseif action == "BlockStart" then
-        data.track = {
-            {t=0.00, pose={
-                Waist=CFrame.Angles(0.10, 0, 0),
-                LeftShoulder=CFrame.Angles(-0.45, 0, 0.55),
-                RightShoulder=CFrame.Angles(-0.45, 0, -0.55)
-            }}
-        }
+        data.track = blockStartTrack()
         data.started = os.clock()
     elseif action == "BlockEnd" then
-        data.track = {
-            {t=0.00, pose={Waist=CFrame.Angles(0.10, 0, 0)}},
-            {t=0.10, pose={}}
-        }
+        data.track = blockEndTrack()
         data.started = os.clock()
     elseif action == "Special" then
-        data.track = {
-            {t=0.00, pose={
-                Waist=CFrame.Angles(0.15, 0, 0),
-                Root=CFrame.Angles(0, -0.18, 0)
-            }},
-            {t=0.18, pose={
-                Waist=CFrame.Angles(-0.14, 0.20, 0),
-                LeftShoulder=CFrame.Angles(-0.65, 0, 0.25),
-                RightShoulder=CFrame.Angles(-0.65, 0, -0.25)
-            }},
-            {t=0.36, pose={
-                Waist=CFrame.Angles(0.08, -0.28, 0),
-                LeftShoulder=CFrame.Angles(0.38, 0, -0.75),
-                RightShoulder=CFrame.Angles(0.38, 0, 0.75)
-            }},
-            {t=0.60, pose={}}
-        }
+        data.track = specialTrack()
         data.started = os.clock()
     end
 end
