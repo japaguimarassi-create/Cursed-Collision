@@ -32,6 +32,7 @@ REQUIRED_FILES = [
     "ReplicatedStorage/Characters/CharacterDefinitions.lua",
     "ReplicatedStorage/Characters/CharacterFactory.lua",
     "ReplicatedStorage/Characters/CharacterService.lua",
+    "ReplicatedStorage/Characters/CustomMovesets.lua",
     "ReplicatedStorage/Combat/HitboxService.lua",
     "ReplicatedStorage/Combat/CombatAnimationService.lua",
     "ReplicatedStorage/Domains/DomainService.lua",
@@ -93,6 +94,7 @@ def main() -> int:
     definitions = read(SRC / "ReplicatedStorage/Characters/CharacterDefinitions.lua")
     factory = read(SRC / "ReplicatedStorage/Characters/CharacterFactory.lua")
     service = read(SRC / "ReplicatedStorage/Characters/CharacterService.lua")
+    movesets = read(SRC / "ReplicatedStorage/Characters/CustomMovesets.lua")
     shop_definitions = read(SRC / "ReplicatedStorage/Economy/ShopDefinitions.lua")
     quest_definitions = read(SRC / "ReplicatedStorage/Economy/QuestDefinitions.lua")
 
@@ -136,7 +138,7 @@ def main() -> int:
         if not re.search(re.escape(category) + r"\s*=\s*\{", quest_definitions):
             fail(f"quest catalog missing {category} category")
 
-    required_factory_methods = ["Init", "GetCooldown", "Special", "Skill", "Awaken", "Domain", "OneTime", "OnIncomingDamage"]
+    required_factory_methods = ["Init", "GetCooldown", "Special", "Skill", "SkillSlot", "Awaken", "Domain", "OneTime", "OnIncomingDamage"]
     for method in required_factory_methods:
         if not re.search(rf"function M\.{re.escape(method)}\b", factory):
             fail(f"CharacterFactory missing method: M.{method}")
@@ -185,6 +187,18 @@ def main() -> int:
         "modern_hud": "TechniqueBar" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HealthCard" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
         "skill_animation": "CombatAnimationService.Play" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HitReaction" in read(SRC / "ServerScriptService/CombatServer.server.lua"),
         "skill_damage_reaction": "hit(ctx, player" in read(SRC / "ReplicatedStorage/Characters/CharacterFactory.lua") and "floatingDamage" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+        "custom_movesets": all(
+            movesets.count("Name=") >= 96,
+            "GetMove" in movesets,
+            "SkillSlot" in service,
+            'string.match(tostring(action), "^Skill(%d)$")' in read(SRC / "ServerScriptService/CombatServer.server.lua"),
+        ),
+        "battleground_hud": all(
+            '"TechniqueBar"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+            '"Skill1"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+            '"Skill4"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+            '"AwakeningAction"' in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+        ),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
     if missing_runtime:
@@ -204,6 +218,7 @@ def main() -> int:
     print("PASS: training yard, respawning dummy, and dummy hitbox integration detected")
     print("PASS: modern compact HUD integration detected")
     print("PASS: skill animation, damage, and hit-reaction integration detected")
+    print("PASS: 24 four-slot custom movesets and battleground HUD detected")
     print("NOT VERIFIED: Roblox Studio gameplay, replication under live physics, animation/assets, exploit testing, and publishing")
     return 0
 
