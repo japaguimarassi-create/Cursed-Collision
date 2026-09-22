@@ -414,9 +414,31 @@ local function renderAdmin()
         remotes.AdminAction:FireServer("SaveAll", {})
     end)
 
+    local questIdBox = Instance.new("TextBox")
+    questIdBox.Size = UDim2.fromScale(0.97, 0.11)
+    questIdBox.Position = UDim2.fromScale(0, 0.43)
+    questIdBox.BackgroundColor3 = Color3.fromRGB(22, 25, 34)
+    questIdBox.TextColor3 = textColor
+    questIdBox.PlaceholderText = "Quest ID to complete..."
+    questIdBox.Text = ""
+    questIdBox.Font = Enum.Font.Gotham
+    questIdBox.TextSize = 12
+    questIdBox.ClearTextOnFocus = false
+    questIdBox.Parent = toolsFrame
+    corner(questIdBox, 8)
+
+    local completeQuest = button(toolsFrame, "Admin_CompleteQuest", "COMPLETE QUEST", UDim2.fromScale(0.46, 0.11), UDim2.fromScale(0, 0.56))
+    completeQuest.Activated:Connect(function()
+        remotes.AdminAction:FireServer("CompleteQuest", {
+            targetUserId = selectedUserId,
+            questId = questIdBox.Text
+        })
+        questIdBox.Text = ""
+    end)
+
     local announcement = Instance.new("TextBox")
     announcement.Size = UDim2.fromScale(0.97, 0.15)
-    announcement.Position = UDim2.fromScale(0, 0.56)
+    announcement.Position = UDim2.fromScale(0, 0.69)
     announcement.BackgroundColor3 = Color3.fromRGB(22, 25, 34)
     announcement.TextColor3 = textColor
     announcement.PlaceholderText = "Global owner announcement..."
@@ -428,13 +450,13 @@ local function renderAdmin()
     announcement.Parent = toolsFrame
     corner(announcement, 8)
 
-    local send = button(toolsFrame, "Admin_Announce", "BROADCAST", UDim2.fromScale(0.46, 0.11), UDim2.fromScale(0, 0.74))
+    local send = button(toolsFrame, "Admin_Announce", "BROADCAST", UDim2.fromScale(0.46, 0.11), UDim2.fromScale(0, 0.87))
     send.Activated:Connect(function()
         remotes.AdminAction:FireServer("Announce", {message=announcement.Text})
         announcement.Text = ""
     end)
 
-    local kick = button(toolsFrame, "Admin_Kick", "KICK TARGET", UDim2.fromScale(0.46, 0.11), UDim2.fromScale(0.51, 0.74))
+    local kick = button(toolsFrame, "Admin_Kick", "KICK TARGET", UDim2.fromScale(0.46, 0.11), UDim2.fromScale(0.51, 0.87))
     kick.Activated:Connect(function()
         remotes.AdminAction:FireServer("Kick", {targetUserId=selectedUserId, reason="Removed by Cursed Collision Owner."})
     end)
