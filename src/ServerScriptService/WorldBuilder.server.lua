@@ -75,7 +75,7 @@ local function makeBuilding(index, position, size, accentColor)
     model.Parent = map
     model:SetAttribute("DistrictBuilding", true)
 
-    local body = makeBlock(
+    local _body = makeBlock(
         model,
         "Shell",
         position,
@@ -98,7 +98,7 @@ local function makeBuilding(index, position, size, accentColor)
     )
     roof:SetAttribute("Roof", true)
 
-    local roofCap = makePart(
+    local _roofCap = makePart(
         model,
         "RoofCap",
         Vector3.new(size.X * 0.42, 0.8, size.Z * 0.42),
@@ -179,7 +179,7 @@ local function makeTree(position, scale)
 end
 
 local function makeStreetLamp(position, rotation)
-    local pole = makePart(
+    local _pole = makePart(
         map,
         "LampPole",
         Vector3.new(0.65, 7.5, 0.65),
@@ -446,7 +446,6 @@ local function addArena()
 end
 
 local function addCentralCover()
-addTrainingYard()
     for _, data in ipairs({
         {Vector3.new(-17, 3.2, -13), Vector3.new(10, 6.4, 4), COLORS.ConcreteDark},
         {Vector3.new(17, 3.2, -13), Vector3.new(10, 6.4, 4), COLORS.ConcreteDark},
@@ -824,6 +823,7 @@ addCentralCover()
 addBuildings()
 addSideAlleys()
 addStreetLife()
+addTrainingYard()
 
 local spawn = Instance.new("SpawnLocation")
 spawn.Name = "CursedCollisionSpawn"
