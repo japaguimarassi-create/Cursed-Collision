@@ -386,7 +386,6 @@ local function renderAdmin()
     local function adminButton(text, action, y)
         local b = button(toolsFrame, "Admin_"..action, text, UDim2.fromScale(0.46, 0.11), UDim2.fromScale(0, y))
         b.Activated:Connect(function()
-            accountAction.Parent = accountAction.Parent
             remotes.AdminAction:FireServer(action, {
                 targetUserId = selectedUserId,
                 amount = tonumber(amountBox.Text) or 0
@@ -597,5 +596,10 @@ player:GetAttributeChangedSignal("IsGameOwner"):Connect(function()
     tabAdmin.Visible = state.isOwner
 end)
 
-platformLabel.Text = UserInputService.PreferredInput == Enum.PreferredInput.Touch and "MOBILE" or UserInputService.PreferredInput == Enum.PreferredInput.Gamepad and "CONSOLE" or "PC"
+local function updatePlatformLabel()
+    platformLabel.Text = UserInputService.PreferredInput == Enum.PreferredInput.Touch and "MOBILE" or UserInputService.PreferredInput == Enum.PreferredInput.Gamepad and "CONSOLE" or "PC"
+end
+
+UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(updatePlatformLabel)
+updatePlatformLabel()
 accountAction:FireServer("Sync", {})
