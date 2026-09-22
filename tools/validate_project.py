@@ -33,6 +33,7 @@ REQUIRED_FILES = [
     "ReplicatedStorage/Characters/CharacterFactory.lua",
     "ReplicatedStorage/Characters/CharacterService.lua",
     "ReplicatedStorage/Combat/HitboxService.lua",
+    "ReplicatedStorage/Combat/CombatAnimationService.lua",
     "ReplicatedStorage/Domains/DomainService.lua",
     "ReplicatedStorage/DomainClash/DomainClashService.lua",
     "ReplicatedStorage/PerfectCombos/PerfectComboService.lua",
@@ -182,6 +183,8 @@ def main() -> int:
         "training_dummy_map": "TrainingDummy" in read(SRC / "ServerScriptService/WorldBuilder.server.lua") and "TrainingYard" in read(SRC / "ServerScriptService/WorldBuilder.server.lua"),
         "training_dummy_hitbox": "TrainingDummy" in read(SRC / "ReplicatedStorage/Combat/HitboxService.lua"),
         "modern_hud": "TechniqueBar" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HealthCard" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
+        "skill_animation": "CombatAnimationService.Play" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua") and "HitReaction" in read(SRC / "ServerScriptService/CombatServer.server.lua"),
+        "skill_damage_reaction": "context.damage(player" in read(SRC / "ReplicatedStorage/Characters/CharacterFactory.lua") and "floatingDamage" in read(SRC / "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua"),
     }
     missing_runtime = [name for name, ok in required_runtime_terms.items() if not ok]
     if missing_runtime:
@@ -200,6 +203,7 @@ def main() -> int:
     print("PASS: server-authoritative runtime integrations detected")
     print("PASS: training yard, respawning dummy, and dummy hitbox integration detected")
     print("PASS: modern compact HUD integration detected")
+    print("PASS: skill animation, damage, and hit-reaction integration detected")
     print("NOT VERIFIED: Roblox Studio gameplay, replication under live physics, animation/assets, exploit testing, and publishing")
     return 0
 
