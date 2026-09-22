@@ -73,7 +73,7 @@ function QuestService:Initialize(player)
 end
 
 function QuestService:GetActive()
-    local daySeed = os.time()
+    local daySeed = tonumber(os.date("!%Y%m%d")) or 0
     local weekSeed = math.floor(os.time() / 604800)
     local activeDaily = activeSet(orderedDaily, 6, daySeed)
     local activeWeekly = activeSet(orderedWeekly, 6, weekSeed)
