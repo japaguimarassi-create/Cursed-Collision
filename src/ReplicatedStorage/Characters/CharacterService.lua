@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
+local CustomMovesets = require(ReplicatedStorage.Characters.CustomMovesets)
 
 local CharacterModules = {
     Yuji = require(ReplicatedStorage.Characters.Yuji),
@@ -64,6 +65,12 @@ function CharacterService:GetModule(player)
 end
 
 function CharacterService:GetCooldown(player, action)
+    local slot = tonumber(string.match(tostring(action), "^Skill(%d)$"))
+    if slot then
+        local move = CustomMovesets.GetMove(self:GetId(player), slot)
+        return move and move.Cooldown or 0.6
+    end
+
     local module = self:GetModule(player)
     if module and module.GetCooldown then
         return module.GetCooldown(action)
