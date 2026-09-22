@@ -169,8 +169,10 @@ function DamageService:Apply(attacker: Player, humanoid: Humanoid, amount: numbe
 
             if meta.wallCheck and velocity.Magnitude > 45 and detectWall(targetRoot, direction) then
                 humanoid:TakeDamage(math.min(8, humanoid.Health))
-                stun(targetPlayer, 0.55)
-                RagdollService:Apply(targetCharacter, 0.45, "WallImpact")
+                if targetPlayer then
+                    stun(targetPlayer, Config.Combat.Wall.Stun)
+                end
+                RagdollService:Apply(targetCharacter, Config.Combat.Wall.RagdollDuration, "WallImpact")
                 context.fx("WallImpact", targetRoot.Position, {
                     actor = targetCharacter,
                     tag = meta.tag or "WallImpact",
@@ -218,7 +220,7 @@ function DamageService:Apply(attacker: Player, humanoid: Humanoid, amount: numbe
             DataService:AddKill(attacker)
             DataService:AddDeath(targetPlayer)
             QuestService:Record(attacker, "Kill", 1, attackerCharacterId)
-            context.fx("KillFeed", {
+            context.fx("KillFeed", Vector3.zero, {
                 attackerName = attacker:GetAttribute("CharacterName") or attacker.Name,
                 victimName = targetPlayer:GetAttribute("CharacterName") or targetPlayer.Name,
                 tag = meta.tag or reaction,
