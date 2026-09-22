@@ -97,7 +97,6 @@ end
 
 local function fireAction(action, duration)
     local now = os.clock()
-    local cooldowns = gui:GetAttribute("Cooldowns") or {}
     local untilValue = tonumber(gui:GetAttribute("Cooldown_" .. action)) or 0
     if untilValue > now then
         return false
@@ -298,7 +297,8 @@ local heavy = smallAction("Heavy", "HEAVY", "Heavy", UDim2.fromScale(0.02, 0.19)
 local grab = smallAction("Grab", "GRAB", "Grab", UDim2.fromScale(0.71, 0.19), Color3.fromRGB(175, 177, 193))
 local dash = smallAction("Dash", "DASH", "Dash", UDim2.fromScale(0.02, 0.70), accent)
 local dodge = smallAction("Dodge", "DODGE", "Dodge", UDim2.fromScale(0.71, 0.70), gold)
-local blockButton = smallAction("Block", "BLOCK", "BlockStart", UDim2.fromScale(0.36, 0.00), blue)
+local blockButton = button(actionFrame, "Block", "BLOCK", UDim2.fromScale(0.27, 0.18), UDim2.fromScale(0.36, 0.00), blue)
+blockButton.TextSize = 9
 
 local mobileBlock = false
 blockButton.Activated:Connect(function()
