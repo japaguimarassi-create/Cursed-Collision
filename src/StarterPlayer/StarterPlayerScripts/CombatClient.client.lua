@@ -259,10 +259,10 @@ local function techniqueButton(name, keyText, action, order)
     return b, hint, move, key
 end
 
-local specialButton, specialHint, specialMove, specialKey = techniqueButton("SPECIAL", "1", "Special", 1)
-local skillButton, skillHint, skillMove, skillKey = techniqueButton("SKILL", "2", "Skill", 2)
-local awakenButton, awakenHint, awakenMove, awakenKey = techniqueButton("AWAKEN", "3", "Awaken", 3)
-local domainButton, domainHint, domainMove, domainKey = techniqueButton("DOMAIN", "4", "Domain", 4)
+local _specialButton, specialHint, specialMove, specialKey = techniqueButton("SPECIAL", "1", "Special", 1)
+local _skillButton, skillHint, skillMove, skillKey = techniqueButton("SKILL", "2", "Skill", 2)
+local _awakenButton, awakenHint, awakenMove, awakenKey = techniqueButton("AWAKEN", "3", "Awaken", 3)
+local _domainButton, domainHint, domainMove, domainKey = techniqueButton("DOMAIN", "4", "Domain", 4)
 
 local oneTime = button(gui, "OneTime", "OT  READY", UDim2.fromScale(0.105, 0.055), UDim2.fromScale(0.155, 0.866), Color3.fromRGB(244, 96, 140))
 oneTime.TextSize = 11
@@ -293,10 +293,10 @@ local function smallAction(name, textValue, action, position, strokeColor)
     return b
 end
 
-local heavy = smallAction("Heavy", "HEAVY", "Heavy", UDim2.fromScale(0.02, 0.19), Color3.fromRGB(175, 177, 193))
-local grab = smallAction("Grab", "GRAB", "Grab", UDim2.fromScale(0.71, 0.19), Color3.fromRGB(175, 177, 193))
-local dash = smallAction("Dash", "DASH", "Dash", UDim2.fromScale(0.02, 0.70), accent)
-local dodge = smallAction("Dodge", "DODGE", "Dodge", UDim2.fromScale(0.71, 0.70), gold)
+local _heavy = smallAction("Heavy", "HEAVY", "Heavy", UDim2.fromScale(0.02, 0.19), Color3.fromRGB(175, 177, 193))
+local _grab = smallAction("Grab", "GRAB", "Grab", UDim2.fromScale(0.71, 0.19), Color3.fromRGB(175, 177, 193))
+local _dash = smallAction("Dash", "DASH", "Dash", UDim2.fromScale(0.02, 0.70), accent)
+local _dodge = smallAction("Dodge", "DODGE", "Dodge", UDim2.fromScale(0.71, 0.70), gold)
 local blockButton = button(actionFrame, "Block", "BLOCK", UDim2.fromScale(0.27, 0.18), UDim2.fromScale(0.36, 0.00), blue)
 blockButton.TextSize = 9
 
