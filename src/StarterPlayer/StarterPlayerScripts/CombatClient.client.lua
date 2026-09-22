@@ -884,7 +884,7 @@ combatFX.OnClientEvent:Connect(function(kind, position, payload, extra)
     elseif kind == "DomainClashStart" then
         CombatVFX.Domain(position, payload, true)
         return
-    elseif kind == "Dash" or kind == "MeleeSwing" or kind == "Heavy" or kind == "Grab" or kind == "Block" then
+    elseif kind == "Dash" or kind == "MeleeSwing" or kind == "Heavy" or kind == "Grab" or kind == "Block" or kind == "EnvironmentBreak" then
         CombatVFX.Utility(kind, position, payload)
         return
     end
