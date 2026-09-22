@@ -1,7 +1,7 @@
 {
-  "publish": false,
+  "publish": true,
   "universe_id": "5290480963",
   "place_id": "15338267657",
-  "request_id": "map-fix-004",
-  "status": "consumed"
+  "request_id": "combat-overhaul-005",
+  "status": "armed"
 }
