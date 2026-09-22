@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Profiles = require(ReplicatedStorage.Characters.CharacterDefinitions)
+local Moves = require(ReplicatedStorage.Characters.CharacterMoves)
 
 local Factory = {}
 
@@ -173,7 +174,8 @@ function Factory.Build(id)
 
     function M.Special(player, ctx)
         local state = ctx.getState(player)
-        local move = profile.SpecialName or "Special"
+        local moveProfile = Moves[id]
+        local move = moveProfile and moveProfile.SpecialName or "Special"
 
         if id == "Gojo" then
             local gojoMoves = {
@@ -361,7 +363,8 @@ function Factory.Build(id)
 
     function M.Skill(player, ctx)
         local state = ctx.getState(player)
-        local move = profile.SkillName or "Skill"
+        local moveProfile = Moves[id]
+        local move = moveProfile and moveProfile.SkillName or "Skill"
 
         if id == "Gojo" then
             move = "Limitless Shift"
