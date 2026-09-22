@@ -8,6 +8,10 @@ local ACTIONS = {
     BlockStart = true,
     BlockEnd = true,
     Special = true,
+    Skill1 = true,
+    Skill2 = true,
+    Skill3 = true,
+    Skill4 = true,
     SelectCharacter = true
 }
 
@@ -18,8 +22,15 @@ function NetworkService:IsKnownAction(action: any): boolean
 end
 
 function NetworkService:ValidatePayload(action: string, payload: any): boolean
-    if payload == nil then
-        return action ~= "Dash"
+    if action == "M1"
+        or action == "BlockStart"
+        or action == "BlockEnd"
+        or action == "Special"
+        or action == "Skill1"
+        or action == "Skill2"
+        or action == "Skill3"
+        or action == "Skill4" then
+        return payload == nil
     end
 
     if action == "Dash" then
@@ -40,9 +51,12 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
 end
 
 function NetworkService:SanitizeDashDirection(payload: any): string
-    if payload == "Back" or payload == "Left" or payload == "Right" then
+    if payload == "Back"
+        or payload == "Left"
+        or payload == "Right" then
         return payload
     end
+
     return "Forward"
 end
 
