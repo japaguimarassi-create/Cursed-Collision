@@ -10,6 +10,7 @@ local DomainService = require(ReplicatedStorage.Domains.DomainService)
 local DomainClashService = require(ReplicatedStorage.DomainClash.DomainClashService)
 local PerfectComboService = require(ReplicatedStorage.PerfectCombos.PerfectComboService)
 local OneTimeAttackService = require(ReplicatedStorage.OneTimeAttacks.OneTimeAttackService)
+local QuestService = require(ReplicatedStorage.Economy.QuestService)
 
 local remotes = RemoteService:Get()
 local states = {}
@@ -128,6 +129,12 @@ function context.damage(attacker, humanoid, amount, meta)
     addAwakening(attacker, Config.Awakening.GainDamageDealt)
     addAwakening(targetPlayer, Config.Awakening.GainDamageTaken)
 
+    local attackerCharacterId = attacker:GetAttribute("CharacterId")
+    QuestService:Record(attacker, "Damage", finalAmount, attackerCharacterId)
+    if humanoid.Health <= 0 then
+        QuestService:Record(attacker, "Kill", 1, attackerCharacterId)
+    end
+
     if meta and meta.stun then
         stunPlayer(targetPlayer, meta.stun)
     end
@@ -237,6 +244,7 @@ local function m1(player)
 
     if hit then
         PerfectComboService:Record(player, "M1")
+        QuestService:Record(player, "M1", 1, player:GetAttribute("CharacterId"))
     end
     return hit
 end
@@ -244,6 +252,7 @@ end
 local function heavy(player)
     if not canCombat(player) or not ready(player, "Heavy") then return false end
     setCooldown(player, "Heavy", Config.Combat.Heavy.Cooldown)
+    QuestService:Record(player, "Heavy", 1, player:GetAttribute("CharacterId"))
     local attackRoot = rootOf(player)
     if attackRoot then
         remotes.CombatFX:FireAllClients("Heavy", attackRoot.Position, {
@@ -266,6 +275,7 @@ local function dash(player)
     if not state or not root or not canCombat(player) or not ready(player, "Dash") then return false end
 
     setCooldown(player, "Dash", Config.Combat.Dash.Cooldown)
+    QuestService:Record(player, "Dash", 1, player:GetAttribute("CharacterId"))
     state.Dodging = true
     state.DodgeUntil = now() + Config.Combat.Dash.Duration
     root.AssemblyLinearVelocity = root.CFrame.LookVector * Config.Combat.Dash.Speed
@@ -285,6 +295,7 @@ local function dodge(player)
     if not state or not canCombat(player) or not ready(player, "Dodge") then return false end
 
     setCooldown(player, "Dodge", Config.Combat.Dodge.Cooldown)
+    QuestService:Record(player, "Dodge", 1, player:GetAttribute("CharacterId"))
     state.Dodging = true
     state.DodgeUntil = now() + Config.Combat.Dodge.IFrame
 
@@ -297,6 +308,7 @@ end
 local function grab(player)
     if not canCombat(player) or not ready(player, "Grab") then return false end
     setCooldown(player, "Grab", Config.Combat.Grab.Cooldown)
+    QuestService:Record(player, "Grab", 1, player:GetAttribute("CharacterId"))
     local attackRoot = rootOf(player)
     if attackRoot then
         remotes.CombatFX:FireAllClients("Grab", attackRoot.Position, {
@@ -322,6 +334,7 @@ local function setBlock(player, active)
     player:SetAttribute("Blocking", active)
 
     if active then
+        QuestService:Record(player, "Block", 1, player:GetAttribute("CharacterId"))
         local attackRoot = rootOf(player)
         if attackRoot then
             remotes.CombatFX:FireAllClients("Block", attackRoot.Position, {
@@ -347,6 +360,7 @@ local function awaken(player)
     player:SetAttribute("AwakeningActive", true)
     PerfectComboService:OnAwakening(player)
     CharacterService:Awaken(player)
+    QuestService:Record(player, "Awaken", 1, player:GetAttribute("CharacterId"))
     remotes.CombatFX:FireAllClients("Awakening", context.rootPosition(player), player:GetAttribute("CharacterId"))
 
     task.delay(Config.Awakening.Duration, function()
@@ -370,6 +384,7 @@ local function domain(player)
 
     setCooldown(player, "Domain", Config.Domain.Cooldown)
     local started = DomainClashService:TryStart(player)
+    QuestService:Record(player, "Domain", 1, player:GetAttribute("CharacterId"))
     remotes.CombatFX:FireAllClients(started and "DomainClashStart" or "DomainStart", context.rootPosition(player), player:GetAttribute("CharacterId"))
     return true
 end
@@ -391,6 +406,7 @@ local function characterAction(player, action)
     local success = CharacterService:Special(player, action)
     if success then
         PerfectComboService:Record(player, action)
+        QuestService:Record(player, action, 1, player:GetAttribute("CharacterId"))
     end
     return success
 end
@@ -399,6 +415,7 @@ local function oneTime(player)
     local success = OneTimeAttackService:TryUse(player, CharacterService)
     if success then
         PerfectComboService:End(player)
+        QuestService:Record(player, "OneTime", 1, player:GetAttribute("CharacterId"))
         remotes.CombatFX:FireAllClients("OneTimeAttack", context.rootPosition(player), player:GetAttribute("CharacterId"))
     end
     return success
