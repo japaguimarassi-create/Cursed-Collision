@@ -30,6 +30,10 @@ local Config = {
         Special = {
             Cooldown = 4.0
         },
+        Skill = {
+            MinCooldown = 0.25,
+            MaxCooldown = 10.0
+        },
         Hitstop = 0.045
     },
     Movement = {
