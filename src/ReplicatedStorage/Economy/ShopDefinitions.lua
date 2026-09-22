@@ -47,7 +47,7 @@ for index = 1, 150 do
         Animation = animation,
         AnimationId = 0,
         Accent = mood[2],
-        Price = index == 1 and 0 or (60 + ((index * 37) % 790)),
+        Price = 125,
         Rarity = index <= 30 and "Common" or index <= 75 and "Rare" or index <= 120 and "Epic" or "Legendary"
     }
 end
