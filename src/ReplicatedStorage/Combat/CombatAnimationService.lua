@@ -176,6 +176,46 @@ local Poses = {
             LeftHip = pose(-4, 0, -5)
         }
     },
+    ["Counter"] = {
+        entry = 0.05, hold = 0.2, exit = 0.16,
+        pose = {
+            RootJoint = pose(-6, 0, 0),
+            Waist = pose(-5, 0, 0),
+            Neck = pose(-4, 0, 0),
+            RightShoulder = pose(-36, 12, -44),
+            RightElbow = pose(-20, -20, -6),
+            LeftShoulder = pose(-36, -12, 44),
+            LeftElbow = pose(-20, 20, 6)
+        }
+    },
+    ["Slam"] = {
+        entry = 0.06, hold = 0.12, exit = 0.2,
+        pose = {
+            RootJoint = pose(12, 0, 0),
+            Waist = pose(9, 0, 0),
+            Neck = pose(6, 0, 0),
+            RightShoulder = pose(-52, 6, -38),
+            RightElbow = pose(18, -16, 0),
+            LeftShoulder = pose(-52, -6, 38),
+            LeftElbow = pose(18, 16, 0),
+            RightHip = pose(12, 0, 6),
+            LeftHip = pose(12, 0, -6)
+        }
+    },
+    ["AirM1"] = {
+        entry = 0.045, hold = 0.04, exit = 0.12,
+        pose = {
+            RootJoint = pose(7, -6, -4),
+            Waist = pose(5, -5, -3),
+            Neck = pose(3, 0, 4),
+            RightShoulder = pose(-58, 8, -44),
+            RightElbow = pose(12, -18, -6),
+            LeftShoulder = pose(-12, -6, 24),
+            LeftElbow = pose(-8, 12, 4),
+            RightHip = pose(14, -3, 8),
+            LeftHip = pose(10, 2, -6)
+        }
+    },
     ["M1_1"] = {
         entry = 0.045, hold = 0.035, exit = 0.11,
         pose = {
