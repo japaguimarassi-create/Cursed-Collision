@@ -1,9 +1,10 @@
 local TweenService = game:GetService("TweenService")
+local CombatStateMachine = require(script.Parent.CombatStateMachine)
 
 local AnimationService = {}
 
 local cache = setmetatable({}, {__mode = "k"})
-local tokens = setmetatable({}, {__mode = "k"})
+local stateMachine = CombatStateMachine.new()
 local idleTokens = setmetatable({}, {__mode = "k"})
 
 local JOINT_ALIASES = {
@@ -56,14 +57,12 @@ local function getJoints(character)
     return result
 end
 
-local function nextToken(character)
-    local token = (tokens[character] or 0) + 1
-    tokens[character] = token
-    return token
+local function nextToken(character, state)
+    return stateMachine:Begin(character, state or "Attack", true)
 end
 
 local function valid(character, token)
-    return character and character.Parent and tokens[character] == token
+    return type(token) == "number" and stateMachine:IsCurrent(character, token)
 end
 
 local function tween(joint, target, duration, style, direction)
@@ -396,7 +395,7 @@ local function playPose(character, name, options)
     local definition = resolve(name)
     options = options or {}
 
-    local token = nextToken(character)
+    local token = nextToken(character, options.state or "Attack")
     local entry = options.entry or definition.entry
     local hold = options.hold or definition.hold
     local exit = options.exit or definition.exit
@@ -427,6 +426,7 @@ local function playPose(character, name, options)
         task.delay(options.exitDelay or 0, function()
             if valid(character, token) then
                 reset(character, joints, exit)
+                stateMachine:Finish(character, token, "Idle")
             end
         end)
     end)
@@ -436,7 +436,7 @@ end
 
 function AnimationService.Cancel(character)
     if character then
-        nextToken(character)
+        stateMachine:Cancel(character)
         idleTokens[character] = (idleTokens[character] or 0) + 1
     end
 end
@@ -478,7 +478,7 @@ function AnimationService.HitReact(character, intensity, tag)
 
     local joints = getJoints(character)
     local amount = math.clamp(tonumber(intensity) or 1, 0.4, 2)
-    local token = nextToken(character)
+    local token = nextToken(character, "HitReact")
     local spread = math.random(-12, 12) * amount
     local root = pose(10 * amount, 0, spread)
     local neck = pose(-8 * amount, spread * 0.35, 0)
@@ -513,6 +513,7 @@ function AnimationService.StartIdleCombat(character, intensity)
     local joints = getJoints(character)
     local token = (idleTokens[character] or 0) + 1
     idleTokens[character] = token
+    stateMachine:Begin(character, "Idle", true)
     local amount = math.clamp(tonumber(intensity) or 1, 0.5, 1.4)
 
     task.spawn(function()
@@ -543,6 +544,7 @@ function AnimationService.StopIdleCombat(character)
         return
     end
     idleTokens[character] = (idleTokens[character] or 0) + 1
+    stateMachine:Cancel(character)
 end
 
 function AnimationService.Play(character, move, action)
