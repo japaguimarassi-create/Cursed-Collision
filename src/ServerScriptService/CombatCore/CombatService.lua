@@ -11,26 +11,15 @@ local MovementController = require(script.Parent.MovementController)
 local ComboService = require(script.Parent.ComboService)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
 local AbilityService = require(script.Parent.AbilityService)
+local CombatMarkerService = require(script.Parent.CombatMarkerService)
 
 local CombatService = {}
 CombatService.__index = CombatService
 
-type AttackRecord = {
-    AttackId: string,
-    Token: number,
-    Combo: number,
-    StartedAt: number,
-    HitAt: number,
-    HitUntil: number,
-    HitConsumed: boolean,
-    Root: BasePart?
-}
-
 function CombatService.new(context: any)
     return setmetatable({
         Context = context,
-        Abilities = AbilityService.new(context),
-        ActiveM1 = {} :: {[Player]: AttackRecord}
+        Abilities = AbilityService.new(context)
     }, CombatService)
 end
 
@@ -56,29 +45,34 @@ end
 
 function CombatService:CanAttack(player: Player): boolean
     local state = StateManager:Get(player)
+
     if not state or not self:IsAlive(player) then
         return false
     end
 
     local t = now()
+
     return StateManager:CanAct(player, t)
         and state.RecoveryUntil <= t
         and not state.Blocking
 end
 
-local function finishM1(self, player: Player, attackId: string)
-    local record = self.ActiveM1[player]
-    if not record or record.AttackId ~= attackId then
+local function finishAttack(
+    player: Player,
+    attackId: string,
+    recovery: number
+)
+    local latest = StateManager:Get(player)
+    if not latest or latest.Vars.ActiveAttackId ~= attackId then
         return
     end
 
-    HitRegistry:End(player, attackId)
-    self.ActiveM1[player] = nil
+    latest.Vars.ActiveAttackId = nil
+    latest.RecoveryUntil = now() + recovery
 
-    local state = StateManager:Get(player)
-    if state and state.Vars.ActiveAttackId == attackId then
-        state.Vars.ActiveAttackId = nil
-        state.RecoveryUntil = now() + 0.08
+    if latest.StunnedUntil <= now()
+        and latest.RagdollUntil <= now()
+        and not latest.Blocking then
         StateManager:SetPhase(player, "Idle")
     end
 end
@@ -89,10 +83,6 @@ function CombatService:M1(player: Player): boolean
     end
 
     local t = now()
-    if self.ActiveM1[player] then
-        return false
-    end
-
     if not CooldownService:Ready(player, "M1", t) then
         return false
     end
@@ -108,33 +98,95 @@ function CombatService:M1(player: Player): boolean
         return false
     end
 
-    state.LastAction = "M1"
-    state.AbilityToken += 1
-    local token = state.AbilityToken
-
-    if not StateManager:SetPhase(player, "Attacking") then
+    local token = StateManager:NextActionToken(player)
+    if not token then
         return false
     end
 
+    state.LastAction = "M1"
+    state.Vars.ActiveAttackId = tostring(player.UserId) .. ":M1:" .. tostring(token)
+    state.RecoveryUntil = t + attack.Startup + attack.Active + attack.Recovery
+    StateManager:SetPhase(player, "Attacking")
+
     CooldownService:Set(player, "M1", Config.Combat.M1.Cooldown, t)
 
-    local attackId = tostring(player.UserId) .. ":M1:" .. tostring(math.floor(t * 1000000))
+    local attackId = state.Vars.ActiveAttackId
+    if type(attackId) ~= "string" then
+        return false
+    end
+
     HitRegistry:Begin(player, attackId)
-    state.Vars.ActiveAttackId = attackId
 
-    local hitAt = t + attack.Startup
-    local hitUntil = hitAt + attack.Active + 0.12
+    local function resolveHit()
+        local current = StateManager:Get(player)
+        if not current
+            or current.ActionToken ~= token
+            or current.Vars.ActiveAttackId ~= attackId
+            or current.StunnedUntil > now()
+            or current.RagdollUntil > now() then
+            HitRegistry:End(player, attackId)
+            return
+        end
 
-    self.ActiveM1[player] = {
-        AttackId = attackId,
-        Token = token,
-        Combo = attack.Combo,
-        StartedAt = t,
-        HitAt = hitAt,
-        HitUntil = hitUntil,
-        HitConsumed = false,
-        Root = root
-    }
+        local currentRoot = rootOf(player)
+        if not currentRoot then
+            HitRegistry:End(player, attackId)
+            finishAttack(player, attackId, attack.Recovery)
+            return
+        end
+
+        local targets = HitboxService:TargetsInBox(
+            player,
+            currentRoot.CFrame + currentRoot.CFrame.LookVector * attack.Offset,
+            attack.Hitbox,
+            32
+        )
+
+        local target = targets[1]
+
+        if target and not HitRegistry:Has(player, attackId, target.model) then
+            HitRegistry:Add(player, attackId, target.model)
+
+            self.Context.damage(
+                player,
+                target.humanoid,
+                attack.Damage,
+                {
+                    stun = attack.Stun,
+                    knockback = attack.Knockback,
+                    lift = attack.Launch,
+                    direction = currentRoot.CFrame.LookVector,
+                    final = attack.Final,
+                    launch = attack.Launch > 2,
+                    ragdoll = attack.Final,
+                    ragdollDuration = attack.Final
+                        and Config.Combat.M1.FinalRagdoll
+                        or nil,
+                    guardBreak = attack.Final,
+                    reaction = attack.Final and "Finisher" or "Light",
+                    tag = "M1_" .. tostring(attack.Combo)
+                }
+            )
+        end
+
+        HitRegistry:End(player, attackId)
+    end
+
+    local armed = CombatMarkerService:Begin(
+        player,
+        attackId,
+        token,
+        attack.Startup,
+        resolveHit,
+        0.10,
+        0.18
+    )
+
+    if not armed then
+        HitRegistry:End(player, attackId)
+        state.Vars.ActiveAttackId = nil
+        return false
+    end
 
     self.Context.fx("CombatAction", root.Position, {
         actor = player.Character,
@@ -143,103 +195,32 @@ function CombatService:M1(player: Player): boolean
         variant = attack.Variant,
         direction = root.CFrame.LookVector,
         attackId = attackId,
-        fallbackHitDelay = attack.Startup
+        hitDelay = attack.Startup
     })
 
-    task.delay(attack.Startup + attack.Active + 0.20, function()
-        finishM1(self, player, attackId)
+    task.delay(attack.Startup + attack.Active + attack.Recovery, function()
+        CombatMarkerService:Cancel(player, attackId)
+        HitRegistry:End(player, attackId)
+        finishAttack(player, attackId, attack.Recovery)
     end)
 
     return true
-end
-
-function CombatService:M1Hit(player: Player, payload: {[string]: any}): boolean
-    local record = self.ActiveM1[player]
-    if not record or record.HitConsumed then
-        return false
-    end
-
-    if type(payload.attackId) ~= "string" or payload.attackId ~= record.AttackId then
-        return false
-    end
-
-    local state = StateManager:Get(player)
-    local root = rootOf(player)
-    if not state or not root or not self:IsAlive(player) then
-        return false
-    end
-
-    local t = now()
-    if state.AbilityToken ~= record.Token
-        or t < record.HitAt - 0.11
-        or t > record.HitUntil
-        or state.StunnedUntil > t
-        or state.RagdollUntil > t then
-        return false
-    end
-
-    record.HitConsumed = true
-
-    -- O servidor mantém o combo da ação original; o cliente só informa o instante do marcador.
-    local comboNumber = math.clamp(record.Combo, 1, 4)
-    local comboData = {
-        Combo = comboNumber,
-        Damage = Config.Combat.M1.Damage[comboNumber],
-        Stun = Config.Combat.M1.Stun[comboNumber],
-        Knockback = Config.Combat.M1.Knockback[comboNumber],
-        Launch = Config.Combat.M1.Lift[comboNumber],
-        Final = comboNumber == 4
-    }
-
-    local target = HitboxService:TargetsInBox(
-        player,
-        root.CFrame + root.CFrame.LookVector * Config.Combat.M1.Range * 0.46,
-        Vector3.new(Config.Combat.M1.Width, Config.Combat.M1.Height, Config.Combat.M1.Range),
-        32
-    )[1]
-
-    if target and not HitRegistry:Has(player, record.AttackId, target.model) then
-        HitRegistry:Add(player, record.AttackId, target.model)
-        self.Context.damage(
-            player,
-            target.humanoid,
-            comboData.Damage,
-            {
-                stun = comboData.Stun,
-                knockback = comboData.Knockback,
-                lift = comboData.Launch,
-                direction = root.CFrame.LookVector,
-                final = comboData.Final,
-                launch = comboData.Launch > 2,
-                ragdoll = comboData.Final,
-                ragdollDuration = comboData.Final and Config.Combat.M1.FinalRagdoll or nil,
-                guardBreak = comboData.Final,
-                reaction = comboData.Final and "Finisher" or "Light",
-                tag = "M1_" .. tostring(comboNumber)
-            }
-        )
-        return true
-    end
-
-    return false
 end
 
 function CombatService:SkillSlot(player: Player, slot: number): boolean
     return self.Abilities:Execute(player, slot)
 end
 
-function CombatService:SkillHit(player: Player, payload: {[string]: any}): boolean
-    return self.Abilities:Hit(player, payload)
-end
-
 function CombatService:Dash(player: Player, payload: string): boolean
     local state = StateManager:Get(player)
     local root = rootOf(player)
+
     if not state or not root or not self:IsAlive(player) then
         return false
     end
 
     local t = now()
+
     if state.StunnedUntil > t
         or state.Blocking
         or not CooldownService:Ready(player, "Dash", t) then
@@ -269,7 +250,7 @@ function CombatService:Dash(player: Player, payload: string): boolean
         Config.Combat.Dash.Invulnerable,
         Config.Combat.Dash.Duration
     )
-
+    state.LastAction = "Dash"
     StateManager:SetPhase(player, "Dashing")
 
     root.AssemblyLinearVelocity = Vector3.new(
@@ -282,14 +263,18 @@ function CombatService:Dash(player: Player, payload: string): boolean
         actor = player.Character,
         action = "Dash",
         dashDirection = payload,
-        direction = direction
+        direction = direction,
+        air = humanoidOf(player)
+            and (
+                humanoidOf(player):GetState() == Enum.HumanoidStateType.Jumping
+                or humanoidOf(player):GetState() == Enum.HumanoidStateType.Freefall
+            )
     })
 
     task.delay(Config.Combat.Dash.Duration, function()
         local current = StateManager:Get(player)
         if current and current.Phase == "Dashing" then
-            current.Phase = "Idle"
-            StateManager:Sync(player)
+            StateManager:SetPhase(player, "Idle")
         end
     end)
 
@@ -298,17 +283,41 @@ end
 
 function CombatService:SetBlock(player: Player, active: boolean): boolean
     local state = StateManager:Get(player)
+
     if not state or not self:IsAlive(player) then
         return false
     end
 
     local t = now()
 
-    if active then
-        return StateManager:BeginBlock(player, Config.Combat.PerfectBlock.Window, t)
+    if state.StunnedUntil > t or state.Blocking == active then
+        return false
     end
 
-    StateManager:EndBlock(player)
+    if active then
+        if not StateManager:BeginBlock(
+            player,
+            Config.Combat.PerfectBlock.Window,
+            t
+        ) then
+            return false
+        end
+
+        MovementController:Block(player)
+    else
+        StateManager:EndBlock(player)
+        MovementController:Combat(player)
+    end
+
+    local root = rootOf(player)
+
+    if root then
+        self.Context.fx("CombatAction", root.Position, {
+            actor = player.Character,
+            action = active and "BlockStart" or "BlockEnd"
+        })
+    end
+
     return true
 end
 
@@ -327,34 +336,73 @@ function CombatService:Special(player: Player): boolean
         return false
     end
 
-    CooldownService:Set(player, "Special", cooldown, t)
+    local token = StateManager:NextActionToken(player)
+    if not token then
+        return false
+    end
 
-    StateManager:SetPhase(player, "Attacking")
-    state.RecoveryUntil = t + 0.55
+    local attackId = tostring(player.UserId) .. ":Special:" .. tostring(token)
+
+    CooldownService:Set(player, "Special", cooldown, t)
+    StateManager:SetPhase(player, "UsingAbility")
+    state.Vars.ActiveAttackId = attackId
+    state.LastAction = "Special"
+
+    local hitDelay = 0.12
+
+    local armed = CombatMarkerService:Begin(
+        player,
+        attackId,
+        token,
+        hitDelay,
+        function()
+            local current = StateManager:Get(player)
+            if not current
+                or current.ActionToken ~= token
+                or current.Vars.ActiveAttackId ~= attackId
+                or not StateManager:CanAct(player, os.clock()) then
+                return
+            end
+
+            CharacterService:Special(player)
+        end,
+        0.10,
+        0.18
+    )
+
+    if not armed then
+        state.Vars.ActiveAttackId = nil
+        StateManager:SetPhase(player, "Idle")
+        return false
+    end
 
     self.Context.fx("CombatAction", root.Position, {
         actor = player.Character,
-        action = "Special",
+        action = "SpecialStart",
+        attackId = attackId,
+        hitDelay = hitDelay,
         move = player:GetAttribute("SpecialName") or "Special"
     })
 
-    local success = CharacterService:Special(player)
+    task.delay(0.72, function()
+        CombatMarkerService:Cancel(player, attackId)
+        local current = StateManager:Get(player)
+        if current and current.Vars.ActiveAttackId == attackId then
+            finishAttack(player, attackId, 0.18)
+        end
+    end)
 
-    if not success then
-        CooldownService:Set(player, "Special", math.min(0.35, cooldown), t)
-        state.RecoveryUntil = t + 0.12
-    end
-
-    return success
+    return true
 end
 
-function CombatService:StepPlayer(player: Player): ()
+function CombatService:StepPlayer(player: Player)
     local state = StateManager:Get(player)
     if not state then
         return
     end
 
     local t = now()
+
     StateManager:ClearStunWhenReady(player, t)
 
     if state.DashUntil > 0 and state.DashUntil <= t then
@@ -363,24 +411,18 @@ function CombatService:StepPlayer(player: Player): ()
 
     if state.RecoveryUntil > 0 and state.RecoveryUntil <= t then
         state.RecoveryUntil = 0
-        if not state.Blocking and state.StunnedUntil <= t and state.RagdollUntil <= t then
-            StateManager:SetPhase(player, "Idle")
+
+        if not state.Blocking
+            and state.StunnedUntil <= t
+            and state.RagdollUntil <= t
+            and state.Phase ~= "Dead" then
+            if state.Phase ~= "Dashing"
+                and state.Phase ~= "UsingAbility"
+                and state.Phase ~= "Attacking" then
+                StateManager:SetPhase(player, "Idle")
+            end
         end
     end
-
-    local activeM1 = self.ActiveM1[player]
-    if activeM1 and t > activeM1.HitUntil + 0.20 then
-        finishM1(self, player, activeM1.AttackId)
-    end
-end
-
-function CombatService:ClearPlayer(player: Player)
-    local activeM1 = self.ActiveM1[player]
-    if activeM1 then
-        HitRegistry:End(player, activeM1.AttackId)
-        self.ActiveM1[player] = nil
-    end
-    self.Abilities:Cancel(player)
 end
 
 return CombatService
