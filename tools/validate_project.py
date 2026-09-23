@@ -6,12 +6,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 
-CHARACTERS = [
-    "PotentialMan", "Yuji", "Gojo", "Sukuna", "Megumi", "Yuta", "Maki", "Toji",
-    "Mahito", "Todo", "Hakari", "Choso", "Kashimo", "Naoya", "Kenjaku", "Jogo",
-    "Dagon", "Hanami", "Higuruma", "Takaba", "Uraume", "Yorozu", "Ryu", "Uro",
-    "Kusakabe"
-]
+CHARACTERS = ["Yuji", "Gojo", "Sukuna", "Megumi"]
 
 REQUIRED = [
     "ReplicatedStorage/Shared/Config.lua",
@@ -23,6 +18,7 @@ REQUIRED = [
     "ReplicatedStorage/Animation/AnimationRegistry.lua",
     "ReplicatedStorage/Animation/AnimationData.lua",
     "ReplicatedStorage/Characters/CharacterDefinitions.lua",
+    "ReplicatedStorage/Characters/PlayableRoster.lua",
     "ReplicatedStorage/Characters/PlayableRoster.lua",
     "ReplicatedStorage/Characters/CharacterMoves.lua",
     "ReplicatedStorage/Characters/CustomMovesets.lua",
@@ -88,6 +84,18 @@ for relative in REQUIRED:
 for character in CHARACTERS:
     if not (SRC / "ReplicatedStorage" / "Characters" / f"{character}.lua").exists():
         fail(f"character module missing: {character}")
+
+roster = read("ReplicatedStorage/Characters/PlayableRoster.lua")
+for character in CHARACTERS:
+    if f'"{character}"' not in roster:
+        fail(f"playable roster missing: {character}")
+for retired in (
+    "PotentialMan", "Yuta", "Maki", "Toji", "Mahito", "Todo", "Hakari",
+    "Choso", "Kashimo", "Naoya", "Kenjaku", "Jogo", "Dagon", "Hanami",
+    "Higuruma", "Takaba", "Uraume", "Yorozu", "Ryu", "Uro", "Kusakabe"
+):
+    if retired in roster:
+        fail(f"retired character still active in PlayableRoster: {retired}")
 
 project = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"))
 if project.get("name") != "CursedCollision":
@@ -313,7 +321,8 @@ for stale_folder_file in (
         fail(f"legacy HUD implementation still exists: src/{stale_folder_file}")
 
 print(f"PASS: {len(REQUIRED)} required foundation files present")
-print(f"PASS: {len(CHARACTERS)} character modules are present")
+print(f"PASS: {len(CHARACTERS)} focused character modules are present")
+print("PASS: active roster is restricted to Yuji + Gojo + Sukuna + Megumi")
 print("PASS: authoritative combat routing uses server marker windows")
 print("PASS: animation cache and exact Hit marker handler remain connected")
 print("PASS: HUD is split into isolated topbar/combat/menu/character/emote/settings/owner/feedback clients")
