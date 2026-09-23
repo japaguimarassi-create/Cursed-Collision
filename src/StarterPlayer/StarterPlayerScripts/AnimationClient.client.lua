@@ -12,7 +12,6 @@ local CombatHandler: any = require(script.Parent.Controllers.CombatHandler)
 
 local function bind(player: Player)
     local character = player.Character
-
     if character then
         AnimationController:Bind(character)
         MovementAnimation:Bind(character)
@@ -30,11 +29,7 @@ end
 
 Players.PlayerAdded:Connect(bind)
 
-Remotes.CombatFX.OnClientEvent:Connect(function(
-    kind: string,
-    _position: Vector3,
-    payload: any
-)
+Remotes.CombatFX.OnClientEvent:Connect(function(kind, _, payload)
     if not payload then
         return
     end
@@ -42,25 +37,23 @@ Remotes.CombatFX.OnClientEvent:Connect(function(
     if kind == "CombatAction"
         and payload.actor
         and payload.actor:IsA("Model") then
-        local action = tostring(payload.action or "")
 
-        if action == "M1Start"
-            or action == "SkillStart"
-            or action == "SpecialStart"
-            or action == "Dash" then
-            CombatHandler:OnCombatEvent(payload, Remotes.CombatAction)
+        if CombatHandler:OnCombatEvent(payload, Remotes.CombatAction) then
             return
         end
 
         CombatAnimation:Play(
             payload.actor,
-            action,
+            tostring(payload.action or "Idle"),
             payload
         )
+
         return
     end
 
-    if kind == "Hit" and payload.actor and payload.actor:IsA("Model") then
+    if kind == "Hit"
+        and payload.actor
+        and payload.actor:IsA("Model") then
         CombatAnimation:Play(
             payload.actor,
             "Hit",
@@ -91,13 +84,11 @@ Remotes.CombatFX.OnClientEvent:Connect(function(
     end
 end)
 
-RunService.Heartbeat:Connect(function()
+RunService.RenderStepped:Connect(function()
     for _, player in ipairs(Players:GetPlayers()) do
         local character = player.Character
-
         if character then
             local humanoid = character:FindFirstChildOfClass("Humanoid")
-
             if humanoid then
                 character:SetAttribute(
                     "MovementSpeed",
