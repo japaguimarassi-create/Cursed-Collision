@@ -246,6 +246,26 @@ local special = button(root, "Special", "SPECIAL", UDim2.fromScale(0.18, 0.066),
 special.AnchorPoint = Vector2.new(0.5, 0.5)
 special.TextSize = 10
 
+local ultimateButton = button(
+    root,
+    "Ultimate",
+    "ULTIMATE",
+    UDim2.fromScale(0.14, 0.066),
+    UDim2.fromScale(0.39, 0.935)
+)
+ultimateButton.AnchorPoint = Vector2.new(0.5, 0.5)
+ultimateButton.TextSize = 9
+
+local awakeningButton = button(
+    root,
+    "Awakening",
+    "AWAKEN",
+    UDim2.fromScale(0.14, 0.066),
+    UDim2.fromScale(0.61, 0.935)
+)
+awakeningButton.AnchorPoint = Vector2.new(0.5, 0.5)
+awakeningButton.TextSize = 9
+
 local localCooldowns: {[string]: number} = {}
 
 local function remaining(action: string): number
