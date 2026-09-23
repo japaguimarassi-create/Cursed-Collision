@@ -117,6 +117,8 @@ local function handle(player: Player, action: any, payload: any)
 
     if action == "M1" then
         combat:M1(player)
+    elseif action == "M1Hit" and type(payload) == "table" then
+        combat:M1Hit(player, payload.attackId)
     elseif action == "Dash" then
         combat:Dash(player, NetworkService:SanitizeDashDirection(payload))
     elseif action == "BlockStart" then
@@ -133,6 +135,8 @@ local function handle(player: Player, action: any, payload: any)
         combat:SkillSlot(player, 3)
     elseif action == "Skill4" then
         combat:SkillSlot(player, 4)
+    elseif action == "SkillHit" and type(payload) == "table" then
+        combat:SkillHit(player, payload.attackId)
     elseif action == "SelectCharacter" then
         CharacterService:Select(player, payload)
     elseif action == "Ultimate" then
