@@ -68,7 +68,7 @@ InputManager:BindAction(
             fire("M1")
         end
     end,
-    {Enum.KeyCode.ButtonR2},
+    {Enum.KeyCode.ButtonB},
     false
 )
 
@@ -79,7 +79,7 @@ InputManager:BindAction(
             fire("Dash", InputController:GetDashDirection())
         end
     end,
-    {Enum.KeyCode.Q, Enum.KeyCode.ButtonA},
+    {Enum.KeyCode.Q, Enum.KeyCode.ButtonY},
     false
 )
 
@@ -90,7 +90,7 @@ InputManager:BindAction(
             fire("Special")
         end
     end,
-    {Enum.KeyCode.E, Enum.KeyCode.ButtonX},
+    {Enum.KeyCode.R, Enum.KeyCode.DPadLeft},
     false
 )
 
@@ -101,7 +101,7 @@ InputManager:BindAction(
             fire("Skill1")
         end
     end,
-    {Enum.KeyCode.One, Enum.KeyCode.ButtonR1},
+    {Enum.KeyCode.One, Enum.KeyCode.ButtonL1},
     false
 )
 
@@ -112,7 +112,7 @@ InputManager:BindAction(
             fire("Skill2")
         end
     end,
-    {Enum.KeyCode.Two, Enum.KeyCode.ButtonY},
+    {Enum.KeyCode.Two, Enum.KeyCode.ButtonL2},
     false
 )
 
@@ -123,7 +123,7 @@ InputManager:BindAction(
             fire("Skill3")
         end
     end,
-    {Enum.KeyCode.Three, Enum.KeyCode.DPadUp},
+    {Enum.KeyCode.Three, Enum.KeyCode.ButtonR1},
     false
 )
 
@@ -134,7 +134,7 @@ InputManager:BindAction(
             fire("Skill4")
         end
     end,
-    {Enum.KeyCode.Four, Enum.KeyCode.DPadDown},
+    {Enum.KeyCode.Four, Enum.KeyCode.ButtonR2},
     false
 )
 
@@ -148,7 +148,7 @@ InputManager:BindAction(
             setBlock(false)
         end
     end,
-    {Enum.KeyCode.F, Enum.KeyCode.ButtonL2},
+    {Enum.KeyCode.F, Enum.KeyCode.ButtonX},
     false
 )
 
@@ -162,7 +162,7 @@ InputManager:BindAction(
             setSprint(false)
         end
     end,
-    {Enum.KeyCode.LeftShift, Enum.KeyCode.ButtonL1},
+    {Enum.KeyCode.LeftShift, Enum.KeyCode.ButtonL3},
     false
 )
 
@@ -173,7 +173,7 @@ InputManager:BindAction(
             fire("Ultimate")
         end
     end,
-    {Enum.KeyCode.R, Enum.KeyCode.ButtonR3},
+    {Enum.KeyCode.T, Enum.KeyCode.DPadRight},
     false
 )
 
@@ -184,7 +184,7 @@ InputManager:BindAction(
             fire("Awakening")
         end
     end,
-    {Enum.KeyCode.G, Enum.KeyCode.ButtonL3},
+    {Enum.KeyCode.G, Enum.KeyCode.DPadUp},
     false
 )
 

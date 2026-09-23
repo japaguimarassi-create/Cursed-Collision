@@ -6,6 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Theme = require(script.Parent.HUDTheme)
 local Layouts = require(script.Parent.HUDLayout)
+local ControlMap = require(script.Parent.ControlMap)
 local InputController = require(script.Parent.Parent.Controllers.InputController)
 
 local player = Players.LocalPlayer
@@ -16,28 +17,11 @@ if not combatRemote or not movementRemote then
     return
 end
 
-local platform = Theme.Platform()
+local platform: ControlMap.Platform = ControlMap:GetPlatform(UserInputService.PreferredInput)
 local layout = Layouts:Get(platform)
 
 local function hint(action: string): string
-    if platform == "Mobile" then
-        return ({
-            M1 = "✊", Dash = "➜", Block = "◉", Sprint = "◇",
-            Special = "★", Ultimate = "ULT", Awakening = "AWK"
-        })[action] or action
-    end
-
-    if platform == "Console" then
-        return ({
-            M1 = "RT", Dash = "A", Block = "LT", Sprint = "LB",
-            Special = "X", Ultimate = "R3", Awakening = "L3"
-        })[action] or action
-    end
-
-    return ({
-        M1 = "M1", Dash = "Q", Block = "F", Sprint = "SHIFT",
-        Special = "R", Ultimate = "G", Awakening = "G"
-    })[action] or action
+    return ControlMap:GetHint(platform, action)
 end
 
 local gui = Theme.CreateGui("CursedCollisionHUD_Combat", 30)
@@ -134,6 +118,7 @@ skillGrid.SortOrder = Enum.SortOrder.LayoutOrder
 skillGrid.Parent = skills
 
 local skillLabels: {[number]: TextLabel} = {}
+local skillHints: {[number]: TextLabel} = {}
 local cooldownLabels: {[number]: TextLabel} = {}
 
 local function serverCooldown(action: string): number
@@ -148,13 +133,9 @@ for slot = 1, 4 do
     cell.Parent = skills
 
     local b = Theme.Button(cell, "Skill" .. slot, "", UDim2.fromScale(1, 1), UDim2.new(), platform == "Mobile" and 58 or 44)
-    local slotHint = if platform == "Mobile"
-        then tostring(slot)
-        elseif platform == "Console"
-        then ({[1]="RB", [2]="Y", [3]="D-UP", [4]="D-DOWN"})[slot]
-        else tostring(slot)
+    local slotHint = ControlMap:GetHint(platform, "Skill" .. tostring(slot))
 
-    Theme.Label(b, "Hint", slotHint or "", UDim2.fromScale(0.25, 0.20), UDim2.fromScale(0.06, 0.04), 7)
+    skillHints[slot] = Theme.Label(b, "Hint", slotHint or "", UDim2.fromScale(0.25, 0.20), UDim2.fromScale(0.06, 0.04), 7)
     skillLabels[slot] = Theme.Label(b, "Name", "Skill " .. slot, UDim2.fromScale(0.88, 0.45), UDim2.fromScale(0.06, 0.23), 8)
     cooldownLabels[slot] = Theme.Label(b, "Cooldown", "READY", UDim2.fromScale(0.84, 0.20), UDim2.fromScale(0.08, 0.76), 7)
 
@@ -217,6 +198,32 @@ awakening.AnchorPoint = Vector2.new(0.5, 0.5)
 awakening.Activated:Connect(function()
     fire("Awakening")
 end)
+
+local function refreshPlatform()
+    platform = ControlMap:GetPlatform(UserInputService.PreferredInput)
+    for slot = 1, 4 do
+        skillHints[slot].Text = ControlMap:GetHint(platform, "Skill" .. tostring(slot))
+    end
+
+    m1.Text = ControlMap:GetHint(platform, "M1")
+    block.Text = player:GetAttribute("LocalBlocking") == true
+        and (ControlMap:GetHint(platform, "Block") .. "ING")
+        or ControlMap:GetHint(platform, "Block")
+    dash.Text = ControlMap:GetHint(platform, "Dash")
+    sprint.Text = player:GetAttribute("LocalSprinting") == true
+        and (ControlMap:GetHint(platform, "Sprint") .. "+")
+        or ControlMap:GetHint(platform, "Sprint")
+    special.Text = ControlMap:GetHint(platform, "Special")
+    ultimate.Text = player:GetAttribute("UltimateReady") == true
+        and "ULTIMATE READY"
+        or ControlMap:GetHint(platform, "Ultimate")
+    awakening.Text = player:GetAttribute("AwakeningReady") == true
+        and "AWAKEN READY"
+        or ControlMap:GetHint(platform, "Awakening")
+    actions.Visible = platform ~= "PC"
+end
+
+UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(refreshPlatform)
 
 local function updateCharacter()
     local id = tostring(player:GetAttribute("CharacterId") or "Yuji")
@@ -321,6 +328,7 @@ updateCharacter()
 updateHealth()
 updatePower()
 updateState()
+refreshPlatform()
 
 -- Loop apenas para texto/estado de cooldown; não cria Instances a cada frame.
 local accumulator = 0

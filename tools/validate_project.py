@@ -55,6 +55,7 @@ REQUIRED = [
     "StarterPlayer/StarterPlayerScripts/Controllers/MovementAnimationManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AbilityAnimationManager.lua",
     "StarterPlayer/StarterPlayerScripts/HUD/HUDTheme.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/ControlMap.lua",
     "StarterPlayer/StarterPlayerScripts/HUD/TopbarHUD.client.lua",
     "StarterPlayer/StarterPlayerScripts/HUD/CombatHUD.client.lua",
     "StarterPlayer/StarterPlayerScripts/HUD/MenuHUD.client.lua",
@@ -235,6 +236,9 @@ for token in ("EmoteData", "Price", "Duration", "Loop", "AnimationId"):
 for path, required in {
     "StarterPlayer/StarterPlayerScripts/HUD/HUDLayout.lua": (
         "Mobile", "Console", "PC", "CombatScaleReference", "SkillsWidth"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/ControlMap.lua": (
+        "GetPlatform", "GetHint", "ButtonB", "ButtonY", "DPadLeft", "DPadUp", "ButtonL3"
     ),
     "StarterPlayer/StarterPlayerScripts/HUD/HUDTheme.lua": (
         "CoreUISafeInsets", "PreferredInput", "ResponsiveScale", "UISizeConstraint"
