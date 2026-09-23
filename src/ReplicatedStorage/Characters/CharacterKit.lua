@@ -165,41 +165,32 @@ local function repeatedFront(ctx: any, player: Player, move: any, damage: number
     local count = math.max(1, math.floor(tonumber(move.Hits) or 1))
     local interval = math.max(0.025, tonumber(move.HitInterval) or 0.08)
     local success = false
-
-    for index = 1, count do
-        local delayTime = interval * (index - 1)
-
-        task.delay(delayTime, function()
-            if not player.Parent then
-                return
-            end
-
-            local value = hitFront(
-                ctx,
-                player,
-                move,
-                damage,
-                "Hit" .. tostring(index)
-            )
-
-            if value then
-                success = true
-            end
-        end)
-    end
-
     local firstTarget = front(ctx, player, tonumber(move.Range) or 10, 9, 9)
+
     if firstTarget then
-        local value = hit(
+        success = hit(
             ctx,
             player,
             firstTarget,
             move,
             damage,
             move.Tag,
-            (ctx.getState(player).Vars.ActiveAttackId or move.Tag) .. ":Immediate"
+            (ctx.getState(player).Vars.ActiveAttackId or move.Tag) .. ":Hit1"
         )
-        success = value or success
+    end
+
+    for index = 2, count do
+        task.delay(interval * (index - 1), function()
+            if player.Parent then
+                hitFront(
+                    ctx,
+                    player,
+                    move,
+                    damage,
+                    "Hit" .. tostring(index)
+                )
+            end
+        end)
     end
 
     return success
