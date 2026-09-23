@@ -153,6 +153,7 @@ function CombatHandler:PlayM1(payload: any, combatAction: RemoteEvent)
         and payload.attackId
         or nil
 
+    local token = tonumber(payload.token)
     local fallbackDelay = math.max(
         0.01,
         tonumber(payload.fallbackHitDelay) or 0.075
@@ -162,7 +163,7 @@ function CombatHandler:PlayM1(payload: any, combatAction: RemoteEvent)
         actor,
         key,
         attackId,
-        nil,
+        token,
         fallbackDelay,
         "M1Hit",
         function(action, data)
