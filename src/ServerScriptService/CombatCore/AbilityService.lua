@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Timeline = require(ReplicatedStorage.Combat.AbilityTimeline)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
-local StateManager = require(script.Parent.StateManager)
+local StateManager: any = require(script.Parent.StateManager)
 local CooldownService = require(script.Parent.CooldownService)
 local CharacterService = require(ReplicatedStorage.Characters.CharacterService)
 
