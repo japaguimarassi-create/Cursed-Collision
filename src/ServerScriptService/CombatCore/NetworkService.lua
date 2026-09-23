@@ -16,7 +16,9 @@ local ACTIONS = {
     SkillHit = true,
     SelectCharacter = true,
     Ultimate = true,
-    Awakening = true
+    Awakening = true,
+    M1Hit = true,
+    SkillHit = true
 }
 
 function NetworkService:IsKnownAction(action: any): boolean
@@ -59,6 +61,12 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
 
     if action == "Ultimate" or action == "Awakening" then
         return payload == nil
+    end
+
+    if action == "M1Hit" or action == "SkillHit" then
+        return type(payload) == "table"
+            and type(payload.attackId) == "string"
+            and #payload.attackId <= 96
     end
 
     return false
