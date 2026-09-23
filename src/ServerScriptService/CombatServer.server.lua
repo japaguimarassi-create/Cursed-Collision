@@ -34,9 +34,7 @@ local context: Context = {
     rootPosition = function(player: Player): Vector3
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
-        return if root and root:IsA("BasePart")
-            then root.Position
-            else Vector3.zero
+        return if root and root:IsA("BasePart") then root.Position else Vector3.zero
     end,
 
     fx = function(kind: string, position: Vector3, payload: any)
@@ -74,17 +72,20 @@ local function setupPlayer(player: Player)
 
     player:SetAttribute("CombatStunned", false)
     player:SetAttribute("Blocking", false)
+    player:SetAttribute("IsAttacking", false)
 
     CharacterService:Initialize(player)
     UltimateService:Init(player)
 
     player.CharacterAdded:Connect(function()
         task.defer(function()
+            combat:ClearPlayer(player)
             StateManager:Reset(player)
             CooldownService:Clear(player)
 
             player:SetAttribute("CombatStunned", false)
             player:SetAttribute("Blocking", false)
+            player:SetAttribute("IsAttacking", false)
 
             CharacterService:Initialize(player)
             UltimateService:Init(player)
@@ -101,12 +102,8 @@ local function setupPlayer(player: Player)
 end
 
 local function handle(player: Player, action: any, payload: any)
-    if not NetworkService:IsKnownAction(action) then
-        AntiExploitService:Flag(player)
-        return
-    end
-
-    if not NetworkService:ValidatePayload(action, payload) then
+    if not NetworkService:IsKnownAction(action)
+        or not NetworkService:ValidatePayload(action, payload) then
         AntiExploitService:Flag(player)
         return
     end
@@ -117,8 +114,8 @@ local function handle(player: Player, action: any, payload: any)
 
     if action == "M1" then
         combat:M1(player)
-    elseif action == "M1Hit" and type(payload) == "table" then
-        combat:M1Hit(player, payload.attackId)
+    elseif action == "M1Hit" then
+        combat:M1Hit(player, payload)
     elseif action == "Dash" then
         combat:Dash(player, NetworkService:SanitizeDashDirection(payload))
     elseif action == "BlockStart" then
@@ -135,8 +132,8 @@ local function handle(player: Player, action: any, payload: any)
         combat:SkillSlot(player, 3)
     elseif action == "Skill4" then
         combat:SkillSlot(player, 4)
-    elseif action == "SkillHit" and type(payload) == "table" then
-        combat:SkillHit(player, payload.attackId)
+    elseif action == "SkillHit" then
+        combat:SkillHit(player, payload)
     elseif action == "SelectCharacter" then
         CharacterService:Select(player, payload)
     elseif action == "Ultimate" then
@@ -155,6 +152,7 @@ end)
 Players.PlayerAdded:Connect(setupPlayer)
 
 Players.PlayerRemoving:Connect(function(player)
+    combat:ClearPlayer(player)
     CooldownService:Clear(player)
     HitRegistry:Clear(player)
     AntiExploitService:Clear(player)
@@ -172,7 +170,6 @@ RunService.Heartbeat:Connect(function(dt)
         MovementController:Step(player, dt)
     end
 end)
-
 
 remotes.MovementRemote.OnServerEvent:Connect(function(player, action, payload)
     if not activePlayers[player]
@@ -192,4 +189,3 @@ remotes.MovementRemote.OnServerEvent:Connect(function(player, action, payload)
         MovementController:SetSprinting(player, false)
     end
 end)
-
