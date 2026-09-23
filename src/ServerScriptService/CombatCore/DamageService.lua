@@ -9,6 +9,7 @@ local MovementController: any = require(script.Parent.MovementController)
 local RagdollService: any = require(script.Parent.RagdollService)
 local GamePassService: any = require(ReplicatedStorage.Monetization.GamePassService)
 local UltimateService: any = require(script.Parent.UltimateService)
+local EmoteService: any = require(script.Parent.EmoteService)
 local EmoteService = require(script.Parent.EmoteService)
 
 local DamageService = {}
@@ -61,6 +62,11 @@ function DamageService:Apply(
     local targetPlayer = Players:GetPlayerFromCharacter(targetModel)
     if targetPlayer == attacker then
         return false
+    end
+
+    -- Dano confirmado encerra emote imediatamente no servidor.
+    if targetPlayer then
+        EmoteService:Stop(targetPlayer)
     end
 
     local now = os.clock()
