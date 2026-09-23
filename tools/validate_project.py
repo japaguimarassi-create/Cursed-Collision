@@ -178,6 +178,7 @@ emote_server = read("ServerScriptService/EmoteServer.server.lua")
 gamepass_config = read("ReplicatedStorage/Monetization/GamePassConfig.lua")
 gamepass_service = read("ReplicatedStorage/Monetization/GamePassService.lua")
 gamepass_server = read("ServerScriptService/GamePassServer.server.lua")
+damage_service = read("ServerScriptService/CombatCore/DamageService.lua")
 character_client = read("StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua")
 emote_client = read("StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua")
 for token in ("M1", "DASH", "BLOCK", "SPECIAL", "combatAction:FireServer", 'WaitForChild("Remotes", 30)'):
@@ -215,8 +216,11 @@ for token in ('"Start"', '"Stop"', '"SetWheel"'):
         fail(f"emote server route missing: {token}")
 
 for token in ("UltimateSkin", "KillSound", "InstantSkin"):
-    if token not in gamepass_config or token not in gamepass_service or token not in gamepass_server:
-        fail(f"gamepass integration missing: {token}")
+    if token not in gamepass_config or token not in gamepass_service:
+        fail(f"gamepass definition/service missing: {token}")
+
+if "GP_KillSound" not in damage_service or "NotifyKill" not in damage_service:
+    fail("kill sound pass is not connected to confirmed kills")
 
 for token in ('"CharacterButton"', '"CharacterPanel"', "CCHUD_CharacterMenuOpen"):
     if token not in character_client:
