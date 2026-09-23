@@ -6,9 +6,11 @@ local HUDController = require(script.Parent.Controllers.HUDController)
 local HUDInputRouter = require(script.Parent.Controllers.HUDInputRouter)
 local HUDMenuRouter = require(script.Parent.Controllers.HUDMenuRouter)
 local HUDActionBus = require(script.Parent.Controllers.HUDActionBus)
+local HUDRegistry = require(script.Parent.Controllers.HUDRegistry)
 
 local player = Players.LocalPlayer
 local hud = HUDController.new()
+HUDRegistry:Set(hud)
 
 local function action(name: string)
     HUDActionBus:Emit(name :: any)
