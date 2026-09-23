@@ -343,6 +343,89 @@ local function setBlocking(active: boolean)
     fire(active and "BlockStart" or "BlockEnd")
 end
 
+local function activatePower(action: string)
+    if player:GetAttribute("CCHUD_MenuOpen") == true
+        or player:GetAttribute("CCHUD_CharacterMenuOpen") == true
+        or player:GetAttribute("CCHUD_EmoteWheelOpen") == true
+        or player:GetAttribute("CCHUD_OwnerPanelOpen") == true then
+        return
+    end
+
+    combatAction:FireServer(action)
+end
+
+ultimateButton.Activated:Connect(function()
+    activatePower("Ultimate")
+end)
+
+awakeningButton.Activated:Connect(function()
+    activatePower("Awakening")
+end)
+
+local function readHealth()
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    local ratio = math.clamp(humanoid.Health / math.max(1, humanoid.MaxHealth), 0, 1)
+    healthFill.Size = UDim2.fromScale(ratio, 1)
+    healthText.Text = string.format(
+        "%d / %d",
+        math.max(0, math.floor(humanoid.Health + 0.5)),
+        math.max(1, math.floor(humanoid.MaxHealth + 0.5))
+    )
+end
+
+local function bindHealth()
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    humanoid.HealthChanged:Connect(readHealth)
+    humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(readHealth)
+    readHealth()
+end
+
+local function readPowerMeters()
+    local ultimate = math.clamp(
+        (tonumber(player:GetAttribute("UltimateMeter")) or 0) / 100,
+        0,
+        1
+    )
+
+    local awakeningValue = math.clamp(
+        (tonumber(player:GetAttribute("AwakeningMeter")) or 0) / 100,
+        0,
+        1
+    )
+
+    awakeningFill.Size = UDim2.fromScale(ultimate, 1)
+    awakeningName.Text = ultimate >= 1
+        and "ULTIMATE READY"
+        or string.format("ULTIMATE %d%%", math.floor(ultimate * 100))
+
+    ultimateButton.Text = player:GetAttribute("UltimateReady") == true
+        and "ULTIMATE\nREADY"
+        or "ULTIMATE"
+
+    awakeningButton.Text = player:GetAttribute("AwakeningReady") == true
+        and "AWAKEN\nREADY"
+        or "AWAKEN"
+
+    if awakeningValue > ultimate then
+        awakeningFill.BackgroundColor3 = Color3.fromRGB(255, 94, 177)
+        awakeningFill.Size = UDim2.fromScale(awakeningValue, 1)
+    else
+        awakeningFill.BackgroundColor3 = Color3.fromRGB(155, 112, 255)
+    end
+end
+
+bindHealth()
+
 for slot = 1, 4 do
     skillButtons[slot].Activated:Connect(function()
         fire("Skill" .. tostring(slot))
