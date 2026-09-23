@@ -7,7 +7,7 @@ local StateManager=require(script.Parent.StateManager)
 local Remotes=require(ReplicatedStorage.Shared.RemoteService):Get()
 
 local UltimateService={}
-local activeTokens:{[Player]:number}=setmetatable({}, {__mode="k"})
+local activeTokens:{[Player]:number}=setmetatable({}, {__mode="k"}) :: any
 
 local function setMeter(player: Player, name: string, value: number)
     value=math.clamp(value,0,100)
@@ -50,7 +50,7 @@ function UltimateService:Activate(player: Player, kind: string): boolean
     end
     if not StateManager:CanAct(player,os.clock()) then return false end
 
-    local phase=kind=="Awakening" and "Awakening" or "Ultimate"
+    local phase: StateManager.Phase = if kind=="Awakening" then "Awakening" else "Ultimate"
     if not StateManager:SetPhase(player,phase) then return false end
 
     state.AbilityToken+=1
