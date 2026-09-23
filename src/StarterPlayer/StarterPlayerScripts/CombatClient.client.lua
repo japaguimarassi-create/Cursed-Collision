@@ -129,6 +129,27 @@ local titleLabel = label(identity, "Shadow Potential", UDim2.fromScale(0.94, 0.2
 titleLabel.TextColor3 = Color3.fromRGB(150, 154, 168)
 titleLabel.TextXAlignment = Enum.TextXAlignment.Center
 
+local healthBar = Instance.new("Frame")
+healthBar.Name = "HealthBar"
+healthBar.Size = UDim2.fromScale(0.29, 0.032)
+healthBar.Position = UDim2.fromScale(0.018, 0.122)
+healthBar.BackgroundColor3 = Color3.fromRGB(37, 39, 49)
+healthBar.BorderSizePixel = 0
+healthBar.Parent = root
+corner(healthBar, 8)
+stroke(healthBar, 0.72)
+
+local healthFill = Instance.new("Frame")
+healthFill.Name = "Fill"
+healthFill.Size = UDim2.fromScale(1, 1)
+healthFill.BackgroundColor3 = Color3.fromRGB(210, 70, 86)
+healthFill.BorderSizePixel = 0
+healthFill.Parent = healthBar
+corner(healthFill, 8)
+
+local healthText = label(healthBar, "100 / 100", UDim2.fromScale(1, 1), UDim2.new(), 8)
+healthText.TextXAlignment = Enum.TextXAlignment.Center
+
 local status = Instance.new("Frame")
 status.Name = "Status"
 status.Size = UDim2.fromScale(0.18, 0.042)
