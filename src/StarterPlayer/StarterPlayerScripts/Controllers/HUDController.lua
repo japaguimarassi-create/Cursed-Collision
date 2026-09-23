@@ -500,7 +500,7 @@ function HUDController.new(): HUD
     awakening.Position = UDim2.fromScale(0.615, 0.925)
     awakening.AnchorPoint = Vector2.new(0.5, 0.5)
 
-    local hud = setmetatable({
+    local hud: any = setmetatable({
         Gui = gui,
         Root = root,
         IdentityName = identityName,
@@ -526,7 +526,7 @@ function HUDController.new(): HUD
         SprintButton = sprint,
         SpecialButton = special,
         PreferredInput = UserInputService.PreferredInput
-    }, HUDController) :: HUD
+    }, HUDController) :: any
 
     hud:SetPreferredInput(UserInputService.PreferredInput)
 
