@@ -178,6 +178,7 @@ function CombatService:M1(player: Player): boolean
         token,
         attack.Startup,
         resolveHit,
+        "Action",
         0.10,
         0.18
     )
