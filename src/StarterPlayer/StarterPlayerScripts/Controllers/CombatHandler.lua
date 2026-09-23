@@ -13,6 +13,7 @@ local CombatHandler = {}
 type ActiveTrack = {
     track: AnimationTrack?,
     markerConnection: RBXScriptConnection?,
+    stoppedConnection: RBXScriptConnection?,
     fired: boolean,
     attackId: string?
 }
@@ -38,6 +39,10 @@ local function clear(model: Model)
         entry.markerConnection:Disconnect()
     end
 
+    if entry.stoppedConnection then
+        entry.stoppedConnection:Disconnect()
+    end
+
     if entry.track and entry.track.IsPlaying then
         entry.track:Stop(0.04)
     end
@@ -45,25 +50,12 @@ local function clear(model: Model)
     active[model] = nil
 end
 
-local function markerRequest(
-    model: Model,
-    attackId: string?,
-    _fallbackDelay: number,
-    combatAction: RemoteEvent
-)
-    if not attackId or model ~= player.Character then
-        return
-    end
-
-end
-
 local function playAttack(
     model: Model,
     key: string,
     attackId: string?,
-    fallbackDelay: number,
     combatAction: RemoteEvent,
-    action: "M1Hit" | "SkillHit"
+    action: "M1Hit" | "SkillHit" | "SpecialHit"
 ): boolean
     clear(model)
 
@@ -89,10 +81,11 @@ local function playAttack(
     end
 
     if not track then
-        task.delay(math.max(0.01, fallbackDelay), submit)
+        -- Sem uma animação carregável, o servidor usa o fallback autoritativo da timeline.
         active[model] = {
             track = nil,
             markerConnection = nil,
+            stoppedConnection = nil,
             fired = false,
             attackId = attackId
         }
@@ -100,7 +93,7 @@ local function playAttack(
     end
 
     track.Priority = Enum.AnimationPriority.Action
-    track.Looped = false
+    track.Looped = definition.Loop
     track:Play(definition.FadeIn, 1, definition.Speed)
 
     local markerConnection: RBXScriptConnection?
@@ -110,20 +103,31 @@ local function playAttack(
         end)
     end
 
+    local stoppedConnection = track.Stopped:Connect(function()
+        local entry = active[model]
+        if entry and entry.track == track then
+            if entry.markerConnection then
+                entry.markerConnection:Disconnect()
+            end
+            if entry.stoppedConnection then
+                entry.stoppedConnection:Disconnect()
+            end
+            active[model] = nil
+        end
+    end)
+
     active[model] = {
         track = track,
         markerConnection = markerConnection,
+        stoppedConnection = stoppedConnection,
         fired = false,
         attackId = attackId
     }
 
-    -- Fallback apenas evita que uma animação sem marcador pare o ataque.
-    task.delay(math.max(0.01, fallbackDelay), submit)
-
     return true
 end
 
-function CombatHandler:PlayM1(payload: any, combatAction: RemoteEvent): boolean
+function CombatHandler:PlayM1(payload: {[string]: any}, combatAction: RemoteEvent): boolean
     local actor = payload.actor
     if not actor or not actor:IsA("Model") then
         return false
@@ -132,38 +136,34 @@ function CombatHandler:PlayM1(payload: any, combatAction: RemoteEvent): boolean
     local combo = math.clamp(tonumber(payload.combo) or 1, 1, 4)
     local key = "M1_" .. tostring(combo)
     local attackId = type(payload.attackId) == "string" and payload.attackId or nil
-    local fallbackDelay = math.max(0.01, tonumber(payload.hitDelay) or 0.08)
 
     return playAttack(
         actor,
         key,
         attackId,
-        fallbackDelay,
         combatAction,
         "M1Hit"
     )
 end
 
-function CombatHandler:PlaySpecial(payload: any, combatAction: RemoteEvent): boolean
+function CombatHandler:PlaySpecial(payload: {[string]: any}, combatAction: RemoteEvent): boolean
     local actor = payload.actor
     if not actor or not actor:IsA("Model") then
         return false
     end
 
     local attackId = type(payload.attackId) == "string" and payload.attackId or nil
-    local fallbackDelay = math.max(0.01, tonumber(payload.hitDelay) or 0.12)
 
     return playAttack(
         actor,
         "Special",
         attackId,
-        fallbackDelay,
         combatAction,
         "SpecialHit"
     )
 end
 
-function CombatHandler:PlaySkill(payload: any, combatAction: RemoteEvent): boolean
+function CombatHandler:PlaySkill(payload: {[string]: any}, combatAction: RemoteEvent): boolean
     local actor = payload.actor
     if not actor or not actor:IsA("Model") then
         return false
@@ -172,19 +172,17 @@ function CombatHandler:PlaySkill(payload: any, combatAction: RemoteEvent): boole
     local slot = math.clamp(tonumber(payload.slot) or 1, 1, 4)
     local key = "Skill" .. tostring(slot)
     local attackId = type(payload.attackId) == "string" and payload.attackId or nil
-    local fallbackDelay = math.max(0.01, tonumber(payload.hitDelay) or 0.16)
 
     return playAttack(
         actor,
         key,
         attackId,
-        fallbackDelay,
         combatAction,
         "SkillHit"
     )
 end
 
-function CombatHandler:OnCombatEvent(payload: any, combatAction: RemoteEvent): boolean
+function CombatHandler:OnCombatEvent(payload: {[string]: any}, combatAction: RemoteEvent): boolean
     local action = tostring(payload.action or "")
 
     if action == "M1Start" then
