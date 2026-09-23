@@ -3,11 +3,11 @@
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
-local StateManager=require(script.Parent.StateManager)
+local StateManager: any=require(script.Parent.StateManager)
 local Remotes=require(ReplicatedStorage.Shared.RemoteService):Get()
 
 local UltimateService={}
-local activeTokens:{[Player]:number}=setmetatable({}, {__mode="k"}) :: any
+local activeTokens:{[Player]:number}={}
 
 local function setMeter(player: Player, name: string, value: number)
     value=math.clamp(value,0,100)
