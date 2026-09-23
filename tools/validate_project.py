@@ -177,7 +177,7 @@ for wrapper, module in (
         fail(f"isolated HUD wrapper missing: {wrapper}")
 
 hud_combat = read("StarterPlayer/StarterPlayerScripts/HUD/Combat.lua")
-for token in ('"M1"', '"Dash"', '"Block"', '"Special"', '"Sprint"', '"Ultimate"', '"Awakening"):
+for token in ('"M1"', '"Dash"', '"Block"', '"Special"', '"Sprint"', '"Ultimate"', '"Awakening"'):
     if token not in hud_combat:
         fail(f"combat HUD feature missing: {token}")
 
