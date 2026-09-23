@@ -225,6 +225,9 @@ for token in ("EmoteData", "Price", "Duration", "Loop", "AnimationId"):
         fail(f"Emote definitions missing field: {token}")
 
 for path, required in {
+    "StarterPlayer/StarterPlayerScripts/HUD/HUDLayout.lua": (
+        "Mobile", "Console", "PC", "CombatScaleReference", "SkillsWidth"
+    ),
     "StarterPlayer/StarterPlayerScripts/HUD/HUDTheme.lua": (
         "CoreUISafeInsets", "PreferredInput", "ResponsiveScale", "UISizeConstraint"
     ),
