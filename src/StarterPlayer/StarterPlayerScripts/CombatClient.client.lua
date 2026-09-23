@@ -14,13 +14,15 @@ local ProceduralAnimator = require(script.Parent.Controllers.ProceduralAnimator)
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
-local remotesFolder = ReplicatedStorage:WaitForChild("Remotes", 30)
-if not remotesFolder then
+local remotes = ReplicatedStorage:WaitForChild("Remotes", 30)
+
+if not remotes then
     return
 end
 
-local combatAction = remotesFolder:WaitForChild("CombatAction", 15)
-local combatFX = remotesFolder:WaitForChild("CombatFX", 15)
+local combatAction = remotes:WaitForChild("CombatAction", 15)
+local combatFX = remotes:WaitForChild("CombatFX", 15)
+
 if not combatAction or not combatFX then
     return
 end
@@ -34,10 +36,8 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "CursedCollisionCombatHUD"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
-gui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 gui.DisplayOrder = 5
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.Enabled = true
 gui.Parent = playerGui
 
 local root = Instance.new("Frame")
@@ -47,28 +47,22 @@ root.BackgroundTransparency = 1
 root.Parent = gui
 
 local scale = Instance.new("UIScale")
-scale.Name = "ResponsiveScale"
-scale.Scale = 1
 scale.Parent = root
 
 local function refreshScale()
     local camera = workspace.CurrentCamera
-    if not camera then
-        return
+    if camera then
+        scale.Scale = math.clamp(camera.ViewportSize.Y / 800, 0.82, 1.15)
     end
-    local viewport = camera.ViewportSize
-    local factor = math.clamp(viewport.Y / 800, 0.78, 1.16)
-    if viewport.X < viewport.Y then
-        factor = math.clamp(factor, 0.82, 1.08)
-    end
-    scale.Scale = factor
 end
 
-workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(refreshScale)
+refreshScale()
+
 if workspace.CurrentCamera then
     workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(refreshScale)
 end
-refreshScale()
+
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(refreshScale)
 
 local function corner(object: GuiObject, radius: number)
     local ui = Instance.new("UICorner")
@@ -83,37 +77,25 @@ local function stroke(object: GuiObject, transparency: number)
     ui.Parent = object
 end
 
-local function button(parent: Instance, textValue: string, size: UDim2, position: UDim2)
-    local object = Instance.new("TextButton")
-    object.Size = size
-    object.Position = position
-    object.Text = textValue
-    object.Font = Enum.Font.GothamBlack
-    object.TextSize = 12
-    object.TextColor3 = Color3.fromRGB(240, 241, 246)
-    object.BackgroundColor3 = Color3.fromRGB(24, 26, 33)
-    object.BackgroundTransparency = 0.04
-    object.AutoButtonColor = false
-    object.Active = true
-    object.Selectable = true
-    object.Parent = parent
-    corner(object, 13)
-    stroke(object, 0.52)
-
-    local buttonScale = Instance.new("UIScale")
-    buttonScale.Scale = 1
-    buttonScale.Parent = object
-
-    object.Activated:Connect(function()
-        TweenService:Create(buttonScale, TweenInfo.new(0.06), {Scale = 0.96}):Play()
-        task.delay(0.06, function()
-            if buttonScale.Parent then
-                TweenService:Create(buttonScale, TweenInfo.new(0.11, Enum.EasingStyle.Back), {Scale = 1}):Play()
-            end
-        end)
-    end)
-
-    return object
+local function button(parent: Instance, name: string, textValue: string, size: UDim2, position: UDim2)
+    local b = Instance.new("TextButton")
+    b.Name = name
+    b.Size = size
+    b.Position = position
+    b.Text = textValue
+    b.Font = Enum.Font.GothamBlack
+    b.TextSize = 11
+    b.TextColor3 = Color3.fromRGB(240, 241, 246)
+    b.BackgroundColor3 = Color3.fromRGB(22, 24, 31)
+    b.BackgroundTransparency = 0.04
+    b.BorderSizePixel = 0
+    b.AutoButtonColor = true
+    b.Active = true
+    b.Selectable = true
+    b.Parent = parent
+    corner(b, 13)
+    stroke(b, 0.52)
+    return b
 end
 
 local function label(parent: Instance, textValue: string, size: UDim2, position: UDim2, textSize: number)
@@ -130,55 +112,65 @@ local function label(parent: Instance, textValue: string, size: UDim2, position:
     return object
 end
 
-local roster = {}
-for id in pairs(Definitions) do
-    table.insert(roster, id)
-end
-table.sort(roster)
+local identity = Instance.new("Frame")
+identity.Name = "Identity"
+identity.Size = UDim2.fromScale(0.26, 0.065)
+identity.Position = UDim2.fromScale(0.50, 0.026)
+identity.AnchorPoint = Vector2.new(0.5, 0)
+identity.BackgroundColor3 = Color3.fromRGB(12, 14, 20)
+identity.BackgroundTransparency = 0.20
+identity.Parent = root
+corner(identity, 10)
+stroke(identity, 0.72)
 
-local function findCurrentIndex()
-    local id = player:GetAttribute("CharacterId") or "PotentialMan"
-    return table.find(roster, id) or 1
-end
-
-local currentIndex = findCurrentIndex()
-
-local fighter = Instance.new("Frame")
-fighter.Name = "CharacterCard"
-fighter.Size = UDim2.fromScale(0.31, 0.095)
-fighter.Position = UDim2.fromScale(0.018, 0.018)
-fighter.BackgroundColor3 = Color3.fromRGB(13, 15, 21)
-fighter.BackgroundTransparency = 0.06
-fighter.Parent = root
-corner(fighter, 14)
-stroke(fighter, 0.48)
-
-local previousCharacter = button(fighter, "<", UDim2.fromScale(0.15, 0.68), UDim2.fromScale(0.015, 0.16))
-local nextCharacter = button(fighter, ">", UDim2.fromScale(0.15, 0.68), UDim2.fromScale(0.835, 0.16))
-
-local nameLabel = label(fighter, "Potential Man", UDim2.fromScale(0.66, 0.38), UDim2.fromScale(0.17, 0.07), 15)
+local nameLabel = label(identity, "Potential Man", UDim2.fromScale(0.94, 0.53), UDim2.fromScale(0.03, 0.05), 13)
 nameLabel.TextXAlignment = Enum.TextXAlignment.Center
 
-local titleLabel = label(fighter, "Shadow Potential", UDim2.fromScale(0.66, 0.25), UDim2.fromScale(0.17, 0.56), 8)
+local titleLabel = label(identity, "Shadow Potential", UDim2.fromScale(0.94, 0.27), UDim2.fromScale(0.03, 0.61), 7)
 titleLabel.TextColor3 = Color3.fromRGB(150, 154, 168)
 titleLabel.TextXAlignment = Enum.TextXAlignment.Center
 
-local stateCard = Instance.new("Frame")
-stateCard.Size = UDim2.fromScale(0.20, 0.05)
-stateCard.Position = UDim2.fromScale(0.40, 0.018)
-stateCard.BackgroundColor3 = Color3.fromRGB(12, 14, 20)
-stateCard.BackgroundTransparency = 0.18
-stateCard.Parent = root
-corner(stateCard, 10)
-stroke(stateCard, 0.72)
+local status = Instance.new("Frame")
+status.Name = "Status"
+status.Size = UDim2.fromScale(0.18, 0.042)
+status.Position = UDim2.fromScale(0.50, 0.10)
+status.AnchorPoint = Vector2.new(0.5, 0)
+status.BackgroundColor3 = Color3.fromRGB(12, 14, 20)
+status.BackgroundTransparency = 0.22
+status.Parent = root
+corner(status, 9)
+stroke(status, 0.78)
 
-local stateLabel = label(stateCard, "READY", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 10)
+local stateLabel = label(status, "READY", UDim2.fromScale(1, 1), UDim2.new(), 9)
 stateLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local awakening = Instance.new("Frame")
+awakening.Name = "AwakeningBar"
+awakening.Size = UDim2.fromScale(0.58, 0.038)
+awakening.Position = UDim2.fromScale(0.50, 0.725)
+awakening.AnchorPoint = Vector2.new(0.5, 0.5)
+awakening.BackgroundColor3 = Color3.fromRGB(37, 39, 49)
+awakening.BorderSizePixel = 0
+awakening.Parent = root
+corner(awakening, 8)
+stroke(awakening, 0.72)
+
+local awakeningFill = Instance.new("Frame")
+awakeningFill.Name = "Fill"
+awakeningFill.Size = UDim2.fromScale(0, 1)
+awakeningFill.BackgroundColor3 = Color3.fromRGB(155, 112, 255)
+awakeningFill.BorderSizePixel = 0
+awakeningFill.Parent = awakening
+corner(awakeningFill, 8)
+
+local awakeningName = label(awakening, "ULTIMATE", UDim2.fromScale(1, 1), UDim2.new(), 8)
+awakeningName.TextXAlignment = Enum.TextXAlignment.Center
+awakeningName.TextColor3 = Color3.fromRGB(205, 207, 218)
 
 local skillFrame = Instance.new("Frame")
 skillFrame.Name = "Skills"
-skillFrame.Size = UDim2.fromScale(0.92, 0.12)
-skillFrame.Position = UDim2.fromScale(0.50, 0.815)
+skillFrame.Size = UDim2.fromScale(0.76, 0.125)
+skillFrame.Position = UDim2.fromScale(0.50, 0.825)
 skillFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 skillFrame.BackgroundTransparency = 1
 skillFrame.Parent = root
@@ -188,38 +180,51 @@ local skillCooldowns = {}
 
 for slot = 1, 4 do
     local x = (slot - 0.5) / 4
-    local skillButton = button(skillFrame, tostring(slot), UDim2.fromScale(0.235, 0.88), UDim2.fromScale(x, 0.06))
+    local skillButton = button(
+        skillFrame,
+        "Skill" .. tostring(slot),
+        tostring(slot),
+        UDim2.fromScale(0.235, 0.87),
+        UDim2.fromScale(x, 0.06)
+    )
+
     skillButton.AnchorPoint = Vector2.new(0.5, 0)
-    skillButton.TextScaled = false
-    skillButton.TextSize = 11
+    skillButton.TextSize = 10
     skillButtons[slot] = skillButton
 
-    local cooldown = label(skillButton, "READY", UDim2.fromScale(0.84, 0.22), UDim2.fromScale(0.08, 0.73), 7)
-    cooldown.TextColor3 = Color3.fromRGB(150, 154, 168)
+    local cooldown = label(
+        skillButton,
+        "READY",
+        UDim2.fromScale(0.88, 0.22),
+        UDim2.fromScale(0.06, 0.73),
+        7
+    )
+
     cooldown.TextXAlignment = Enum.TextXAlignment.Center
+    cooldown.TextColor3 = Color3.fromRGB(150, 154, 168)
     skillCooldowns[slot] = cooldown
 end
 
-local baseFrame = Instance.new("Frame")
-baseFrame.Name = "BaseActions"
-baseFrame.Size = UDim2.fromScale(0.31, 0.29)
-baseFrame.Position = UDim2.fromScale(0.715, 0.545)
-baseFrame.BackgroundTransparency = 1
-baseFrame.Parent = root
+local actionFrame = Instance.new("Frame")
+actionFrame.Name = "Actions"
+actionFrame.Size = UDim2.fromScale(0.31, 0.30)
+actionFrame.Position = UDim2.fromScale(0.725, 0.54)
+actionFrame.BackgroundTransparency = 1
+actionFrame.Parent = root
 
-local m1 = button(baseFrame, "M1", UDim2.fromScale(0.46, 0.46), UDim2.fromScale(0.62, 0.50))
+local m1 = button(actionFrame, "M1", "M1", UDim2.fromScale(0.46, 0.46), UDim2.fromScale(0.63, 0.50))
 m1.AnchorPoint = Vector2.new(0.5, 0.5)
 m1.TextSize = 22
 
-local dash = button(baseFrame, "DASH", UDim2.fromScale(0.34, 0.20), UDim2.fromScale(0.18, 0.63))
+local dash = button(actionFrame, "Dash", "DASH", UDim2.fromScale(0.34, 0.20), UDim2.fromScale(0.18, 0.63))
 dash.AnchorPoint = Vector2.new(0.5, 0.5)
 
-local block = button(baseFrame, "BLOCK", UDim2.fromScale(0.34, 0.20), UDim2.fromScale(0.18, 0.34))
+local block = button(actionFrame, "Block", "BLOCK", UDim2.fromScale(0.34, 0.20), UDim2.fromScale(0.18, 0.34))
 block.AnchorPoint = Vector2.new(0.5, 0.5)
 
-local special = button(root, "SPECIAL", UDim2.fromScale(0.17, 0.065), UDim2.fromScale(0.50, 0.934))
+local special = button(root, "Special", "SPECIAL", UDim2.fromScale(0.18, 0.066), UDim2.fromScale(0.50, 0.935))
 special.AnchorPoint = Vector2.new(0.5, 0.5)
-special.TextSize = 11
+special.TextSize = 10
 
 local localCooldowns: {[string]: number} = {}
 
@@ -248,15 +253,23 @@ local function moveCooldown(action: string): number
 end
 
 local function fire(action: string, payload: any)
-    if player:GetAttribute("CCHUD_MenuOpen") == true then
+    if player:GetAttribute("CCHUD_MenuOpen") == true
+        or player:GetAttribute("CCHUD_CharacterMenuOpen") == true
+        or player:GetAttribute("CCHUD_EmoteWheelOpen") == true
+        or player:GetAttribute("CCHUD_OwnerPanelOpen") == true then
         return
     end
 
-    if action ~= "BlockStart" and action ~= "BlockEnd" and remaining(action) > 0 then
+    if action ~= "BlockStart"
+        and action ~= "BlockEnd"
+        and remaining(action) > 0 then
         return
     end
 
-    local duration = if action == "BlockStart" or action == "BlockEnd" then 0 else moveCooldown(action)
+    local duration = if action == "BlockStart" or action == "BlockEnd"
+        then 0
+        else moveCooldown(action)
+
     if duration > 0 then
         localCooldowns[action] = os.clock() + duration
     end
@@ -265,8 +278,7 @@ local function fire(action: string, payload: any)
 end
 
 local function refreshCharacter()
-    currentIndex = findCurrentIndex()
-    local id = player:GetAttribute("CharacterId") or roster[currentIndex]
+    local id = player:GetAttribute("CharacterId") or "PotentialMan"
     local profile = Definitions[id]
     local moves = CustomMovesets.Get(id)
 
@@ -278,28 +290,18 @@ local function refreshCharacter()
         skillButtons[slot].Text = tostring(slot) .. "\n" .. (move and move.Name or "Skill")
     end
 
-    special.Text = (CharacterMoves[id] and CharacterMoves[id].SpecialName or "SPECIAL") .. "\nSPECIAL"
+    local specialName = CharacterMoves[id] and CharacterMoves[id].SpecialName or "SPECIAL"
+    special.Text = specialName .. "\nSPECIAL"
+
+    awakeningName.Text = (profile and (profile.AwakeningName or profile.OneTimeName) or "ULTIMATE") .. "  •  ULTIMATE"
     localCooldowns = {}
 end
 
-local function selectCharacter(index: number)
-    if #roster == 0 then
-        return
-    end
-
-    currentIndex = ((index - 1) % #roster) + 1
-    local id = roster[currentIndex]
-    player:SetAttribute("LocalPendingCharacter", id)
-    combatAction:FireServer("SelectCharacter", id)
+local function setBlocking(active: boolean)
+    player:SetAttribute("LocalBlocking", active)
+    block.Text = active and "BLOCKING" or "BLOCK"
+    fire(active and "BlockStart" or "BlockEnd")
 end
-
-previousCharacter.Activated:Connect(function()
-    selectCharacter(currentIndex - 1)
-end)
-
-nextCharacter.Activated:Connect(function()
-    selectCharacter(currentIndex + 1)
-end)
 
 for slot = 1, 4 do
     skillButtons[slot].Activated:Connect(function()
@@ -314,12 +316,6 @@ end)
 dash.Activated:Connect(function()
     fire("Dash", InputController:GetDashDirection())
 end)
-
-local function setBlocking(active: boolean)
-    player:SetAttribute("LocalBlocking", active)
-    block.Text = active and "BLOCKING" or "BLOCK"
-    fire(active and "BlockStart" or "BlockEnd")
-end
 
 block.Activated:Connect(function()
     setBlocking(player:GetAttribute("LocalBlocking") ~= true)
@@ -341,14 +337,14 @@ UserInputService.InputBegan:Connect(function(input, processed)
         return
     end
 
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        fire("M1")
-        return
-    end
-
     local slot = keySkills[input.KeyCode]
     if slot then
         fire("Skill" .. tostring(slot))
+        return
+    end
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        fire("M1")
         return
     end
 
@@ -362,7 +358,8 @@ UserInputService.InputBegan:Connect(function(input, processed)
         return
     end
 
-    if input.KeyCode == Enum.KeyCode.F and player:GetAttribute("LocalBlocking") ~= true then
+    if input.KeyCode == Enum.KeyCode.F
+        and player:GetAttribute("LocalBlocking") ~= true then
         setBlocking(true)
     end
 end)
@@ -383,30 +380,55 @@ end
 
 player:GetAttributeChangedSignal("CharacterId"):Connect(refreshCharacter)
 
-player:GetAttributeChangedSignal("CCHUD_MenuOpen"):Connect(function()
-    local open = player:GetAttribute("CCHUD_MenuOpen") == true
-    root.Visible = not open
-    if open and player:GetAttribute("LocalBlocking") == true then
+local function hideForMenu()
+    local hidden =
+        player:GetAttribute("CCHUD_MenuOpen") == true
+        or player:GetAttribute("CCHUD_CharacterMenuOpen") == true
+        or player:GetAttribute("CCHUD_EmoteWheelOpen") == true
+        or player:GetAttribute("CCHUD_OwnerPanelOpen") == true
+
+    root.Visible = not hidden
+
+    if hidden and player:GetAttribute("LocalBlocking") == true then
         player:SetAttribute("LocalBlocking", false)
         block.Text = "BLOCK"
         combatAction:FireServer("BlockEnd")
     end
-end)
+end
 
-combatFX.OnClientEvent:Connect(function(kind, _position, payload)
-    if kind == "CombatAction"
-        and payload
-        and payload.actor
-        and payload.actor:IsA("Model") then
+for _, attribute in ipairs({
+    "CCHUD_MenuOpen",
+    "CCHUD_CharacterMenuOpen",
+    "CCHUD_EmoteWheelOpen",
+    "CCHUD_OwnerPanelOpen"
+}) do
+    player:GetAttributeChangedSignal(attribute):Connect(hideForMenu)
+end
 
-        ProceduralAnimator:Play(payload.actor, tostring(payload.action or ""), payload)
-        stateLabel.Text = string.upper(tostring(payload.action or "ACTION"))
+local function readAwakening()
+    local value = tonumber(player:GetAttribute("AwakeningMeter"))
+        or tonumber(player:GetAttribute("AwakeningProgress"))
+        or 0
+    awakeningFill.Size = UDim2.fromScale(math.clamp(value / 100, 0, 1), 1)
+end
 
-        task.delay(0.18, function()
-            if stateLabel.Parent then
-                stateLabel.Text = "READY"
-            end
-        end)
+player:GetAttributeChangedSignal("AwakeningMeter"):Connect(readAwakening)
+player:GetAttributeChangedSignal("AwakeningProgress"):Connect(readAwakening)
+
+combatFX.OnClientEvent:Connect(function(kind, _, payload)
+    if kind == "CombatAction" and payload and payload.actor then
+        if payload.actor:IsA("Model") then
+            ProceduralAnimator:Play(payload.actor, tostring(payload.action or ""), payload)
+        end
+
+        if payload.actor == player.Character then
+            stateLabel.Text = string.upper(tostring(payload.action or "ACTION"))
+            task.delay(0.18, function()
+                if stateLabel.Parent then
+                    stateLabel.Text = "READY"
+                end
+            end)
+        end
 
     elseif kind == "BlockImpact" then
         stateLabel.Text = "BLOCKED"
@@ -416,7 +438,7 @@ combatFX.OnClientEvent:Connect(function(kind, _position, payload)
             end
         end)
 
-    elseif kind == "Hit" and payload then
+    elseif kind == "Hit" and payload and payload.actor == player.Character then
         stateLabel.Text = payload.final and "FINISHER" or "HIT"
         task.delay(0.18, function()
             if stateLabel.Parent then
@@ -438,11 +460,13 @@ task.spawn(function()
     while gui.Parent do
         for slot = 1, 4 do
             local left = remaining("Skill" .. tostring(slot))
-            skillCooldowns[slot].Text = left <= 0.05 and "READY" or string.format("%.1fs", left)
+            skillCooldowns[slot].Text =
+                left <= 0.05 and "READY" or string.format("%.1fs", left)
         end
         task.wait(0.08)
     end
 end)
 
 refreshCharacter()
-root.Visible = player:GetAttribute("CCHUD_MenuOpen") ~= true
+readAwakening()
+hideForMenu()
