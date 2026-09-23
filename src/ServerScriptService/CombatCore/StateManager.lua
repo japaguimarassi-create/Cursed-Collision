@@ -19,6 +19,7 @@ export type State = {
     PerfectBlockUntil: number,
     RagdollUntil: number,
     AbilityToken: number,
+    ActionToken: number,
     Vars: {[string]: any}
 }
 
@@ -44,7 +45,7 @@ local function fresh(): State
     return {
         Phase="Idle", Blocking=false, Combo=0, LastM1=0, LastAction="",
         DashUntil=0, StunnedUntil=0, RecoveryUntil=0, InvulnerableUntil=0,
-        PerfectBlockUntil=0, RagdollUntil=0, AbilityToken=0, Vars={}
+        PerfectBlockUntil=0, RagdollUntil=0, AbilityToken=0, ActionToken=0, Vars={}
     }
 end
 
@@ -135,6 +136,7 @@ function StateManager:SetStun(player: Player, duration: number, now: number)
 
     state.StunnedUntil = math.max(state.StunnedUntil, now + math.max(0, duration))
     state.AbilityToken += 1
+    state.ActionToken += 1
     state.PerfectBlockUntil = 0
     state.Blocking = false
     self:SetPhase(player, "Stunned")
@@ -178,6 +180,16 @@ function StateManager:EndBlock(player: Player)
     end
 end
 
+function StateManager:NextActionToken(player: Player): number?
+    local state = store[player]
+    if not state then
+        return nil
+    end
+
+    state.ActionToken += 1
+    return state.ActionToken
+end
+
 function StateManager:BeginAbility(player: Player, action: string, now: number): number?
     local state = store[player]
     if not state or not self:CanAct(player, now) then
@@ -217,6 +229,7 @@ function StateManager:BeginRagdoll(player: Player, duration: number, now: number
 
     state.RagdollUntil = math.max(state.RagdollUntil, now + math.max(0, duration))
     state.AbilityToken += 1
+    state.ActionToken += 1
     state.Blocking = false
     state.PerfectBlockUntil = 0
     self:SetPhase(player, "Ragdolled")
