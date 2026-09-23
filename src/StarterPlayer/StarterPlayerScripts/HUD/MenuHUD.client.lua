@@ -203,7 +203,10 @@ tabPasses.Activated:Connect(function() state.Tab = "Passes"; render() end)
 tabPlayers.Activated:Connect(function() state.Tab = "Players"; render() end)
 
 tabSettings.Activated:Connect(function()
-    closeMenu()
+    player:SetAttribute("CCHUD_MenuOpen", false)
+    player:SetAttribute("CCHUD_CharacterMenuOpen", false)
+    player:SetAttribute("CCHUD_EmoteWheelOpen", false)
+    player:SetAttribute("CCHUD_OwnerPanelOpen", false)
     player:SetAttribute("CCHUD_SettingsOpen", true)
 end)
 
