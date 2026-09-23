@@ -40,7 +40,7 @@ local function announce(
         return
     end
 
-    local data = payload or {}
+    local data: {[string]: any} = payload or {}
     data.character = characterId
     data.action = action
     data.move = moveName
