@@ -8,7 +8,7 @@ local Registry = require(ReplicatedStorage.Animation.AnimationRegistry)
 
 local MovementAnimationManager = {}
 
-local bound: {[Model]: RBXScriptConnection} = setmetatable({}, {__mode="k"})
+local bound: {[Model]: {connection: RBXScriptConnection, last: string}} = setmetatable({}, {__mode="k"})
 
 function MovementAnimationManager:Bind(character: Model)
     if bound[character] then return end
@@ -16,34 +16,41 @@ function MovementAnimationManager:Bind(character: Model)
     local humanoid=character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
 
-    bound[character]=RunService.Heartbeat:Connect(function()
+local record = {last=""}
+
+record.connection=RunService.Heartbeat:Connect(function()
         if not character.Parent or humanoid.Health<=0 then
             return
         end
 
         local speed=humanoid.MoveDirection.Magnitude * humanoid.WalkSpeed
         local state=humanoid:GetState()
+        local nextState="Idle"
 
         if state==Enum.HumanoidStateType.Jumping then
-            AnimationController:Play(character,"Jump",{},nil)
+            nextState="Jump"
         elseif state==Enum.HumanoidStateType.Freefall then
-            AnimationController:Play(character,"Fall",{},nil)
+            nextState="Fall"
         elseif speed>humanoid.WalkSpeed*0.82 then
-            if Registry.Sprint and Registry.Sprint.Id>0 then
-                AnimationController:Play(character,"Sprint",{},nil)
-            end
+            nextState="Sprint"
         elseif speed>0.08 then
-            if Registry.Walk and Registry.Walk.Id>0 then
-                AnimationController:Play(character,"Walk",{},nil)
-            end
+            nextState="Walk"
         end
+
+        if nextState~=record.last and Registry[nextState] and Registry[nextState].Id>0 then
+            AnimationController:Play(character,nextState,{},nil)
+        end
+
+        record.last=nextState
     end)
+
+    bound[character]=record
 end
 
 function MovementAnimationManager:Unbind(character: Model)
-    local connection=bound[character]
-    if connection then
-        connection:Disconnect()
+    local record=bound[character]
+    if record then
+        record.connection:Disconnect()
         bound[character]=nil
     end
 end
