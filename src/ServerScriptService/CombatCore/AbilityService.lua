@@ -8,13 +8,13 @@ local StateManager = require(script.Parent.StateManager)
 local CooldownService = require(script.Parent.CooldownService)
 local CharacterService = require(ReplicatedStorage.Characters.CharacterService)
 
-local AbilityService = {}
+local AbilityService: any = {}
 AbilityService.__index = AbilityService
 
 function AbilityService.new(context: any)
     return setmetatable({
         Context = context,
-        Active = setmetatable({}, {__mode = "k"})
+        Active = {}
     }, AbilityService)
 end
 
