@@ -380,8 +380,8 @@ local function playModel(model: Model, id: string, duration: number, looped: boo
     stopModel(model)
 
     local key = animationKey or ("Emote_" .. string.sub(id, -3))
-    local animator = model:FindFirstChildOfClass("Humanoid")
-        and model:FindFirstChildOfClass("Humanoid"):FindFirstChildOfClass("Animator")
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
 
     local track: AnimationTrack? = if animator then AnimationCache:GetTrack(animator, key) else nil
 
