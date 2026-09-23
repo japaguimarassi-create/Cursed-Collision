@@ -160,6 +160,25 @@ function CombatHandler:PlayM1(payload: any, combatAction: RemoteEvent): boolean
     )
 end
 
+function CombatHandler:PlaySpecial(payload: any, combatAction: RemoteEvent): boolean
+    local actor = payload.actor
+    if not actor or not actor:IsA("Model") then
+        return false
+    end
+
+    local attackId = type(payload.attackId) == "string" and payload.attackId or nil
+    local fallbackDelay = math.max(0.01, tonumber(payload.hitDelay) or 0.12)
+
+    return playAttack(
+        actor,
+        "Special",
+        attackId,
+        fallbackDelay,
+        combatAction,
+        "SpecialHit"
+    )
+end
+
 function CombatHandler:PlaySkill(payload: any, combatAction: RemoteEvent): boolean
     local actor = payload.actor
     if not actor or not actor:IsA("Model") then
@@ -190,6 +209,10 @@ function CombatHandler:OnCombatEvent(payload: any, combatAction: RemoteEvent): b
 
     if action == "SkillStart" then
         return self:PlaySkill(payload, combatAction)
+    end
+
+    if action == "SpecialStart" then
+        return self:PlaySpecial(payload, combatAction)
     end
 
     if action == "Dash" then
