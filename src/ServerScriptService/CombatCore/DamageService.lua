@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local StateManager = require(script.Parent.StateManager)
 local MovementController = require(script.Parent.MovementController)
+local GamePassService = require(script.Parent.Parent.GamePassService)
 
 local DamageService = {}
 local context = nil :: any
@@ -150,6 +151,7 @@ function DamageService:Apply(
                 attacker = attacker.Character
             }
         )
+        GamePassService:NotifyKill(attacker)
     end
 
     return true
