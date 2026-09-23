@@ -67,7 +67,9 @@ local function hit(
 
     local root = rootOf(player)
     local look = root and root.CFrame.LookVector or Vector3.zAxis
-    local meta = extra or {}
+    local stateForHit = ctx.getState(player)
+    local activeMove = stateForHit and stateForHit.Vars and stateForHit.Vars.ActiveMove
+    local meta = extra or impactMeta(activeMove or {}, false)
 
     meta.stun = math.max(0, stun)
     meta.knockback = math.max(0, knockback)
@@ -236,6 +238,7 @@ function CharacterKit.Build(id: string)
 
         local state = ctx.getState(player)
         local vars = state.Vars
+        vars.ActiveMove = move
 
         local damage = tonumber(move.Damage) or 0
         local stun = tonumber(move.Stun) or 0.3
