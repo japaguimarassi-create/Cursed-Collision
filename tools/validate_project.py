@@ -47,6 +47,15 @@ REQUIRED = [
     "StarterPlayer/StarterPlayerScripts/Controllers/CombatAnimationManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/MovementAnimationManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AbilityAnimationManager.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Util.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Combat.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Menu.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Characters.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Owner.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Emotes.lua",
+    "ReplicatedStorage/Animation/AnimationData.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/CameraController.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/VFXManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/SFXManager.lua",
@@ -164,6 +173,15 @@ ability_timeline = read("ReplicatedStorage/Combat/AbilityTimeline.lua")
 hit_registry = read("ReplicatedStorage/Combat/HitRegistry.lua")
 animation_controller = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua")
 animation_priority = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationPriorityManager.lua")
+animation_cache = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua")
+combat_handler = read("StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua")
+animation_data = read("ReplicatedStorage/Animation/AnimationData.lua")
+hud_util = read("StarterPlayer/StarterPlayerScripts/HUD/Util.lua")
+hud_combat = read("StarterPlayer/StarterPlayerScripts/HUD/Combat.lua")
+hud_menu = read("StarterPlayer/StarterPlayerScripts/HUD/Menu.lua")
+hud_characters = read("StarterPlayer/StarterPlayerScripts/HUD/Characters.lua")
+hud_owner = read("StarterPlayer/StarterPlayerScripts/HUD/Owner.lua")
+hud_emotes = read("StarterPlayer/StarterPlayerScripts/HUD/Emotes.lua")
 input_manager = read("StarterPlayer/StarterPlayerScripts/Controllers/InputManager.lua")
 camera_controller = read("StarterPlayer/StarterPlayerScripts/Controllers/CameraController.lua")
 vfx_manager = read("StarterPlayer/StarterPlayerScripts/Controllers/VFXManager.lua")
@@ -350,6 +368,10 @@ print("PASS: combat HUD, main menu and Owner UI are isolated")
 print("PASS: Owner UI is server-authorized and not embedded in the main menu")
 print("PASS: mobile/gamepad action routes match the active NetworkService")
 print("PASS: centralized combo, ability, ragdoll and ultimate services detected")
-print("PASS: marker-aware animation, unified input, camera, VFX and SFX layers detected")
+print("PASS: marker-aware cached animation pipeline detected")
+print("PASS: HUD components are isolated into separate client entry points")
+print("PASS: mobile, PC and console HUD layouts use safe insets and responsive scaling")
+print("PASS: JJS-inspired top-bar/menu/character/emote composition is present")
+print("PASS: unified input, camera, VFX and SFX layers detected")
 print("PASS: structured combat/ability/movement/state/ultimate remotes detected")
 print("PASS: heavy/dodge/grab/counter/slam/domain/awakening routes are not in the active combat router")
