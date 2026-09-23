@@ -209,14 +209,14 @@ function M.Start()
     backdrop.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch
             or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            close()
+            closeWheel()
         end
     end)
 
     UserInputService.InputBegan:Connect(function(input, processed)
         if processed then return end
         if input.KeyCode == Enum.KeyCode.B then
-            if wheel.Visible then close() else open() end
+            if wheel.Visible then closeWheel() else open() end
         elseif input.UserInputType == Enum.UserInputType.MouseButton1
             or input.KeyCode == Enum.KeyCode.Space then
             if active[player.Character] then
