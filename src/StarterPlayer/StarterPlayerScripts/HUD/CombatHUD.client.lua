@@ -18,6 +18,43 @@ end
 
 local platform = Theme.Platform()
 local layout = Layouts:Get(platform)
+
+local function hint(action: string): string
+    if platform == "Mobile" then
+        return ({
+            M1 = "✊",
+            Dash = "➜",
+            Block = "◉",
+            Sprint = "◇",
+            Special = "★",
+            Ultimate = "ULT",
+            Awakening = "AWK"
+        })[action] or action
+    end
+
+    if platform == "Console" then
+        return ({
+            M1 = "RT",
+            Dash = "A",
+            Block = "LT",
+            Sprint = "LB",
+            Special = "X",
+            Ultimate = "R3",
+            Awakening = "L3"
+        })[action] or action
+    end
+
+    return ({
+        M1 = "M1",
+        Dash = "Q",
+        Block = "F",
+        Sprint = "SHIFT",
+        Special = "E",
+        Ultimate = "R",
+        Awakening = "G"
+    })[action] or action
+end
+
 local gui = Theme.CreateGui("CursedCollisionHUD_Combat", 30)
 local root = Theme.Root(gui)
 Theme.ResponsiveScale(root, layout.CombatScaleReference, layout.CombatMinScale, layout.CombatMaxScale)
@@ -147,50 +184,50 @@ actions.Position = UDim2.fromScale(layout.ActionsX, layout.ActionsY)
 actions.BackgroundTransparency = 1
 actions.Parent = root
 
-local m1 = Theme.Button(actions, "M1", platform == "Mobile" and "✊" or "M1", UDim2.fromScale(0.52, 0.52), UDim2.fromScale(0.58, 0.51), platform == "Mobile" and 70 or 52)
+local m1 = Theme.Button(actions, "M1", hint("M1"), UDim2.fromScale(0.52, 0.52), UDim2.fromScale(0.58, 0.51), platform == "Mobile" and 70 or 52)
 m1.AnchorPoint = Vector2.new(0.5, 0.5)
 m1.TextSize = platform == "Mobile" and 28 or 20
 m1.Activated:Connect(function()
     fire("M1")
 end)
 
-local block = Theme.Button(actions, "Block", platform == "Mobile" and "◉" or "BLOCK", UDim2.fromScale(0.32, 0.30), UDim2.fromScale(0.15, 0.25), platform == "Mobile" and 62 or 44)
+local block = Theme.Button(actions, "Block", hint("Block"), UDim2.fromScale(0.32, 0.30), UDim2.fromScale(0.15, 0.25), platform == "Mobile" and 62 or 44)
 block.AnchorPoint = Vector2.new(0.5, 0.5)
 block.Activated:Connect(function()
     local active = player:GetAttribute("LocalBlocking") == true
     player:SetAttribute("LocalBlocking", not active)
-    block.Text = active and (platform == "Mobile" and "◉" or "BLOCK") or (platform == "Mobile" and "◉" or "BLOCKING")
+    block.Text = active and hint("Block") or (hint("Block") .. "ING")
     fire(active and "BlockEnd" or "BlockStart")
 end)
 
-local dash = Theme.Button(actions, "Dash", platform == "Mobile" and "➜" or "DASH", UDim2.fromScale(0.32, 0.30), UDim2.fromScale(0.15, 0.72), platform == "Mobile" and 62 or 44)
+local dash = Theme.Button(actions, "Dash", hint("Dash"), UDim2.fromScale(0.32, 0.30), UDim2.fromScale(0.15, 0.72), platform == "Mobile" and 62 or 44)
 dash.AnchorPoint = Vector2.new(0.5, 0.5)
 dash.Activated:Connect(function()
     fire("Dash", InputController:GetDashDirection())
 end)
 
-local sprint = Theme.Button(actions, "Sprint", platform == "Mobile" and "◇" or "SPRINT", UDim2.fromScale(0.32, 0.18), UDim2.fromScale(0.15, 0.03), platform == "Mobile" and 58 or 44)
+local sprint = Theme.Button(actions, "Sprint", hint("Sprint"), UDim2.fromScale(0.32, 0.18), UDim2.fromScale(0.15, 0.03), platform == "Mobile" and 58 or 44)
 sprint.AnchorPoint = Vector2.new(0.5, 0)
 sprint.Activated:Connect(function()
     local active = player:GetAttribute("LocalSprinting") == true
     player:SetAttribute("LocalSprinting", not active)
-    sprint.Text = active and (platform == "Mobile" and "◇" or "SPRINT") or (platform == "Mobile" and "◆" or "SPRINTING")
+    sprint.Text = active and hint("Sprint") or (hint("Sprint") .. "+")
     movementRemote:FireServer(active and "SprintEnd" or "SprintStart")
 end)
 
-local special = Theme.Button(root, "Special", platform == "Mobile" and "SPECIAL" or "SPECIAL  [E]", UDim2.fromScale(platform == "Mobile" and 0.21 or 0.18, 0.060), UDim2.fromScale(0.50, 0.930), platform == "Mobile" and 58 or 44)
+local special = Theme.Button(root, "Special", hint("Special"), UDim2.fromScale(platform == "Mobile" and 0.21 or 0.18, 0.060), UDim2.fromScale(0.50, 0.930), platform == "Mobile" and 58 or 44)
 special.AnchorPoint = Vector2.new(0.5, 0.5)
 special.Activated:Connect(function()
     fire("Special")
 end)
 
-local ultimate = Theme.Button(root, "Ultimate", platform == "Mobile" and "ULT" or "ULT [R]", UDim2.fromScale(0.135, 0.060), UDim2.fromScale(0.385, 0.930), platform == "Mobile" and 54 or 42)
+local ultimate = Theme.Button(root, "Ultimate", hint("Ultimate"), UDim2.fromScale(0.135, 0.060), UDim2.fromScale(0.385, 0.930), platform == "Mobile" and 54 or 42)
 ultimate.AnchorPoint = Vector2.new(0.5, 0.5)
 ultimate.Activated:Connect(function()
     fire("Ultimate")
 end)
 
-local awakening = Theme.Button(root, "Awakening", platform == "Mobile" and "AWAKEN" or "AWAKEN [G]", UDim2.fromScale(0.135, 0.060), UDim2.fromScale(0.615, 0.930), platform == "Mobile" and 54 or 42)
+local awakening = Theme.Button(root, "Awakening", hint("Awakening"), UDim2.fromScale(0.135, 0.060), UDim2.fromScale(0.615, 0.930), platform == "Mobile" and 54 or 42)
 awakening.AnchorPoint = Vector2.new(0.5, 0.5)
 awakening.Activated:Connect(function()
     fire("Awakening")
