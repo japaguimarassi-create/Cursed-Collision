@@ -8,6 +8,8 @@ CombatMarkerService.__index = CombatMarkerService
 export type AttackRecord = {
     AttackId: string,
     Token: number,
+    Kind: "Action" | "Ability",
+    EarlyAt: number,
     HitAt: number,
     ExpiresAt: number,
     Resolved: boolean,
@@ -36,6 +38,7 @@ function CombatMarkerService:Begin(
     token: number,
     hitDelay: number,
     callback: () -> (),
+    kind: "Action" | "Ability",
     earlyWindow: number?,
     lateWindow: number?
 ): boolean
@@ -57,6 +60,8 @@ function CombatMarkerService:Begin(
     local record: AttackRecord = {
         AttackId = attackId,
         Token = token,
+        Kind = kind,
+        EarlyAt = hitAt - early,
         HitAt = hitAt,
         ExpiresAt = hitAt + late,
         Resolved = false,
@@ -98,7 +103,9 @@ function CombatMarkerService:Resolve(player: Player, attackId: string): boolean
 
     local state = StateManager:Get(player)
 
-    if not state or state.AbilityToken ~= record.Token and state.ActionToken ~= record.Token then
+    if not state
+        or (record.Kind == "Ability" and state.AbilityToken ~= record.Token)
+        or (record.Kind == "Action" and state.ActionToken ~= record.Token) then
         playerRecords[attackId] = nil
         if next(playerRecords) == nil then
             records[player] = nil
@@ -108,7 +115,7 @@ function CombatMarkerService:Resolve(player: Player, attackId: string): boolean
 
     local now = os.clock()
 
-    if now < record.HitAt - DEFAULT_EARLY then
+    if now < record.EarlyAt then
         return false
     end
 
