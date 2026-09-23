@@ -139,7 +139,7 @@ function M.Start()
         panelScale.Scale = 0.94
         TweenService:Create(panelScale, TweenInfo.new(0.14, Enum.EasingStyle.Back), {Scale = 1}):Play()
         Util.setGamepadNavigation(true)
-        GuiService.SelectedObject = cards[selected]
+        GuiService.SelectedObject = cards[selected] :: GuiButton
     end
 
     local function closePanel()
