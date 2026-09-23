@@ -23,6 +23,7 @@ REQUIRED = [
     "ReplicatedStorage/Animation/AnimationRegistry.lua",
     "ReplicatedStorage/Animation/AnimationData.lua",
     "ReplicatedStorage/Characters/CharacterDefinitions.lua",
+    "ReplicatedStorage/Characters/PlayableRoster.lua",
     "ReplicatedStorage/Characters/CharacterMoves.lua",
     "ReplicatedStorage/Characters/CustomMovesets.lua",
     "ReplicatedStorage/Characters/CharacterService.lua",
@@ -119,9 +120,11 @@ for forbidden in ("Domain = true", "OneTime = true", "Heavy = true"):
 server = read("ServerScriptService/CombatServer.server.lua")
 for token in (
     "combat:M1(player)",
+    "combat:ConfirmM1Hit(",
     "combat:Dash(",
     "combat:SetBlock(",
     "combat:Special(player)",
+    "combat:SkillHit(",
     "CombatMarkerService:Resolve",
     "CombatMarkerService:Clear(player)"
 ):
@@ -167,6 +170,26 @@ for token in (
 ):
     if token not in marker:
         fail(f"CombatMarkerService contract missing: {token}")
+
+
+character_service = read("ReplicatedStorage/Characters/CharacterService.lua")
+for token in ("OnIncomingDamage", "OnM1Hit", "GetAvailable"):
+    if token not in character_service:
+        fail(f"CharacterService missing focused character hook: {token}")
+
+character_kit = read("ReplicatedStorage/Characters/CharacterKit.lua")
+for token in ('id == "Yuji"', 'id == "Gojo"', 'id == "Sukuna"', 'id == "Megumi"'):
+    if token not in character_kit:
+        fail(f"focused CharacterKit branch missing: {token}")
+
+damage_service = read("ServerScriptService/CombatCore/DamageService.lua")
+if "CharacterService:OnIncomingDamage" not in damage_service:
+    fail("DamageService does not invoke character-specific incoming damage")
+
+marker_handler = read("StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua")
+for token in ("GetMarkerReachedSignal", "M1Hit", "SkillHit"):
+    if token not in marker_handler:
+        fail(f"marker combat handler missing: {token}")
 
 damage = read("ServerScriptService/CombatCore/DamageService.lua")
 for token in (
