@@ -149,6 +149,11 @@ local function handleCombatAction(
 
     if action == "M1" then
         combat:M1(player)
+    elseif action == "M1Hit" then
+        local attackId = NetworkService:SanitizeMarkerPayload(payload)
+        if type(attackId) == "string" then
+            combat:ConfirmM1Hit(player, attackId, StateManager:Get(player).AbilityToken, "ClientMarker")
+        end
     elseif action == "Dash" then
         combat:Dash(
             player,
