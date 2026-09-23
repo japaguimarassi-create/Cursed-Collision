@@ -6,35 +6,20 @@ local CosmeticService = require(ReplicatedStorage.Economy.CosmeticService)
 
 local ShopService = {}
 
-local function getOwnedTable(data, category)
-    if category == "Emotes" then
-        return data.OwnedEmotes
-    elseif category == "Skins" then
-        return data.OwnedSkins
-    end
-    return nil
-end
-
-local function getCatalog(category)
-    if category == "Emotes" then
-        return Shop.Emotes
-    elseif category == "Skins" then
-        return Shop.Skins
-    end
-    return nil
-end
-
 function ShopService:Buy(player, category, itemId)
     if not DataService:IsReady(player) then
         return false, "DATA_NOT_READY"
     end
 
-    local data = DataService:Get(player)
-    local owned = getOwnedTable(data, category)
-    local catalog = getCatalog(category)
-    local item = catalog and catalog[itemId]
+    if category ~= "Skins" then
+        return false, "UNKNOWN_CATEGORY"
+    end
 
-    if not owned or not item then
+    local data = DataService:Get(player)
+    local owned = data.OwnedSkins
+    local item = Shop.Skins[itemId]
+
+    if not item then
         return false, "UNKNOWN_ITEM"
     end
 
@@ -58,50 +43,34 @@ function ShopService:Equip(player, category, itemId)
         return false, "DATA_NOT_READY"
     end
 
-    local data = DataService:Get(player)
-    local owned = getOwnedTable(data, category)
-    local catalog = getCatalog(category)
-    local item = catalog and catalog[itemId]
+    if category ~= "Skins" then
+        return false, "UNKNOWN_CATEGORY"
+    end
 
-    if not owned or not item then
+    local data = DataService:Get(player)
+    local item = Shop.Skins[itemId]
+
+    if not item then
         return false, "UNKNOWN_ITEM"
     end
 
-    if not owned[itemId] then
+    if not data.OwnedSkins[itemId] then
         return false, "NOT_OWNED"
     end
 
-    if category == "Emotes" then
-        data.EquippedEmote = itemId
-        player:SetAttribute("EquippedEmote", itemId)
-    elseif category == "Skins" then
-        if item.Character ~= (player:GetAttribute("CharacterId") or "") then
-            return false, "WRONG_CHARACTER"
-        end
-        data.EquippedSkin = itemId
-        if not CosmeticService:ApplySkin(player, itemId) then
-            return false, "SKIN_APPLY_FAILED"
-        end
-    else
-        return false, "UNKNOWN_CATEGORY"
+    if item.Character ~= (player:GetAttribute("CharacterId") or "") then
+        return false, "WRONG_CHARACTER"
+    end
+
+    data.EquippedSkin = itemId
+
+    if not CosmeticService:ApplySkin(player, item) then
+        return false, "SKIN_APPLY_FAILED"
     end
 
     DataService:MarkDirty(player)
     DataService:Save(player)
     return true, "EQUIPPED"
-end
-
-function ShopService:GiveAllEmotes(player)
-    local data = DataService:Get(player)
-    if not data then
-        return false
-    end
-
-    for id in pairs(Shop.Emotes) do
-        data.OwnedEmotes[id] = true
-    end
-    DataService:MarkDirty(player)
-    return true
 end
 
 function ShopService:GiveAllSkins(player)
@@ -113,28 +82,44 @@ function ShopService:GiveAllSkins(player)
     for id in pairs(Shop.Skins) do
         data.OwnedSkins[id] = true
     end
+
     DataService:MarkDirty(player)
     return true
 end
 
+function ShopService:GetSkin(itemId)
+    return Shop.Skins[itemId]
+end
+
+function ShopService:GetCharacterSkins(characterId)
+    local result = {}
+
+    for id, item in pairs(Shop.Skins) do
+        if item.Character == characterId then
+            result[id] = item
+        end
+    end
+
+    return result
+end
+
 function ShopService:Snapshot(player)
     local data = DataService:Get(player)
+
     if not data then
         return {
             Credits = 0,
-            OwnedEmotes = {},
             OwnedSkins = {},
-            EquippedEmote = "",
-            EquippedSkin = ""
+            EquippedSkin = "",
+            UltimateSkin = ""
         }
     end
 
     return {
         Credits = data.Credits,
-        OwnedEmotes = data.OwnedEmotes,
         OwnedSkins = data.OwnedSkins,
-        EquippedEmote = data.EquippedEmote,
-        EquippedSkin = data.EquippedSkin
+        EquippedSkin = data.EquippedSkin,
+        UltimateSkin = data.UltimateSkin
     }
 end
 
