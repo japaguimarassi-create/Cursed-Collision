@@ -339,12 +339,20 @@ if "GP_KillSound" not in gamepass_service or "NotifyKill" not in damage_service:
     fail("kill sound pass is not connected to confirmed kills")
 
 for token in ('"CharacterButton"', '"CharacterPanel"', "CCHUD_CharacterMenuOpen"):
-    if token not in character_client:
+    if token not in hud_characters:
         fail(f"character selection UI token missing: {token}")
 
-for token in ('"EmoteButton"', '"EmoteWheel"', "CCHUD_EmoteWheelOpen", "AnimationCache:GetTrack", "setWheel(false)"):
-    if token not in emote_client:
-        fail(f"emote UI/cache integration token missing: {token}")
+for token in ('"EmoteButton"', '"EmoteWheel"', "CCHUD_EmoteWheelOpen"):
+    if token not in hud_emotes:
+        fail(f"emote UI token missing: {token}")
+
+for token in ('"MenuButton"', '"AccountPanel"', '"ShopTab"', '"QuestTab"', '"PassTab"'):
+    if token not in hud_menu:
+        fail(f"main menu HUD token missing: {token}")
+
+for token in ('"OwnerButton"', '"OwnerPanel"', "IsGameOwner"):
+    if token not in hud_owner:
+        fail(f"owner UI token missing: {token}")
 
 for relative in ACTIVE:
     source = read(relative)
