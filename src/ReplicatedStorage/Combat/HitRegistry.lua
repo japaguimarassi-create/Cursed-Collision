@@ -1,6 +1,6 @@
 local HitRegistry = {}
 
-local store: {[Player]: {[string]: {[Model]: number}}} = setmetatable({}, {__mode="k"}) :: any
+local store: {[Player]: {[string]: {[Model]: number}}} = {} :: any
 
 function HitRegistry:Begin(attacker: Player, attackId: string)
     local buckets=store[attacker]
