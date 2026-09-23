@@ -5,9 +5,9 @@ local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local RunService=game:GetService("RunService")
 
 local Remotes=require(ReplicatedStorage.Shared.RemoteService):Get()
-local CombatAnimation=require(script.Parent.Controllers.CombatAnimationManager)
-local MovementAnimation=require(script.Parent.Controllers.MovementAnimationManager)
-local AnimationController=require(script.Parent.Controllers.AnimationController)
+local CombatAnimation: any=require(script.Parent.Controllers.CombatAnimationManager)
+local MovementAnimation: any=require(script.Parent.Controllers.MovementAnimationManager)
+local AnimationController: any=require(script.Parent.Controllers.AnimationController)
 
 
 local function bind(player: Player)
