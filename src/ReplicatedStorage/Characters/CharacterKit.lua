@@ -78,6 +78,19 @@ local function hit(
     return ctx.damage(player, target.humanoid, math.max(0, damage), meta)
 end
 
+local function impactMeta(move: any, final: boolean?): any
+    local result = {
+        guardBreak = move.Type == "Burst" or move.GuardBreak == true,
+        ragdoll = final == true or move.Ragdoll == true,
+        ragdollDuration = final and 0.42 or tonumber(move.RagdollDuration) or nil,
+        launch = move.Launch == true,
+        slam = move.Slam == true,
+        reaction = move.Type == "Burst" and "Heavy" or "Skill"
+    }
+
+    return result
+end
+
 local function pulse(
     ctx: any,
     player: Player,
@@ -391,7 +404,9 @@ function CharacterKit.Build(id: string)
                 damage,
                 move.Tag,
                 stun,
-                knockback
+                knockback,
+                nil,
+                impactMeta(move, move.Type == "Melee" and false or false)
             )
         end
 
