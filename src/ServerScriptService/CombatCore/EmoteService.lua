@@ -11,31 +11,23 @@ local EmoteService = {}
 
 local remotes = RemoteService:Get()
 
+local playerConnections: {[Player]: {RBXScriptConnection}} = {}
+local characterConnections: {[Player]: {RBXScriptConnection}} = {}
 local cooldownUntil: {[Player]: number} = {}
 local wheelEditUntil: {[Player]: number} = {}
 local active: {[Player]: string} = {}
-local connections: {[Player]: {RBXScriptConnection}} = {}
-local lastHealth: {[Player]: number} = {}
 
-local function disconnect(player: Player)
-    local list = connections[player]
-    if not list then
+local function disconnectList(list: {[Player]: {RBXScriptConnection}}, player: Player)
+    local connections = list[player]
+    if not connections then
         return
     end
 
-    for _, connection in ipairs(list) do
+    for _, connection in ipairs(connections) do
         connection:Disconnect()
     end
 
-    connections[player] = nil
-end
-
-local function cleanup(player: Player)
-    disconnect(player)
-    active[player] = nil
-    cooldownUntil[player] = nil
-    wheelEditUntil[player] = nil
-    lastHealth[player] = nil
+    list[player] = nil
 end
 
 local function stop(player: Player)
@@ -49,8 +41,8 @@ local function stop(player: Player)
     })
 end
 
-local function watchAttribute(player: Player, attribute: string)
-    table.insert(connections[player], player:GetAttributeChangedSignal(attribute):Connect(function()
+local function watchPlayerAttribute(player: Player, attribute: string)
+    table.insert(playerConnections[player], player:GetAttributeChangedSignal(attribute):Connect(function()
         if player:GetAttribute(attribute) == true then
             stop(player)
         end
@@ -58,31 +50,33 @@ local function watchAttribute(player: Player, attribute: string)
 end
 
 local function watchCharacter(player: Player, character: Model)
-    disconnect(player)
-    connections[player] = {}
+    disconnectList(characterConnections, player)
+    characterConnections[player] = {}
 
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then
         return
     end
 
-    lastHealth[player] = humanoid.Health
-
-    table.insert(connections[player], humanoid.HealthChanged:Connect(function(health)
-        local previous = lastHealth[player] or health
-        lastHealth[player] = health
-
-        if health < previous then
+    table.insert(characterConnections[player], humanoid.HealthChanged:Connect(function(health)
+        if health < humanoid.Health + 0.0001 and health < (humanoid:GetAttribute("CC_LastEmoteHealth") or health) then
             stop(player)
         end
+        humanoid:SetAttribute("CC_LastEmoteHealth", health)
+    end))
 
-        if health <= 0 then
+    humanoid:SetAttribute("CC_LastEmoteHealth", humanoid.Health)
+
+    table.insert(characterConnections[player], humanoid.Running:Connect(function(speed)
+        if speed > 0.08 or humanoid.MoveDirection.Magnitude > 0.08 then
             stop(player)
         end
     end))
 
-    table.insert(connections[player], humanoid.Running:Connect(function(speed)
-        if speed > 0.08 or humanoid.MoveDirection.Magnitude > 0.08 then
+    table.insert(characterConnections[player], humanoid.StateChanged:Connect(function(_, newState)
+        if newState == Enum.HumanoidStateType.Jumping
+            or newState == Enum.HumanoidStateType.Freefall
+            or newState == Enum.HumanoidStateType.Dead then
             stop(player)
         end
     end))
@@ -93,44 +87,46 @@ local function watchCharacter(player: Player, character: Model)
         "Ragdolled",
         "Blocking"
     }) do
-        watchAttribute(player, attribute)
+        table.insert(characterConnections[player], character:GetAttributeChangedSignal(attribute):Connect(function()
+            if character:GetAttribute(attribute) == true then
+                stop(player)
+            end
+        end))
     end
-
-    table.insert(connections[player], humanoid.StateChanged:Connect(function(_, newState)
-        if newState == Enum.HumanoidStateType.Jumping
-            or newState == Enum.HumanoidStateType.Freefall
-            or newState == Enum.HumanoidStateType.Dead then
-            stop(player)
-        end
-    end))
 end
 
 function EmoteService:BindPlayer(player: Player)
-    cleanup(player)
+    disconnectList(playerConnections, player)
+    disconnectList(characterConnections, player)
 
-    connections[player] = {}
+    playerConnections[player] = {}
+    characterConnections[player] = {}
 
-    local character = player.Character
-    if character then
-        watchCharacter(player, character)
+    for _, attribute in ipairs({
+        "IsAttacking",
+        "Stunned",
+        "Ragdolled",
+        "Blocking"
+    }) do
+        watchPlayerAttribute(player, attribute)
     end
 
-    table.insert(connections[player], player.CharacterAdded:Connect(function(newCharacter)
+    if player.Character then
+        watchCharacter(player, player.Character)
+    end
+
+    table.insert(playerConnections[player], player.CharacterAdded:Connect(function(character)
         stop(player)
-        watchCharacter(player, newCharacter)
+        watchCharacter(player, character)
     end))
 end
 
 function EmoteService:CanUse(player: Player): boolean
     local character = player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
-    if not humanoid or humanoid.Health <= 0 then
-        return false
-    end
-
     local state = StateManager:Get(player)
-    if not state then
+
+    if not humanoid or humanoid.Health <= 0 or not state then
         return false
     end
 
@@ -138,6 +134,10 @@ function EmoteService:CanUse(player: Player): boolean
         or player:GetAttribute("Stunned") == true
         or player:GetAttribute("Ragdolled") == true
         or player:GetAttribute("Blocking") == true
+        or character:GetAttribute("IsAttacking") == true
+        or character:GetAttribute("Stunned") == true
+        or character:GetAttribute("Ragdolled") == true
+        or character:GetAttribute("Blocking") == true
         or state.StunnedUntil > os.clock()
         or state.RagdollUntil > os.clock()
         or state.RecoveryUntil > os.clock() then
@@ -149,15 +149,14 @@ end
 
 function EmoteService:Start(player: Player, id: string): boolean
     local now = os.clock()
-
-    if not self:CanUse(player) or (cooldownUntil[player] or 0) > now then
-        return false
-    end
-
     local emote = Emotes[id]
     local data = DataService:Get(player)
 
-    if not emote or not data or data.OwnedEmotes[id] ~= true then
+    if not emote
+        or not data
+        or data.OwnedEmotes[id] ~= true
+        or not self:CanUse(player)
+        or (cooldownUntil[player] or 0) > now then
         return false
     end
 
@@ -171,12 +170,14 @@ function EmoteService:Start(player: Player, id: string): boolean
         Id = id,
         Name = emote.Name,
         Category = emote.Category,
+        AnimationId = emote.AnimationId,
         Duration = emote.Duration,
         Loop = emote.Loop,
-        Accent = emote.Accent
+        Priority = emote.Priority.Name,
+        EnergyCost = emote.EnergyCost
     })
 
-    task.delay(emote.Duration + 0.05, function()
+    task.delay(emote.Duration + 0.08, function()
         if player.Parent and active[player] == id then
             stop(player)
         end
@@ -201,13 +202,12 @@ function EmoteService:SetWheel(player: Player, ids: {string}): boolean
     end
 
     local seen: {[string]: boolean} = {}
-    local nextWheel = {}
+    local nextWheel: {string} = {}
 
     for index = 1, 5 do
         local id = ids[index]
 
-        if type(id) ~= "string"
-            or #id > 64
+        if #id > 64
             or not Emotes[id]
             or data.OwnedEmotes[id] ~= true
             or seen[id] then
@@ -226,7 +226,11 @@ end
 
 function EmoteService:Clear(player: Player)
     stop(player)
-    cleanup(player)
+    disconnectList(playerConnections, player)
+    disconnectList(characterConnections, player)
+    cooldownUntil[player] = nil
+    wheelEditUntil[player] = nil
+    active[player] = nil
 end
 
 return EmoteService
