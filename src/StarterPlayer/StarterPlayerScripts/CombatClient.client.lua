@@ -9,6 +9,7 @@ local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local CharacterMoves = require(ReplicatedStorage.Characters.CharacterMoves)
 local CustomMovesets = require(ReplicatedStorage.Characters.CustomMovesets)
 local InputController = require(script.Parent.Controllers.InputController)
+local InputManager = require(script.Parent.Controllers.InputManager)
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -447,48 +448,128 @@ special.Activated:Connect(function()
     fire("Special")
 end)
 
-local keySkills = {
-    [Enum.KeyCode.One] = 1,
-    [Enum.KeyCode.Two] = 2,
-    [Enum.KeyCode.Three] = 3,
-    [Enum.KeyCode.Four] = 4
-}
+InputManager:BindAction(
+    "CC_M1",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("M1")
+        end
+    end,
+    {Enum.KeyCode.ButtonR2},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Dash",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Dash", InputController:GetDashDirection())
+        end
+    end,
+    {Enum.KeyCode.Q, Enum.KeyCode.ButtonA},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Special",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Special")
+        end
+    end,
+    {Enum.KeyCode.E, Enum.KeyCode.ButtonX},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill1",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill1")
+        end
+    end,
+    {Enum.KeyCode.One, Enum.KeyCode.ButtonR1},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill2",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill2")
+        end
+    end,
+    {Enum.KeyCode.Two, Enum.KeyCode.ButtonY},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill3",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill3")
+        end
+    end,
+    {Enum.KeyCode.Three, Enum.KeyCode.DPadUp},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill4",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill4")
+        end
+    end,
+    {Enum.KeyCode.Four, Enum.KeyCode.DPadDown},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Block",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            if player:GetAttribute("LocalBlocking") ~= true then
+                setBlocking(true)
+            end
+        elseif state == Enum.UserInputState.End or state == Enum.UserInputState.Cancel then
+            if player:GetAttribute("LocalBlocking") == true then
+                setBlocking(false)
+            end
+        end
+    end,
+    {Enum.KeyCode.F, Enum.KeyCode.ButtonL2},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Ultimate",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            activatePower("Ultimate")
+        end
+    end,
+    {Enum.KeyCode.R, Enum.KeyCode.ButtonR3},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Awakening",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            activatePower("Awakening")
+        end
+    end,
+    {Enum.KeyCode.G, Enum.KeyCode.ButtonL3},
+    false
+)
 
 UserInputService.InputBegan:Connect(function(input, processed)
-    if processed or player:GetAttribute("CCHUD_MenuOpen") == true then
+    if processed then
         return
     end
-
-    local slot = keySkills[input.KeyCode]
-    if slot then
-        fire("Skill" .. tostring(slot))
-        return
-    end
-
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         fire("M1")
-        return
-    end
-
-    if input.KeyCode == Enum.KeyCode.Q then
-        fire("Dash", InputController:GetDashDirection())
-        return
-    end
-
-    if input.KeyCode == Enum.KeyCode.E then
-        fire("Special")
-        return
-    end
-
-    if input.KeyCode == Enum.KeyCode.F
-        and player:GetAttribute("LocalBlocking") ~= true then
-        setBlocking(true)
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.F and player:GetAttribute("LocalBlocking") == true then
-        setBlocking(false)
     end
 end)
 
