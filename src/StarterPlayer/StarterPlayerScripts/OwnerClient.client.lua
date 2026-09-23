@@ -90,7 +90,7 @@ local function button(parent: Instance, name: string, textValue: string, size: U
     return b
 end
 
-local ownerButton = button(gui, "OwnerButton", "OWNER", UDim2.fromScale(0.105, 0.06), UDim2.fromScale(0.755, 0.022))
+local ownerButton = button(gui, "OwnerButton", "OWNER", UDim2.fromScale(0.105, 0.06), UDim2.fromScale(0.635, 0.022))
 ownerButton.TextColor3 = accent
 ownerButton.Visible = false
 
