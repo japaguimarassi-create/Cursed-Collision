@@ -84,7 +84,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
 
     CooldownService:Set(player, key, cooldown, now)
 
-    local record = {
+    local record: {token: number, attackId: string, cancelled: boolean} = {
         token = token,
         attackId = attackId,
         cancelled = false
