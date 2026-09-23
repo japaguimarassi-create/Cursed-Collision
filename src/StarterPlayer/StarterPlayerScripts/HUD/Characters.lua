@@ -142,15 +142,15 @@ function M.Start()
         GuiService.SelectedObject = cards[selected]
     end
 
-    local function close()
+    local function closePanel()
         panel.Visible = false
         Util.setMenuAttributes("Character", false)
     end
 
     button.Activated:Connect(function()
-        if panel.Visible then close() else open() end
+        if panel.Visible then closePanel() else open() end
     end)
-    close.Activated:Connect(close)
+    close.Activated:Connect(closePanel)
 
     confirm.Activated:Connect(function()
         if definitions[selected] then
