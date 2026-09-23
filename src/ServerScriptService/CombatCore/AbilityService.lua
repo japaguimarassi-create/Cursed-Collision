@@ -103,8 +103,11 @@ function AbilityService:Execute(player: Player, slot: number): boolean
     state.Vars.ActiveAttackId = attackId
 
     local root = rootOf(player)
+    if not root then
+        self:Cancel(player)
+        return false
+    end
 
-    if root then
         self.Context.fx("AbilityTimeline", root.Position, {
             actor = player.Character,
             action = key,
@@ -150,7 +153,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
         "Ability",
         Config.Combat.MarkerTiming.EarlyGrace,
         Config.Combat.MarkerTiming.NetworkGrace,
-        root and root.Position or nil,
+        root.Position,
         18
     )
 
