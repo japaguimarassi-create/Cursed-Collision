@@ -3,7 +3,7 @@
 local AnimationPriorityManager = {}
 AnimationPriorityManager.__index = AnimationPriorityManager
 
-local active: {[Animator]: {[string]: AnimationTrack}} = setmetatable({}, {__mode="k"}) :: any
+local active: {[Animator]: {[string]: AnimationTrack}} = {} :: any
 
 function AnimationPriorityManager:_bucket(animator: Animator)
     local bucket=active[animator]
