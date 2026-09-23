@@ -64,9 +64,6 @@ function StateManager:Clear(player: Player)
 end
 
 function StateManager:Reset(player: Player)
-    if not store[player] then
-        return
-    end
     store[player] = fresh()
     self:Sync(player)
 end
@@ -77,28 +74,17 @@ function StateManager:Sync(player: Player)
         return
     end
 
-    local now = os.clock()
-    local character = player.Character
-    local isAttacking = state.Phase == "Attacking"
-        or state.Phase == "UsingAbility"
-        or state.Phase == "Ultimate"
-        or state.Phase == "Awakening"
+    local current = os.clock()
+    local attacking = state.Phase == "Attacking" or state.Phase == "UsingAbility"
 
     player:SetAttribute("CombatState", state.Phase)
     player:SetAttribute("Blocking", state.Blocking)
-    player:SetAttribute("CombatStunned", state.StunnedUntil > now)
-    player:SetAttribute("Invulnerable", state.InvulnerableUntil > now)
-    player:SetAttribute("Ragdolled", state.RagdollUntil > now)
-    player:SetAttribute("IsAttacking", isAttacking)
-    player:SetAttribute("PerfectBlockWindow", math.max(0, state.PerfectBlockUntil - now))
-
-    -- O cliente e sistemas locais podem consultar o estado diretamente no personagem.
-    if character then
-        character:SetAttribute("Stunned", state.StunnedUntil > now)
-        character:SetAttribute("Ragdolled", state.RagdollUntil > now)
-        character:SetAttribute("IsAttacking", isAttacking)
-        character:SetAttribute("Blocking", state.Blocking)
-    end
+    player:SetAttribute("IsAttacking", attacking)
+    player:SetAttribute("CombatStunned", state.StunnedUntil > current)
+    player:SetAttribute("Stunned", state.StunnedUntil > current)
+    player:SetAttribute("Invulnerable", state.InvulnerableUntil > current)
+    player:SetAttribute("Ragdolled", state.RagdollUntil > current)
+    player:SetAttribute("PerfectBlockWindow", math.max(0, state.PerfectBlockUntil - current))
 end
 
 function StateManager:SetPhase(player: Player, phase: Phase): boolean
@@ -141,10 +127,7 @@ function StateManager:SetInvulnerable(player: Player, duration: number, now: num
         return
     end
 
-    state.InvulnerableUntil = math.max(
-        state.InvulnerableUntil,
-        now + math.max(0, duration)
-    )
+    state.InvulnerableUntil = math.max(state.InvulnerableUntil, now + math.max(0, duration))
     self:Sync(player)
 end
 
@@ -167,7 +150,6 @@ function StateManager:EndBlock(player: Player)
 
     state.Blocking = false
     state.PerfectBlockUntil = 0
-
     if state.StunnedUntil <= os.clock() then
         self:SetPhase(player, "Idle")
     end
@@ -192,10 +174,12 @@ end
 
 function StateManager:IsAbilityValid(player: Player, token: number): boolean
     local state = store[player]
+    local current = os.clock()
+
     return state ~= nil
         and state.AbilityToken == token
-        and state.StunnedUntil <= os.clock()
-        and state.RagdollUntil <= os.clock()
+        and state.StunnedUntil <= current
+        and state.RagdollUntil <= current
         and state.Phase ~= "Dead"
 end
 
@@ -205,10 +189,7 @@ function StateManager:BeginRagdoll(player: Player, duration: number, now: number
         return
     end
 
-    state.RagdollUntil = math.max(
-        state.RagdollUntil,
-        now + math.max(0, duration)
-    )
+    state.RagdollUntil = math.max(state.RagdollUntil, now + math.max(0, duration))
     state.AbilityToken += 1
     state.Blocking = false
     state.PerfectBlockUntil = 0
