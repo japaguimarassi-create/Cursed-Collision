@@ -44,6 +44,10 @@ local Config = {
             Stun = 0.32,
             GuardBreakStun = 0.68
         },
+        MarkerTiming = {
+            EarlyGrace = 0.10,
+            NetworkGrace = 0.40
+        },
         Heavy = {
             GuardBreak = true,
             Stun = 0.75

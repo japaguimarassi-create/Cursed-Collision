@@ -9,6 +9,7 @@ local MovementController: any = require(script.Parent.MovementController)
 local RagdollService: any = require(script.Parent.RagdollService)
 local GamePassService: any = require(ReplicatedStorage.Monetization.GamePassService)
 local UltimateService: any = require(script.Parent.UltimateService)
+local EmoteService: any = require(script.Parent.EmoteService)
 
 local DamageService = {}
 local context: any = nil
@@ -62,6 +63,11 @@ function DamageService:Apply(
         return false
     end
 
+    -- Dano confirmado encerra emote imediatamente no servidor.
+    if targetPlayer then
+        EmoteService:Stop(targetPlayer)
+    end
+
     local now = os.clock()
 
     if targetPlayer then
@@ -78,6 +84,7 @@ function DamageService:Apply(
                 if targetState.PerfectBlockUntil > now then
                     local attackerState: any = StateManager:Get(attacker)
                     if attackerState then
+                        EmoteService:Stop(attacker)
                         StateManager:SetStun(
                             attacker,
                             Config.Combat.PerfectBlock.Stun,
@@ -100,6 +107,7 @@ function DamageService:Apply(
 
                 amount *= Config.Combat.Block.DamageMultiplier
                 target:TakeDamage(amount)
+                EmoteService:Stop(targetPlayer)
 
                 local root = targetModel:FindFirstChild("HumanoidRootPart")
                 if root and root:IsA("BasePart") then
@@ -124,6 +132,9 @@ function DamageService:Apply(
     end
 
     target:TakeDamage(amount)
+    if targetPlayer then
+        EmoteService:Stop(targetPlayer)
+    end
     UltimateService:AddMeter(attacker, amount)
 
     local root = targetModel:FindFirstChild("HumanoidRootPart")

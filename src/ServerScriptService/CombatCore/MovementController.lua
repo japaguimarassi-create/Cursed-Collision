@@ -87,8 +87,15 @@ function MovementController:Step(player: Player, dt: number)
         return
     end
 
-    if state.Phase == "Blocking"
-        or state.Phase == "Stunned"
+    if state.Phase == "Blocking" then
+        record.speed = Config.Combat.Block.WalkSpeed
+        humanoid.WalkSpeed = Config.Combat.Block.WalkSpeed
+        humanoid.JumpPower = 0
+        humanoid.AutoRotate = false
+        return
+    end
+
+    if state.Phase == "Stunned"
         or state.Phase == "Ragdolled"
         or state.Phase == "Dead"
         or state.Phase == "UsingAbility"
@@ -96,6 +103,8 @@ function MovementController:Step(player: Player, dt: number)
         or state.Phase == "Awakening" then
         record.speed = 0
         humanoid.WalkSpeed = 0
+        humanoid.JumpPower = 0
+        humanoid.AutoRotate = false
         return
     end
 

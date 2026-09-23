@@ -14,10 +14,18 @@ local ACTIONS = {
     Skill3 = true,
     Skill4 = true,
     SkillHit = true,
+    SpecialHit = true,
     SelectCharacter = true,
     Ultimate = true,
     Awakening = true
 }
+
+local function validAttackId(payload: any): boolean
+    return type(payload) == "table"
+        and type(payload.attackId) == "string"
+        and #payload.attackId > 0
+        and #payload.attackId <= 96
+end
 
 function NetworkService:IsKnownAction(action: any): boolean
     return type(action) == "string"
@@ -39,6 +47,10 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
         return payload == nil
     end
 
+    if action == "M1Hit" or action == "SkillHit" or action == "SpecialHit" then
+        return validAttackId(payload)
+    end
+
     if action == "Dash" then
         return type(payload) == "string"
             and (
@@ -51,12 +63,6 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
 
     if action == "SelectCharacter" then
         return type(payload) == "string" and #payload <= 32
-    end
-
-    if action == "M1Hit" or action == "SkillHit" then
-        return type(payload) == "table"
-            and type(payload.attackId) == "string"
-            and #payload.attackId <= 96
     end
 
     return false

@@ -11,6 +11,8 @@ local AnimationRegistry = {
     M1_3 = {Id=0, Priority=Enum.AnimationPriority.Action, Fade=0.035, Markers={"Startup","HitFrame","Impact","Recovery","End"}},
     M1_4 = {Id=0, Priority=Enum.AnimationPriority.Action4, Fade=0.025, Markers={"Startup","HitFrame","Impact","Recovery","End"}},
     Dash = {Id=0, Priority=Enum.AnimationPriority.Action, Fade=0.035, Markers={"Startup","End"}},
+    BackDash = {Id=0, Priority=Enum.AnimationPriority.Action, Fade=0.035, Markers={"Startup","End"}},
+    SideDash = {Id=0, Priority=Enum.AnimationPriority.Action, Fade=0.035, Markers={"Startup","End"}},
     AirDash = {Id=0, Priority=Enum.AnimationPriority.Action, Fade=0.035, Markers={"Startup","End"}},
     Block = {Id=0, Priority=Enum.AnimationPriority.Action, Fade=0.06, Markers={"End"}},
     Parry = {Id=0, Priority=Enum.AnimationPriority.Action4, Fade=0.02, Markers={"Impact","End"}},

@@ -2,35 +2,35 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Config = require(ReplicatedStorage.Shared.Config)
 local Timeline = require(ReplicatedStorage.Combat.AbilityTimeline)
+local AnimationData = require(ReplicatedStorage.Animation.AnimationData)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
+
 local StateManager: any = require(script.Parent.StateManager)
 local CooldownService = require(script.Parent.CooldownService)
 local CharacterService = require(ReplicatedStorage.Characters.CharacterService)
-local Movesets = require(ReplicatedStorage.Characters.CustomMovesets)
+local CombatMarkerService = require(script.Parent.CombatMarkerService)
+local EmoteService = require(script.Parent.EmoteService)
 
-local AbilityService: any = {}
+local AbilityService = {}
 AbilityService.__index = AbilityService
 
-type Record = {
-    token: number,
-    attackId: string,
-    slot: number,
-    move: any,
-    started: number,
-    hitAt: number,
-    hitWindowStart: number,
-    hitWindowEnd: number,
-    confirmed: boolean,
-    cancelled: boolean
+type ActiveAbility = {
+    Token: number,
+    AttackId: string,
+    Slot: number,
+    Cancelled: boolean
 }
 
 function AbilityService.new(context: any)
     return setmetatable({
         Context = context,
-        Active = {}
+        Active = {} :: {[Player]: ActiveAbility}
     }, AbilityService)
 end
+
+local Movesets = require(ReplicatedStorage.Characters.CustomMovesets)
 
 local function moveOf(player: Player, slot: number)
     local id = player:GetAttribute("CharacterId") or "PotentialMan"
@@ -44,53 +44,20 @@ local function rootOf(player: Player): BasePart?
 end
 
 function AbilityService:Cancel(player: Player)
-    local current: Record? = self.Active[player]
+    local current = self.Active[player]
     if not current then
         return
     end
 
-    current.cancelled = true
-    HitRegistry:End(player, current.attackId)
+    current.Cancelled = true
+    CombatMarkerService:Cancel(player, current.AttackId)
+    HitRegistry:End(player, current.AttackId)
     self.Active[player] = nil
 
     local state = StateManager:Get(player)
-    if state and state.Vars.ActiveAttackId == current.attackId then
+    if state and state.Vars.ActiveAttackId == current.AttackId then
         state.Vars.ActiveAttackId = nil
     end
-end
-
-function AbilityService:Confirm(player: Player, attackId: string): boolean
-    local record: Record? = self.Active[player]
-    if not record or record.attackId ~= attackId or record.cancelled or record.confirmed then
-        return false
-    end
-
-    local t = os.clock()
-
-    if t < record.hitWindowStart or t > record.hitWindowEnd then
-        return false
-    end
-
-    if not StateManager:IsAbilityValid(player, record.token) then
-        self:Cancel(player)
-        return false
-    end
-
-    record.confirmed = true
-
-    local root = rootOf(player)
-    if root then
-        self.Context.fx("AbilityTimeline", root.Position, {
-            actor = player.Character,
-            action = "Skill" .. tostring(record.slot),
-            move = record.move.Name,
-            phase = "HitFrame",
-            attackId = attackId
-        })
-    end
-
-    local success = CharacterService:SkillSlot(player, record.slot)
-    return success
 end
 
 function AbilityService:Execute(player: Player, slot: number): boolean
@@ -99,9 +66,15 @@ function AbilityService:Execute(player: Player, slot: number): boolean
         return false
     end
 
-    local started = os.clock()
+    local now = os.clock()
 
-    if not StateManager:CanAct(player, started) then
+    if not StateManager:CanAct(player, now)
+        or state.Blocking
+        or state.RecoveryUntil > now
+        or state.Phase == "Attacking"
+        or state.Phase == "Dashing"
+        or state.Phase == "Ultimate"
+        or state.Phase == "Awakening" then
         return false
     end
 
@@ -111,78 +84,114 @@ function AbilityService:Execute(player: Player, slot: number): boolean
     end
 
     local key = "Skill" .. tostring(slot)
-    if not CooldownService:Ready(player, key, started) then
+
+    if not CooldownService:Ready(player, key, now) then
         return false
     end
 
-    local token = StateManager:BeginAbility(player, key, started)
+    EmoteService:Stop(player)
+
+    local token = StateManager:BeginAbility(player, key, now)
     if not token then
         return false
     end
 
     local timeline = Timeline:Get(move)
     local markers = Timeline:Markers(move)
-    local attackId = tostring(player.UserId) .. ":" .. key .. ":" .. tostring(token)
-
-    local record: Record = {
-        token = token,
-        attackId = attackId,
-        slot = slot,
-        move = move,
-        started = started,
-        hitAt = started + timeline.Startup,
-        hitWindowStart = started + timeline.Startup - 0.05,
-        hitWindowEnd = started + timeline.Startup + 0.16,
-        confirmed = false,
-        cancelled = false
-    }
+    local attackId = tostring(player.UserId)
+        .. ":"
+        .. key
+        .. ":"
+        .. tostring(token)
+    local animationDefinition = AnimationData[key]
 
     HitRegistry:Begin(player, attackId)
-    CooldownService:Set(player, key, math.clamp(tonumber(move.Cooldown) or 1, 0.25, 10), started)
 
-    self.Active[player] = record
+    local cooldown = math.clamp(
+        tonumber(move.Cooldown) or 1,
+        0.25,
+        10
+    )
+
+    CooldownService:Set(player, key, cooldown, now)
+
+    self.Active[player] = {
+        Token = token,
+        AttackId = attackId,
+        Slot = slot,
+        Cancelled = false
+    }
+
     state.Vars.ActiveAttackId = attackId
+    state.Vars.ActiveMove = move
 
     local root = rootOf(player)
-    if root then
-        self.Context.fx("AbilityTimeline", root.Position, {
-            actor = player.Character,
-            action = key,
-            move = move.Name,
-            phase = "Startup",
-            markers = markers,
-            attackId = attackId,
-            slot = slot,
-            fallbackHitDelay = timeline.Startup
-        })
-
-        self.Context.fx("CombatAction", root.Position, {
-            actor = player.Character,
-            action = "SkillStart",
-            move = move.Name,
-            attackId = attackId,
-            slot = slot,
-            fallbackHitDelay = timeline.Startup
-        })
+    if not root then
+        self:Cancel(player)
+        return false
     end
 
-    task.delay(math.max(0, timeline.Startup + 0.09), function()
-        local current: Record? = self.Active[player]
-        if current == record and not record.confirmed and not record.cancelled then
-            self:Confirm(player, attackId)
-        end
-    end)
+    -- O cliente apenas relata o marcador visual; o servidor valida a janela e executa o hit.
+    CombatMarkerService:Begin(
+        player,
+        attackId,
+        token,
+        timeline.Startup,
+        function()
+            local current = self.Active[player]
+            local currentState = StateManager:Get(player)
+            if not current or current.Cancelled or not currentState then
+                return
+            end
 
-    task.delay(math.max(0, timeline.Total), function()
-        local current: Record? = self.Active[player]
-        if current ~= record or record.cancelled then
+            if currentState.Vars.ActiveAttackId ~= attackId then
+                return
+            end
+
+            CharacterService:SkillSlot(player, slot)
+        end,
+        "Ability",
+        Config.Combat.Marker.EarlyTolerance,
+        Config.Combat.Marker.LateTolerance,
+        root.Position,
+        30
+    )
+
+    self.Context.fx("AbilityTimeline", root.Position, {
+        actor = player.Character,
+        action = key,
+        move = move.Name,
+        phase = "Startup",
+        markers = markers,
+        attackId = attackId,
+        marker = "Hit"
+    })
+
+    self.Context.fx("CombatAction", root.Position, {
+        actor = player.Character,
+        action = "SkillStart",
+        slot = slot,
+        move = move.Name,
+        attackId = attackId,
+        phase = "Startup",
+        marker = "Hit",
+        markerRequired = animationDefinition ~= nil
+            and animationDefinition.AnimationId ~= "",
+        fallbackHitDelay = timeline.Startup
+    })
+
+    task.delay(timeline.Total, function()
+        local current = self.Active[player]
+        if not current or current.AttackId ~= attackId or current.Cancelled then
             return
         end
 
+        CombatMarkerService:Cancel(player, attackId)
         HitRegistry:End(player, attackId)
 
         local latestState = StateManager:Get(player)
-        if latestState and latestState.Vars.ActiveAttackId == attackId then
+        if latestState
+            and latestState.Vars.ActiveAttackId == attackId then
             latestState.Vars.ActiveAttackId = nil
         end
 
