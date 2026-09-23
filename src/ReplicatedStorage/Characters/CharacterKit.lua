@@ -443,6 +443,8 @@ function CharacterKit.Build(id: string)
             MahoragaMode = "Attack",
             MahoragaAdaptation = 0,
             MahoragaGuardUntil = 0,
+            MahoragaLastType = "None",
+            MahoragaAdaptCount = 0,
             EnchainActive = false,
             CopiedMegumi = false,
             CopiedTechnique = "None",
@@ -807,11 +809,44 @@ function CharacterKit.Build(id: string)
             local state = ctx.getState(player)
             local vars = state and state.Vars
 
-            if vars
-                and vars.MahoragaActive
-                and (tonumber(vars.MahoragaGuardUntil) or 0) > os.clock()
-                and meta.guardBreak ~= true then
-                return math.min(amount, 4)
+            if vars and vars.MahoragaActive then
+                if (tonumber(vars.MahoragaGuardUntil) or 0) > os.clock()
+                    and meta.guardBreak ~= true then
+                    return math.min(amount, 4)
+                end
+
+                local attackType = tostring(meta.attackType or meta.tag or meta.reaction or "Unknown")
+
+                if vars.MahoragaLastType == attackType then
+                    vars.MahoragaAdaptCount = math.min(
+                        3,
+                        (tonumber(vars.MahoragaAdaptCount) or 0) + 1
+                    )
+                else
+                    vars.MahoragaLastType = attackType
+                    vars.MahoragaAdaptCount = 1
+                end
+
+                local reduction = math.min(
+                    0.70,
+                    0.10 + math.max(0, (tonumber(vars.MahoragaAdaptCount) or 1) - 1) * 0.20
+                )
+
+                if (tonumber(vars.MahoragaAdaptCount) or 0) >= 3 then
+                    player:SetAttribute("MahoragaAdaptedTo", attackType)
+                    player:SetAttribute("MahoragaDamageReduction", reduction)
+                    sync(player, {
+                        MahoragaLastType = attackType,
+                        MahoragaAdaptCount = vars.MahoragaAdaptCount,
+                        MahoragaDamageReduction = reduction
+                    })
+                    return amount * (1 - reduction)
+                end
+
+                sync(player, {
+                    MahoragaLastType = attackType,
+                    MahoragaAdaptCount = vars.MahoragaAdaptCount
+                })
             end
         end
 
