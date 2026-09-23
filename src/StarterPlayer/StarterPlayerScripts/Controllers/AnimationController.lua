@@ -20,7 +20,7 @@ type CharacterData={
 local bound:{[Model]: CharacterData}={}
 
 local function animatorOf(character: Model): Animator?
-    local humanoid=character:FindFirstChildOfClass("Humanoid")
+    local humanoid: Humanoid? = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return nil end
 
     local animator=humanoid:FindFirstChildOfClass("Animator")
@@ -78,10 +78,10 @@ local function fallback(character: Model,key: string,payload: any): boolean
     return Procedural:PlayAttack(character,move,payload or {})
 end
 
-function AnimationController:Bind(character: Model)
+function AnimationController:Bind(character: Model): CharacterData?
     if bound[character] then return bound[character] end
 
-    local animator=animatorOf(character)
+    local animator: Animator? = animatorOf(character)
     if not animator then return nil end
 
     local data: CharacterData={
