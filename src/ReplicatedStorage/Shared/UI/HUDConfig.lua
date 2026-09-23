@@ -32,7 +32,7 @@ local HUDConfig = {
         Ready = Color3.fromRGB(104, 222, 148)
     },
 
-    Inputs: {
+    Inputs = {
         KeyboardAndMouse = {
             Skill = {
                 [1] = "1",
