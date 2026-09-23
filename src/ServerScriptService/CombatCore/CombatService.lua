@@ -85,7 +85,8 @@ function CombatService:M1(player: Player): boolean
 
     CooldownService:Set(player, "M1", Config.Combat.M1.Cooldown, t)
 
-    local attackId = tostring(player.UserId) .. ":M1:" .. tostring(state.AbilityToken + 1)
+    state.Vars.M1Sequence = (tonumber(state.Vars.M1Sequence) or 0) + 1
+    local attackId = tostring(player.UserId) .. ":M1:" .. tostring(state.Vars.M1Sequence)
     local activeM1 = {
         attackId = attackId,
         token = state.AbilityToken,
