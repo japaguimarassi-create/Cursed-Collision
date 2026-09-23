@@ -1,7 +1,7 @@
 {
-  "publish": false,
+  "publish": true,
   "universe_id": "5290480963",
   "place_id": "15338267657",
-  "request_id": "mobile-hud-owner-rebuild-2026-09-22",
-  "status": "consumed"
+  "request_id": "jjs-style-hud-emotes-rebuild-2026-09-23",
+  "status": "armed"
 }
