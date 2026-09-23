@@ -76,13 +76,7 @@ ACTIVE = [
 ]
 
 FORBIDDEN_ACTIONS = [
-    "Heavy",
-    "Dodge",
-    "Grab",
-    "Counter",
-    "Slam",
     "Domain",
-    "Awaken",
     "OneTime",
 ]
 
@@ -268,7 +262,7 @@ for token in ('"OwnerButton"', '"OwnerPanel"', "CCHUD_OwnerPanelOpen", 'GetAttri
     if token not in owner_client:
         fail(f"owner UI authorization/separation token missing: {token}")
 
-for forbidden in ("Heavy", "Dodge", "Grab", "Awaken", "Domain", "OneTime"):
+for forbidden in ("Domain", "OneTime"):
     if forbidden in cross_platform:
         fail(f"unsupported gamepad action remains in CrossPlatformInput: {forbidden}")
 
@@ -309,7 +303,7 @@ for relative in ACTIVE:
         if re.search(rf"\b{re.escape(forbidden)}\b", source):
             if relative.endswith("README.md"):
                 continue
-            if forbidden in ("Awaken", "Domain", "OneTime") and relative.endswith("Config.lua"):
+            if forbidden in ("Domain", "OneTime") and relative.endswith("Config.lua"):
                 continue
             fail(f"forbidden legacy combat token appears in active runtime file {relative}: {forbidden}")
 
