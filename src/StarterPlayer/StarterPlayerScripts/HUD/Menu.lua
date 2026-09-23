@@ -288,7 +288,7 @@ function M.Start()
             return
         end
         if input.KeyCode == Enum.KeyCode.ButtonStart then
-            if panel.Visible then close() else open() end
+            if panel.Visible then closePanel() else open() end
         end
     end)
 
