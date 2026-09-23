@@ -64,7 +64,7 @@ function AnimationCache:GetTrack(animator: Animator, key: string): AnimationTrac
     local bucket = bucketFor(animator)
     local cached = bucket[key]
 
-    if cached and cached.Parent then
+    if cached then
         return cached
     end
 
