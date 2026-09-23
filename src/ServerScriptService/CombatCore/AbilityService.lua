@@ -148,7 +148,9 @@ function AbilityService:Execute(player: Player, slot: number): boolean
         end,
         "Ability",
         Config.Combat.MarkerTiming.EarlyGrace,
-        Config.Combat.MarkerTiming.NetworkGrace
+        Config.Combat.MarkerTiming.NetworkGrace,
+        root and root.Position or nil,
+        18
     )
 
     if not armed then
