@@ -19,6 +19,7 @@ export type State = {
     PerfectBlockUntil: number,
     RagdollUntil: number,
     AbilityToken: number,
+    ActionToken: number,
     Vars: {[string]: any}
 }
 
@@ -44,7 +45,7 @@ local function fresh(): State
     return {
         Phase="Idle", Blocking=false, Combo=0, LastM1=0, LastAction="",
         DashUntil=0, StunnedUntil=0, RecoveryUntil=0, InvulnerableUntil=0,
-        PerfectBlockUntil=0, RagdollUntil=0, AbilityToken=0, Vars={}
+        PerfectBlockUntil=0, RagdollUntil=0, AbilityToken=0, ActionToken=0, Vars={}
     }
 end
 
@@ -170,6 +171,16 @@ function StateManager:BeginAbility(player: Player, action: string, now: number):
     end
 
     return state.AbilityToken
+end
+
+function StateManager:NextActionToken(player: Player): number?
+    local state = store[player]
+    if not state then
+        return nil
+    end
+
+    state.ActionToken += 1
+    return state.ActionToken
 end
 
 function StateManager:IsAbilityValid(player: Player, token: number): boolean
