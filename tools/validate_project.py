@@ -162,6 +162,8 @@ for token in (
     "EarlyAt",
     "HitAt",
     "ExpiresAt",
+    "MaxTravel",
+    "Origin",
     'Kind: "Action" | "Ability"'
 ):
     if token not in marker:
@@ -188,7 +190,7 @@ for token in ("GetPartBoundsInBox", "OverlapParams", "NearestTargetInFront"):
 animation_data = read("ReplicatedStorage/Animation/AnimationData.lua")
 for key in (
     "Idle", "Walk", "Run", "Sprint", "Jump", "Fall", "Land",
-    "M1_1", "M1_2", "M1_3", "M1_4", "Dash", "AirDash", "Block",
+    "M1_1", "M1_2", "M1_3", "M1_4", "Dash", "BackDash", "SideDash", "AirDash", "Block",
     "Parry", "HitLight", "HitHeavy", "Ragdoll", "Recovery", "Dodge",
     "Skill1", "Skill2", "Skill3", "Skill4", "Special", "Ultimate",
     "Awakening", "Execution"
