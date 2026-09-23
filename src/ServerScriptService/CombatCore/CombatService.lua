@@ -115,6 +115,7 @@ function CombatService:M1(player: Player): boolean
             combo = attack.Combo,
             variant = attack.Variant,
             attackId = attackId,
+            token = token,
             fallbackHitDelay = attack.Startup,
             direction = root.CFrame.LookVector
         })
