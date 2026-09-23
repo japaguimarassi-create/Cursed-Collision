@@ -33,9 +33,7 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
         or action == "Skill1"
         or action == "Skill2"
         or action == "Skill3"
-        or action == "Skill4"
-        or action == "Ultimate"
-        or action == "Awakening" then
+        or action == "Skill4" then
         return payload == nil
     end
 
@@ -49,14 +47,18 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
             )
     end
 
-    if action == "SelectCharacter" then
-        return type(payload) == "string" and #payload <= 32
-    end
-
     if action == "M1Hit" or action == "SkillHit" then
         return type(payload) == "table"
             and type(payload.attackId) == "string"
             and #payload.attackId <= 96
+    end
+
+    if action == "SelectCharacter" then
+        return type(payload) == "string" and #payload <= 32
+    end
+
+    if action == "Ultimate" or action == "Awakening" then
+        return payload == nil
     end
 
     return false
