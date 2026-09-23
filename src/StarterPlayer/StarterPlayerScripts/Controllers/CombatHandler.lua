@@ -81,14 +81,11 @@ local function playAttack(
     end
 
     if not track then
-        -- Sem uma animação carregável, o servidor usa o fallback autoritativo da timeline.
-        active[model] = {
-            track = nil,
-            markerConnection = nil,
-            stoppedConnection = nil,
-            fired = false,
+        -- A apresentação continua usando o controlador procedural; o servidor,
+        -- e não o cliente, decide o momento do impacto quando não há marcador.
+        AnimationController:Play(model, key, {
             attackId = attackId
-        }
+        })
         return true
     end
 
