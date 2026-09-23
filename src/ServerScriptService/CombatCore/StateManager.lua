@@ -76,7 +76,10 @@ function StateManager:Sync(player: Player)
     end
 
     local current = os.clock()
-    local attacking = state.Phase == "Attacking" or state.Phase == "UsingAbility"
+    local attacking = state.Phase == "Attacking"
+        or state.Phase == "UsingAbility"
+        or state.Phase == "Ultimate"
+        or state.Phase == "Awakening"
 
     player:SetAttribute("CombatState", state.Phase)
     player:SetAttribute("Blocking", state.Blocking)
@@ -105,6 +108,8 @@ function StateManager:CanAct(player: Player, now: number): boolean
         and state.Phase ~= "Dead"
         and state.Phase ~= "Ragdolled"
         and state.Phase ~= "Stunned"
+        and state.Phase ~= "Ultimate"
+        and state.Phase ~= "Awakening"
         and state.StunnedUntil <= now
         and state.RagdollUntil <= now
 end
@@ -225,21 +230,31 @@ function StateManager:ClearStunWhenReady(player: Player, now: number)
         return
     end
 
-    if state.StunnedUntil <= now then
+    local changed = false
+
+    if state.StunnedUntil > 0 and state.StunnedUntil <= now then
         state.StunnedUntil = 0
+        changed = true
+
         if state.Phase == "Stunned" then
             self:SetPhase(player, "Idle")
+            return
         end
     end
 
-    if state.RagdollUntil <= now then
+    if state.RagdollUntil > 0 and state.RagdollUntil <= now then
         state.RagdollUntil = 0
+        changed = true
+
         if state.Phase == "Ragdolled" then
             self:SetPhase(player, "Idle")
+            return
         end
     end
 
-    self:Sync(player)
+    if changed then
+        self:Sync(player)
+    end
 end
 
 return StateManager
