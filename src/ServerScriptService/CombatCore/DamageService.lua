@@ -10,6 +10,7 @@ local RagdollService: any = require(script.Parent.RagdollService)
 local GamePassService: any = require(ReplicatedStorage.Monetization.GamePassService)
 local UltimateService: any = require(script.Parent.UltimateService)
 local EmoteService: any = require(script.Parent.EmoteService)
+local CharacterService: any = require(ReplicatedStorage.Characters.CharacterService)
 
 local DamageService = {}
 local context: any = nil
@@ -120,6 +121,16 @@ function DamageService:Apply(
                 end
 
                 return true
+            end
+
+            amount = CharacterService:OnIncomingDamage(
+                targetPlayer,
+                amount,
+                meta
+            )
+
+            if amount <= 0 then
+                return false
             end
 
             StateManager:SetStun(
