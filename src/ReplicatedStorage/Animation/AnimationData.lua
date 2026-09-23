@@ -143,6 +143,40 @@ local Data: {[string]: AnimationDefinition} = {
         Speed = 1,
         EnergyCost = 0
     },
+    BackDash = {
+        Key = "BackDash",
+        Name = "Back Dash",
+        AnimationId = "",
+        Loop = false,
+        Priority = Action,
+        Marker = nil,
+        FadeIn = 0.02,
+        FadeOut = 0.06,
+        Speed = 1
+    },
+    SideDash = {
+        Key = "SideDash",
+        Name = "Side Dash",
+        AnimationId = "",
+        Loop = false,
+        Priority = Action,
+        Marker = nil,
+        FadeIn = 0.02,
+        FadeOut = 0.06,
+        Speed = 1
+    },
+    Heavy = {
+        Key = "Heavy",
+        Name = "Heavy Attack",
+        AnimationId = "",
+        Loop = false,
+        Priority = Action,
+        Marker = "Hit",
+        FadeIn = 0.02,
+        FadeOut = 0.10,
+        Speed = 1,
+        EnergyCost = 0
+    },
     Dash = {
         Key = "Dash",
         Name = "Dash",
@@ -423,6 +457,28 @@ local Data: {[string]: AnimationDefinition} = {
         Marker = nil,
         FadeIn = 0.05,
         FadeOut = 0.12,
+        Speed = 1
+    },
+    Interaction = {
+        Key = "Interaction",
+        Name = "Interaction",
+        AnimationId = "",
+        Loop = false,
+        Priority = Action,
+        Marker = nil,
+        FadeIn = 0.04,
+        FadeOut = 0.08,
+        Speed = 1
+    },
+    Emote = {
+        Key = "Emote",
+        Name = "Emote",
+        AnimationId = "",
+        Loop = true,
+        Priority = Action,
+        Marker = nil,
+        FadeIn = 0.08,
+        FadeOut = 0.08,
         Speed = 1
     },
     Execution = {
