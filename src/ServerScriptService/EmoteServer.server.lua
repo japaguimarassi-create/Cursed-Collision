@@ -6,45 +6,44 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RemoteService = require(ReplicatedStorage.Shared.RemoteService)
 local Emotes = require(ReplicatedStorage.Emotes.EmoteDefinitions)
 local DataService = require(ReplicatedStorage.Economy.DataService)
-local StateManager: any = require(script.Parent.CombatCore.StateManager)
+local StateManager = require(script.Parent.CombatCore.StateManager)
 
 local remotes = RemoteService:Get()
 
 local cooldownUntil: {[Player]: number} = {}
 local active: {[Player]: string} = {}
-local healthConnections: {[Player]: RBXScriptConnection} = {}
-local attributeConnections: {[Player]: {RBXScriptConnection}} = {}
 
 local function stop(player: Player)
-    if not active[player] then
+    local id = active[player]
+    if not id then
         return
     end
 
     active[player] = nil
+
     remotes.EmoteEvent:FireAllClients("Stop", {
-        UserId = player.UserId
+        UserId = player.UserId,
+        Id = id
     })
 end
 
 local function clear(player: Player)
     stop(player)
     cooldownUntil[player] = nil
-
-    if healthConnections[player] then
-        healthConnections[player]:Disconnect()
-        healthConnections[player] = nil
-    end
-
-    for _, connection in ipairs(attributeConnections[player] or {}) do
-        connection:Disconnect()
-    end
-    attributeConnections[player] = nil
 end
 
 local function canUse(player: Player): boolean
     local character = player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
     if not humanoid or humanoid.Health <= 0 then
+        return false
+    end
+
+    if player:GetAttribute("IsAttacking") == true
+        or player:GetAttribute("Stunned") == true
+        or player:GetAttribute("Ragdolled") == true
+        or player:GetAttribute("Blocking") == true then
         return false
     end
 
@@ -53,62 +52,43 @@ local function canUse(player: Player): boolean
         return false
     end
 
-    -- O servidor continua sendo a autoridade: em ataque, stun ou ragdoll o emote não inicia.
-    if player:GetAttribute("IsAttacking") == true
-        or player:GetAttribute("CombatStunned") == true
-        or player:GetAttribute("Ragdolled") == true
-        or state.Blocking then
-        return false
-    end
-
-    return state.StunnedUntil <= os.clock()
-        and state.RecoveryUntil <= os.clock()
+    local now = os.clock()
+    return state.Phase == "Idle"
+        or state.Phase == "Running"
 end
 
-local function watchCharacter(player: Player, character: Model)
-    clear(player)
+local function bindStateCancellation(player: Player)
+    local watched = {
+        "IsAttacking",
+        "Stunned",
+        "Ragdolled",
+        "Blocking"
+    }
 
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        healthConnections[player] = humanoid.HealthChanged:Connect(function(health)
-            if healthConnections[player] and health < humanoid.MaxHealth then
+    for _, attribute in ipairs(watched) do
+        player:GetAttributeChangedSignal(attribute):Connect(function()
+            if player:GetAttribute(attribute) == true then
                 stop(player)
             end
         end)
     end
 
-    local connections: {RBXScriptConnection} = {}
-
-    for _, attribute in ipairs({"IsAttacking", "CombatStunned", "Ragdolled", "Blocking"}) do
-        table.insert(connections, player:GetAttributeChangedSignal(attribute):Connect(function()
-            if player:GetAttribute(attribute) == true then
-                stop(player)
-            end
-        end))
-    end
-
-    attributeConnections[player] = connections
-end
-
-local function setup(player: Player)
-    if player.Character then
-        watchCharacter(player, player.Character)
-    end
-
-    player.CharacterAdded:Connect(function(character)
-        watchCharacter(player, character)
+    player.CharacterAdded:Connect(function()
+        clear(player)
     end)
 end
 
-Players.PlayerAdded:Connect(setup)
+Players.PlayerAdded:Connect(bindStateCancellation)
 Players.PlayerRemoving:Connect(clear)
 
 for _, player in ipairs(Players:GetPlayers()) do
-    setup(player)
+    bindStateCancellation(player)
 end
 
 remotes.EmoteAction.OnServerEvent:Connect(function(player, action, payload)
-    if type(action) ~= "string" or #action > 24 or type(payload) ~= "table" then
+    if type(action) ~= "string"
+        or #action > 24
+        or type(payload) ~= "table" then
         return
     end
 
@@ -130,7 +110,10 @@ remotes.EmoteAction.OnServerEvent:Connect(function(player, action, payload)
             return
         end
 
-        stop(player)
+        if active[player] then
+            stop(player)
+        end
+
         active[player] = id
         cooldownUntil[player] = now + 0.18
 
@@ -139,10 +122,11 @@ remotes.EmoteAction.OnServerEvent:Connect(function(player, action, payload)
             Id = id,
             Name = emote.Name,
             Category = emote.Category,
-            Duration = emote.Duration,
-            Loop = emote.Loop,
             AnimationId = emote.AnimationId,
-            Priority = emote.Priority
+            SoundId = emote.SoundId,
+            VFXId = emote.VFXId,
+            Duration = emote.Duration,
+            Loop = emote.Loop
         })
 
         task.delay(emote.Duration + 0.05, function()
@@ -150,18 +134,18 @@ remotes.EmoteAction.OnServerEvent:Connect(function(player, action, payload)
                 stop(player)
             end
         end)
-
     elseif action == "Stop" then
         stop(player)
     elseif action == "SetWheel" then
         local data = DataService:Get(player)
         local ids = type(payload.Ids) == "table" and payload.Ids or nil
+
         if not data or not ids or #ids ~= 5 then
             return
         end
 
-        local nextWheel: {string} = {}
-        local seen: {[string]: boolean} = {}
+        local nextWheel = {}
+        local seen = {}
 
         for index = 1, 5 do
             local id = ids[index]
