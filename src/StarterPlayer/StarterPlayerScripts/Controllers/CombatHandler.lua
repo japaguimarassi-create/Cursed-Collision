@@ -4,16 +4,18 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local AnimationData = require(ReplicatedStorage.Animation.AnimationData)
-local AnimationCache: any = require(script.Parent.AnimationCache)
+local AnimationCache = require(script.Parent.AnimationCache)
 local AnimationController: any = require(script.Parent.AnimationController)
 
 local player = Players.LocalPlayer
 local CombatHandler = {}
+CombatHandler.__index = CombatHandler
 
 type ActiveTrack = {
-    track: AnimationTrack,
-    connection: RBXScriptConnection?,
-    attackId: string?
+    Track: AnimationTrack,
+    Connection: RBXScriptConnection,
+    AttackId: string?,
+    Finished: boolean
 }
 
 local active: {[Model]: ActiveTrack} = {}
@@ -23,6 +25,7 @@ local function getAnimator(model: Model): Animator?
     if not humanoid then
         return nil
     end
+
     return humanoid:FindFirstChildOfClass("Animator")
 end
 
@@ -32,54 +35,55 @@ local function stop(model: Model)
         return
     end
 
-    if entry.connection then
-        entry.connection:Disconnect()
-    end
+    entry.Connection:Disconnect()
 
-    if entry.track.IsPlaying then
-        entry.track:Stop(0.05)
+    if entry.Track.IsPlaying then
+        entry.Track:Stop(0.04)
     end
 
     active[model] = nil
 end
 
-local function fallbackHit(
+local function sendHit(
+    actor: Model,
     attackId: string?,
-    delayTime: number,
-    fire: (string, any) -> ()
+    combatAction: RemoteEvent,
+    route: string
 )
-    if not attackId or delayTime <= 0 then
+    if actor ~= player.Character or not attackId then
         return
     end
 
-    task.delay(delayTime, function()
-        fire(attackId, nil)
-    end)
+    combatAction:FireServer(route, {
+        attackId = attackId
+    })
 end
 
 local function playMarkerAttack(
-    model: Model,
+    actor: Model,
     key: string,
     attackId: string?,
     fallbackDelay: number,
-    fire: (string, any) -> ()
+    combatAction: RemoteEvent,
+    route: string
 )
-    stop(model)
+    stop(actor)
 
-    local animator = getAnimator(model)
-    if not animator then
-        return
-    end
-
+    local animator = getAnimator(actor)
     local definition = AnimationData[key]
-    if not definition then
+
+    if not animator or not definition then
         return
     end
 
     local track = AnimationCache:GetTrack(animator, key)
+
     if not track then
-        -- Sem animação publicada, usa o tempo de startup como fallback operacional.
-        fallbackHit(attackId, fallbackDelay, fire)
+        if actor == player.Character and attackId then
+            task.delay(math.max(0.01, fallbackDelay), function()
+                sendHit(actor, attackId, combatAction, route)
+            end)
+        end
         return
     end
 
@@ -93,99 +97,68 @@ local function playMarkerAttack(
         end
 
         fired = true
-
-        if attackId then
-            fire(attackId, nil)
-        end
+        sendHit(actor, attackId, combatAction, route)
     end)
 
-    active[model] = {
-        track = track,
-        connection = connection,
-        attackId = attackId
+    active[actor] = {
+        Track = track,
+        Connection = connection,
+        AttackId = attackId,
+        Finished = false
     }
 
-    track.Ended:Connect(function()
-        local current = active[model]
-        if current and current.track == track then
-            if current.connection then
-                current.connection:Disconnect()
+    -- Sem asset/marker utilizável, o servidor continua protegendo a janela e o cliente usa fallback.
+    if actor == player.Character and attackId and definition.AnimationId == "" then
+        task.delay(math.max(0.01, fallbackDelay), function()
+            if not fired then
+                fired = true
+                sendHit(actor, attackId, combatAction, route)
             end
-            active[model] = nil
-        end
-    end)
+        end)
+    end
 end
 
-function CombatHandler:PlayM1(payload: any, combatAction: RemoteEvent)
+function CombatHandler:OnCombatEvent(payload: {[string]: any}, combatAction: RemoteEvent): boolean
     local actor = payload.actor
     if not actor or not actor:IsA("Model") then
-        return
+        return false
     end
 
-    local combo = math.clamp(tonumber(payload.combo) or 1, 1, 4)
-    local key = "M1_" .. tostring(combo)
-    local attackId = type(payload.attackId) == "string" and payload.attackId or nil
-    local fallbackDelay = math.max(0.01, tonumber(payload.fallbackHitDelay) or 0.075)
-
-    playMarkerAttack(
-        actor,
-        key,
-        attackId,
-        fallbackDelay,
-        function(id)
-            if actor == player.Character then
-                combatAction:FireServer("M1Hit", {attackId = id})
-            end
-        end
-    )
-end
-
-function CombatHandler:PlaySkill(payload: any, combatAction: RemoteEvent)
-    local actor = payload.actor
-    if not actor or not actor:IsA("Model") then
-        return
-    end
-
-    local slot = math.clamp(tonumber(payload.slot) or 1, 1, 4)
-    local key = "Skill" .. tostring(slot)
-    local attackId = type(payload.attackId) == "string" and payload.attackId or nil
-    local fallbackDelay = math.max(0.01, tonumber(payload.fallbackHitDelay) or 0.12)
-
-    playMarkerAttack(
-        actor,
-        key,
-        attackId,
-        fallbackDelay,
-        function(id)
-            if actor == player.Character then
-                combatAction:FireServer("SkillHit", {attackId = id})
-            end
-        end
-    )
-end
-
-function CombatHandler:OnCombatEvent(payload: any, combatAction: RemoteEvent)
     local action = tostring(payload.action or "")
 
     if action == "M1Start" then
-        self:PlayM1(payload, combatAction)
+        local combo = math.clamp(tonumber(payload.combo) or 1, 1, 4)
+        playMarkerAttack(
+            actor,
+            "M1_" .. tostring(combo),
+            type(payload.attackId) == "string" and payload.attackId or nil,
+            tonumber(payload.fallbackHitDelay) or 0.075,
+            combatAction,
+            "M1Hit"
+        )
         return true
     end
 
     if action == "SkillStart" then
-        self:PlaySkill(payload, combatAction)
+        local slot = math.clamp(tonumber(payload.slot) or 1, 1, 4)
+        playMarkerAttack(
+            actor,
+            "Skill" .. tostring(slot),
+            type(payload.attackId) == "string" and payload.attackId or nil,
+            tonumber(payload.fallbackHitDelay) or 0.12,
+            combatAction,
+            "SkillHit"
+        )
         return true
     end
 
     if action == "Dash" then
-        local actor = payload.actor
-        if actor and actor:IsA("Model") then
-            AnimationController:Bind(actor)
-            AnimationController:StopIdleCombat(actor)
-            local animator = getAnimator(actor)
-            if animator then
-                AnimationCache:Play(animator, payload.air and "AirDash" or "Dash")
-            end
+        local animator = getAnimator(actor)
+        if animator then
+            AnimationCache:Play(
+                animator,
+                payload.air and "AirDash" or "Dash"
+            )
         end
         return true
     end
