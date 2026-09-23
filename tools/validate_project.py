@@ -273,9 +273,13 @@ gamepass_server = read("ServerScriptService/GamePassServer.server.lua")
 damage_service = read("ServerScriptService/CombatCore/DamageService.lua")
 character_client = read("StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua")
 emote_client = read("StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua")
-for token in ("M1", "DASH", "BLOCK", "SPECIAL", "combatAction:FireServer", 'WaitForChild("Remotes", 30)', "HUDController.new"):
+for token in ("M1", "combatAction:FireServer", 'WaitForChild("Remotes", 30)', "HUDController.new"):
     if token not in client:
         fail(f"combat HUD/input missing expected element: {token}")
+
+for token in ('"M1"', '"Dash"', '"Block"', '"Special"', '"Sprint"', '"Ultimate"', '"Awakening"'):
+    if token not in hud_controller:
+        fail(f"combat HUD control missing: {token}")
 
 for token in ('"MenuButton"', '"AccountPanel"', 'CCHUD_MenuOpen'):
     if token not in account_client:
