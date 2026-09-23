@@ -214,24 +214,30 @@ function M.Start()
         local scroll = list()
         local order = 0
 
-        local sections: {{string, {Quest}}} = {
-            {"DAILY", state.quests.Daily},
-            {"WEEKLY", state.quests.Weekly},
-            {"MASTERY", state.quests.General}
-        }
-
-        for _, section in ipairs(sections) do
+        local function addSection(titleText: string, quests: {Quest})
             order += 1
-            local header = Util.label(scroll, section[1], UDim2.new(1, -8, 0, 28), UDim2.new(), 12, Enum.Font.GothamBlack)
+
+            local header = Util.label(
+                scroll,
+                titleText,
+                UDim2.new(1, -8, 0, 28),
+                UDim2.new(),
+                12,
+                Enum.Font.GothamBlack
+            )
             header.LayoutOrder = order
             header.TextColor3 = colors.Accent2
             header.TextXAlignment = Enum.TextXAlignment.Left
 
-            for _, quest in ipairs(section[2]) do
+            for _, quest in ipairs(quests) do
                 order += 1
                 questCard(scroll, quest, order)
             end
         end
+
+        addSection("DAILY", state.quests.Daily)
+        addSection("WEEKLY", state.quests.Weekly)
+        addSection("MASTERY", state.quests.General)
     end
 
     local function renderPasses()
