@@ -34,7 +34,9 @@ function RemoteService:Get()
         AccountEvent = ensure(folder, "RemoteEvent", "AccountEvent"),
         AdminAction = ensure(folder, "RemoteEvent", "AdminAction"),
         EmoteAction = ensure(folder, "RemoteEvent", "EmoteAction"),
-        EmoteEvent = ensure(folder, "RemoteEvent", "EmoteEvent")
+        EmoteEvent = ensure(folder, "RemoteEvent", "EmoteEvent"),
+        GamePassAction = ensure(folder, "RemoteEvent", "GamePassAction"),
+        GamePassEvent = ensure(folder, "RemoteEvent", "GamePassEvent")
     }
 end
 
