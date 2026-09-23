@@ -145,7 +145,7 @@ for token in (
 
 ability = read("ServerScriptService/CombatCore/AbilityService.lua")
 for token in (
-    "function AbilityService:Execute",
+    "function AbilityService.Execute",
     "CombatMarkerService:Begin",
     '"Ability"',
     'action = "SkillStart"',
