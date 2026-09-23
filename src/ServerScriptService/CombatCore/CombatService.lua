@@ -83,7 +83,7 @@ function CombatService:_finishM1(player: Player, record: M1Record)
         state.Vars.ActiveAttackId = nil
     end
 
-    state.RecoveryUntil = now() + tonumber(record.attack.Recovery or 0.1)
+    state.RecoveryUntil = now() + (tonumber(record.attack.Recovery) or 0.1)
     if not state.Blocking and state.StunnedUntil <= now() then
         StateManager:SetPhase(player, "Idle")
     end
