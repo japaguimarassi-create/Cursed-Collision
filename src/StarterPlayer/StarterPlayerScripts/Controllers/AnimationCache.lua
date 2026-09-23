@@ -8,7 +8,7 @@ type TrackCache = {[string]: AnimationTrack}
 type AnimatorMap = {[Animator]: TrackCache}
 
 local animations: {[string]: Animation} = {}
-local tracks: AnimatorMap = setmetatable({}, {__mode = "k"}) :: AnimatorMap
+local tracks: AnimatorMap = setmetatable({}, {__mode = "k"}) :: any
 
 local AnimationCache = {}
 
