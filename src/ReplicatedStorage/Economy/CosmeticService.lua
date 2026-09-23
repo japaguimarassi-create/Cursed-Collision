@@ -7,15 +7,19 @@ local function remember(character)
         return originals[character]
     end
 
-    local snapshot = originals[character] or {}
+    local snapshot = {}
+
     for _, descendant in ipairs(character:GetDescendants()) do
-        if descendant:IsA("BasePart") and descendant.Name ~= "HumanoidRootPart" and not snapshot[descendant] then
+        if descendant:IsA("BasePart")
+            and descendant.Name ~= "HumanoidRootPart"
+            and not snapshot[descendant] then
             snapshot[descendant] = {
                 Color = descendant.Color,
                 Material = descendant.Material
             }
         end
     end
+
     originals[character] = snapshot
     return snapshot
 end
@@ -54,13 +58,17 @@ end
 
 function CosmeticService:ApplySkin(player, skin)
     local character = player.Character
+
     if not character or type(skin) ~= "table" then
+        return false
+    end
+
+    if typeof(skin.BodyColor) ~= "Color3" or typeof(skin.AccentColor) ~= "Color3" then
         return false
     end
 
     remember(character)
     applyParts(character, skin.BodyColor, skin.Material)
-
     removeHighlight(character)
 
     local highlight = Instance.new("Highlight")
@@ -78,6 +86,7 @@ end
 
 function CosmeticService:ClearSkin(player)
     local character = player.Character
+
     if not character then
         return
     end
