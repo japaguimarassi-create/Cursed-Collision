@@ -157,7 +157,7 @@ function DamageService:Apply(
 
     if targetPlayer and (meta.ragdoll or meta.final and meta.ragdoll ~= false) then
         RagdollService:Apply(
-            targetModel,
+            targetPlayer,
             tonumber(meta.ragdollDuration) or Config.Combat.M1.FinalRagdoll,
             impactReaction(meta)
         )
