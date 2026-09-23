@@ -2,31 +2,24 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local Remotes = require(ReplicatedStorage.Shared.RemoteService):Get()
 local CombatAnimation: any = require(script.Parent.Controllers.CombatAnimationManager)
-local MovementAnimation: any = require(script.Parent.Controllers.MovementAnimationManager)
 local AnimationController: any = require(script.Parent.Controllers.AnimationController)
+local MovementAnimation: any = require(script.Parent.Controllers.MovementAnimationManager)
 local CombatHandler: any = require(script.Parent.Controllers.CombatHandler)
 
-local boundConnections: {[Player]: RBXScriptConnection} = {}
-
 local function bind(player: Player)
-    local function bindCharacter(character: Model)
+    local character = player.Character
+    if character then
         AnimationController:Bind(character)
         MovementAnimation:Bind(character)
     end
 
-    if player.Character then
-        bindCharacter(player.Character)
-    end
-
-    if boundConnections[player] then
-        boundConnections[player]:Disconnect()
-    end
-
-    boundConnections[player] = player.CharacterAdded:Connect(bindCharacter)
+    player.CharacterAdded:Connect(function(newCharacter)
+        AnimationController:Bind(newCharacter)
+        MovementAnimation:Bind(newCharacter)
+    end)
 end
 
 for _, player in ipairs(Players:GetPlayers()) do
@@ -35,38 +28,26 @@ end
 
 Players.PlayerAdded:Connect(bind)
 
-Players.PlayerRemoving:Connect(function(player)
-    if boundConnections[player] then
-        boundConnections[player]:Disconnect()
-        boundConnections[player] = nil
-    end
-end)
-
-Remotes.CombatFX.OnClientEvent:Connect(function(kind, _, payload)
-    if not payload then
+Remotes.CombatFX.OnClientEvent:Connect(function(kind: string, _, payload: any)
+    if not payload or type(payload) ~= "table" then
         return
     end
 
-    if kind == "CombatAction"
-        and payload.actor
-        and payload.actor:IsA("Model") then
-
-        local action = tostring(payload.action or "")
-
-        if action == "M1Start" or action == "SkillStart" then
-            CombatHandler:OnCombatEvent(payload, Remotes.CombatAction)
+    if kind == "CombatAction" and payload.actor and payload.actor:IsA("Model") then
+        if CombatHandler:OnCombatEvent(payload, Remotes.CombatAction) then
             return
         end
 
-        if action == "M1Impact" then
-            return
-        end
+        CombatAnimation:Play(
+            payload.actor,
+            tostring(payload.action or "Idle"),
+            payload
+        )
+        return
+    end
 
-        if action == "Dash"
-            or action == "BlockStart"
-            or action == "BlockEnd"
-            or action == "Special" then
-            CombatAnimation:Play(payload.actor, action, payload)
+    if kind == "AbilityTimeline" and payload.actor and payload.actor:IsA("Model") then
+        if CombatHandler:OnCombatEvent(payload, Remotes.CombatAction) then
             return
         end
     end
@@ -82,18 +63,8 @@ Remotes.CombatFX.OnClientEvent:Connect(function(kind, _, payload)
     end
 
     if kind == "Death" and payload.actor and payload.actor:IsA("Model") then
-        AnimationController:Play(payload.actor, "Execution", payload)
+        AnimationController:Play(payload.actor, "Execute", payload)
     end
 end)
 
-RunService.RenderStepped:Connect(function()
-    for _, player in ipairs(Players:GetPlayers()) do
-        local character = player.Character
-        if character then
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                character:SetAttribute("MovementSpeed", humanoid.MoveDirection.Magnitude)
-            end
-        end
-    end
-end)
+return nil
