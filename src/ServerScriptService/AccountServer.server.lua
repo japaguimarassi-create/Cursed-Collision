@@ -5,7 +5,6 @@ local RemoteService = require(ReplicatedStorage.Shared.RemoteService)
 local DataService = require(ReplicatedStorage.Economy.DataService)
 local ShopService = require(ReplicatedStorage.Economy.ShopService)
 local QuestService = require(ReplicatedStorage.Economy.QuestService)
-local ShopDefinitions = require(ReplicatedStorage.Economy.ShopDefinitions)
 local CosmeticService = require(ReplicatedStorage.Economy.CosmeticService)
 local AdminService = require(ReplicatedStorage.Admin.AdminService)
 
@@ -36,6 +35,7 @@ local function sendAdminPlayers()
     for _, owner in ipairs(Players:GetPlayers()) do
         if AdminService:IsOwner(owner) then
             local list = {}
+
             for _, player in ipairs(Players:GetPlayers()) do
                 table.insert(list, {
                     UserId = player.UserId,
@@ -55,15 +55,26 @@ end
 
 local function applyEquippedSkin(player)
     local data = DataService:Get(player)
+
     if not data then
         return
     end
 
     local equipped = data.EquippedSkin
-    if equipped and equipped ~= "" and data.OwnedSkins[equipped] then
-        if not CosmeticService:ApplySkin(player, equipped) then
+
+    if equipped ~= "" and data.OwnedSkins[equipped] then
+        local skin = ShopService:GetSkin(equipped)
+
+        if not skin or skin.Character ~= (player:GetAttribute("CharacterId") or "") then
             data.EquippedSkin = ""
-            CosmeticService:ClearSkin(player)
+            player:SetAttribute("EquippedSkin", "")
+            DataService:MarkDirty(player)
+            return
+        end
+
+        if not CosmeticService:ApplySkin(player, skin) then
+            data.EquippedSkin = ""
+            player:SetAttribute("EquippedSkin", "")
             DataService:MarkDirty(player)
         end
     else
@@ -76,15 +87,13 @@ local function setupPlayer(player)
     QuestService:Initialize(player)
 
     player:SetAttribute("IsGameOwner", AdminService:IsOwner(player))
-    player:SetAttribute("EquippedEmote", DataService:Get(player).EquippedEmote or "emote_001")
-    player:SetAttribute("EquippedSkin", DataService:Get(player).EquippedSkin or "")
 
     if not loaded then
         notice(player, "Persistent data is temporarily unavailable. Purchases are disabled until the profile loads.", false)
     end
 
     player.CharacterAdded:Connect(function()
-        task.delay(0.4, function()
+        task.delay(0.45, function()
             if player.Parent then
                 applyEquippedSkin(player)
             end
@@ -129,92 +138,58 @@ remotes.AccountAction.OnServerEvent:Connect(function(player, action, payload)
         return
     end
 
-    if action == "SyncOwner" then
-        if AdminService:IsOwner(player) then
-            sendAdminPlayers()
-        end
-        return
-    end
-
     if action == "Buy" then
         local category = type(payload.category) == "string" and payload.category or ""
         local itemId = type(payload.id) == "string" and payload.id or ""
-        if #category > 16 or #itemId > 96 then
+
+        if #category > 16 or #itemId > 96 or category ~= "Skins" then
             return
         end
 
         local ok, reason = ShopService:Buy(player, category, itemId)
+
         if ok then
-            notice(player, reason == "ALREADY_OWNED" and "You already own this item." or "Purchase complete.", true)
+            notice(player, reason == "ALREADY_OWNED" and "You already own this skin." or "Skin purchased.", true)
             safeSync(player)
         else
             local messages = {
                 DATA_NOT_READY = "Your profile is not ready yet.",
-                UNKNOWN_ITEM = "That item does not exist.",
+                UNKNOWN_ITEM = "That skin does not exist.",
+                UNKNOWN_CATEGORY = "Invalid shop category.",
                 NOT_ENOUGH_CREDITS = "Not enough Credits."
             }
+
             notice(player, messages[reason] or "Purchase failed.", false)
         end
+
         return
     end
 
     if action == "Equip" then
         local category = type(payload.category) == "string" and payload.category or ""
         local itemId = type(payload.id) == "string" and payload.id or ""
-        if #category > 16 or #itemId > 96 then
+
+        if #category > 16 or #itemId > 96 or category ~= "Skins" then
             return
         end
 
         local ok, reason = ShopService:Equip(player, category, itemId)
+
         if ok then
-            notice(player, "Equipped.", true)
+            notice(player, "Skin equipped.", true)
             safeSync(player)
         else
             local messages = {
                 DATA_NOT_READY = "Your profile is not ready yet.",
-                UNKNOWN_ITEM = "That item does not exist.",
-                NOT_OWNED = "You do not own that item.",
-                WRONG_CHARACTER = "This skin belongs to another character.",
+                UNKNOWN_ITEM = "That skin does not exist.",
+                NOT_OWNED = "You do not own that skin.",
+                WRONG_CHARACTER = "That skin belongs to another character.",
                 SKIN_APPLY_FAILED = "Could not apply that skin."
             }
+
             notice(player, messages[reason] or "Equip failed.", false)
         end
-        return
-    end
 
-    if action == "PlayEmote" then
-        local id = type(payload.id) == "string" and payload.id or ""
-        local data = DataService:Get(player)
-        local emote = ShopDefinitions.Emotes[id]
-        if not data or not emote or not data.OwnedEmotes[id] then
-            notice(player, "Emote is not owned.", false)
-            return
-        end
-
-        local character = player.Character
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        if not humanoid or humanoid.Health <= 0 then
-            return
-        end
-
-        if player:GetAttribute("InClash") or player:GetAttribute("AwakeningActive") then
-            notice(player, "You cannot emote during combat lock.", false)
-            return
-        end
-
-        data.EquippedEmote = id
-        player:SetAttribute("EquippedEmote", id)
-        DataService:MarkDirty(player)
-
-        remotes.AccountEvent:FireClient(player, "PlayEmote", {
-            Id = id,
-            Name = emote.Name,
-            Animation = emote.Animation,
-            AnimationId = emote.AnimationId or 0,
-            Accent = emote.Accent,
-            Rarity = emote.Rarity
-        })
-        QuestService:Record(player, "Emote", 1, player:GetAttribute("CharacterId"))
         return
     end
 end)
@@ -224,24 +199,19 @@ remotes.AdminAction.OnServerEvent:Connect(function(player, action, payload)
         return
     end
 
-    local ok, message = AdminService:Execute(player, action, payload, function(target, text)
+    local ok, message = AdminService:Execute(player, action, payload, function(target, textValue)
         if target then
-            notice(target, text, true)
+            notice(target, textValue, true)
         else
             remotes.AccountEvent:FireAllClients("Notice", {
-                Message = text,
+                Message = textValue,
                 Success = true
             })
         end
     end)
 
+    notice(player, message, ok)
     if ok then
-        notice(player, message, true)
-    else
-        notice(player, message, false)
-    end
-
-    if ok and player.Parent then
         safeSync(player)
     end
 
@@ -260,11 +230,6 @@ task.spawn(function()
             QuestService:Initialize(player)
         end
 
-        for _, owner in ipairs(Players:GetPlayers()) do
-            if AdminService:IsOwner(owner) then
-                safeSync(owner)
-                sendAdminPlayers()
-            end
-        end
+        sendAdminPlayers()
     end
 end)
