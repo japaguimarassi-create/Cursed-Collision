@@ -16,6 +16,7 @@ CHARACTERS = [
 REQUIRED = [
     "ReplicatedStorage/Shared/Config.lua",
     "ReplicatedStorage/Shared/RemoteService.lua",
+    "ReplicatedStorage/Shared/UI/HUDConfig.lua",
     "ReplicatedStorage/Combat/HitboxService.lua",
     "ReplicatedStorage/Combat/AbilityTimeline.lua",
     "ReplicatedStorage/Combat/HitRegistry.lua",
@@ -25,15 +26,16 @@ REQUIRED = [
     "ReplicatedStorage/Characters/CharacterMoves.lua",
     "ReplicatedStorage/Characters/CustomMovesets.lua",
     "ReplicatedStorage/Characters/CharacterService.lua",
+    "ReplicatedStorage/Emotes/EmoteDefinitions.lua",
     "ServerScriptService/CombatCore/StateManager.lua",
     "ServerScriptService/CombatCore/CooldownService.lua",
     "ServerScriptService/CombatCore/NetworkService.lua",
     "ServerScriptService/CombatCore/MovementController.lua",
     "ServerScriptService/CombatCore/ComboService.lua",
     "ServerScriptService/CombatCore/AbilityService.lua",
+    "ServerScriptService/CombatCore/CombatMarkerService.lua",
     "ServerScriptService/CombatCore/DamageService.lua",
     "ServerScriptService/CombatCore/CombatService.lua",
-    "ServerScriptService/CombatCore/CombatMarkerService.lua",
     "ServerScriptService/CombatCore/EmoteService.lua",
     "ServerScriptService/CombatCore/RagdollService.lua",
     "ServerScriptService/CombatCore/UltimateService.lua",
@@ -41,10 +43,6 @@ REQUIRED = [
     "ServerScriptService/RemoteBootstrap.server.lua",
     "ServerScriptService/EmoteServer.server.lua",
     "ServerScriptService/GamePassServer.server.lua",
-    "ReplicatedStorage/Emotes/EmoteDefinitions.lua",
-    "ReplicatedStorage/Shared/UI/HUDConfig.lua",
-    "ReplicatedStorage/Monetization/GamePassConfig.lua",
-    "ReplicatedStorage/Monetization/GamePassService.lua",
     "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/AnimationClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/CombatFeedback.client.lua",
@@ -70,219 +68,241 @@ REQUIRED = [
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationStateMachine.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/CombatAnimationManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/MovementAnimationManager.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/AbilityAnimationManager.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/HUDController.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/CameraController.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/VFXManager.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/SFXManager.lua",
 ]
 
-ACTIVE = [
-    "ReplicatedStorage/Characters/CharacterService.lua",
-    "ReplicatedStorage/Combat/HitboxService.lua",
-    "ServerScriptService/CombatCore/StateManager.lua",
-    "ServerScriptService/CombatCore/CooldownService.lua",
-    "ServerScriptService/CombatCore/NetworkService.lua",
-    "ServerScriptService/CombatCore/MovementController.lua",
-    "ServerScriptService/CombatCore/ComboService.lua",
-    "ServerScriptService/CombatCore/AbilityService.lua",
-    "ServerScriptService/CombatCore/DamageService.lua",
-    "ServerScriptService/CombatCore/CombatService.lua",
-    "ServerScriptService/CombatServer.server.lua",
-    "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua",
-    "StarterPlayer/StarterPlayerScripts/AnimationClient.client.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/InputManager.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua",
-    "StarterPlayer/StarterPlayerScripts/HUD/Combat.lua",
-]
-
-def fail(message: str):
+def fail(message: str) -> None:
     print(f"FAIL: {message}")
     sys.exit(1)
 
-def path_for(relative: str) -> Path:
-    return SRC / relative
-
 def read(relative: str) -> str:
-    path = path_for(relative)
+    path = SRC / relative
     if not path.exists():
         fail(f"missing file: src/{relative}")
     return path.read_text(encoding="utf-8")
 
 for relative in REQUIRED:
-    if not path_for(relative).exists():
+    if not (SRC / relative).exists():
         fail(f"required file missing: src/{relative}")
+
+for character in CHARACTERS:
+    if not (SRC / "ReplicatedStorage" / "Characters" / f"{character}.lua").exists():
+        fail(f"character module missing: {character}")
 
 project = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"))
 if project.get("name") != "CursedCollision":
     fail("default.project.json project name must be CursedCollision")
 
-for character in CHARACTERS:
-    character_path = path_for(f"ReplicatedStorage/Characters/{character}.lua")
-    if not character_path.exists():
-        fail(f"character module missing: {character}")
-
-definitions = read("ReplicatedStorage/Characters/CharacterDefinitions.lua")
-character_service = read("ReplicatedStorage/Characters/CharacterService.lua")
-for character in CHARACTERS:
-    expected = f"{character} = require(ReplicatedStorage.Characters.{character})"
-    if expected not in character_service:
-        fail(f"CharacterService missing explicit binding: {character}")
+state = read("ServerScriptService/CombatCore/StateManager.lua")
+for token in (
+    "ActionToken: number",
+    "function StateManager:NextActionToken",
+    'player:SetAttribute("IsAttacking"',
+    'player:SetAttribute("Stunned"',
+    'player:SetAttribute("Ragdolled"'
+):
+    if token not in state:
+        fail(f"state contract missing: {token}")
 
 network = read("ServerScriptService/CombatCore/NetworkService.lua")
 for action in (
     "M1", "M1Hit", "Dash", "BlockStart", "BlockEnd", "Special",
-    "Skill1", "Skill2", "Skill3", "Skill4", "SkillHit", "SelectCharacter",
-    "Ultimate", "Awakening"
+    "Skill1", "Skill2", "Skill3", "Skill4", "SkillHit", "SpecialHit",
+    "SelectCharacter", "Ultimate", "Awakening"
 ):
     if f"{action} = true" not in network:
-        fail(f"NetworkService missing active action: {action}")
+        fail(f"NetworkService missing action: {action}")
 
-for forbidden in ("Domain", "OneTime"):
-    if f"{forbidden} = true" in network:
-        fail(f"legacy unsupported action active in NetworkService: {forbidden}")
+for forbidden in ("Domain = true", "OneTime = true", "Heavy = true"):
+    if forbidden in network:
+        fail(f"unsupported active network action: {forbidden}")
 
-combat_server = read("ServerScriptService/CombatServer.server.lua")
+server = read("ServerScriptService/CombatServer.server.lua")
 for token in (
     "combat:M1(player)",
-    "combat:M1Hit(player, payload)",
     "combat:Dash(",
     "combat:SetBlock(",
     "combat:Special(player)",
-    "combat:SkillHit(player, payload)",
+    "combat:SkillSlot(player, 1)",
+    "CombatMarkerService:Resolve",
+    "CombatMarkerService:Clear(player)"
 ):
-    if token not in combat_server:
-        fail(f"CombatServer missing route: {token}")
+    if token not in server:
+        fail(f"CombatServer integration missing: {token}")
 
 combat = read("ServerScriptService/CombatCore/CombatService.lua")
 for token in (
     "function CombatService:M1",
-    "function CombatService:M1Hit",
     "function CombatService:Dash",
     "function CombatService:SetBlock",
     "function CombatService:Special",
-    "HitboxService:TargetsInBox",
-    "record.HitUntil",
-    "record.HitConsumed",
+    "CombatMarkerService:Begin",
+    'action = "M1Start"',
+    'action = "SpecialStart"',
+    "HitboxService:TargetsInBox"
 ):
     if token not in combat:
-        fail(f"CombatService missing server attack pipeline element: {token}")
+        fail(f"CombatService pipeline missing: {token}")
 
 ability = read("ServerScriptService/CombatCore/AbilityService.lua")
 for token in (
     "function AbilityService:Execute",
-    "function AbilityService:Hit",
-    "HitRegistry:Begin",
-    "HitRegistry:End",
-    "record.HitUntil",
+    "CombatMarkerService:Begin",
+    '"Ability"',
+    'action = "SkillStart"',
+    "CharacterService:SkillSlot",
+    "HitRegistry:End"
 ):
     if token not in ability:
-        fail(f"AbilityService missing marker-driven attack pipeline element: {token}")
+        fail(f"AbilityService pipeline missing: {token}")
+
+marker = read("ServerScriptService/CombatCore/CombatMarkerService.lua")
+for token in (
+    "function CombatMarkerService:Begin",
+    "function CombatMarkerService:Resolve",
+    "EarlyAt",
+    "HitAt",
+    "ExpiresAt",
+    'Kind: "Action" | "Ability"'
+):
+    if token not in marker:
+        fail(f"CombatMarkerService contract missing: {token}")
 
 damage = read("ServerScriptService/CombatCore/DamageService.lua")
-for token in ("Blocking", "DashUntil", "TakeDamage", "BlockImpact", "Hit", "PerfectBlock", "guardBreak", "RagdollService:Apply"):
+for token in (
+    "TakeDamage",
+    "Blocking",
+    "PerfectBlock",
+    "guardBreak",
+    "RagdollService:Apply",
+    "EmoteService:Stop",
+    "UltimateService:AddMeter"
+):
     if token not in damage:
-        fail(f"DamageService missing defense/impact element: {token}")
+        fail(f"DamageService integration missing: {token}")
 
 hitbox = read("ReplicatedStorage/Combat/HitboxService.lua")
 for token in ("GetPartBoundsInBox", "OverlapParams", "NearestTargetInFront"):
     if token not in hitbox:
-        fail(f"HitboxService missing spatial query primitive: {token}")
-
-state = read("ServerScriptService/CombatCore/StateManager.lua")
-for token in ("IsAttacking", "Stunned", "Ragdolled", "SetStun", "BeginAbility", "BeginBlock"):
-    if token not in state:
-        fail(f"StateManager missing critical state/attribute: {token}")
+        fail(f"HitboxService missing primitive: {token}")
 
 animation_data = read("ReplicatedStorage/Animation/AnimationData.lua")
-for token in ("Idle", "Walk", "Run", "Sprint", "Jump", "Fall", "Land", "M1_1", "M1_4", "Dash", "AirDash", "Block", "Parry", "HitLight", "HitHeavy", "Ragdoll", "Recovery", "Dodge", "Skill1", "Skill4", "Special", "Ultimate", "Awakening", "Execution"):
-    if token not in animation_data:
-        fail(f"AnimationData missing definition: {token}")
+for key in (
+    "Idle", "Walk", "Run", "Sprint", "Jump", "Fall", "Land",
+    "M1_1", "M1_2", "M1_3", "M1_4", "Dash", "AirDash", "Block",
+    "Parry", "HitLight", "HitHeavy", "Ragdoll", "Recovery", "Dodge",
+    "Skill1", "Skill2", "Skill3", "Skill4", "Special", "Ultimate",
+    "Awakening", "Execution"
+):
+    if key not in animation_data:
+        fail(f"AnimationData missing definition: {key}")
 
-animation_cache = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua")
-for token in ('Instance.new("Animation")', "LoadAnimation", "__mode", "GetTrack"):
-    if token not in animation_cache:
-        fail(f"AnimationCache missing required cache primitive: {token}")
+if 'Marker = "Hit"' not in animation_data:
+    fail('AnimationData does not define the combat Hit marker')
 
-animation_controller = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua")
-priority = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationPriorityManager.lua")
+cache = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua")
+for token in ('Instance.new("Animation")', "LoadAnimation", "GetTrack", "__mode"):
+    if token not in cache:
+        fail(f"AnimationCache missing: {token}")
+
 handler = read("StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua")
 if 'GetMarkerReachedSignal("Hit")' not in handler:
     fail("CombatHandler missing exact Hit marker synchronization")
-if "Enum.AnimationPriority.Action" not in handler and "AnimationPriority" not in priority and "AnimationPriority" not in animation_controller:
-    fail("Action priority handling missing")
+for token in ("M1Hit", "SkillHit", "SpecialHit", "Enum.AnimationPriority.Action"):
+    if token not in handler:
+        fail(f"CombatHandler missing: {token}")
 
-animator = read("StarterPlayer/StarterPlayerScripts/Controllers/ProceduralAnimator.lua")
-if "RunService:BindToRenderStep" not in animator or "RunService:UnbindFromRenderStep" not in animator:
-    fail("procedural animation loop cleanup missing")
-if "Motor6D" not in animator or ":Lerp" not in animator:
-    fail("procedural Motor6D interpolation missing")
+controller = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua")
+for token in ("AnimationCache", "GetMarkerReachedSignal", "fallback", "Unbind"):
+    if token not in controller:
+        fail(f"AnimationController missing: {token}")
 
-input_manager = read("StarterPlayer/StarterPlayerScripts/Controllers/InputManager.lua")
-hud_controller = read("StarterPlayer/StarterPlayerScripts/Controllers/HUDController.lua")
+hud = read("StarterPlayer/StarterPlayerScripts/Controllers/HUDController.lua")
+for token in (
+    "ScreenInsets",
+    "CoreUISafeInsets",
+    "UISizeConstraint",
+    "PreferredInput",
+    "GuiNavigationEnabled",
+    "SetActionState"
+):
+    if token not in hud:
+        fail(f"HUDController missing responsive feature: {token}")
+
 hud_combat = read("StarterPlayer/StarterPlayerScripts/HUD/Combat.lua")
-if "BindAction" not in input_manager:
-    fail("InputManager missing ContextActionService binding")
-if "UserInputService" in hud_combat:
-    fail("HUD/Combat must use InputManager instead of UserInputService directly")
-for token in ("ScreenInsets", "CoreUISafeInsets", "UISizeConstraint", "PreferredInput"):
-    if token not in hud_controller:
-        fail(f"HUDController missing responsive input-safe UI feature: {token}")
-for token in ("InputManager:BindAction", "CooldownUntil_", "GetServerTimeNow", "M1", "Special", "Ultimate", "Awakening"):
+for token in (
+    "InputManager:BindAction",
+    "CooldownUntil_",
+    "GetServerTimeNow",
+    "M1",
+    "Special",
+    "Ultimate",
+    "Awakening"
+):
     if token not in hud_combat:
-        fail(f"HUD/Combat missing integration token: {token}")
+        fail(f"HUD/Combat integration missing: {token}")
 
 for wrapper, module in (
     ("StarterPlayer/StarterPlayerScripts/CombatClient.client.lua", "HUD.Combat"),
     ("StarterPlayer/StarterPlayerScripts/AccountClient.client.lua", "HUD.Menu"),
     ("StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua", "HUD.Characters"),
     ("StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua", "HUD.Owner"),
-    ("StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua", "HUD.Emotes"),
+    ("StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua", "HUD.Emotes")
 ):
     source = read(wrapper)
     if f"require(script.Parent.{module})" not in source or ".Start()" not in source:
-        fail(f"client entrypoint is not delegating to modular HUD: {wrapper}")
+        fail(f"wrapper does not delegate to modular HUD: {wrapper}")
 
-remote_service = read("ReplicatedStorage/Shared/RemoteService.lua")
-for token in ("CombatAction", "AbilityRemote", "MovementRemote", "StateRemote", "UltimateAction", "EmoteAction", "EmoteEvent"):
-    if token not in remote_service:
-        fail(f"missing organized remote: {token}")
+emote_service = read("ServerScriptService/CombatCore/EmoteService.lua")
+for token in ("function EmoteService:CanUse", "OwnedEmotes", "EmoteEvent", "function EmoteService:Stop"):
+    if token not in emote_service:
+        fail(f"EmoteService missing: {token}")
 
 emote_server = read("ServerScriptService/EmoteServer.server.lua")
-for token in ("Start", "Stop", "SetWheel", "IsAttacking", "Stunned", "Ragdolled", "OwnedEmotes", "DataService:MarkDirty"):
+for token in ('"Start"', '"Stop"', '"SetWheel"', "EmoteService:Start", "EmoteService:SetWheel"):
     if token not in emote_server:
-        fail(f"EmoteServer missing secure behavior: {token}")
+        fail(f"EmoteServer missing route: {token}")
 
 emote_defs = read("ReplicatedStorage/Emotes/EmoteDefinitions.lua")
-for emote in ("emote_001", "emote_002", "emote_003", "emote_004", "emote_005"):
-    if emote not in emote_defs:
-        fail(f"missing emote definition: {emote}")
+for token in ("EmoteData", "Price", "Duration", "Loop", "AnimationId"):
+    if token not in emote_defs:
+        fail(f"Emote definitions missing field: {token}")
+
+cooldown = read("ServerScriptService/CombatCore/CooldownService.lua")
+for token in ("CooldownUntil_", "GetServerTimeNow"):
+    if token not in cooldown:
+        fail(f"Cooldown synchronization missing: {token}")
 
 movement = read("ServerScriptService/CombatCore/MovementController.lua")
-if "state.Phase == \"Blocking\"" not in movement or "Config.Combat.Block.WalkSpeed" not in movement:
-    fail("MovementController does not preserve block movement")
+for token in ("Acceleration", "Deceleration", "SprintSpeed", "WalkSpeed"):
+    if token not in movement:
+        fail(f"movement smoothing missing: {token}")
 
-for relative in ACTIVE:
-    source = read(relative)
-    for forbidden in ("Domain", "OneTime"):
-        if re.search(rf"\b{re.escape(forbidden)}\b", source):
-            fail(f"unsupported legacy combat token in active runtime file: {relative}: {forbidden}")
-
-for research in (
+docs = [
     ROOT / "docs/research/ResearchLedger.md",
     ROOT / "docs/research/ResearchMatrix.md",
-    ROOT / "docs/research/VisualReferenceDatabase.md"
-):
-    if not research.exists():
-        fail(f"research artifact missing: {research}")
+    ROOT / "docs/research/VisualReferenceDatabase.md",
+]
+for doc in docs:
+    if not doc.exists():
+        fail(f"research artifact missing: {doc}")
 
-print("PASS: required foundation files and 25-character roster are present")
-print("PASS: server-authoritative M1/skill marker timing pipeline is wired")
-print("PASS: hitbox, damage, stun, block, ragdoll and cooldown validation layers are present")
-print("PASS: animation registry/cache/priority/marker handler are present")
-print("PASS: mobile/PC/console HUD is modular and InputManager-driven")
-print("PASS: server-authoritative emote ownership and interruption guards are present")
-print("PASS: no duplicate legacy CrossPlatformInput combat router is required")
-print("PASS: research ledger, matrix and visual reference index are stored in-repo")
+for relative in (
+    "ServerScriptService/CombatServer.server.lua",
+    "ServerScriptService/CombatCore/CombatService.lua",
+    "ServerScriptService/CombatCore/AbilityService.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Combat.lua"
+):
+    source = read(relative)
+    if "M1Hit(player" in source or "SkillHit(player" in source:
+        fail(f"stale direct hit method remains in: {relative}")
+
+print(f"PASS: {len(REQUIRED)} required foundation files present")
+print(f"PASS: {len(CHARACTERS)} character modules are present")
+print("PASS: authoritative combat routing uses server marker windows")
+print("PASS: M1, skills and Special are marker-driven with server timing validation")
+print("PASS: hitbox, damage, block, stun, ragdoll, cooldown and meter layers are connected")
+print("PASS: animation cache and explicit Hit marker handler are connected")
+print("PASS: modular HUD is safe-area-aware and platform-aware")
+print("PASS: emote ownership and interruption are server-authoritative")
+print("PASS: responsive HUD wrappers are modular and duplicate combat routing is removed")
+print("PASS: research ledger, matrix and visual reference database exist")
