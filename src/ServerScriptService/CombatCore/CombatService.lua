@@ -61,6 +61,27 @@ function CombatService:IsAlive(player: Player): boolean
     return humanoid ~= nil and humanoid.Health > 0
 end
 
+function CombatService:CanSpecial(player: Player): boolean
+    local state = StateManager:Get(player)
+    if not state or not self:IsAlive(player) then
+        return false
+    end
+
+    local t = now()
+
+    if not StateManager:CanAct(player, t)
+        or state.StunnedUntil > t
+        or state.RagdollUntil > t
+        or state.RecoveryUntil > t
+        or state.Blocking then
+        return false
+    end
+
+    return state.Phase == "Idle"
+        or state.Phase == "Awakening"
+        or state.Phase == "Ultimate"
+end
+
 function CombatService:CanAttack(player: Player): boolean
     local state = StateManager:Get(player)
     if not state or not self:IsAlive(player) then
@@ -371,7 +392,7 @@ function CombatService:Special(player: Player): boolean
     local state = StateManager:Get(player)
     local root = rootOf(player)
 
-    if not state or not root or not self:CanAttack(player) then
+    if not state or not root or not self:CanSpecial(player) then
         return false
     end
 
@@ -400,7 +421,13 @@ function CombatService:Special(player: Player): boolean
 
     state.Vars.ActiveAttackId = attackId
 
-    StateManager:SetPhase(player, "Attacking")
+    local transformedPhase = state.Phase == "Awakening"
+        or state.Phase == "Ultimate"
+
+    if not transformedPhase then
+        StateManager:SetPhase(player, "Attacking")
+    end
+
     state.RecoveryUntil = t + 0.55
     CooldownService:Set(player, "Special", cooldown, t)
 
