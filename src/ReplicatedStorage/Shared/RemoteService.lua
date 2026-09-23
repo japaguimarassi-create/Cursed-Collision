@@ -32,7 +32,9 @@ function RemoteService:Get()
         Selection = ensure(folder, "RemoteEvent", "Selection"),
         AccountAction = ensure(folder, "RemoteEvent", "AccountAction"),
         AccountEvent = ensure(folder, "RemoteEvent", "AccountEvent"),
-        AdminAction = ensure(folder, "RemoteEvent", "AdminAction")
+        AdminAction = ensure(folder, "RemoteEvent", "AdminAction"),
+        EmoteAction = ensure(folder, "RemoteEvent", "EmoteAction"),
+        EmoteEvent = ensure(folder, "RemoteEvent", "EmoteEvent")
     }
 end
 
