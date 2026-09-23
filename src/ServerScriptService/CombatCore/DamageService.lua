@@ -8,6 +8,7 @@ local StateManager = require(script.Parent.StateManager)
 local MovementController = require(script.Parent.MovementController)
 local RagdollService = require(script.Parent.RagdollService)
 local GamePassService = require(ReplicatedStorage.Monetization.GamePassService)
+local UltimateService = require(script.Parent.UltimateService)
 
 local DamageService = {}
 local context: any = nil
@@ -123,6 +124,7 @@ function DamageService:Apply(
     end
 
     target:TakeDamage(amount)
+    UltimateService:AddMeter(attacker, amount)
 
     local root = targetModel:FindFirstChild("HumanoidRootPart")
     if root and root:IsA("BasePart") then
