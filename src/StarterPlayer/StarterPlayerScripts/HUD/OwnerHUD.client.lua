@@ -67,7 +67,7 @@ local function send(name: string, extra: {[string]: any}?)
         return
     end
 
-    local payload = extra or {}
+    local payload: {[string]: any} = if extra then extra else {}
     payload.targetUserId = player.UserId
     admin:FireServer(name, payload)
 end
