@@ -6,7 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local StateManager = require(script.Parent.StateManager)
 local MovementController = require(script.Parent.MovementController)
-local GamePassService = require(script.Parent.Parent.GamePassService)
+local GamePassService = require(ReplicatedStorage.Monetization.GamePassService)
 
 local DamageService = {}
 local context = nil :: any
