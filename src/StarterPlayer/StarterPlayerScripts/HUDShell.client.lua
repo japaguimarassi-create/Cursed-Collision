@@ -5,12 +5,13 @@ local Players = game:GetService("Players")
 local HUDController = require(script.Parent.Controllers.HUDController)
 local HUDInputRouter = require(script.Parent.Controllers.HUDInputRouter)
 local HUDMenuRouter = require(script.Parent.Controllers.HUDMenuRouter)
+local HUDActionBus = require(script.Parent.Controllers.HUDActionBus)
 
 local player = Players.LocalPlayer
 local hud = HUDController.new()
 
 local function action(name: string)
-    player:SetAttribute("CCHUD_LastUIButton", name)
+    HUDActionBus:Emit(name :: any)
 end
 
 HUDInputRouter.Bind(hud, {
