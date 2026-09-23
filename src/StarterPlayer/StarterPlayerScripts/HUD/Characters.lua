@@ -155,14 +155,14 @@ function M.Start()
     confirm.Activated:Connect(function()
         if definitions[selected] then
             combatAction:FireServer("SelectCharacter", selected)
-            close()
+            closePanel()
         end
     end)
 
     UserInputService.InputBegan:Connect(function(input, processed)
         if processed then return end
         if input.KeyCode == Enum.KeyCode.M then
-            if panel.Visible then close() else open() end
+            if panel.Visible then closePanel() else open() end
         end
     end)
 
