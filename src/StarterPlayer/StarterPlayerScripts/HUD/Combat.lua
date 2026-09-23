@@ -361,8 +361,6 @@ function M.Start()
     Util.stroke(state, Color3.fromRGB(70, 74, 92), 0.76)
     stateText = Util.label(state, "READY", UDim2.fromScale(1, 1), UDim2.new(), 8, Enum.Font.GothamBlack)
 
-    meterText = nil
-
     local meter = Instance.new("Frame")
     meter.Name = "AwakeningMeter"
     meter.Size = UDim2.fromScale(platform == "Mobile" and 0.54 or 0.58, 0.034)
@@ -418,6 +416,9 @@ function M.Start()
 
     if platform == "Mobile" then
         m1Button = Util.button(actions, "M1", "✊", UDim2.fromScale(0.52, 0.52), UDim2.fromScale(0.58, 0.43))
+        local m1Aspect = Instance.new("UIAspectRatioConstraint")
+        m1Aspect.AspectRatio = 1
+        m1Aspect.Parent = m1Button
         m1Button.AnchorPoint = Vector2.new(0.5, 0.5)
         m1Button.TextSize = 30
 
@@ -428,6 +429,12 @@ function M.Start()
         dashButton = Util.button(actions, "Dash", "➤", UDim2.fromScale(0.31, 0.31), UDim2.fromScale(0.16, 0.74))
         dashButton.AnchorPoint = Vector2.new(0.5, 0.5)
         dashButton.TextSize = 20
+
+        for _, circular in ipairs({blockButton, dashButton}) do
+            local aspect = Instance.new("UIAspectRatioConstraint")
+            aspect.AspectRatio = 1
+            aspect.Parent = circular
+        end
     else
         m1Button = Util.button(actions, "M1", "M1", UDim2.fromScale(0.52, 0.52), UDim2.fromScale(0.60, 0.52))
         m1Button.AnchorPoint = Vector2.new(0.5, 0.5)
