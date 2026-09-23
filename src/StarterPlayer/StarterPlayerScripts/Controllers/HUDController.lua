@@ -574,7 +574,7 @@ function HUDController.SetVisible(self: HUD, visible: boolean)
     self.Root.Visible = visible
 end
 
-function HUDController:UpdateCharacter(
+function HUDController.UpdateCharacter(
     self: HUD,
     name: string,
     subtitle: string,
@@ -591,7 +591,7 @@ function HUDController:UpdateCharacter(
     end
 end
 
-function HUDController:UpdateHealth(
+function HUDController.UpdateHealth(
     self: HUD,
     health: number,
     maxHealth: number
@@ -644,7 +644,7 @@ function HUDController.Notify(self: HUD, textValue: string)
     self.NotificationText.Text = textValue
 end
 
-function HUDController:ClearNotification(self: HUD)
+function HUDController.ClearNotification(self: HUD)
     self.NotificationText.Text = ""
 end
 
@@ -689,7 +689,7 @@ function HUDController:UpdatePower(
         or "AWAKEN\n" .. inputLabel(self.PreferredInput, "Awakening")
 end
 
-function HUDController:SetCooldown(
+function HUDController.SetCooldown(
     self: HUD,
     slot: number,
     remaining: number,
