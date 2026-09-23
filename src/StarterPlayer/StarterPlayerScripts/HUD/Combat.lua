@@ -337,7 +337,7 @@ local function start()
 
             if attacker == character and actor and actor:IsA("Model") then
                 comboCount += 1
-                _local comboWindow = Config.Combat.M1.ComboReset
+                local comboWindow = Config.Combat.M1.ComboReset
                 if comboWindow > 0 then
                     _comboExpiresAt = os.clock() + comboWindow
                 end
