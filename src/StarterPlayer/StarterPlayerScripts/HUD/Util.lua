@@ -42,7 +42,7 @@ function Util.makeGui(name: string, displayOrder: number): ScreenGui
     local gui = Instance.new("ScreenGui")
     gui.Name = name
     gui.ResetOnSpawn = false
-    gui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+    gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     gui.DisplayOrder = displayOrder
     gui.Parent = player.PlayerGui
