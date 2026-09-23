@@ -9,9 +9,7 @@ local EmoteService = require(script.Parent.CombatCore.EmoteService)
 local remotes = RemoteService:Get()
 
 local function setup(player: Player)
-    player.CharacterAdded:Connect(function()
-        EmoteService:Clear(player)
-    end)
+    EmoteService:BindPlayer(player)
 end
 
 Players.PlayerAdded:Connect(setup)
