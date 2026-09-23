@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
@@ -10,34 +11,67 @@ if not remotes then
     return
 end
 
-local combatAction = remotes:WaitForChild("CombatAction", 15)
-local movementRemote = remotes:WaitForChild("MovementRemote", 15)
-if not combatAction or not movementRemote then
+local combat = remotes:WaitForChild("CombatAction", 15)
+local movement = remotes:WaitForChild("MovementRemote", 15)
+if not combat or not movement then
     return
 end
 
-local blocked = {
-    CCHUD_MenuOpen = true,
-    CCHUD_CharacterMenuOpen = true,
-    CCHUD_EmoteWheelOpen = true,
-    CCHUD_OwnerPanelOpen = true
-}
-
 local function menuOpen(): boolean
-    for attribute in pairs(blocked) do
-        if player:GetAttribute(attribute) == true then
-            return true
-        end
-    end
-    return false
+    return player:GetAttribute("CCHUD_MenuOpen") == true
+        or player:GetAttribute("CCHUD_CharacterMenuOpen") == true
+        or player:GetAttribute("CCHUD_EmoteWheelOpen") == true
+        or player:GetAttribute("CCHUD_SettingsOpen") == true
+        or player:GetAttribute("CCHUD_OwnerPanelOpen") == true
 end
 
 local function fire(action: string, payload: any?)
     if menuOpen() then
         return
     end
-    combatAction:FireServer(action, payload)
+    combat:FireServer(action, payload)
 end
+
+local function bind(name: string, action: string, keys: {Enum.KeyCode})
+    ContextActionService:BindAction(name, function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire(action, action == "Dash" and "Forward" or nil)
+        end
+        return Enum.ContextActionResult.Pass
+    end, false, table.unpack(keys))
+end
+
+bind("CC_M1", "M1", {Enum.KeyCode.ButtonR2})
+bind("CC_Dash", "Dash", {Enum.KeyCode.Q, Enum.KeyCode.ButtonA})
+bind("CC_Special", "Special", {Enum.KeyCode.E, Enum.KeyCode.ButtonX})
+bind("CC_Skill1", "Skill1", {Enum.KeyCode.One, Enum.KeyCode.ButtonR1})
+bind("CC_Skill2", "Skill2", {Enum.KeyCode.Two, Enum.KeyCode.ButtonY})
+bind("CC_Skill3", "Skill3", {Enum.KeyCode.Three, Enum.KeyCode.DPadUp})
+bind("CC_Skill4", "Skill4", {Enum.KeyCode.Four, Enum.KeyCode.DPadDown})
+bind("CC_Ultimate", "Ultimate", {Enum.KeyCode.R, Enum.KeyCode.ButtonR3})
+bind("CC_Awakening", "Awakening", {Enum.KeyCode.G, Enum.KeyCode.ButtonL3})
+
+ContextActionService:BindAction("CC_Block", function(_, state)
+    if state == Enum.UserInputState.Begin then
+        fire("BlockStart")
+    elseif state == Enum.UserInputState.End or state == Enum.UserInputState.Cancel then
+        fire("BlockEnd")
+    end
+    return Enum.ContextActionResult.Pass
+end, false, Enum.KeyCode.F, Enum.KeyCode.ButtonL2)
+
+ContextActionService:BindAction("CC_Sprint", function(_, state)
+    if menuOpen() then
+        return Enum.ContextActionResult.Pass
+    end
+
+    if state == Enum.UserInputState.Begin then
+        movement:FireServer("SprintStart")
+    elseif state == Enum.UserInputState.End or state == Enum.UserInputState.Cancel then
+        movement:FireServer("SprintEnd")
+    end
+    return Enum.ContextActionResult.Pass
+end, false, Enum.KeyCode.LeftShift, Enum.KeyCode.ButtonL1)
 
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed or menuOpen() then
@@ -46,33 +80,5 @@ UserInputService.InputBegan:Connect(function(input, processed)
 
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         fire("M1")
-    elseif input.KeyCode == Enum.KeyCode.Q then
-        fire("Dash", "Forward")
-    elseif input.KeyCode == Enum.KeyCode.E then
-        fire("Special")
-    elseif input.KeyCode == Enum.KeyCode.One then
-        fire("Skill1")
-    elseif input.KeyCode == Enum.KeyCode.Two then
-        fire("Skill2")
-    elseif input.KeyCode == Enum.KeyCode.Three then
-        fire("Skill3")
-    elseif input.KeyCode == Enum.KeyCode.Four then
-        fire("Skill4")
-    elseif input.KeyCode == Enum.KeyCode.R then
-        fire("Ultimate")
-    elseif input.KeyCode == Enum.KeyCode.G then
-        fire("Awakening")
-    elseif input.KeyCode == Enum.KeyCode.F then
-        fire("BlockStart")
-    elseif input.KeyCode == Enum.KeyCode.LeftShift then
-        movementRemote:FireServer("SprintStart")
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.F then
-        fire("BlockEnd")
-    elseif input.KeyCode == Enum.KeyCode.LeftShift then
-        movementRemote:FireServer("SprintEnd")
     end
 end)
