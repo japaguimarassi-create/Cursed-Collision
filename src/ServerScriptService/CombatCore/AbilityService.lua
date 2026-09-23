@@ -30,14 +30,9 @@ function AbilityService.new(context: any)
     }, AbilityService)
 end
 
-local Movesets = require(ReplicatedStorage.Characters.CustomMovesets)
 
 local function moveOf(player: Player, slot: number)
-    local rawId = player:GetAttribute("CharacterId")
-    local id = if type(rawId) == "string" then rawId else "Yuji"
-    local empowered = player:GetAttribute("AwakeningActive") == true
-        or player:GetAttribute("UltimateActive") == true
-    return Movesets.GetMove(id, slot, empowered)
+    return CharacterService:GetMove(player, slot)
 end
 
 local function rootOf(player: Player): BasePart?
