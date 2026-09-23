@@ -38,6 +38,7 @@ type HUD = {
     BlockButton: TextButton,
     SprintButton: TextButton,
     SpecialButton: TextButton,
+    SetActionState: (self: HUD, action: "Block" | "Sprint", active: boolean) -> (),
     PreferredInput: Enum.PreferredInput,
     SetPreferredInput: (self: HUD, preferred: Enum.PreferredInput) -> (),
     SetVisible: (self: HUD, visible: boolean) -> (),
@@ -486,7 +487,7 @@ function HUDController.new(): HUD
     awakening.Position = UDim2.fromScale(0.615, 0.925)
     awakening.AnchorPoint = Vector2.new(0.5, 0.5)
 
-    local hud: HUD = setmetatable({
+    local hud = setmetatable({
         Gui = gui,
         Root = root,
         IdentityName = identityName,
@@ -512,7 +513,7 @@ function HUDController.new(): HUD
         SprintButton = sprint,
         SpecialButton = special,
         PreferredInput = UserInputService.PreferredInput
-    }, HUDController)
+    }, HUDController) :: HUD
 
     hud:SetPreferredInput(UserInputService.PreferredInput)
 
