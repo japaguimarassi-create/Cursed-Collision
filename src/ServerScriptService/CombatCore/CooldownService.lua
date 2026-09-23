@@ -28,7 +28,7 @@ function CooldownService:Set(player: Player, action: string, duration: number, n
     local t = now or os.clock()
     local readyAt = t + math.max(0, duration)
     self:_get(player)[action] = readyAt
-    player:SetAttribute(attrName(action), readyAt)
+    -- Atributo usa tempo sincronizado; a store interna continua usando os.clock() no servidor.\n    player:SetAttribute(attrName(action), workspace:GetServerTimeNow() + math.max(0, duration))
 end
 
 function CooldownService:Remaining(player: Player, action: string, now: number?): number
