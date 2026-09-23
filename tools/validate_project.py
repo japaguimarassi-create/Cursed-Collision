@@ -192,7 +192,7 @@ for token in ('"MenuButton"', '"AccountPanel"', '"ShopTab"', '"QuestTab"', '"Pas
         fail(f"main menu feature missing: {token}")
 
 hud_characters = read("StarterPlayer/StarterPlayerScripts/HUD/Characters.lua")
-for token in ('"CharacterButton"', '"CharacterPanel"', "CCHUD_CharacterMenuOpen"):
+for token in ('"CharacterButton"', '"CharacterPanel"', 'setMenuAttributes("Character"'):
     if token not in hud_characters:
         fail(f"character selector feature missing: {token}")
 
@@ -202,7 +202,7 @@ for token in ('"OwnerButton"', '"OwnerPanel"', "IsGameOwner"):
         fail(f"owner feature missing: {token}")
 
 hud_emotes = read("StarterPlayer/StarterPlayerScripts/HUD/Emotes.lua")
-for token in ('"EmoteButton"', '"EmoteWheel"'):
+for token in ('"EmoteButton"', '"EmoteWheel"', 'setMenuAttributes("Emote"'):
     if token not in hud_emotes:
         fail(f"emote wheel feature missing: {token}")
 
