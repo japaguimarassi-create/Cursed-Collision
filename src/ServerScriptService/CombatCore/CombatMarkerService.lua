@@ -1,5 +1,7 @@
 --!strict
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Config = require(ReplicatedStorage.Shared.Config)
 local StateManager = require(script.Parent.StateManager)
 
 local CombatMarkerService = {}
@@ -20,8 +22,8 @@ type PlayerRecords = {[string]: AttackRecord}
 
 local records: {[Player]: PlayerRecords} = {}
 
-local DEFAULT_EARLY = 0.10
-local DEFAULT_LATE = 0.18
+local DEFAULT_EARLY = Config.Combat.MarkerTiming.EarlyGrace
+local DEFAULT_LATE = math.clamp(Config.Combat.MarkerTiming.NetworkGrace, 0.18, 0.35)
 
 local function bucket(player: Player): PlayerRecords
     local result = records[player]
@@ -53,8 +55,16 @@ function CombatMarkerService:Begin(
     end
 
     local now = os.clock()
-    local early = math.clamp(tonumber(earlyWindow) or DEFAULT_EARLY, 0, 0.25)
-    local late = math.clamp(tonumber(lateWindow) or DEFAULT_LATE, 0.03, 0.35)
+    local early = math.clamp(
+        tonumber(earlyWindow) or DEFAULT_EARLY,
+        0,
+        0.15
+    )
+    local late = math.clamp(
+        tonumber(lateWindow) or DEFAULT_LATE,
+        0.08,
+        0.35
+    )
     local hitAt = now + math.max(0, hitDelay)
 
     local record: AttackRecord = {
