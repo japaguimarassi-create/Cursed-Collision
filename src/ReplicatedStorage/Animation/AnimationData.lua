@@ -326,6 +326,61 @@ local Data: {[string]: AnimationDefinition} = {
         Speed = 1,
         EnergyCost = 100
     },
+    Emote_001 = {
+        Key = "Emote_001",
+        Name = "Cursed Stride",
+        AnimationId = "",
+        Loop = true,
+        Priority = Idle,
+        Marker = nil,
+        FadeIn = 0.08,
+        FadeOut = 0.10,
+        Speed = 1
+    },
+    Emote_002 = {
+        Key = "Emote_002",
+        Name = "Void Salute",
+        AnimationId = "",
+        Loop = false,
+        Priority = Action,
+        Marker = nil,
+        FadeIn = 0.05,
+        FadeOut = 0.10,
+        Speed = 1
+    },
+    Emote_003 = {
+        Key = "Emote_003",
+        Name = "Lucky Pulse",
+        AnimationId = "",
+        Loop = true,
+        Priority = Idle,
+        Marker = nil,
+        FadeIn = 0.08,
+        FadeOut = 0.10,
+        Speed = 1
+    },
+    Emote_004 = {
+        Key = "Emote_004",
+        Name = "Menace Lean",
+        AnimationId = "",
+        Loop = true,
+        Priority = Idle,
+        Marker = nil,
+        FadeIn = 0.08,
+        FadeOut = 0.10,
+        Speed = 1
+    },
+    Emote_005 = {
+        Key = "Emote_005",
+        Name = "Victory Snap",
+        AnimationId = "",
+        Loop = false,
+        Priority = Action,
+        Marker = nil,
+        FadeIn = 0.05,
+        FadeOut = 0.12,
+        Speed = 1
+    },
     Execution = {
         Key = "Execution",
         Name = "Execution",
