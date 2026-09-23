@@ -410,7 +410,7 @@ function CharacterKit.Build(id: string)
                 stun,
                 knockback,
                 nil,
-                impactMeta(move, move.Type == "Melee" and false or false)
+                impactMeta(move, false)
             )
         end
 
