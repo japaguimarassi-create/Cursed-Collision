@@ -14,7 +14,7 @@ export type EmoteDefinition = {
 
 local Action = Enum.AnimationPriority.Action
 
-local Emotes: {[string]: EmoteDefinition} = {
+local EmoteData: {[string]: EmoteDefinition} = {
     emote_001 = {
         Id = "emote_001",
         Name = "Cursed Stride",
@@ -22,6 +22,7 @@ local Emotes: {[string]: EmoteDefinition} = {
         AnimationId = "",
         Duration = 5.6,
         Loop = true,
+        Price = 125,
         Priority = Action,
         Marker = nil,
         EnergyCost = 0
@@ -33,6 +34,7 @@ local Emotes: {[string]: EmoteDefinition} = {
         AnimationId = "",
         Duration = 2.8,
         Loop = false,
+        Price = 125,
         Priority = Action,
         Marker = nil,
         EnergyCost = 0
@@ -44,6 +46,7 @@ local Emotes: {[string]: EmoteDefinition} = {
         AnimationId = "",
         Duration = 4.2,
         Loop = true,
+        Price = 125,
         Priority = Action,
         Marker = nil,
         EnergyCost = 0
@@ -55,6 +58,7 @@ local Emotes: {[string]: EmoteDefinition} = {
         AnimationId = "",
         Duration = 3.8,
         Loop = true,
+        Price = 125,
         Priority = Action,
         Marker = nil,
         EnergyCost = 0
@@ -66,10 +70,11 @@ local Emotes: {[string]: EmoteDefinition} = {
         AnimationId = "",
         Duration = 3.1,
         Loop = false,
+        Price = 125,
         Priority = Action,
         Marker = nil,
         EnergyCost = 0
     }
 }
 
-return Emotes
+return EmoteData
