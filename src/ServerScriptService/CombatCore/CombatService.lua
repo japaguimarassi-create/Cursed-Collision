@@ -388,7 +388,9 @@ function CombatService:Special(player: Player): boolean
         end,
         "Action",
         0.10,
-        0.18
+        0.18,
+        root.Position,
+        8
     )
 
     if not armed then
