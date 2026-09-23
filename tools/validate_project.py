@@ -32,6 +32,13 @@ REQUIRED = [
     "StarterPlayer/StarterPlayerScripts/Controllers/ProceduralAnimator.lua",
     "StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua",
     "ServerScriptService/RemoteBootstrap.server.lua",
+    "ServerScriptService/EmoteServer.server.lua",
+    "ServerScriptService/GamePassServer.server.lua",
+    "ReplicatedStorage/Emotes/EmoteDefinitions.lua",
+    "ReplicatedStorage/Monetization/GamePassConfig.lua",
+    "ReplicatedStorage/Monetization/GamePassService.lua",
+    "StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua",
 ]
 
 ACTIVE = [
@@ -166,6 +173,14 @@ account_client = read("StarterPlayer/StarterPlayerScripts/AccountClient.client.l
 owner_client = read("StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua")
 cross_platform = read("StarterPlayer/StarterPlayerScripts/CrossPlatformInput.client.lua")
 remote_bootstrap = read("ServerScriptService/RemoteBootstrap.server.lua")
+emote_defs = read("ReplicatedStorage/Emotes/EmoteDefinitions.lua")
+emote_server = read("ServerScriptService/EmoteServer.server.lua")
+gamepass_config = read("ReplicatedStorage/Monetization/GamePassConfig.lua")
+gamepass_service = read("ReplicatedStorage/Monetization/GamePassService.lua")
+gamepass_server = read("ServerScriptService/GamePassServer.server.lua")
+damage_service = read("ServerScriptService/CombatCore/DamageService.lua")
+character_client = read("StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua")
+emote_client = read("StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua")
 for token in ("M1", "DASH", "BLOCK", "SPECIAL", "combatAction:FireServer", 'WaitForChild("Remotes", 30)'):
     if token not in client:
         fail(f"combat HUD/input missing expected element: {token}")
@@ -187,6 +202,34 @@ for forbidden in ("Heavy", "Dodge", "Grab", "Awaken", "Domain", "OneTime"):
 if 'RemoteService:Get()' not in remote_bootstrap:
     fail("RemoteBootstrap does not initialize server remotes")
 
+for id in ("emote_001", "emote_002", "emote_003", "emote_004", "emote_005"):
+    if id not in emote_defs:
+        fail(f"missing emote definition: {id}")
+
+for token in ('"EmoteAction"', '"EmoteEvent"', '"GamePassAction"', '"GamePassEvent"'):
+    remote = read("ReplicatedStorage/Shared/RemoteService.lua")
+    if token not in remote:
+        fail(f"remote missing: {token}")
+
+for token in ('"Start"', '"Stop"', '"SetWheel"'):
+    if token not in emote_server:
+        fail(f"emote server route missing: {token}")
+
+for token in ("UltimateSkin", "KillSound", "InstantSkin"):
+    if token not in gamepass_config or token not in gamepass_service:
+        fail(f"gamepass definition/service missing: {token}")
+
+if "GP_KillSound" not in gamepass_service or "NotifyKill" not in damage_service:
+    fail("kill sound pass is not connected to confirmed kills")
+
+for token in ('"CharacterButton"', '"CharacterPanel"', "CCHUD_CharacterMenuOpen"):
+    if token not in character_client:
+        fail(f"character selection UI token missing: {token}")
+
+for token in ('"EmoteButton"', '"EmoteWheel"', "CCHUD_EmoteWheelOpen"):
+    if token not in emote_client:
+        fail(f"emote UI token missing: {token}")
+
 for relative in ACTIVE:
     source = read(relative)
     for forbidden in FORBIDDEN_ACTIONS:
@@ -202,6 +245,9 @@ print(f"PASS: {len(CHARACTERS)} character modules are present and explicitly bou
 print("PASS: active combat surface is M1 + Dash + Block + Special + Skill1..4")
 print("PASS: server-authoritative hitbox, damage, stun, cooldown and dash protection detected")
 print("PASS: procedural Motor6D animation controller detected")
+print("PASS: five original emotes and server emote routing detected")
+print("PASS: three configurable gamepass systems are present")
+print("PASS: dedicated character selection and emote wheel UIs detected")
 print("PASS: combat HUD, main menu and Owner UI are isolated")
 print("PASS: Owner UI is server-authorized and not embedded in the main menu")
 print("PASS: mobile/gamepad action routes match the active NetworkService")

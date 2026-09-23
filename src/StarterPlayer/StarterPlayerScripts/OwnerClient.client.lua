@@ -90,7 +90,7 @@ local function button(parent: Instance, name: string, textValue: string, size: U
     return b
 end
 
-local ownerButton = button(gui, "OwnerButton", "OWNER", UDim2.fromScale(0.105, 0.06), UDim2.fromScale(0.755, 0.022))
+local ownerButton = button(gui, "OwnerButton", "OWNER", UDim2.fromScale(0.105, 0.06), UDim2.fromScale(0.635, 0.022))
 ownerButton.TextColor3 = accent
 ownerButton.Visible = false
 
@@ -318,12 +318,28 @@ local function setMenuOpen(open: boolean)
     end
 end
 
-local function closeMainMenu()
+local function closeOtherInterfaces()
     local accountGui = playerGui:FindFirstChild("CursedCollisionAccountUI")
     local accountPanel = accountGui and accountGui:FindFirstChild("AccountPanel")
     if accountPanel and accountPanel:IsA("GuiObject") then
         accountPanel.Visible = false
     end
+
+    local characterGui = playerGui:FindFirstChild("CursedCollisionCharacterUI")
+    local characterPanel = characterGui and characterGui:FindFirstChild("CharacterPanel")
+    if characterPanel and characterPanel:IsA("GuiObject") then
+        characterPanel.Visible = false
+    end
+
+    local emoteGui = playerGui:FindFirstChild("CursedCollisionEmoteUI")
+    local emoteRoot = emoteGui and emoteGui:FindFirstChild("Root")
+    local emoteWheel = emoteRoot and emoteRoot:FindFirstChild("EmoteWheel")
+    if emoteWheel and emoteWheel:IsA("GuiObject") then
+        emoteWheel.Visible = false
+    end
+
+    player:SetAttribute("CCHUD_CharacterMenuOpen", false)
+    player:SetAttribute("CCHUD_EmoteWheelOpen", false)
 end
 
 local function toggle()
@@ -338,7 +354,7 @@ local function toggle()
         return
     end
 
-    closeMainMenu()
+    closeOtherInterfaces()
     setMenuOpen(true)
     accountAction:FireServer("SyncOwner", {})
     panelScale.Scale = 0.96

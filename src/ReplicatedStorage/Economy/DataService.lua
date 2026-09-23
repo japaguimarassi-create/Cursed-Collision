@@ -2,18 +2,31 @@ local DataStoreService = game:GetService("DataStoreService")
 
 local DataService = {}
 
-local STORE = DataStoreService:GetDataStore("CursedCollisionPlayerData_v2")
+local STORE = DataStoreService:GetDataStore("CursedCollisionPlayerData_v3")
 local sessions = {}
 local dirty = {}
 local ready = {}
 
 local DEFAULT = {
-    Version = 2,
+    Version = 3,
     Credits = 0,
-    OwnedEmotes = {emote_001 = true},
+    OwnedEmotes = {
+        emote_001 = true,
+        emote_002 = true,
+        emote_003 = true,
+        emote_004 = true,
+        emote_005 = true
+    },
+    EmoteWheel = {
+        "emote_001",
+        "emote_002",
+        "emote_003",
+        "emote_004",
+        "emote_005"
+    },
     OwnedSkins = {},
-    EquippedEmote = "emote_001",
     EquippedSkin = "",
+    UltimateSkin = "",
     DailyProgress = {},
     WeeklyProgress = {},
     GeneralProgress = {},
@@ -49,7 +62,13 @@ local function normalize(raw)
     end
 
     data.Credits = math.max(0, math.floor(tonumber(data.Credits) or DEFAULT.Credits))
-    data.Version = 2
+    if type(data.OwnedEmotes) ~= "table" then
+        data.OwnedEmotes = deepCopy(DEFAULT.OwnedEmotes)
+    end
+    if type(data.EmoteWheel) ~= "table" or #data.EmoteWheel < 5 then
+        data.EmoteWheel = deepCopy(DEFAULT.EmoteWheel)
+    end
+    data.Version = 3
     return data
 end
 
@@ -82,6 +101,8 @@ function DataService:Initialize(player)
 
     player:SetAttribute("DataReady", success)
     player:SetAttribute("Credits", data.Credits)
+    player:SetAttribute("EquippedSkin", data.EquippedSkin)
+    player:SetAttribute("UltimateSkin", data.UltimateSkin)
 
     local leaderstats = player:FindFirstChild("leaderstats")
     if not leaderstats then
@@ -151,6 +172,19 @@ function DataService:SpendCredits(player, amount)
     end
 
     return self:SetCredits(player, data.Credits - amount)
+end
+
+function DataService:SetUltimateSkin(player, skinId)
+    local data = sessions[player]
+
+    if not data or type(skinId) ~= "string" or #skinId > 96 then
+        return false
+    end
+
+    data.UltimateSkin = skinId
+    player:SetAttribute("UltimateSkin", skinId)
+    dirty[player] = true
+    return true
 end
 
 function DataService:Save(player)
