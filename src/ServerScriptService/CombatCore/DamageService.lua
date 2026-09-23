@@ -65,7 +65,7 @@ function DamageService:Apply(
     local now = os.clock()
 
     if targetPlayer then
-        local targetState = StateManager:Get(targetPlayer)
+        local targetState: any = StateManager:Get(targetPlayer)
 
         if targetState then
             if targetState.InvulnerableUntil > now
@@ -76,7 +76,7 @@ function DamageService:Apply(
 
             if targetState.Blocking and not meta.guardBreak then
                 if targetState.PerfectBlockUntil > now then
-                    local attackerState = StateManager:Get(attacker)
+                    local attackerState: any = StateManager:Get(attacker)
                     if attackerState then
                         StateManager:SetStun(
                             attacker,
