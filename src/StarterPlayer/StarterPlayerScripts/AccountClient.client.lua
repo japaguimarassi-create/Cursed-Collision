@@ -519,6 +519,16 @@ gamePassEvent.OnClientEvent:Connect(function(event, payload)
         showToast(tostring(payload and payload.Reason or "GamePass update"), success)
         gamePassAction:FireServer("Sync", {})
         accountAction:FireServer("Sync", {})
+    elseif event == "KillSound" then
+        local soundId = tostring(payload and payload.SoundId or "")
+        if soundId ~= "" then
+            local sound = Instance.new("Sound")
+            sound.SoundId = soundId
+            sound.Volume = math.clamp(tonumber(payload and payload.Volume) or 1, 0, 3)
+            sound.Parent = workspace
+            sound:Play()
+            Debris:AddItem(sound, 5)
+        end
     end
 end)
 
