@@ -26,6 +26,7 @@ local DEFAULT = {
     },
     OwnedSkins = {},
     EquippedSkin = "",
+    UltimateSkin = "",
     DailyProgress = {},
     WeeklyProgress = {},
     GeneralProgress = {},
@@ -100,6 +101,8 @@ function DataService:Initialize(player)
 
     player:SetAttribute("DataReady", success)
     player:SetAttribute("Credits", data.Credits)
+    player:SetAttribute("EquippedSkin", data.EquippedSkin)
+    player:SetAttribute("UltimateSkin", data.UltimateSkin)
 
     local leaderstats = player:FindFirstChild("leaderstats")
     if not leaderstats then
@@ -169,6 +172,19 @@ function DataService:SpendCredits(player, amount)
     end
 
     return self:SetCredits(player, data.Credits - amount)
+end
+
+function DataService:SetUltimateSkin(player, skinId)
+    local data = sessions[player]
+
+    if not data or type(skinId) ~= "string" or #skinId > 96 then
+        return false
+    end
+
+    data.UltimateSkin = skinId
+    player:SetAttribute("UltimateSkin", skinId)
+    dirty[player] = true
+    return true
 end
 
 function DataService:Save(player)
