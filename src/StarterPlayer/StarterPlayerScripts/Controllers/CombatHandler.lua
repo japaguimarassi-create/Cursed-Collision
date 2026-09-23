@@ -48,29 +48,13 @@ end
 local function markerRequest(
     model: Model,
     attackId: string?,
-    fallbackDelay: number,
+    _fallbackDelay: number,
     combatAction: RemoteEvent
 )
     if not attackId or model ~= player.Character then
         return
     end
 
-    local fired = false
-
-    local function fireServer()
-        if fired then
-            return
-        end
-
-        fired = true
-        combatAction:FireServer("M1Hit", {
-            attackId = attackId
-        })
-    end
-
-    task.delay(math.max(0.01, fallbackDelay), fireServer)
-
-    return fireServer
 end
 
 local function playAttack(
