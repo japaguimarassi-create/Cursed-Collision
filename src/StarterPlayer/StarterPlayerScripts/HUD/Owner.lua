@@ -114,7 +114,7 @@ function M.Start()
 
     local function send(action: string, payload: {[string]: any}?)
         local data = {} :: {[string]: any}
-        if payload then
+        if payload ~= nil then
             for key, value in pairs(payload) do
                 data[key] = value
             end
