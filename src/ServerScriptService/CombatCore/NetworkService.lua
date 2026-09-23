@@ -12,7 +12,9 @@ local ACTIONS = {
     Skill2 = true,
     Skill3 = true,
     Skill4 = true,
-    SelectCharacter = true
+    SelectCharacter = true,
+    Ultimate = true,
+    Awakening = true
 }
 
 function NetworkService:IsKnownAction(action: any): boolean
@@ -45,6 +47,10 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
 
     if action == "SelectCharacter" then
         return type(payload) == "string" and #payload <= 32
+    end
+
+    if action == "Ultimate" or action == "Awakening" then
+        return payload == nil
     end
 
     return false
