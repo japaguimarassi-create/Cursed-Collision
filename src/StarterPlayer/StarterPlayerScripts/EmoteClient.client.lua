@@ -296,11 +296,36 @@ local function menuBlocked()
         or player:GetAttribute("CCHUD_OwnerPanelOpen") == true
 end
 
+local function closeOtherInterfaces()
+    local accountGui = playerGui:FindFirstChild("CursedCollisionAccountUI")
+    local accountPanel = accountGui and accountGui:FindFirstChild("AccountPanel")
+    if accountPanel and accountPanel:IsA("GuiObject") then
+        accountPanel.Visible = false
+    end
+
+    local characterGui = playerGui:FindFirstChild("CursedCollisionCharacterUI")
+    local characterPanel = characterGui and characterGui:FindFirstChild("CharacterPanel")
+    if characterPanel and characterPanel:IsA("GuiObject") then
+        characterPanel.Visible = false
+    end
+
+    local ownerGui = playerGui:FindFirstChild("CursedCollisionOwnerUI")
+    local ownerPanel = ownerGui and ownerGui:FindFirstChild("OwnerPanel")
+    if ownerPanel and ownerPanel:IsA("GuiObject") then
+        ownerPanel.Visible = false
+    end
+
+    player:SetAttribute("CCHUD_MenuOpen", false)
+    player:SetAttribute("CCHUD_CharacterMenuOpen", false)
+    player:SetAttribute("CCHUD_OwnerPanelOpen", false)
+end
+
 local function openWheel()
     if menuBlocked() then
         return
     end
 
+    closeOtherInterfaces()
     backdrop.Visible = true
     wheel.Visible = true
     player:SetAttribute("CCHUD_EmoteWheelOpen", true)
