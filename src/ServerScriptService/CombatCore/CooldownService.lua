@@ -3,9 +3,13 @@
 local CooldownService = {}
 CooldownService.__index = CooldownService
 
-local store = setmetatable({}, {__mode = "k"})
+local store: {[Player]: {[string]: number}} = setmetatable({}, {__mode = "k"}) :: any
 
-function CooldownService:_get(player: Player)
+local function attrName(action: string): string
+    return "CooldownUntil_" .. action
+end
+
+function CooldownService:_get(player: Player): {[string]: number}
     local bucket = store[player]
     if not bucket then
         bucket = {}
@@ -21,8 +25,10 @@ function CooldownService:Ready(player: Player, action: string, now: number?): bo
 end
 
 function CooldownService:Set(player: Player, action: string, duration: number, now: number?)
-    local bucket = self:_get(player)
-    bucket[action] = (now or os.clock()) + math.max(0, duration)
+    local t = now or os.clock()
+    local readyAt = t + math.max(0, duration)
+    self:_get(player)[action] = readyAt
+    player:SetAttribute(attrName(action), readyAt)
 end
 
 function CooldownService:Remaining(player: Player, action: string, now: number?): number
@@ -33,6 +39,9 @@ end
 
 function CooldownService:Clear(player: Player)
     store[player] = nil
+    for _, action in ipairs({"M1", "Dash", "Special", "Skill1", "Skill2", "Skill3", "Skill4"}) do
+        player:SetAttribute(attrName(action), 0)
+    end
 end
 
 return CooldownService
