@@ -194,12 +194,18 @@ end
 local tabShop = Theme.Button(tabs, "Shop", "SHOP", UDim2.fromScale(0.23, 0.86), UDim2.new(), 54)
 local tabMissions = Theme.Button(tabs, "Missions", "MISSIONS", UDim2.fromScale(0.25, 0.86), UDim2.new(), 54)
 local tabPasses = Theme.Button(tabs, "Passes", "PASSES", UDim2.fromScale(0.20, 0.86), UDim2.new(), 54)
-local tabPlayers = Theme.Button(tabs, "Players", "PLAYERS", UDim2.fromScale(0.25, 0.86), UDim2.new(), 54)
+local tabPlayers = Theme.Button(tabs, "Players", "PLAYERS", UDim2.fromScale(0.20, 0.86), UDim2.new(), 54)
+local tabSettings = Theme.Button(tabs, "Settings", "SETTINGS", UDim2.fromScale(0.20, 0.86), UDim2.new(), 54)
 
 tabShop.Activated:Connect(function() state.Tab = "Shop"; render() end)
 tabMissions.Activated:Connect(function() state.Tab = "Missions"; render() end)
 tabPasses.Activated:Connect(function() state.Tab = "Passes"; render() end)
 tabPlayers.Activated:Connect(function() state.Tab = "Players"; render() end)
+
+tabSettings.Activated:Connect(function()
+    closeMenu()
+    player:SetAttribute("CCHUD_SettingsOpen", true)
+end)
 
 local function closeMenu()
     panel.Visible = false
