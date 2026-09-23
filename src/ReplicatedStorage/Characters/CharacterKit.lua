@@ -318,10 +318,6 @@ function CharacterKit.Build(id: string)
         elseif id == "Megumi" then
             local modes = {"Divine Dog", "Nue", "Max Elephant", "Totality"}
             vars.TenShadowsMode = modes[math.clamp(slot, 1, #modes)]
-            vars.ShadowCharge = math.min(
-                100,
-                (tonumber(vars.ShadowCharge) or 0) + 18
-            )
             damage += (tonumber(vars.ShadowCharge) or 0) * 0.04
         end
 
@@ -342,6 +338,10 @@ function CharacterKit.Build(id: string)
             )
             sync(player, {Momentum = vars.Momentum})
         elseif success and id == "Megumi" then
+            vars.ShadowCharge = math.min(
+                100,
+                (tonumber(vars.ShadowCharge) or 0) + 18
+            )
             sync(player, {ShadowCharge = vars.ShadowCharge})
         end
 
@@ -361,12 +361,9 @@ function CharacterKit.Build(id: string)
             damage = isAwake and 52 or 42
 
             -- Janela curta de amplificação para representar o timing de Black Flash.
-            vars.BlackFlashWindowUntil = os.clock() + 0.16
+            damage += math.min(8, tonumber(vars.Momentum) or 0) * 2.5
             vars.Momentum = 0
-            sync(player, {
-                BlackFlashWindowUntil = vars.BlackFlashWindowUntil,
-                Momentum = 0
-            })
+            sync(player, {Momentum = 0})
 
         elseif id == "Gojo" then
             move = Movesets.GetMove(id, isAwake and 1 or 1, isAwake)
