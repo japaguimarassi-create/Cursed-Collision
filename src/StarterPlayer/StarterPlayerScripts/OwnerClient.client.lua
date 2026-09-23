@@ -1,24 +1,14 @@
 --!strict
 
--- Este LocalScript é apenas um ponto de entrada isolado.
--- Uma falha deste componente não impede os demais módulos do HUD de iniciarem.
-
-local ok, moduleOrError = pcall(function()
-    return require(script.Parent.HUD.Owner)
+-- Entrada independente do componente Owner do HUD.
+local success = pcall(function()
+    local module = require(script.Parent.HUD.Owner)
+    if type(module.Start) ~= "function" then
+        error("HUD module Owner has no Start()")
+    end
+    module.Start()
 end)
 
-if not ok then
-    warn("[CursedCollision][HUD:Owner] startup failed:", moduleOrError)
-    return
-end
-
-local starter = moduleOrError.Start
-if type(starter) ~= "function" then
-    warn("[CursedCollision][HUD:Owner] module has no Start()")
-    return
-end
-
-local success, err = xpcall(starter, debug.traceback)
 if not success then
-    warn("[CursedCollision][HUD:Owner] runtime failed:", err)
+    warn("[CursedCollision][HUD:Owner] component failed to start")
 end
