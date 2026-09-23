@@ -176,9 +176,10 @@ function CombatService:M1Hit(player: Player, attackId: string): boolean
 
     attack.hitConfirmed = true
 
+    local offset = tonumber(attack.offset) or 0
     local target = HitboxService:TargetsInBox(
         player,
-        root.CFrame + root.CFrame.LookVector * tonumber(attack.offset),
+        root.CFrame + root.CFrame.LookVector * offset,
         attack.hitbox,
         32
     )[1]
