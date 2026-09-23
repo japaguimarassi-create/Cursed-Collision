@@ -70,15 +70,13 @@ local function fire(action: string, payload: any?)
         return
     end
 
-    if action ~= "BlockStart"
-        and action ~= "BlockEnd"
-        and remaining(action) > 0 then
+    local isBlockAction = action == "BlockStart" or action == "BlockEnd"
+
+    if not isBlockAction and remaining(action) > 0 then
         return
     end
 
-    local cooldown = if action == "BlockStart" or action == "BlockEnd"
-        then 0
-        else moveCooldown(action)
+    local cooldown = if isBlockAction then 0 else moveCooldown(action)
 
     if cooldown > 0 then
         localCooldowns[action] = os.clock() + cooldown
