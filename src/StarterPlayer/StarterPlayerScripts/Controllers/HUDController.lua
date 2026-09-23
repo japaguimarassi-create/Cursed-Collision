@@ -37,7 +37,22 @@ type HUD = {
     DashButton: TextButton,
     BlockButton: TextButton,
     SprintButton: TextButton,
-    SpecialButton: TextButton
+    SpecialButton: TextButton,
+    PreferredInput: Enum.PreferredInput,
+    SetPreferredInput: (self: HUD, preferred: Enum.PreferredInput) -> (),
+    SetVisible: (self: HUD, visible: boolean) -> (),
+    UpdateCharacter: (self: HUD, name: string, subtitle: string, moves: {[number]: any}) -> (),
+    UpdateHealth: (self: HUD, health: number, maxHealth: number) -> (),
+    UpdateState: (self: HUD, state: string) -> (),
+    SetTarget: (self: HUD, targetName: string?) -> (),
+    SetDomain: (self: HUD, domainName: string?) -> (),
+    ShowCombo: (self: HUD, count: number) -> (),
+    Notify: (self: HUD, textValue: string) -> (),
+    ClearNotification: (self: HUD) -> (),
+    UpdatePower: (self: HUD, ultimate: number, awakening: number, ultimateReady: boolean, awakeningReady: boolean) -> (),
+    SetCooldown: (self: HUD, slot: number, remaining: number, total: number) -> (),
+    SetBlocking: (self: HUD, active: boolean) -> (),
+    SetSprinting: (self: HUD, active: boolean) -> ()
 }
 
 local function corner(object: GuiObject, radius: number)
@@ -495,7 +510,8 @@ function HUDController.new(): HUD
         DashButton = dash,
         BlockButton = block,
         SprintButton = sprint,
-        SpecialButton = special
+        SpecialButton = special,
+        PreferredInput = UserInputService.PreferredInput
     }, HUDController)
 
     hud:SetPreferredInput(UserInputService.PreferredInput)
@@ -508,6 +524,7 @@ function HUDController.new(): HUD
 end
 
 function HUDController:SetPreferredInput(self: HUD, preferred: Enum.PreferredInput)
+    self.PreferredInput = preferred
     local preset
 
     if preferred == Enum.PreferredInput.Gamepad then
