@@ -10,7 +10,6 @@ local RagdollService: any = require(script.Parent.RagdollService)
 local GamePassService: any = require(ReplicatedStorage.Monetization.GamePassService)
 local UltimateService: any = require(script.Parent.UltimateService)
 local EmoteService: any = require(script.Parent.EmoteService)
-local EmoteService = require(script.Parent.EmoteService)
 
 local DamageService = {}
 local context: any = nil
