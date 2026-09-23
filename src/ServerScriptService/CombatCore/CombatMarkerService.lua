@@ -1,5 +1,7 @@
 --!strict
 
+local StateManager = require(script.Parent.StateManager)
+
 local CombatMarkerService = {}
 CombatMarkerService.__index = CombatMarkerService
 
@@ -94,12 +96,6 @@ function CombatMarkerService:Resolve(player: Player, attackId: string): boolean
         return false
     end
 
-    local stateModule = script.Parent:FindFirstChild("StateManager")
-    if not stateModule then
-        return false
-    end
-
-    local StateManager = require(stateModule)
     local state = StateManager:Get(player)
 
     if not state or state.AbilityToken ~= record.Token and state.ActionToken ~= record.Token then
