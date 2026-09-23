@@ -1,78 +1,74 @@
 --!strict
 
-export type EmoteData = {
+export type EmoteDefinition = {
     Id: string,
     Name: string,
     Category: string,
-    AnimationId: string?,
-    SoundId: string?,
-    VFX: string?,
+    AnimationId: string,
     Duration: number,
     Loop: boolean,
-    Price: number,
-    Accent: Color3
+    Priority: Enum.AnimationPriority,
+    Marker: string?,
+    EnergyCost: number
 }
 
-local Emotes: {[string]: EmoteData} = {
+local Action = Enum.AnimationPriority.Action
+
+local Emotes: {[string]: EmoteDefinition} = {
     emote_001 = {
         Id = "emote_001",
         Name = "Cursed Stride",
         Category = "Traversal",
-        AnimationId = nil,
-        SoundId = nil,
-        VFX = nil,
+        AnimationId = "",
         Duration = 5.6,
         Loop = true,
-        Price = 125,
-        Accent = Color3.fromRGB(151, 103, 255)
+        Priority = Action,
+        Marker = nil,
+        EnergyCost = 0
     },
     emote_002 = {
         Id = "emote_002",
         Name = "Void Salute",
         Category = "Stationary",
-        AnimationId = nil,
-        SoundId = nil,
-        VFX = nil,
+        AnimationId = "",
         Duration = 2.8,
         Loop = false,
-        Price = 125,
-        Accent = Color3.fromRGB(104, 190, 255)
+        Priority = Action,
+        Marker = nil,
+        EnergyCost = 0
     },
     emote_003 = {
         Id = "emote_003",
         Name = "Lucky Pulse",
         Category = "Celebration",
-        AnimationId = nil,
-        SoundId = nil,
-        VFX = nil,
+        AnimationId = "",
         Duration = 4.2,
         Loop = true,
-        Price = 125,
-        Accent = Color3.fromRGB(104, 222, 148)
+        Priority = Action,
+        Marker = nil,
+        EnergyCost = 0
     },
     emote_004 = {
         Id = "emote_004",
         Name = "Menace Lean",
         Category = "Taunt",
-        AnimationId = nil,
-        SoundId = nil,
-        VFX = nil,
+        AnimationId = "",
         Duration = 3.8,
         Loop = true,
-        Price = 125,
-        Accent = Color3.fromRGB(255, 110, 129)
+        Priority = Action,
+        Marker = nil,
+        EnergyCost = 0
     },
     emote_005 = {
         Id = "emote_005",
         Name = "Victory Snap",
         Category = "Victory",
-        AnimationId = nil,
-        SoundId = nil,
-        VFX = nil,
+        AnimationId = "",
         Duration = 3.1,
         Loop = false,
-        Price = 125,
-        Accent = Color3.fromRGB(255, 210, 92)
+        Priority = Action,
+        Marker = nil,
+        EnergyCost = 0
     }
 }
 
