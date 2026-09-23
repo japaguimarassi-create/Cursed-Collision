@@ -96,11 +96,39 @@ function M.Start()
     content.BackgroundTransparency = 1
     content.Parent = panel
 
-    local state = {
+    type Quest = {[string]: any}
+    type MenuState = {
+        activeTab: "Shop" | "Quests" | "Passes",
+        economy: {
+            Credits: number,
+            OwnedSkins: {[string]: boolean},
+            EquippedSkin: string
+        },
+        quests: {
+            Daily: {Quest},
+            Weekly: {Quest},
+            General: {Quest}
+        },
+        passes: {[string]: boolean}
+    }
+
+    local state: MenuState = {
         activeTab = "Shop",
-        economy = {Credits = 0, OwnedSkins = {}, EquippedSkin = ""},
-        quests = {Daily = {}, Weekly = {}, General = {}},
-        passes = {UltimateSkin = false, KillSound = false, InstantSkin = false}
+        economy = {
+            Credits = 0,
+            OwnedSkins = {},
+            EquippedSkin = ""
+        },
+        quests = {
+            Daily = {},
+            Weekly = {},
+            General = {}
+        },
+        passes = {
+            UltimateSkin = false,
+            KillSound = false,
+            InstantSkin = false
+        }
     }
 
     local function clear()
@@ -186,7 +214,7 @@ function M.Start()
         local scroll = list()
         local order = 0
 
-        local sections = {
+        local sections: {{string, {Quest}}} = {
             {"DAILY", state.quests.Daily},
             {"WEEKLY", state.quests.Weekly},
             {"MASTERY", state.quests.General}
@@ -199,7 +227,7 @@ function M.Start()
             header.TextColor3 = colors.Accent2
             header.TextXAlignment = Enum.TextXAlignment.Left
 
-            for _, quest in ipairs(section[2] or {}) do
+            for _, quest in ipairs(section[2]) do
                 order += 1
                 questCard(scroll, quest, order)
             end
