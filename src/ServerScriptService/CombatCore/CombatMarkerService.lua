@@ -11,6 +11,8 @@ export type AttackRecord = {
     AttackId: string,
     Token: number,
     Kind: "Action" | "Ability",
+    Origin: Vector3?,
+    MaxTravel: number,
     EarlyAt: number,
     HitAt: number,
     ExpiresAt: number,
@@ -42,7 +44,9 @@ function CombatMarkerService:Begin(
     callback: () -> (),
     kind: "Action" | "Ability",
     earlyWindow: number?,
-    lateWindow: number?
+    lateWindow: number?,
+    origin: Vector3?,
+    maxTravel: number?
 ): boolean
     if attackId == "" or type(callback) ~= "function" then
         return false
@@ -71,6 +75,8 @@ function CombatMarkerService:Begin(
         AttackId = attackId,
         Token = token,
         Kind = kind,
+        Origin = origin,
+        MaxTravel = math.clamp(tonumber(maxTravel) or 18, 4, 40),
         EarlyAt = hitAt - early,
         HitAt = hitAt,
         ExpiresAt = hitAt + late,
