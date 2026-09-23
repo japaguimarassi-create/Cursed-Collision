@@ -145,6 +145,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
 
             CharacterService:SkillSlot(player, slot)
         end,
+        "Ability",
         0.10,
         0.18
     )
