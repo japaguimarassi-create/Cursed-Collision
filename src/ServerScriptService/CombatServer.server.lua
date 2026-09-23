@@ -15,6 +15,7 @@ local DamageService = require(script.Parent.CombatCore.DamageService)
 local CombatService = require(script.Parent.CombatCore.CombatService)
 local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
+local UltimateService = require(script.Parent.CombatCore.UltimateService)
 
 local remotes = RemoteService:Get()
 local activePlayers: {[Player]: boolean} = {}
@@ -74,6 +75,7 @@ local function setupPlayer(player: Player)
     player:SetAttribute("Blocking", false)
 
     CharacterService:Initialize(player)
+    UltimateService:Init(player)
 
     player.CharacterAdded:Connect(function()
         task.defer(function()
@@ -84,6 +86,7 @@ local function setupPlayer(player: Player)
             player:SetAttribute("Blocking", false)
 
             CharacterService:Initialize(player)
+            UltimateService:Init(player)
 
             local humanoid = player.Character
                 and player.Character:FindFirstChildOfClass("Humanoid")
@@ -131,6 +134,10 @@ local function handle(player: Player, action: any, payload: any)
         combat:SkillSlot(player, 4)
     elseif action == "SelectCharacter" then
         CharacterService:Select(player, payload)
+    elseif action == "Ultimate" then
+        UltimateService:Activate(player, "Ultimate")
+    elseif action == "Awakening" then
+        UltimateService:Activate(player, "Awakening")
     end
 end
 
@@ -144,6 +151,7 @@ Players.PlayerAdded:Connect(setupPlayer)
 
 Players.PlayerRemoving:Connect(function(player)
     CooldownService:Clear(player)
+    HitRegistry:Clear(player)
     AntiExploitService:Clear(player)
     StateManager:Clear(player)
     activePlayers[player] = nil
