@@ -70,9 +70,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
         or state.Blocking
         or state.RecoveryUntil > now
         or state.Phase == "Attacking"
-        or state.Phase == "Dashing"
-        or state.Phase == "Ultimate"
-        or state.Phase == "Awakening" then
+        or state.Phase == "Dashing" then
         return false
     end
 
