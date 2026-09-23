@@ -28,22 +28,31 @@ local function normalizeId(id: string): string?
     return nil
 end
 
-local function getAnimation(definition: any): Animation?
-    local assetId = normalizeId(tostring(definition.AnimationId or ""))
+local function getAnimation(cacheKey: string, rawId: string): Animation?
+    local assetId = normalizeId(rawId)
     if not assetId then
         return nil
     end
 
-    local cached = animations[definition.Key]
-    if cached then
+    local cached = animations[cacheKey]
+    if cached and cached.Parent then
         return cached
     end
 
     local animation = Instance.new("Animation")
-    animation.Name = "CC_Animation_" .. definition.Key
+    animation.Name = "CC_Animation_" .. cacheKey
     animation.AnimationId = assetId
-    animations[definition.Key] = animation
+    animations[cacheKey] = animation
     return animation
+end
+
+local function bucketFor(animator: Animator): TrackCache
+    local bucket = tracks[animator]
+    if not bucket then
+        bucket = {}
+        tracks[animator] = bucket
+    end
+    return bucket
 end
 
 function AnimationCache:GetTrack(animator: Animator, key: string): AnimationTrack?
@@ -52,18 +61,14 @@ function AnimationCache:GetTrack(animator: Animator, key: string): AnimationTrac
         return nil
     end
 
-    local animatorTracks = tracks[animator]
-    if not animatorTracks then
-        animatorTracks = {}
-        tracks[animator] = animatorTracks
-    end
+    local bucket = bucketFor(animator)
+    local cached = bucket[key]
 
-    local cached = animatorTracks[key]
     if cached and cached.Parent then
         return cached
     end
 
-    local animation = getAnimation(definition)
+    local animation = getAnimation(definition.Key, definition.AnimationId)
     if not animation then
         return nil
     end
@@ -71,8 +76,38 @@ function AnimationCache:GetTrack(animator: Animator, key: string): AnimationTrac
     local track = animator:LoadAnimation(animation)
     track.Looped = definition.Loop
     track.Priority = definition.Priority
-    animatorTracks[key] = track
+    bucket[key] = track
+    return track
+end
 
+function AnimationCache:GetTrackForId(
+    animator: Animator,
+    cacheKey: string,
+    animationId: string,
+    looped: boolean,
+    priority: Enum.AnimationPriority
+): AnimationTrack?
+    local normalized = normalizeId(animationId)
+    if not normalized then
+        return nil
+    end
+
+    local bucket = bucketFor(animator)
+    local cached = bucket[cacheKey]
+
+    if cached and cached.Parent then
+        return cached
+    end
+
+    local animation = getAnimation(cacheKey, normalized)
+    if not animation then
+        return nil
+    end
+
+    local track = animator:LoadAnimation(animation)
+    track.Looped = looped
+    track.Priority = priority
+    bucket[cacheKey] = track
     return track
 end
 
@@ -97,9 +132,35 @@ function AnimationCache:Play(
     return track
 end
 
+function AnimationCache:PlayExternal(
+    animator: Animator,
+    cacheKey: string,
+    animationId: string,
+    looped: boolean,
+    priority: Enum.AnimationPriority,
+    fadeIn: number,
+    speed: number
+): AnimationTrack?
+    local track = self:GetTrackForId(
+        animator,
+        cacheKey,
+        animationId,
+        looped,
+        priority
+    )
+
+    if not track then
+        return nil
+    end
+
+    track:Play(math.max(0, fadeIn), 1, speed)
+    return track
+end
+
 function AnimationCache:Stop(animator: Animator, key: string, fade: number?)
-    local animatorTracks = tracks[animator]
-    local track = animatorTracks and animatorTracks[key]
+    local bucket = tracks[animator]
+    local track = bucket and bucket[key]
+
     if track and track.IsPlaying then
         local definition = AnimationData[key]
         track:Stop(fade or (definition and definition.FadeOut or 0.06))
@@ -107,15 +168,17 @@ function AnimationCache:Stop(animator: Animator, key: string, fade: number?)
 end
 
 function AnimationCache:StopAll(animator: Animator, fade: number?)
-    local animatorTracks = tracks[animator]
-    if not animatorTracks then
+    local bucket = tracks[animator]
+    if not bucket then
         return
     end
 
-    for key, track in pairs(animatorTracks) do
+    for key, track in pairs(bucket) do
         if track.IsPlaying then
             local definition = AnimationData[key]
-            track:Stop(fade or (definition and definition.FadeOut or 0.06))
+            track:Stop(
+                fade or (definition and definition.FadeOut or 0.06)
+            )
         end
     end
 end
