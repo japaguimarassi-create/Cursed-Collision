@@ -92,6 +92,17 @@ local function playMarkerAttack(
 
     local track = AnimationCache:GetTrack(animator, key)
     if not track then
+        -- Fallback visual: mantém o combate apresentável enquanto os assets
+        -- publicados ainda não estão configurados.
+        AnimationController:Play(
+            model,
+            key,
+            {
+                move = key,
+                attackId = attackId
+            }
+        )
+
         fallbackHit(
             attackId,
             token,
