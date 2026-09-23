@@ -146,7 +146,9 @@ function DamageService:Apply(
     if targetPlayer then
         EmoteService:Stop(targetPlayer)
     end
-    UltimateService:AddMeter(attacker, amount)
+    if meta.noAwakeningMeter ~= true then
+        UltimateService:AddMeter(attacker, amount)
+    end
 
     local root = targetModel:FindFirstChild("HumanoidRootPart")
     if root and root:IsA("BasePart") then
@@ -218,7 +220,9 @@ function DamageService:Apply(
             attacker = attacker.Character
         })
 
-        GamePassService:NotifyKill(attacker)
+        if meta.noKillCredit ~= true then
+            GamePassService:NotifyKill(attacker)
+        end
     end
 
     return true
