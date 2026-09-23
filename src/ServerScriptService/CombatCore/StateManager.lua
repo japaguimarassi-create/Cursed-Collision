@@ -57,7 +57,10 @@ local function syncCharacter(player: Player, state: State, now: number)
 
     character:SetAttribute("CombatState", state.Phase)
     character:SetAttribute("Blocking", state.Blocking)
-    character:SetAttribute("IsAttacking", state.Phase == "Attacking" or state.Phase == "UsingAbility")
+    character:SetAttribute("IsAttacking", state.Phase == "Attacking"
+        or state.Phase == "UsingAbility"
+        or state.Phase == "Ultimate"
+        or state.Phase == "Awakening")
     character:SetAttribute("Stunned", state.StunnedUntil > now or state.Phase == "Stunned")
     character:SetAttribute("Ragdolled", state.RagdollUntil > now or state.Phase == "Ragdolled")
     character:SetAttribute("Invulnerable", state.InvulnerableUntil > now)
@@ -97,7 +100,10 @@ function StateManager:Sync(player: Player)
 
     player:SetAttribute("CombatState", state.Phase)
     player:SetAttribute("Blocking", state.Blocking)
-    player:SetAttribute("IsAttacking", state.Phase == "Attacking" or state.Phase == "UsingAbility")
+    player:SetAttribute("IsAttacking", state.Phase == "Attacking"
+        or state.Phase == "UsingAbility"
+        or state.Phase == "Ultimate"
+        or state.Phase == "Awakening")
     player:SetAttribute("Stunned", state.StunnedUntil > now or state.Phase == "Stunned")
     player:SetAttribute("CombatStunned", state.StunnedUntil > now)
     player:SetAttribute("Invulnerable", state.InvulnerableUntil > now)
