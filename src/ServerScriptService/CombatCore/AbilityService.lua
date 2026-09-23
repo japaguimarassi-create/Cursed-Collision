@@ -114,6 +114,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
             slot = slot,
             move = move.Name,
             attackId = attackId,
+            token = token,
             fallbackHitDelay = timeline.Startup,
             markers = markers,
             awakened = isAwakened(player)
