@@ -238,6 +238,20 @@ local function pull(ctx: any, player: Player, move: any)
     end
 end
 
+local function startDomain(ctx: any, player: Player, move: any): boolean
+    if not ctx.domainStart then
+        return false
+    end
+
+    return ctx.domainStart(
+        player,
+        tostring(move.Domain),
+        tonumber(move.DomainRadius) or 20,
+        tonumber(move.DomainDuration) or 8,
+        player:GetAttribute("CharacterId") or "Unknown"
+    )
+end
+
 local function divergingFist(ctx: any, player: Player, move: any, damage: number): boolean
     local success, target = hitFront(ctx, player, move, damage, "Primary")
     if success and target then
