@@ -5,7 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Timeline = require(ReplicatedStorage.Combat.AbilityTimeline)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
-local StateManager = require(script.Parent.StateManager)
+local StateManager: any = require(script.Parent.StateManager)
 local CooldownService = require(script.Parent.CooldownService)
 local CharacterService = require(ReplicatedStorage.Characters.CharacterService)
 local CombatMarkerService = require(script.Parent.CombatMarkerService)
@@ -122,7 +122,8 @@ function AbilityService:Execute(player: Player, slot: number): boolean
             slot = slot,
             move = move.Name,
             attackId = attackId,
-            hitDelay = timeline.Startup
+            hitDelay = timeline.Startup,
+            phase = "Startup"
         })
     end
 
