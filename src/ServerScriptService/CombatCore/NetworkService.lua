@@ -1,5 +1,7 @@
 --!strict
 
+local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
+
 local NetworkService = {}
 
 local ACTIONS = {
@@ -14,18 +16,10 @@ local ACTIONS = {
     Skill3 = true,
     Skill4 = true,
     SkillHit = true,
-    SpecialHit = true,
     SelectCharacter = true,
     Ultimate = true,
     Awakening = true
 }
-
-local function validAttackId(payload: any): boolean
-    return type(payload) == "table"
-        and type(payload.attackId) == "string"
-        and #payload.attackId > 0
-        and #payload.attackId <= 96
-end
 
 function NetworkService:IsKnownAction(action: any): boolean
     return type(action) == "string"
@@ -47,10 +41,6 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
         return payload == nil
     end
 
-    if action == "M1Hit" or action == "SkillHit" or action == "SpecialHit" then
-        return validAttackId(payload)
-    end
-
     if action == "Dash" then
         return type(payload) == "string"
             and (
@@ -65,6 +55,25 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
         return type(payload) == "string" and #payload <= 32
     end
 
+    if action == "M1Hit" or action == "SkillHit" then
+        if type(payload) ~= "table" then
+            return false
+        end
+
+        if type(payload.attackId) ~= "string"
+            or #payload.attackId > Config.AntiCheat.MaxPayloadLength then
+            return false
+        end
+
+        if action == "SkillHit" then
+            return type(payload.token) == "number"
+                and payload.token >= 0
+                and payload.token % 1 == 0
+        end
+
+        return true
+    end
+
     return false
 end
 
@@ -76,6 +85,32 @@ function NetworkService:SanitizeDashDirection(payload: any): string
     end
 
     return "Forward"
+end
+
+function NetworkService:SanitizeMarkerPayload(
+    payload: any
+): (string?, number?)
+    if type(payload) ~= "table" then
+        return nil, nil
+    end
+
+    local attackId = payload.attackId
+    if type(attackId) ~= "string"
+        or #attackId > Config.AntiCheat.MaxPayloadLength then
+        return nil, nil
+    end
+
+    local token = payload.token
+    if token ~= nil
+        and (
+            type(token) ~= "number"
+            or token < 0
+            or token % 1 ~= 0
+        ) then
+        return nil, nil
+    end
+
+    return attackId, token
 end
 
 return NetworkService
