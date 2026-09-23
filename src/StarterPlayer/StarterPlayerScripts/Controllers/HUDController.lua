@@ -100,7 +100,7 @@ local function pressTween(object: GuiButton)
     end)
 end
 
-function HUDController.new(): HUD
+function HUDController.new()
     local old = player:WaitForChild("PlayerGui"):FindFirstChild("CursedCollisionCombatHUD")
     if old then
         old:Destroy()
