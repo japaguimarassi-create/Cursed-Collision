@@ -33,8 +33,10 @@ end
 local Movesets = require(ReplicatedStorage.Characters.CustomMovesets)
 
 local function moveOf(player: Player, slot: number)
-    local id = player:GetAttribute("CharacterId") or "PotentialMan"
-    return Movesets.GetMove(id, slot)
+    local id = player:GetAttribute("CharacterId") or "Yuji"
+    local empowered = player:GetAttribute("AwakeningActive") == true
+        or player:GetAttribute("UltimateActive") == true
+    return Movesets.GetMove(id, slot, empowered)
 end
 
 local function rootOf(player: Player): BasePart?
