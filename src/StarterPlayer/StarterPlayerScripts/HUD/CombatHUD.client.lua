@@ -219,9 +219,13 @@ awakening.Activated:Connect(function()
 end)
 
 local function updateCharacter()
-    local id = tostring(player:GetAttribute("CharacterId") or "PotentialMan")
+    local id = tostring(player:GetAttribute("CharacterId") or "Yuji")
     local defs = require(ReplicatedStorage.Characters.CharacterDefinitions)
-    local moves = require(ReplicatedStorage.Characters.CustomMovesets).Get(id)
+    local moves = require(ReplicatedStorage.Characters.CustomMovesets).Get(
+        id,
+        player:GetAttribute("AwakeningActive") == true
+            or player:GetAttribute("UltimateActive") == true
+    )
     local profile = defs[id]
 
     name.Text = profile and profile.Name or id
