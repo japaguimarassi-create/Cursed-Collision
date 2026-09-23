@@ -10,7 +10,7 @@ type Active = {
     duration: number
 }
 
-local active: {[Player]: Active} = setmetatable({}, {__mode="k"})
+local active: {[Player]: Active} = {}
 
 function RagdollService:Apply(player: Player, duration: number, reason: string?): boolean
     local character = player.Character
