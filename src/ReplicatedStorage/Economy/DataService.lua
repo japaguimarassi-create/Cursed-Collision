@@ -2,18 +2,17 @@ local DataStoreService = game:GetService("DataStoreService")
 
 local DataService = {}
 
-local STORE = DataStoreService:GetDataStore("CursedCollisionPlayerData_v2")
+local STORE = DataStoreService:GetDataStore("CursedCollisionPlayerData_v3")
 local sessions = {}
 local dirty = {}
 local ready = {}
 
 local DEFAULT = {
-    Version = 2,
+    Version = 3,
     Credits = 0,
-    OwnedEmotes = {emote_001 = true},
     OwnedSkins = {},
-    EquippedEmote = "emote_001",
     EquippedSkin = "",
+    UltimateSkin = "",
     DailyProgress = {},
     WeeklyProgress = {},
     GeneralProgress = {},
@@ -29,6 +28,7 @@ local function deepCopy(value)
     if type(value) ~= "table" then
         return value
     end
+
     local result = {}
     for key, item in pairs(value) do
         result[key] = deepCopy(item)
@@ -38,6 +38,7 @@ end
 
 local function normalize(raw)
     local data = deepCopy(DEFAULT)
+
     if type(raw) ~= "table" then
         return data
     end
@@ -49,7 +50,7 @@ local function normalize(raw)
     end
 
     data.Credits = math.max(0, math.floor(tonumber(data.Credits) or DEFAULT.Credits))
-    data.Version = 2
+    data.Version = 3
     return data
 end
 
@@ -69,19 +70,24 @@ function DataService:Initialize(player)
         success, loaded = pcall(function()
             return STORE:GetAsync(keyFor(player))
         end)
+
         if success then
             break
         end
+
         task.wait(attempt * 0.75)
     end
 
     local data = normalize(success and loaded or nil)
+
     sessions[player] = data
     ready[player] = success
     dirty[player] = not success
 
     player:SetAttribute("DataReady", success)
     player:SetAttribute("Credits", data.Credits)
+    player:SetAttribute("EquippedSkin", data.EquippedSkin)
+    player:SetAttribute("UltimateSkin", data.UltimateSkin)
 
     local leaderstats = player:FindFirstChild("leaderstats")
     if not leaderstats then
@@ -96,8 +102,8 @@ function DataService:Initialize(player)
         credits.Name = "Credits"
         credits.Parent = leaderstats
     end
-    credits.Value = data.Credits
 
+    credits.Value = data.Credits
     return success
 end
 
@@ -146,6 +152,7 @@ end
 function DataService:SpendCredits(player, amount)
     local data = sessions[player]
     amount = math.floor(tonumber(amount) or 0)
+
     if not data or amount < 0 or data.Credits < amount then
         return false
     end
@@ -207,6 +214,7 @@ end
 task.spawn(function()
     while true do
         task.wait(60)
+
         for player in pairs(sessions) do
             if dirty[player] then
                 task.spawn(function()
