@@ -238,13 +238,26 @@ function M.Start()
         clear()
         local scroll = list()
 
+        local titles: {[string]: string} = {
+            UltimateSkin = "ULTIMATE SKIN",
+            InstantSkin = "INSTANT SKIN",
+            KillSound = "KILL SOUND"
+        }
+        local descriptions: {[string]: string} = {
+            UltimateSkin = "Use the equipped skin for Ultimate/Awakening.",
+            InstantSkin = "Apply the equipped skin instantly.",
+            KillSound = "Play a custom sound after a confirmed elimination."
+        }
+
         for index, key in ipairs({"UltimateSkin", "InstantSkin", "KillSound"}) do
-            local info = {
-                UltimateSkin = {"ULTIMATE SKIN", "Use the equipped skin for Ultimate/Awakening."},
-                InstantSkin = {"INSTANT SKIN", "Apply the equipped skin instantly."},
-                KillSound = {"KILL SOUND", "Play a custom sound after a confirmed elimination."}
-            }
-            local row = Util.button(scroll, key, info[key][1] .. "\n" .. info[key][2], UDim2.new(1, -8, 0, 86), UDim2.new(), true)
+            local row = Util.button(
+                scroll,
+                key,
+                titles[key] .. "\n" .. descriptions[key],
+                UDim2.new(1, -8, 0, 86),
+                UDim2.new(),
+                true
+            )
             row.LayoutOrder = index
             row.TextXAlignment = Enum.TextXAlignment.Left
             row.Activated:Connect(function()
