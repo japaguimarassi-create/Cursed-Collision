@@ -2,7 +2,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
-local StateManager = require(script.Parent.StateManager)
+local StateManager: any = require(script.Parent.StateManager)
 
 local CombatMarkerService = {}
 CombatMarkerService.__index = CombatMarkerService
