@@ -129,6 +129,21 @@ function CombatMarkerService:Resolve(player: Player, attackId: string): boolean
         return false
     end
 
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if record.Origin
+        and (
+            not root
+            or not root:IsA("BasePart")
+            or (root.Position - record.Origin).Magnitude > record.MaxTravel
+        ) then
+        playerRecords[attackId] = nil
+        if next(playerRecords) == nil then
+            records[player] = nil
+        end
+        return false
+    end
+
     local now = os.clock()
 
     if not StateManager:CanAct(player, now) then
