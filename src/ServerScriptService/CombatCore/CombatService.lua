@@ -189,8 +189,8 @@ function CombatService:M1(player: Player): boolean
         attack.Startup,
         resolveHit,
         "Action",
-        0.10,
-        0.18
+        Config.Combat.MarkerTiming.EarlyGrace,
+        Config.Combat.MarkerTiming.NetworkGrace
     )
 
     if not armed then
