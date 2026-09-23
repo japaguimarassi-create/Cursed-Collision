@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local CharacterMoves = require(ReplicatedStorage.Characters.CharacterMoves)
+local Movesets = require(ReplicatedStorage.Characters.CustomMovesets)
 local PlayableRoster = require(ReplicatedStorage.Characters.PlayableRoster)
 
 local CharacterModules = {
@@ -106,7 +107,30 @@ function CharacterService:GetSpecialCooldown(player: Player): number
     )
 end
 
+function CharacterService:GetMove(player: Player, slot: number)
+    local module = self:GetModule(player)
+
+    if module and module.GetMove then
+        return module.GetMove(player, slot)
+    end
+
+    local awakened = player:GetAttribute("AwakeningActive") == true
+        or player:GetAttribute("UltimateActive") == true
+
+    return Movesets.GetMove(self:GetId(player), slot, awakened)
+end
+
 function CharacterService:GetSkillCooldown(player: Player, slot: number): number
+    local move = self:GetMove(player, slot)
+
+    if move and move.Cooldown then
+        return math.clamp(
+            tonumber(move.Cooldown) or 1,
+            0.25,
+            20
+        )
+    end
+
     local module = self:GetModule(player)
 
     if not module or not module.GetCooldown then
