@@ -13,6 +13,8 @@ local player = Players.LocalPlayer
 local HUDController = {}
 HUDController.__index = HUDController
 
+local activeCleanup: (() -> ())? = nil
+
 type HUD = {
     Gui: ScreenGui,
     Root: Frame,
@@ -166,6 +168,11 @@ local function inputPreset()
 end
 
 function HUDController.new(): HUD
+    if activeCleanup then
+        activeCleanup()
+        activeCleanup = nil
+    end
+
     local playerGui = player:WaitForChild("PlayerGui")
     local old = playerGui:FindFirstChild("CursedCollisionCombatHUD")
 
@@ -190,6 +197,10 @@ function HUDController.new(): HUD
     local scale = Instance.new("UIScale")
     scale.Parent = root
 
+    local cameraConnection: RBXScriptConnection?
+    local viewportConnection: RBXScriptConnection?
+    local inputConnection: RBXScriptConnection?
+
     local function refreshScale()
         local camera = workspace.CurrentCamera
         if not camera then
@@ -205,20 +216,22 @@ function HUDController.new(): HUD
         )
     end
 
-    refreshScale()
-
-    workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
-        refreshScale()
+    local function bindCamera()
+        if viewportConnection then
+            viewportConnection:Disconnect()
+            viewportConnection = nil
+        end
 
         local camera = workspace.CurrentCamera
         if camera then
-            camera:GetPropertyChangedSignal("ViewportSize"):Connect(refreshScale)
+            viewportConnection = camera:GetPropertyChangedSignal("ViewportSize"):Connect(refreshScale)
         end
-    end)
 
-    if workspace.CurrentCamera then
-        workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(refreshScale)
+        refreshScale()
     end
+
+    cameraConnection = workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(bindCamera)
+    bindCamera()
 
     local top = Instance.new("Frame")
     top.Name = "TopIdentity"
@@ -517,9 +530,39 @@ function HUDController.new(): HUD
 
     hud:SetPreferredInput(UserInputService.PreferredInput)
 
-    UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
-        hud:SetPreferredInput(UserInputService.PreferredInput)
-    end)
+    local function updatePreferredInput()
+        local preferred = UserInputService.PreferredInput
+        hud:SetPreferredInput(preferred)
+
+        if preferred == Enum.PreferredInput.Gamepad then
+            GuiService.GuiNavigationEnabled = true
+            if hud.Root.Visible and hud.M1Button.Selectable then
+                GuiService.SelectedObject = hud.M1Button
+            end
+        end
+    end
+
+    inputConnection = UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(updatePreferredInput)
+
+    activeCleanup = function()
+        if cameraConnection then
+            cameraConnection:Disconnect()
+            cameraConnection = nil
+        end
+        if viewportConnection then
+            viewportConnection:Disconnect()
+            viewportConnection = nil
+        end
+        if inputConnection then
+            inputConnection:Disconnect()
+            inputConnection = nil
+        end
+
+        local selected = GuiService.SelectedObject
+        if selected and selected:IsDescendantOf(gui) then
+            GuiService.SelectedObject = nil
+        end
+    end
 
     return hud
 end
@@ -573,6 +616,18 @@ end
 
 function HUDController.SetVisible(self: HUD, visible: boolean)
     self.Root.Visible = visible
+
+    if visible
+        and self.PreferredInput == Enum.PreferredInput.Gamepad
+        and self.M1Button.Selectable then
+        GuiService.GuiNavigationEnabled = true
+        GuiService.SelectedObject = self.M1Button
+    elseif not visible then
+        local selected = GuiService.SelectedObject
+        if selected and selected:IsDescendantOf(self.Gui) then
+            GuiService.SelectedObject = nil
+        end
+    end
 end
 
 function HUDController.UpdateCharacter(
