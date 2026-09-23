@@ -296,7 +296,7 @@ function CombatService:Special(player: Player): boolean
     return success
 end
 
-function CombatService:StepPlayer(player: Player)
+function CombatService:StepPlayer(player: Player): ()
     local state = StateManager:Get(player)
 
     if not state then
@@ -315,7 +315,7 @@ function CombatService:StepPlayer(player: Player)
         state.RecoveryUntil = 0
 
         if not state.Blocking and state.StunnedUntil <= t then
-            state.Phase = "Idle"
+            StateManager:SetPhase(player, "Idle")
         end
     end
 end
