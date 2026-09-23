@@ -207,6 +207,8 @@ for token in ('Instance.new("Animation")', "LoadAnimation", "GetTrack", "__mode"
 handler = read("StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua")
 if 'GetMarkerReachedSignal("Hit")' not in handler:
     fail("CombatHandler missing exact Hit marker synchronization")
+if 'task.delay' in handler:
+    fail("CombatHandler must not time gameplay hits with client task.delay")
 for token in ("M1Hit", "SkillHit", "SpecialHit", "Enum.AnimationPriority.Action"):
     if token not in handler:
         fail(f"CombatHandler missing: {token}")
