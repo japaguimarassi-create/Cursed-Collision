@@ -4,6 +4,7 @@ local GuiService = game:GetService("GuiService")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -15,12 +16,15 @@ end
 
 local accountAction = remotes:WaitForChild("AccountAction", 15)
 local accountEvent = remotes:WaitForChild("AccountEvent", 15)
+local gamePassAction = remotes:WaitForChild("GamePassAction", 15)
+local gamePassEvent = remotes:WaitForChild("GamePassEvent", 15)
 
-if not accountAction or not accountEvent then
+if not accountAction or not accountEvent or not gamePassAction or not gamePassEvent then
     return
 end
 
 local shop = require(ReplicatedStorage.Economy.ShopDefinitions)
+local gamePassConfig = require(ReplicatedStorage.Monetization.GamePassConfig)
 
 local oldGui = playerGui:FindFirstChild("CursedCollisionAccountUI")
 if oldGui then
@@ -153,7 +157,9 @@ tabs.BackgroundTransparency = 1
 tabs.Parent = panel
 
 local tabShop = button(tabs, "ShopTab", "SKINS", UDim2.fromScale(0.45, 0.85), UDim2.fromScale(0, 0))
-local tabQuest = button(tabs, "QuestTab", "MISSIONS", UDim2.fromScale(0.45, 0.85), UDim2.fromScale(0.50, 0))
+local tabQuest = button(tabs, "QuestTab", "MISSIONS", UDim2.fromScale(0.29, 0.85), UDim2.fromScale(0.355, 0))
+local tabPass = button(tabs, "PassTab", "PASSES", UDim2.fromScale(0.29, 0.85), UDim2.fromScale(0.665, 0))
+tabShop.Size = UDim2.fromScale(0.29, 0.85)
 
 local content = Instance.new("Frame")
 content.Name = "Content"
@@ -174,7 +180,8 @@ local state = {
         General = {},
         Totals = {Daily = 24, Weekly = 24, General = 24}
     },
-    activeTab = "Shop"
+    activeTab = "Shop",
+    passes = {UltimateSkin = false, KillSound = false, InstantSkin = false}
 }
 
 local function clearContent()
@@ -316,11 +323,97 @@ local function renderQuests()
     section("GENERAL / MASTERY", state.quests.General)
 end
 
+local function passButton(parent: Instance, key: string, title: string, description: string, action: string?)
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, -8, 0, 102)
+    card.BackgroundColor3 = Color3.fromRGB(20, 23, 31)
+    card.BorderSizePixel = 0
+    card.Parent = parent
+    corner(card, 12)
+    stroke(card, Color3.fromRGB(69, 72, 90), 1)
+
+    local titleLabel = label(card, title, UDim2.fromScale(0.57, 0.23), UDim2.fromScale(0.025, 0.10), Enum.Font.GothamBlack, 13)
+    titleLabel.TextColor3 = accent
+
+    local desc = label(card, description, UDim2.fromScale(0.57, 0.44), UDim2.fromScale(0.025, 0.34), Enum.Font.Gotham, 10)
+    desc.TextColor3 = muted
+
+    local statusText = state.passes[key] and "OWNED" or (gamePassConfig[key].Id > 0 and "BUY" or "SET ID")
+    local actionButton = button(card, "Pass_" .. key, statusText, UDim2.fromScale(0.29, 0.30), UDim2.fromScale(0.68, 0.17))
+    actionButton.TextSize = 10
+
+    actionButton.Activated:Connect(function()
+        if state.passes[key] then
+            return
+        end
+
+        local id = gamePassConfig[key].Id
+        if type(id) == "number" and id > 0 then
+            pcall(function()
+                MarketplaceService:PromptGamePassPurchase(player, id)
+            end)
+        end
+    end)
+
+    if action then
+        local selector = button(card, "Action_" .. key, action, UDim2.fromScale(0.29, 0.30), UDim2.fromScale(0.68, 0.56))
+        selector.TextSize = 9
+        selector.Visible = state.passes[key]
+
+        selector.Activated:Connect(function()
+            if key == "InstantSkin" then
+                gamePassAction:FireServer("ApplyInstantSkin", {
+                    skinId = state.economy.EquippedSkin
+                })
+            elseif key == "UltimateSkin" then
+                gamePassAction:FireServer("SetUltimateSkin", {
+                    skinId = state.economy.EquippedSkin
+                })
+            end
+        end)
+    end
+
+    return card
+end
+
+local function renderPasses()
+    clearContent()
+
+    local list = listFrame()
+    list.Size = UDim2.fromScale(1, 1)
+
+    passButton(
+        list,
+        "UltimateSkin",
+        "ULTIMATE SKIN",
+        "Use your selected owned skin automatically when your Ultimate/Awakening begins.",
+        "USE EQUIPPED SKIN"
+    )
+
+    passButton(
+        list,
+        "InstantSkin",
+        "INSTANT SKIN SWAP",
+        "Change to your currently equipped owned skin instantly during the match.",
+        "APPLY NOW"
+    )
+
+    passButton(
+        list,
+        "KillSound",
+        "KILL SOUND",
+        "Unlocks the custom kill sound that plays after you confirm a player elimination.",
+        nil
+    )
+end
+
 local function render()
     if state.activeTab == "Shop" then
         renderShop()
-    else
+    elseif state.activeTab == "Quests" then
         renderQuests()
+    else
+        renderPasses()
     end
 end
 
@@ -328,6 +421,7 @@ local function openMenu()
     closeOwner()
     setMenuOpen(true)
     accountAction:FireServer("Sync", {})
+gamePassAction:FireServer("Sync", {})
     render()
     panel.Visible = true
     panelScale.Scale = 0.96
@@ -356,6 +450,11 @@ end)
 
 tabQuest.Activated:Connect(function()
     state.activeTab = "Quests"
+    render()
+end)
+
+tabPass.Activated:Connect(function()
+    state.activeTab = "Passes"
     render()
 end)
 
@@ -401,6 +500,25 @@ accountEvent.OnClientEvent:Connect(function(event, payload)
         if player:GetAttribute("CCHUD_OwnerPanelOpen") ~= true then
             showToast(tostring(payload and payload.Message or ""), payload and payload.Success == true)
         end
+    end
+end)
+
+
+gamePassEvent.OnClientEvent:Connect(function(event, payload)
+    if event == "Sync" then
+        for key, value in pairs(payload or {}) do
+            if state.passes[key] ~= nil then
+                state.passes[key] = value == true
+            end
+        end
+        if panel.Visible and state.activeTab == "Passes" then
+            render()
+        end
+    elseif event == "Result" then
+        local success = payload and payload.Success == true
+        showToast(tostring(payload and payload.Reason or "GamePass update"), success)
+        gamePassAction:FireServer("Sync", {})
+        accountAction:FireServer("Sync", {})
     end
 end)
 
