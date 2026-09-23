@@ -16,12 +16,12 @@ local Profiles: {[string]: CharacterProfile} = {
     Yuji = {
         Id = "Yuji",
         Name = "Yuji Itadori",
-        Subtitle = "Black Flash Momentum",
+        Subtitle = "Shibuya Vessel → Shinjuku",
         Archetype = "Rushdown / pressure / close-range burst",
         SpecialCooldown = 0.65,
         SkillCooldown = 0.70,
-        Unique = "Divergent Soul",
-        AwakeningName = "Divergent Soul",
+        Unique = "Black Flash / Blood / Shrine",
+        AwakeningName = "Shinjuku",
         Domain = "SoulTrainingGround"
     },
     Gojo = {
@@ -38,11 +38,11 @@ local Profiles: {[string]: CharacterProfile} = {
     Sukuna = {
         Id = "Sukuna",
         Name = "Ryomen Sukuna",
-        Subtitle = "Shrine / Flame / World Cut",
+        Subtitle = "15-Finger Shibuya Sukuna",
         Archetype = "Pressure / zoning / finisher",
         SpecialCooldown = 0.70,
         SkillCooldown = 0.80,
-        Unique = "Shrine Adaptation",
+        Unique = "Shrine / Fuga / Enchain",
         AwakeningName = "King of Curses",
         Domain = "MalevolentShrine"
     },
@@ -54,7 +54,7 @@ local Profiles: {[string]: CharacterProfile} = {
         SpecialCooldown = 0.85,
         SkillCooldown = 0.80,
         Unique = "Ten Shadows",
-        AwakeningName = "Chimera Shadow Garden",
+        AwakeningName = "Ten Shadows / Mahoraga",
         Domain = "ChimeraShadowGarden"
     }
 }
