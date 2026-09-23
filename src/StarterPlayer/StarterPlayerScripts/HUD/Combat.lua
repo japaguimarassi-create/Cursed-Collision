@@ -323,7 +323,7 @@ local function start()
     end
 
     local comboCount = 0
-    local comboExpiresAt = 0
+    local _comboExpiresAt = 0
 
     combatFX.OnClientEvent:Connect(function(kind, _position, payload)
         if not payload or type(payload) ~= "table" then
@@ -337,7 +337,7 @@ local function start()
 
             if attacker == character and actor and actor:IsA("Model") then
                 comboCount += 1
-                comboExpiresAt = os.clock() + Config.Combat.M1.ComboReset
+                _comboExpiresAt = os.clock() + Config.Combat.M1.ComboReset
 
                 local targetName = actor:GetAttribute("CharacterName")
                     or actor.Name
