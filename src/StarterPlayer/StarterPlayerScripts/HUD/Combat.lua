@@ -70,9 +70,11 @@ local function start()
     end
 
     local combatAction = remotes:WaitForChild("CombatAction", 15)
+    local combatFX = remotes:WaitForChild("CombatFX", 15)
     local movementRemote = remotes:WaitForChild("MovementRemote", 15)
-    if not combatAction or not movementRemote
+    if not combatAction or not combatFX or not movementRemote
         or not combatAction:IsA("RemoteEvent")
+        or not combatFX:IsA("RemoteEvent")
         or not movementRemote:IsA("RemoteEvent") then
         return
     end
@@ -249,6 +251,11 @@ local function start()
             player:GetAttribute("UltimateReady") == true,
             player:GetAttribute("AwakeningReady") == true
         )
+
+        local domain = player:GetAttribute("DomainName")
+        hud:SetDomain(
+            type(domain) == "string" and domain or nil
+        )
     end
 
     local function bindHealth(character: Model)
@@ -314,6 +321,59 @@ local function start()
     }) do
         player:GetAttributeChangedSignal(attribute):Connect(updateVisible)
     end
+
+    local comboCount = 0
+    local comboExpiresAt = 0
+
+    combatFX.OnClientEvent:Connect(function(kind, _position, payload)
+        if not payload or type(payload) ~= "table" then
+            return
+        end
+
+        if kind == "Hit" then
+            local actor = payload.actor
+            local attacker = payload.attacker
+            local character = player.Character
+
+            if attacker == character and actor and actor:IsA("Model") then
+                comboCount += 1
+                comboExpiresAt = os.clock() + Config.Combat.M1.ComboReset
+
+                local targetName = actor:GetAttribute("CharacterName")
+                    or actor.Name
+
+                hud:SetTarget(tostring(targetName))
+                hud:ShowCombo(comboCount)
+                hud:Notify(
+                    payload.guardBreak == true
+                        and "GUARD BREAK"
+                        or "HIT"
+                )
+            elseif actor == character then
+                hud:Notify(
+                    payload.ragdoll == true
+                        and "RAGDOLL"
+                        or payload.guardBreak == true
+                            and "GUARD BROKEN"
+                            or "HIT"
+                )
+            end
+        elseif kind == "PerfectBlock" then
+            if payload.actor == player.Character then
+                hud:Notify("PERFECT BLOCK")
+            end
+        elseif kind == "BlockImpact" then
+            if payload.actor == player.Character then
+                hud:Notify("BLOCK")
+            end
+        elseif kind == "Death" then
+            if payload.actor == player.Character then
+                hud:Notify("DEFEATED")
+            elseif payload.attacker == player.Character then
+                hud:Notify("+5 CREDITS")
+            end
+        end
+    end)
 
     player.CharacterAdded:Connect(function(character)
         bindHealth(character)
