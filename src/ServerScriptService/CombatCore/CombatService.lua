@@ -6,11 +6,13 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local AnimationData = require(ReplicatedStorage.Animation.AnimationData)
 local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
 local CharacterService = require(ReplicatedStorage.Characters.CharacterService)
+
 local StateManager: any = require(script.Parent.StateManager)
 local CooldownService = require(script.Parent.CooldownService)
 local MovementController = require(script.Parent.MovementController)
 local ComboService = require(script.Parent.ComboService)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
+local CombatMarkerService = require(script.Parent.CombatMarkerService)
 local AbilityService = require(script.Parent.AbilityService)
 local EmoteService = require(script.Parent.EmoteService)
 
@@ -18,20 +20,24 @@ local CombatService = {}
 CombatService.__index = CombatService
 
 type M1Record = {
-    attackId: string,
-    token: number,
-    startedAt: number,
-    hitWindowStart: number,
-    hitWindowEnd: number,
-    attack: any,
-    resolved: boolean
+    AttackId: string,
+    Token: number,
+    Attack: any,
+    Finished: boolean
+}
+
+type SpecialRecord = {
+    AttackId: string,
+    Token: number,
+    Finished: boolean
 }
 
 function CombatService.new(context: any)
     return setmetatable({
         Context = context,
         Abilities = AbilityService.new(context),
-        ActiveM1 = {} :: {[Player]: M1Record}
+        ActiveM1 = {} :: {[Player]: M1Record},
+        ActiveSpecial = {} :: {[Player]: SpecialRecord}
     }, CombatService)
 end
 
@@ -71,13 +77,15 @@ function CombatService:CanAttack(player: Player): boolean
         and state.Phase ~= "Awakening"
 end
 
-local function finishM1(self: any, player: Player, record: M1Record)
+function CombatService:_finishM1(player: Player, record: M1Record)
     local active = self.ActiveM1[player]
-    if active ~= record then
+    if active ~= record or record.Finished then
         return
     end
 
-    HitRegistry:End(player, record.attackId)
+    record.Finished = true
+    HitRegistry:End(player, record.AttackId)
+    CombatMarkerService:Cancel(player, record.AttackId)
     self.ActiveM1[player] = nil
 
     local state = StateManager:Get(player)
@@ -85,54 +93,41 @@ local function finishM1(self: any, player: Player, record: M1Record)
         return
     end
 
-    if state.Vars.ActiveAttackId == record.attackId then
+    if state.Vars.ActiveAttackId == record.AttackId then
         state.Vars.ActiveAttackId = nil
     end
 
-    if state.AbilityToken == record.token
-        and state.StunnedUntil <= now()
-        and state.RagdollUntil <= now()
-        and state.Phase == "Attacking" then
-        state.RecoveryUntil = now() + tonumber(record.attack.Recovery) or now()
+    state.RecoveryUntil = now() + (tonumber(record.Attack.Recovery) or 0.1)
+
+    if not state.Blocking and state.StunnedUntil <= now() then
         StateManager:SetPhase(player, "Idle")
     end
 end
 
-function CombatService:_ResolveM1(player: Player, attackId: string): boolean
+function CombatService:_applyM1(player: Player, attackId: string, attack: any): ()
     local record = self.ActiveM1[player]
-
-    if not record or record.attackId ~= attackId or record.resolved then
-        return false
+    if not record or record.AttackId ~= attackId or record.Finished then
+        return
     end
 
     local state = StateManager:Get(player)
     local root = rootOf(player)
-    local t = now()
-
-    if not state or not root
-        or state.AbilityToken ~= record.token
-        or t < record.hitWindowStart
-        or t > record.hitWindowEnd
-        or state.StunnedUntil > t
-        or state.RagdollUntil > t
-        or state.Phase == "Dead" then
-        return false
+    if not state or not root or record.Token ~= state.ActionToken then
+        self:_finishM1(player, record)
+        return
     end
 
-    record.resolved = true
-
-    local attack = record.attack
-    local targets = HitboxService:TargetsInBox(
+    local target = HitboxService:TargetsInBox(
         player,
         root.CFrame + root.CFrame.LookVector * attack.Offset,
         attack.Hitbox,
         32
-    )
+    )[1]
 
-    local target = targets[1]
     if target and not HitRegistry:Has(player, attackId, target.model) then
         HitRegistry:Add(player, attackId, target.model)
 
+        -- O marcador controla o instante do hit; o servidor continua dono do dano.
         self.Context.damage(
             player,
             target.humanoid,
@@ -153,11 +148,12 @@ function CombatService:_ResolveM1(player: Player, attackId: string): boolean
         )
     end
 
-    task.delay(attack.Active + attack.Recovery, function()
-        finishM1(self, player, record)
-    end)
-
-    return true
+    task.delay(
+        (tonumber(attack.Active) or 0.05) + (tonumber(attack.Recovery) or 0.1),
+        function()
+            self:_finishM1(player, record)
+        end
+    )
 end
 
 function CombatService:M1(player: Player): boolean
@@ -176,35 +172,56 @@ function CombatService:M1(player: Player): boolean
         return false
     end
 
-    EmoteService:Stop(player)
-
     local attack = ComboService:Next(player, t)
     if not attack then
         return false
     end
 
-    state.LastAction = "M1"
+    EmoteService:Stop(player)
+
+    local token = StateManager:NextActionToken(player)
+    if not token then
+        return false
+    end
+
     StateManager:SetPhase(player, "Attacking")
+    state.LastAction = "M1"
     CooldownService:Set(player, "M1", Config.Combat.M1.Cooldown, t)
 
-    local attackId = tostring(player.UserId) .. ":M1:" .. tostring(math.floor(t * 1000))
-    local hitWindowStart = t + math.max(0.025, attack.Startup - 0.08)
-    local hitWindowEnd = t + attack.Startup + 0.32
+    local attackId = tostring(player.UserId)
+        .. ":M1:"
+        .. tostring(token)
+        .. ":"
+        .. tostring(math.floor(t * 1000))
 
     state.Vars.ActiveAttackId = attackId
+    state.Vars.ActiveMove = attack
     HitRegistry:Begin(player, attackId)
 
-    local record: M1Record = {
-        attackId = attackId,
-        token = state.AbilityToken,
-        startedAt = t,
-        hitWindowStart = hitWindowStart,
-        hitWindowEnd = hitWindowEnd,
-        attack = attack,
-        resolved = false
+    local animationKey = "M1_" .. tostring(attack.Combo)
+    local animationDefinition = AnimationData[animationKey]
+
+    self.ActiveM1[player] = {
+        AttackId = attackId,
+        Token = token,
+        Attack = attack,
+        Finished = false
     }
 
-    self.ActiveM1[player] = record
+    CombatMarkerService:Begin(
+        player,
+        attackId,
+        token,
+        attack.Startup,
+        function()
+            self:_applyM1(player, attackId, attack)
+        end,
+        "Action",
+        Config.Combat.Marker.EarlyTolerance,
+        Config.Combat.Marker.LateTolerance,
+        root.Position,
+        22
+    )
 
     self.Context.fx("CombatAction", root.Position, {
         actor = player.Character,
@@ -214,33 +231,24 @@ function CombatService:M1(player: Player): boolean
         direction = root.CFrame.LookVector,
         attackId = attackId,
         marker = "Hit",
-        markerRequired = AnimationData["M1_" .. tostring(attack.Combo)].AnimationId ~= ""
+        markerRequired = animationDefinition ~= nil
+            and animationDefinition.AnimationId ~= "",
+        fallbackHitDelay = attack.Startup
     })
 
-    task.delay(math.max(0.03, attack.Startup + 0.32), function()
-        self:_ResolveM1(player, attackId)
-    end)
-
     return true
-end
-
-function CombatService:M1Hit(player: Player, attackId: string): boolean
-    return self:_ResolveM1(player, attackId)
 end
 
 function CombatService:SkillSlot(player: Player, slot: number): boolean
     return self.Abilities:Execute(player, slot)
 end
 
-function CombatService:SkillHit(player: Player, attackId: string): boolean
-    return self.Abilities:ConfirmHit(player, attackId)
-end
-
 function CombatService:Dash(player: Player, payload: string): boolean
     local state = StateManager:Get(player)
     local root = rootOf(player)
+    local humanoid = humanoidOf(player)
 
-    if not state or not root or not self:IsAlive(player) then
+    if not state or not root or not humanoid or not self:IsAlive(player) then
         return false
     end
 
@@ -276,6 +284,7 @@ function CombatService:Dash(player: Player, payload: string): boolean
     end
 
     CooldownService:Set(player, "Dash", Config.Combat.Dash.Cooldown, t)
+
     state.DashUntil = t + math.min(
         Config.Combat.Dash.Invulnerable,
         Config.Combat.Dash.Duration
@@ -289,24 +298,21 @@ function CombatService:Dash(player: Player, payload: string): boolean
         direction.Z * speed
     )
 
+    local humanoidState = humanoid:GetState()
+
     self.Context.fx("CombatAction", root.Position, {
         actor = player.Character,
         action = "Dash",
         dashDirection = payload,
         direction = direction,
-        air = humanoidOf(player)
-            and (
-                humanoidOf(player):GetState() == Enum.HumanoidStateType.Jumping
-                or humanoidOf(player):GetState() == Enum.HumanoidStateType.Freefall
-            )
-            or false
+        air = humanoidState == Enum.HumanoidStateType.Jumping
+            or humanoidState == Enum.HumanoidStateType.Freefall
     })
 
     task.delay(Config.Combat.Dash.Duration, function()
         local current = StateManager:Get(player)
         if current and current.Phase == "Dashing" then
-            current.Phase = "Idle"
-            StateManager:Sync(player)
+            StateManager:SetPhase(player, "Idle")
         end
     end)
 
@@ -315,7 +321,6 @@ end
 
 function CombatService:SetBlock(player: Player, active: boolean): boolean
     local state = StateManager:Get(player)
-
     if not state or not self:IsAlive(player) then
         return false
     end
@@ -363,33 +368,114 @@ function CombatService:Special(player: Player): boolean
     end
 
     local t = now()
-    local cooldown = CharacterService:GetSpecialCooldown(player)
-
-    if not CooldownService:Ready(player, "Special", t) then
+    if not CooldownService:Ready(
+        player,
+        "Special",
+        t
+    ) then
         return false
     end
 
     EmoteService:Stop(player)
 
-    CooldownService:Set(player, "Special", cooldown, t)
+    local token = StateManager:NextActionToken(player)
+    if not token then
+        return false
+    end
+
+    local cooldown = CharacterService:GetSpecialCooldown(player)
+    local attackId = tostring(player.UserId)
+        .. ":Special:"
+        .. tostring(token)
+        .. ":"
+        .. tostring(math.floor(t * 1000))
+
+    state.Vars.ActiveAttackId = attackId
+
     StateManager:SetPhase(player, "Attacking")
     state.RecoveryUntil = t + 0.55
+    CooldownService:Set(player, "Special", cooldown, t)
+
+    self.ActiveSpecial[player] = {
+        AttackId = attackId,
+        Token = token,
+        Finished = false
+    }
+
+    CombatMarkerService:Begin(
+        player,
+        attackId,
+        token,
+        0.12,
+        function()
+            local active = self.ActiveSpecial[player]
+            local currentState = StateManager:Get(player)
+            if not active or active.Finished or not currentState then
+                return
+            end
+
+            if currentState.Vars.ActiveAttackId ~= attackId then
+                return
+            end
+
+            active.Finished = true
+            CharacterService:Special(player)
+        end,
+        "Action",
+        Config.Combat.Marker.EarlyTolerance,
+        Config.Combat.Marker.LateTolerance,
+        root.Position,
+        18
+    )
 
     self.Context.fx("CombatAction", root.Position, {
         actor = player.Character,
-        action = "Special",
-        move = player:GetAttribute("SpecialName") or "Special"
+        action = "SpecialStart",
+        move = player:GetAttribute("SpecialName") or "Special",
+        attackId = attackId,
+        marker = "Hit",
+        markerRequired = AnimationData.Special.AnimationId ~= "",
+        fallbackHitDelay = 0.12
     })
 
-    local success = CharacterService:Special(player)
+    task.delay(0.68, function()
+        local current = StateManager:Get(player)
+        local record = self.ActiveSpecial[player]
 
-    if not success then
-        CooldownService:Set(player, "Special", math.min(0.35, cooldown), t)
-        state.RecoveryUntil = t + 0.12
-        StateManager:SetPhase(player, "Idle")
+        if current and record and record.AttackId == attackId then
+            record.Finished = true
+            CombatMarkerService:Cancel(player, attackId)
+            self.ActiveSpecial[player] = nil
+
+            if current.Vars.ActiveAttackId == attackId then
+                current.Vars.ActiveAttackId = nil
+            end
+
+            if current.StunnedUntil <= now()
+                and current.RagdollUntil <= now()
+                and current.Phase == "Attacking" then
+                StateManager:SetPhase(player, "Idle")
+            end
+        end
+    end)
+
+    return true
+end
+
+function CombatService:CancelPlayer(player: Player)
+    local m1 = self.ActiveM1[player]
+    if m1 then
+        self:_finishM1(player, m1)
     end
 
-    return success
+    local special = self.ActiveSpecial[player]
+    if special then
+        special.Finished = true
+        CombatMarkerService:Cancel(player, special.AttackId)
+        self.ActiveSpecial[player] = nil
+    end
+
+    self.Abilities:Cancel(player)
 end
 
 function CombatService:StepPlayer(player: Player): ()
@@ -415,15 +501,6 @@ function CombatService:StepPlayer(player: Player): ()
             StateManager:SetPhase(player, "Idle")
         end
     end
-end
-
-function CombatService:CancelPlayer(player: Player)
-    local record = self.ActiveM1[player]
-    if record then
-        record.resolved = true
-        finishM1(self, player, record)
-    end
-    self.Abilities:Cancel(player)
 end
 
 return CombatService
