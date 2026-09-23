@@ -9,7 +9,6 @@ local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local CharacterMoves = require(ReplicatedStorage.Characters.CharacterMoves)
 local CustomMovesets = require(ReplicatedStorage.Characters.CustomMovesets)
 local InputController = require(script.Parent.Controllers.InputController)
-local ProceduralAnimator = require(script.Parent.Controllers.ProceduralAnimator)
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -545,10 +544,6 @@ end
 
 combatFX.OnClientEvent:Connect(function(kind, _, payload)
     if kind == "CombatAction" and payload and payload.actor then
-        if payload.actor:IsA("Model") then
-            ProceduralAnimator:Play(payload.actor, tostring(payload.action or ""), payload)
-        end
-
         if payload.actor == player.Character then
             stateLabel.Text = string.upper(tostring(payload.action or "ACTION"))
             task.delay(0.18, function()
