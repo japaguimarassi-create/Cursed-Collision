@@ -2,13 +2,14 @@
 
 local NetworkService = {}
 
-local ACTIONS = {
+local ACTIONS: {[string]: boolean} = {
     M1 = true,
     M1Hit = true,
     Dash = true,
     BlockStart = true,
     BlockEnd = true,
     Special = true,
+    SpecialHit = true,
     Skill1 = true,
     Skill2 = true,
     Skill3 = true,
@@ -16,10 +17,7 @@ local ACTIONS = {
     SkillHit = true,
     SelectCharacter = true,
     Ultimate = true,
-    Awakening = true,
-    M1Hit = true,
-    SkillHit = true,
-    SpecialHit = true
+    Awakening = true
 }
 
 function NetworkService:IsKnownAction(action: any): boolean
@@ -36,7 +34,9 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
         or action == "Skill1"
         or action == "Skill2"
         or action == "Skill3"
-        or action == "Skill4" then
+        or action == "Skill4"
+        or action == "Ultimate"
+        or action == "Awakening" then
         return payload == nil
     end
 
@@ -50,24 +50,17 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
             )
     end
 
-    if action == "M1Hit" or action == "SkillHit" or action == "SpecialHit" then
+    if action == "M1Hit"
+        or action == "SkillHit"
+        or action == "SpecialHit" then
         return type(payload) == "table"
             and type(payload.attackId) == "string"
             and #payload.attackId <= 96
     end
 
     if action == "SelectCharacter" then
-        return type(payload) == "string" and #payload <= 32
-    end
-
-    if action == "Ultimate" or action == "Awakening" then
-        return payload == nil
-    end
-
-    if action == "M1Hit" or action == "SkillHit" then
-        return type(payload) == "table"
-            and type(payload.attackId) == "string"
-            and #payload.attackId <= 96
+        return type(payload) == "string"
+            and #payload <= 32
     end
 
     return false
