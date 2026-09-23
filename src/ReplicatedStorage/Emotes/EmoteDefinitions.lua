@@ -7,6 +7,7 @@ export type EmoteDefinition = {
     AnimationId: string,
     Duration: number,
     Loop: boolean,
+    Price: number,
     Priority: Enum.AnimationPriority,
     Marker: string?,
     EnergyCost: number
