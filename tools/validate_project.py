@@ -219,7 +219,7 @@ for token in ("UltimateSkin", "KillSound", "InstantSkin"):
     if token not in gamepass_config or token not in gamepass_service:
         fail(f"gamepass definition/service missing: {token}")
 
-if "GP_KillSound" not in damage_service or "NotifyKill" not in damage_service:
+if "GP_KillSound" not in gamepass_service or "NotifyKill" not in damage_service:
     fail("kill sound pass is not connected to confirmed kills")
 
 for token in ('"CharacterButton"', '"CharacterPanel"', "CCHUD_CharacterMenuOpen"):
