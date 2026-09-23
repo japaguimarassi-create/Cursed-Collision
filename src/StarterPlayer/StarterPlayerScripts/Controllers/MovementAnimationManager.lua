@@ -1,6 +1,5 @@
 --!strict
 
-local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AnimationController = require(script.Parent.AnimationController)
@@ -8,7 +7,7 @@ local Registry = require(ReplicatedStorage.Animation.AnimationRegistry)
 
 local MovementAnimationManager = {}
 
-local bound: {[Model]: {connection: RBXScriptConnection, last: string}} = setmetatable({}, {__mode="k"}) :: any
+local bound: {[Model]: {connection: RBXScriptConnection, last: string}} = {}
 
 function MovementAnimationManager:Bind(character: Model)
     if bound[character] then return end
