@@ -3,22 +3,28 @@ local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MarketplaceService = game:GetService("MarketplaceService")
 local Debris = game:GetService("Debris")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local remotes = ReplicatedStorage:WaitForChild("Remotes", 30)
+
 if not remotes then
     return
 end
 
 local accountAction = remotes:WaitForChild("AccountAction", 15)
 local accountEvent = remotes:WaitForChild("AccountEvent", 15)
-if not accountAction or not accountEvent then
+local gamePassAction = remotes:WaitForChild("GamePassAction", 15)
+local gamePassEvent = remotes:WaitForChild("GamePassEvent", 15)
+
+if not accountAction or not accountEvent or not gamePassAction or not gamePassEvent then
     return
 end
 
 local shop = require(ReplicatedStorage.Economy.ShopDefinitions)
+local GamePassConfig = require(ReplicatedStorage.Monetization.GamePassConfig)
 
 local oldGui = playerGui:FindFirstChild("CursedCollisionAccountUI")
 if oldGui then
@@ -131,9 +137,11 @@ local panelScale = Instance.new("UIScale")
 panelScale.Scale = 0.96
 panelScale.Parent = panel
 
-local _header = label(panel, "Cursed Collision", UDim2.fromScale(0.48, 0.075), UDim2.fromScale(0.035, 0.025), Enum.Font.GothamBlack, 20)
-local subheader = label(panel, "PROFILE • SHOP • MISSIONS", UDim2.fromScale(0.52, 0.05), UDim2.fromScale(0.035, 0.092), Enum.Font.Gotham, 9)
-subheader.TextColor3 = muted
+local header = label(panel, "CURSED COLLISION", UDim2.fromScale(0.50, 0.075), UDim2.fromScale(0.035, 0.025), Enum.Font.GothamBlack, 20)
+header.TextColor3 = textColor
+
+local subtitle = label(panel, "PROFILE • SKINS • MISSIONS • GAMEPASSES", UDim2.fromScale(0.62, 0.05), UDim2.fromScale(0.035, 0.092), Enum.Font.Gotham, 9)
+subtitle.TextColor3 = muted
 
 local creditsLabel = label(panel, "0 CREDITS", UDim2.fromScale(0.28, 0.06), UDim2.fromScale(0.64, 0.034), Enum.Font.GothamBold, 13)
 creditsLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -151,9 +159,9 @@ tabs.Position = UDim2.fromScale(0.03, 0.145)
 tabs.BackgroundTransparency = 1
 tabs.Parent = panel
 
-local tabShop = button(tabs, "ShopTab", "SHOP", UDim2.fromScale(0.30, 0.85), UDim2.fromScale(0, 0))
+local tabShop = button(tabs, "ShopTab", "SKINS", UDim2.fromScale(0.30, 0.85), UDim2.fromScale(0, 0))
 local tabQuest = button(tabs, "QuestTab", "MISSIONS", UDim2.fromScale(0.30, 0.85), UDim2.fromScale(0.35, 0))
-local tabEmote = button(tabs, "EmoteTab", "EMOTES", UDim2.fromScale(0.30, 0.85), UDim2.fromScale(0.70, 0))
+local tabPass = button(tabs, "PassTab", "GAMEPASSES", UDim2.fromScale(0.30, 0.85), UDim2.fromScale(0.70, 0))
 
 local content = Instance.new("Frame")
 content.Name = "Content"
@@ -163,10 +171,25 @@ content.BackgroundTransparency = 1
 content.Parent = panel
 
 local state = {
-    economy = {Credits = 0, OwnedEmotes = {}, OwnedSkins = {}, EquippedEmote = "", EquippedSkin = ""},
-    quests = {Daily = {}, Weekly = {}, General = {}, Totals = {Daily = 24, Weekly = 24, General = 24}},
+    economy = {
+        Credits = 0,
+        OwnedSkins = {},
+        EquippedSkin = "",
+        UltimateSkin = ""
+    },
+    quests = {
+        Daily = {},
+        Weekly = {},
+        General = {},
+        Totals = {Daily = 24, Weekly = 24, General = 24}
+    },
+    passes = {
+        UltimateSkin = false,
+        KillSound = false,
+        InstantSkin = false
+    },
     activeTab = "Shop",
-    shopCategory = "Emotes"
+    shopCharacter = player:GetAttribute("CharacterId") or "PotentialMan"
 }
 
 local function clearContent()
@@ -175,7 +198,7 @@ local function clearContent()
     end
 end
 
-local function listFrame()
+local function listFrame(parent: Instance)
     local list = Instance.new("ScrollingFrame")
     list.Size = UDim2.fromScale(1, 1)
     list.BackgroundTransparency = 1
@@ -183,7 +206,7 @@ local function listFrame()
     list.ScrollBarThickness = 5
     list.AutomaticCanvasSize = Enum.AutomaticSize.Y
     list.CanvasSize = UDim2.fromOffset(0, 0)
-    list.Parent = content
+    list.Parent = parent
 
     local layout = Instance.new("UIListLayout")
     layout.Padding = UDim.new(0, 8)
@@ -193,26 +216,31 @@ local function listFrame()
     return list
 end
 
-local function itemButton(parent: Instance, item, owned: boolean, equipped: boolean, category: string)
-    local right = owned and (equipped and "EQUIPPED" or "OWNED") or (tostring(item.Price) .. " C")
-    local b = button(parent, item.Id, "", UDim2.new(1, -8, 0, 58), UDim2.new())
-    b.LayoutOrder = tonumber(item.Id:match("%d+")) or 0
+local function skinButton(parent: Instance, item, owned: boolean, equipped: boolean)
+    local actionText = owned and (equipped and "EQUIPPED" or "OWNED") or (tostring(item.Price) .. " C")
+    local b = button(parent, item.Id, "", UDim2.new(1, -8, 0, 64), UDim2.new())
 
-    local _name = label(b, item.Name, UDim2.new(0.64, 0, 0.56, 0), UDim2.fromScale(0.025, 0.04), Enum.Font.GothamBold, 13)
-    local rarity = label(b, item.Rarity or "ITEM", UDim2.new(0.42, 0, 0.30, 0), UDim2.fromScale(0.025, 0.58), Enum.Font.Gotham, 9)
+    local name = label(b, item.Name, UDim2.new(0.60, 0, 0.53, 0), UDim2.fromScale(0.025, 0.03), Enum.Font.GothamBold, 13)
+    name.TextColor3 = equipped and accent or textColor
+
+    local rarity = label(b, item.Rarity or "SKIN", UDim2.new(0.42, 0, 0.27, 0), UDim2.fromScale(0.025, 0.61), Enum.Font.Gotham, 9)
     rarity.TextColor3 = muted
 
-    local action = label(b, right, UDim2.new(0.29, 0, 0.75, 0), UDim2.fromScale(0.68, 0.12), Enum.Font.GothamBlack, 12)
+    local action = label(b, actionText, UDim2.new(0.31, 0, 0.70, 0), UDim2.fromScale(0.66, 0.15), Enum.Font.GothamBlack, 11)
     action.TextXAlignment = Enum.TextXAlignment.Right
     action.TextColor3 = equipped and accent or (owned and successColor or textColor)
 
     b.Activated:Connect(function()
-        if not owned then
-            accountAction:FireServer("Buy", {category = category, id = item.Id})
-        elseif category == "Emotes" then
-            accountAction:FireServer("PlayEmote", {id = item.Id})
+        if owned then
+            accountAction:FireServer("Equip", {
+                category = "Skins",
+                id = item.Id
+            })
         else
-            accountAction:FireServer("Equip", {category = category, id = item.Id})
+            accountAction:FireServer("Buy", {
+                category = "Skins",
+                id = item.Id
+            })
         end
     end)
 
@@ -222,46 +250,28 @@ end
 local function renderShop()
     clearContent()
 
-    local categories = Instance.new("Frame")
-    categories.Size = UDim2.fromScale(1, 0.11)
-    categories.BackgroundTransparency = 1
-    categories.Parent = content
+    local characterId = player:GetAttribute("CharacterId") or state.shopCharacter
+    state.shopCharacter = characterId
 
-    local emotesTab = button(categories, "Emotes", "EMOTES • 150", UDim2.fromScale(0.30, 0.9), UDim2.fromScale(0, 0))
-    local skinsTab = button(categories, "Skins", "SKINS • 72", UDim2.fromScale(0.30, 0.9), UDim2.fromScale(0.32, 0))
+    local title = label(content, "CURRENT CHARACTER • " .. characterId, UDim2.fromScale(1, 0.08), UDim2.fromScale(0, 0), Enum.Font.GothamBlack, 12)
+    title.TextXAlignment = Enum.TextXAlignment.Center
+    title.TextColor3 = muted
 
-    local list = Instance.new("ScrollingFrame")
-    list.Size = UDim2.fromScale(1, 0.87)
-    list.Position = UDim2.fromScale(0, 0.13)
-    list.BackgroundTransparency = 1
-    list.BorderSizePixel = 0
-    list.ScrollBarThickness = 5
-    list.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    list.CanvasSize = UDim2.fromOffset(0, 0)
-    list.Parent = content
+    local list = listFrame(content)
+    list.Position = UDim2.fromScale(0, 0.10)
+    list.Size = UDim2.fromScale(1, 0.90)
 
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 7)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = list
+    local order = 0
 
-    local category = state.shopCategory
-    local source = if category == "Emotes" then shop.Emotes else shop.Skins
-    for _, item in pairs(source) do
-        local owned = if category == "Emotes" then state.economy.OwnedEmotes[item.Id] == true else state.economy.OwnedSkins[item.Id] == true
-        local equipped = if category == "Emotes" then state.economy.EquippedEmote == item.Id else state.economy.EquippedSkin == item.Id
-        itemButton(list, item, owned, equipped, category)
+    for id, item in pairs(shop.Skins) do
+        if item.Character == characterId then
+            order += 1
+            local owned = state.economy.OwnedSkins[id] == true
+            local equipped = state.economy.EquippedSkin == id
+            local b = skinButton(list, item, owned, equipped)
+            b.LayoutOrder = order
+        end
     end
-
-    emotesTab.Activated:Connect(function()
-        state.shopCategory = "Emotes"
-        renderShop()
-    end)
-
-    skinsTab.Activated:Connect(function()
-        state.shopCategory = "Skins"
-        renderShop()
-    end)
 end
 
 local function questCard(parent: Instance, quest)
@@ -301,34 +311,18 @@ local function questCard(parent: Instance, quest)
 
     local reward = label(frame, "+" .. tostring(quest.Reward or 0) .. " C", UDim2.fromScale(0.25, 0.22), UDim2.fromScale(0.70, 0.20), Enum.Font.GothamBlack, 14)
     reward.TextXAlignment = Enum.TextXAlignment.Right
-    reward.TextColor3 = Color3.fromRGB(255, 213, 101)
-
-    local status = label(frame, quest.Completed and "COMPLETED" or "ACTIVE", UDim2.fromScale(0.25, 0.18), UDim2.fromScale(0.70, 0.46), Enum.Font.GothamBold, 9)
-    status.TextXAlignment = Enum.TextXAlignment.Right
-    status.TextColor3 = quest.Completed and successColor or muted
 end
 
 local function renderQuests()
     clearContent()
 
-    local headerText = "DAILY • " .. tostring(state.quests.Totals.Daily or 24) .. "  |  WEEKLY • " .. tostring(state.quests.Totals.Weekly or 24) .. "  |  MASTERY • " .. tostring(state.quests.Totals.General or 24)
-    local info = label(content, headerText, UDim2.fromScale(1, 0.07), UDim2.fromScale(0, 0), Enum.Font.GothamBold, 10)
+    local info = label(content, "DAILY • " .. tostring(state.quests.Totals.Daily or 24) .. "  |  WEEKLY • " .. tostring(state.quests.Totals.Weekly or 24) .. "  |  MASTERY • " .. tostring(state.quests.Totals.General or 24), UDim2.fromScale(1, 0.07), UDim2.fromScale(0, 0), Enum.Font.GothamBold, 10)
     info.TextColor3 = muted
     info.TextXAlignment = Enum.TextXAlignment.Center
 
-    local list = Instance.new("ScrollingFrame")
-    list.Size = UDim2.fromScale(1, 0.92)
+    local list = listFrame(content)
     list.Position = UDim2.fromScale(0, 0.08)
-    list.BackgroundTransparency = 1
-    list.BorderSizePixel = 0
-    list.ScrollBarThickness = 5
-    list.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    list.CanvasSize = UDim2.fromOffset(0, 0)
-    list.Parent = content
-
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 8)
-    layout.Parent = list
+    list.Size = UDim2.fromScale(1, 0.92)
 
     local order = 0
     local function section(titleText: string, quests)
@@ -349,27 +343,158 @@ local function renderQuests()
     section("GENERAL / MASTERY", state.quests.General)
 end
 
-local function renderEmotes()
-    clearContent()
+local function passStatus(key: string)
+    return state.passes[key] == true and "OWNED" or (GamePassConfig[key].Id > 0 and "BUY" or "ID NOT SET")
+end
 
-    local info = label(content, "Owned emotes • tap to play", UDim2.fromScale(1, 0.08), UDim2.fromScale(0, 0), Enum.Font.GothamBold, 11)
-    info.TextXAlignment = Enum.TextXAlignment.Center
-    info.TextColor3 = muted
+local function promptPass(key: string)
+    local pass = GamePassConfig[key]
 
-    local list = listFrame()
-    local order = 0
-    for id in pairs(state.economy.OwnedEmotes) do
-        local item = shop.Emotes[id]
-        if item then
-            order += 1
-            local b = itemButton(list, item, true, state.economy.EquippedEmote == id, "Emotes")
-            b.LayoutOrder = order
+    if not pass or pass.Id <= 0 then
+        return false
+    end
+
+    if state.passes[key] then
+        return true
+    end
+
+    pcall(function()
+        MarketplaceService:PromptGamePassPurchase(player, pass.Id)
+    end)
+
+    return true
+end
+
+local function ownedCurrentSkins()
+    local result = {}
+
+    for id in pairs(state.economy.OwnedSkins) do
+        local item = shop.Skins[id]
+        if item and item.Character == (player:GetAttribute("CharacterId") or "") then
+            table.insert(result, item)
         end
     end
 
-    if order == 0 then
-        local empty = label(list, "No emotes owned.", UDim2.new(1, -8, 0, 40), UDim2.new(), Enum.Font.Gotham, 12)
-        empty.TextColor3 = muted
+    table.sort(result, function(a, b)
+        return a.Name < b.Name
+    end)
+
+    return result
+end
+
+local function skinSelector(parent: Instance, titleText: string, currentId: string, action: string, passKey: string)
+    local head = label(parent, titleText, UDim2.fromScale(1, 0.07), UDim2.new(), Enum.Font.GothamBlack, 12)
+    head.TextColor3 = accent
+
+    local passButton = button(parent, "Pass_" .. passKey, passStatus(passKey), UDim2.fromScale(0.27, 0.09), UDim2.fromScale(0.72, 0))
+    passButton.TextSize = 10
+
+    if passKey == "UltimateSkin" then
+        passButton.Activated:Connect(function()
+            promptPass(passKey)
+        end)
+    else
+        passButton.Activated:Connect(function()
+            promptPass(passKey)
+        end)
+    end
+
+    local list = Instance.new("ScrollingFrame")
+    list.Size = UDim2.fromScale(1, 0.78)
+    list.Position = UDim2.fromScale(0, 0.10)
+    list.BackgroundTransparency = 1
+    list.BorderSizePixel = 0
+    list.ScrollBarThickness = 4
+    list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    list.CanvasSize = UDim2.fromOffset(0, 0)
+    list.Parent = parent
+
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 6)
+    layout.Parent = list
+
+    for _, item in ipairs(ownedCurrentSkins()) do
+        local selected = item.Id == currentId
+        local b = button(list, item.Id, (selected and "• " or "") .. item.Name, UDim2.new(1, -5, 0, 46), UDim2.new())
+
+        if selected then
+            b.TextColor3 = accent
+        end
+
+        b.Activated:Connect(function()
+            if not state.passes[passKey] then
+                promptPass(passKey)
+                return
+            end
+
+            gamePassAction:FireServer(action, {
+                skinId = item.Id
+            })
+        end)
+    end
+
+    local empty = (#ownedCurrentSkins() == 0)
+    if empty then
+        local none = label(list, "No owned skins for this character yet.", UDim2.new(1, -8, 0, 42), UDim2.new(), Enum.Font.Gotham, 11)
+        none.TextColor3 = muted
+    end
+end
+
+local function renderPasses()
+    clearContent()
+
+    local list = listFrame(content)
+    list.Size = UDim2.fromScale(1, 1)
+
+    local passInfo = {
+        {
+            key = "UltimateSkin",
+            action = "SetUltimateSkin",
+            title = "ULTIMATE SKIN",
+            text = "Automatically equip a chosen owned skin when AwakeningActive starts."
+        },
+        {
+            key = "InstantSkin",
+            action = "ApplyInstantSkin",
+            title = "INSTANT SKIN SWAP",
+            text = "Swap to any owned skin for the current character during a match."
+        },
+        {
+            key = "KillSound",
+            action = "",
+            title = "KILL SOUND",
+            text = "Unlocks a custom kill sound for eliminations."
+        }
+    }
+
+    for index, info in ipairs(passInfo) do
+        local card = Instance.new("Frame")
+        card.Size = UDim2.new(1, -8, 0, info.key == "KillSound" and 112 or 235)
+        card.BackgroundColor3 = Color3.fromRGB(20, 23, 31)
+        card.BorderSizePixel = 0
+        card.LayoutOrder = index
+        card.Parent = list
+        corner(card, 12)
+        stroke(card, Color3.fromRGB(68, 71, 88), 1)
+
+        local title = label(card, info.title, UDim2.fromScale(0.66, 0.16), UDim2.fromScale(0.025, 0.055), Enum.Font.GothamBlack, 14)
+        title.TextColor3 = accent
+
+        local desc = label(card, info.text, UDim2.fromScale(0.90, 0.20), UDim2.fromScale(0.025, 0.22), Enum.Font.Gotham, 10)
+        desc.TextColor3 = muted
+
+        local status = button(card, "Status", passStatus(info.key), UDim2.fromScale(0.25, 0.15), UDim2.fromScale(0.72, 0.055))
+        status.TextSize = 10
+        status.Activated:Connect(function()
+            promptPass(info.key)
+        end)
+
+        if info.key ~= "KillSound" then
+            skinSelector(card, info.title, info.key == "UltimateSkin" and state.economy.UltimateSkin or state.economy.EquippedSkin, info.action, info.key)
+        else
+            local audio = label(card, GamePassConfig.KillSoundId == "" and "Kill sound asset: configure GamePassConfig.KillSoundId" or "Kill sound asset configured.", UDim2.fromScale(0.92, 0.26), UDim2.fromScale(0.025, 0.52), Enum.Font.Gotham, 10)
+            audio.TextColor3 = muted
+        end
     end
 end
 
@@ -379,7 +504,7 @@ local function render()
     elseif state.activeTab == "Quests" then
         renderQuests()
     else
-        renderEmotes()
+        renderPasses()
     end
 end
 
@@ -392,6 +517,7 @@ end
 local function animateClose()
     local tween = TweenService:Create(panelScale, TweenInfo.new(0.10, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.97})
     tween:Play()
+
     task.delay(0.10, function()
         if panel.Parent then
             panel.Visible = false
@@ -401,12 +527,15 @@ end
 
 local function toggleMenu()
     local open = not panel.Visible
+
     if open then
         closeOwner()
         setMenuOpen(true)
         accountAction:FireServer("Sync", {})
+        gamePassAction:FireServer("Sync", {})
         render()
         animateOpen()
+
         if UserInputService.PreferredInput == Enum.PreferredInput.Gamepad then
             GuiService.SelectedObject = tabShop
         end
@@ -426,8 +555,8 @@ tabQuest.Activated:Connect(function()
     render()
 end)
 
-tabEmote.Activated:Connect(function()
-    state.activeTab = "Emotes"
+tabPass.Activated:Connect(function()
+    state.activeTab = "Passes"
     render()
 end)
 
@@ -448,52 +577,18 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
-local function emoteVFX(accentColor: Color3, name: string)
-    local character = player.Character
-    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-    if not rootPart or not rootPart:IsA("BasePart") then
+local function showToast(message: string, success: boolean)
+    if message == "" then
         return
     end
 
-    local attachment = Instance.new("Attachment")
-    attachment.Name = "CursedCollisionEmoteFX"
-    attachment.Parent = rootPart
-
-    local emitter = Instance.new("ParticleEmitter")
-    emitter.Color = ColorSequence.new(accentColor, Color3.fromRGB(255, 255, 255))
-    emitter.LightEmission = 0.85
-    emitter.Rate = 0
-    emitter.Lifetime = NumberRange.new(0.5, 0.9)
-    emitter.Speed = NumberRange.new(3, 7)
-    emitter.SpreadAngle = Vector2.new(180, 180)
-    emitter.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.45),
-        NumberSequenceKeypoint.new(1, 0)
-    })
-    emitter.Parent = attachment
-    emitter:Emit(18)
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Size = UDim2.fromOffset(230, 48)
-    billboard.StudsOffset = Vector3.new(0, 3.5, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = rootPart
-
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.fromScale(1, 1)
-    text.BackgroundTransparency = 0.18
-    text.BackgroundColor3 = panelColor
-    text.Text = string.upper(name)
-    text.TextColor3 = accentColor
-    text.Font = Enum.Font.GothamBlack
-    text.TextScaled = true
-    text.Parent = billboard
-    corner(text, 10)
-    stroke(text, accentColor, 1)
-
-    TweenService:Create(text, TweenInfo.new(0.65), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
-    Debris:AddItem(attachment, 1)
-    Debris:AddItem(billboard, 1)
+    local toast = label(gui, message, UDim2.fromScale(0.56, 0.055), UDim2.fromScale(0.22, 0.90), Enum.Font.GothamBold, 12)
+    toast.TextXAlignment = Enum.TextXAlignment.Center
+    toast.BackgroundTransparency = 0.10
+    toast.BackgroundColor3 = success and Color3.fromRGB(22, 54, 37) or Color3.fromRGB(63, 25, 34)
+    toast.TextColor3 = success and successColor or errorColor
+    corner(toast, 9)
+    Debris:AddItem(toast, 2.4)
 end
 
 accountEvent.OnClientEvent:Connect(function(event, payload)
@@ -507,68 +602,60 @@ accountEvent.OnClientEvent:Connect(function(event, payload)
         end
 
     elseif event == "Notice" then
-        local ownerPanelOpen = player:GetAttribute("CCHUD_OwnerPanelOpen") == true
-        if ownerPanelOpen then
+        if player:GetAttribute("CCHUD_OwnerPanelOpen") == true then
+            return
+        end
+        showToast(tostring(payload and payload.Message or ""), payload and payload.Success == true)
+
+    elseif event == "AdminPlayers" then
+        return
+    elseif event == "Platform" then
+        platformLabel.Text = tostring(payload or "PC")
+    end
+end)
+
+gamePassEvent.OnClientEvent:Connect(function(event, payload)
+    if event == "Sync" then
+        for key, value in pairs(payload or {}) do
+            if state.passes[key] ~= nil then
+                state.passes[key] = value == true
+            end
+        end
+
+        if panel.Visible and state.activeTab == "Passes" then
+            render()
+        end
+
+    elseif event == "Result" then
+        local reason = tostring(payload and payload.Reason or "")
+        local messages = {
+            PASS_REQUIRED = "This feature requires its GamePass.",
+            INVALID_SKIN = "That skin is not owned or does not belong to this character.",
+            APPLY_FAILED = "The skin could not be applied.",
+            SKIN_APPLIED = "Skin changed instantly.",
+            ULTIMATE_SKIN_SET = "Ultimate skin selected."
+        }
+
+        showToast(messages[reason] or reason, payload and payload.Success == true)
+
+        if panel.Visible then
+            gamePassAction:FireServer("Sync", {})
+            accountAction:FireServer("Sync", {})
+        end
+
+    elseif event == "KillSound" then
+        local soundId = tostring(payload and payload.SoundId or "")
+
+        if soundId == "" then
             return
         end
 
-        local message = payload and payload.Message or ""
-        if message ~= "" then
-            local toast = label(gui, message, UDim2.fromScale(0.56, 0.06), UDim2.fromScale(0.22, 0.91), Enum.Font.GothamBold, 13)
-            toast.TextXAlignment = Enum.TextXAlignment.Center
-            toast.BackgroundTransparency = 0.12
-            toast.BackgroundColor3 = payload.Success and Color3.fromRGB(22, 54, 37) or Color3.fromRGB(63, 25, 34)
-            toast.TextColor3 = payload.Success and successColor or errorColor
-            corner(toast, 9)
-            Debris:AddItem(toast, 2.2)
-        end
-
-    elseif event == "Platform" then
-        platformLabel.Text = tostring(payload or "PC")
-
-    elseif event == "PlayEmote" then
-        local info = payload or {}
-        local character = player.Character
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            task.spawn(function()
-                local played = false
-                local animationId = tonumber(info.AnimationId) or 0
-
-                if animationId > 0 then
-                    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
-                    animator.Parent = humanoid
-
-                    local animation = Instance.new("Animation")
-                    animation.AnimationId = "rbxassetid://" .. tostring(animationId)
-
-                    local ok, track = pcall(function()
-                        return animator:LoadAnimation(animation)
-                    end)
-
-                    if ok and track then
-                        track:Play()
-                        played = true
-                        task.delay(10, function()
-                            if track.IsPlaying then
-                                track:Stop(0.15)
-                            end
-                            animation:Destroy()
-                        end)
-                    else
-                        animation:Destroy()
-                    end
-                end
-
-                if not played then
-                    pcall(function()
-                        humanoid:PlayEmoteAsync(info.Animation or "Wave")
-                    end)
-                end
-            end)
-        end
-
-        emoteVFX(info.Accent or accent, info.Name or "EMOTE")
+        local sound = Instance.new("Sound")
+        sound.SoundId = soundId
+        sound.Volume = tonumber(payload.Volume) or 1
+        sound.Parent = workspace
+        sound:Play()
+        Debris:AddItem(sound, 5)
     end
 end)
 
@@ -582,6 +669,15 @@ local function updatePlatformLabel()
 end
 
 UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(updatePlatformLabel)
+
+player:GetAttributeChangedSignal("CharacterId"):Connect(function()
+    state.shopCharacter = player:GetAttribute("CharacterId") or "PotentialMan"
+    if panel.Visible and state.activeTab == "Shop" then
+        render()
+    end
+end)
+
 updatePlatformLabel()
 setMenuOpen(false)
 accountAction:FireServer("Sync", {})
+gamePassAction:FireServer("Sync", {})
