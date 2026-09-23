@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GuiService = game:GetService("GuiService")
 
 local Util = require(script.Parent.Util)
 
@@ -195,14 +196,14 @@ function M.Start()
         GuiService.SelectedObject = buttons[1]
     end
 
-    local function close()
+    local function closeWheel()
         wheel.Visible = false
         backdrop.Visible = false
         Util.setMenuAttributes("Emote", false)
     end
 
     button.Activated:Connect(function()
-        if wheel.Visible then close() else open() end
+        if wheel.Visible then closeWheel() else open() end
     end)
 
     backdrop.InputBegan:Connect(function(input)
