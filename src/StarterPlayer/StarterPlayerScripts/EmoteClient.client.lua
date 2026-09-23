@@ -493,9 +493,10 @@ RunService.RenderStepped:Connect(function()
         end
 
         if not data.track then
+            local pose = poseFor(data.id, elapsed)
             for name, joint in pairs(data.joints) do
                 if joint and joint.Parent then
-                    joint.Transform = poseFor(data.id, elapsed)
+                    joint.Transform = pose[name] or CFrame.identity
                 end
             end
         end
