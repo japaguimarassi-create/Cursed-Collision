@@ -98,7 +98,7 @@ function ControlMap:GetPlatform(preferred: Enum.PreferredInput): Platform
 end
 
 function ControlMap:GetHint(platform: Platform, action: string): string
-    local set = hints[platform] or hints["PC"]
+    local set: {[string]: string} = hints[platform] or (hints :: any)["PC"]
     return set[action] or action
 end
 
