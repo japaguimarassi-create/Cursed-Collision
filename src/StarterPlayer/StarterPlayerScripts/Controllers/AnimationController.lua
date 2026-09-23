@@ -49,43 +49,43 @@ local function fallback(character: Model, key: string, payload: any): boolean
             elseif key == "HitFinisher" then "Death"
             else "Light"
 
-        Procedural:HitReact(character, tonumber(payload and payload.damage) or 1, reaction)
+        Procedural.HitReact(character, tonumber(payload and payload.damage) or 1, reaction)
         return true
     end
 
     if string.match(key, "^M1_[1-4]$") then
         local combo = tonumber(string.sub(key, 4)) or 1
-        return Procedural:PlayAttack(character, "M1", {
+        return Procedural.PlayAttack(character, "M1", {
             combo = combo,
             move = move
         })
     end
 
     if string.match(key, "^Skill[1-4]$") then
-        return Procedural:PlaySkill(character, move, payload or {})
+        return Procedural.PlaySkill(character, move, payload or {})
     end
 
     if key == "Block" then
-        return Procedural:PlayAttack(character, "Block", payload or {})
+        return Procedural.PlayAttack(character, "Block", payload or {})
     end
 
     if key == "Parry" then
-        return Procedural:HitReact(character, 1.5, "Parry")
+        return Procedural.HitReact(character, 1.5, "Parry")
     end
 
     if key == "Dash" or key == "AirDash" then
-        return Procedural:PlayAttack(character, "Dash", payload or {})
+        return Procedural.PlayAttack(character, "Dash", payload or {})
     end
 
     if key == "Special" or key == "Ultimate" or key == "Awakening" then
-        return Procedural:PlaySkill(character, move, payload or {})
+        return Procedural.PlaySkill(character, move, payload or {})
     end
 
     if key == "Execution" then
-        return Procedural:HitReact(character, 2, "Death")
+        return Procedural.HitReact(character, 2, "Death")
     end
 
-    return Procedural:PlayAttack(character, move, payload or {})
+    return Procedural.PlayAttack(character, move, payload or {})
 end
 
 function AnimationController:Bind(character: Model): CharacterData?
@@ -234,7 +234,7 @@ function AnimationController:PlaySkill(
 end
 
 function AnimationController:PlayDomain(character: Model, options: any): boolean
-    return Procedural:PlayDomain(character, options or {})
+    return Procedural.PlayDomain(character, options or {})
 end
 
 function AnimationController:HitReact(
@@ -242,23 +242,23 @@ function AnimationController:HitReact(
     intensity: number,
     reaction: string
 ): boolean
-    return Procedural:HitReact(character, intensity, reaction)
+    return Procedural.HitReact(character, intensity, reaction)
 end
 
 function AnimationController:ResetJoints(character: Model, duration: number?): boolean
-    return Procedural:ResetJoints(character, duration or 0.12)
+    return Procedural.ResetJoints(character, duration or 0.12)
 end
 
 function AnimationController:Cancel(character: Model)
-    return Procedural:Cancel(character)
+    return Procedural.Cancel(character)
 end
 
 function AnimationController:StartIdleCombat(character: Model, intensity: number?): boolean
-    return Procedural:StartIdleCombat(character, intensity or 1)
+    return Procedural.StartIdleCombat(character, intensity or 1)
 end
 
 function AnimationController:StopIdleCombat(character: Model)
-    return Procedural:StopIdleCombat(character)
+    return Procedural.StopIdleCombat(character)
 end
 
 return AnimationController
