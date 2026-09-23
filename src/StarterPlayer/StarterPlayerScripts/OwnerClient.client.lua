@@ -318,12 +318,28 @@ local function setMenuOpen(open: boolean)
     end
 end
 
-local function closeMainMenu()
+local function closeOtherInterfaces()
     local accountGui = playerGui:FindFirstChild("CursedCollisionAccountUI")
     local accountPanel = accountGui and accountGui:FindFirstChild("AccountPanel")
     if accountPanel and accountPanel:IsA("GuiObject") then
         accountPanel.Visible = false
     end
+
+    local characterGui = playerGui:FindFirstChild("CursedCollisionCharacterUI")
+    local characterPanel = characterGui and characterGui:FindFirstChild("CharacterPanel")
+    if characterPanel and characterPanel:IsA("GuiObject") then
+        characterPanel.Visible = false
+    end
+
+    local emoteGui = playerGui:FindFirstChild("CursedCollisionEmoteUI")
+    local emoteRoot = emoteGui and emoteGui:FindFirstChild("Root")
+    local emoteWheel = emoteRoot and emoteRoot:FindFirstChild("EmoteWheel")
+    if emoteWheel and emoteWheel:IsA("GuiObject") then
+        emoteWheel.Visible = false
+    end
+
+    player:SetAttribute("CCHUD_CharacterMenuOpen", false)
+    player:SetAttribute("CCHUD_EmoteWheelOpen", false)
 end
 
 local function toggle()
