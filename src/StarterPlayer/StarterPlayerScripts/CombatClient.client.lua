@@ -68,7 +68,7 @@ InputManager:BindAction(
             fire("M1")
         end
     end,
-    {Enum.KeyCode.ButtonR2},
+    {Enum.KeyCode.ButtonB},
     false
 )
 
@@ -173,7 +173,7 @@ InputManager:BindAction(
             fire("Ultimate")
         end
     end,
-    {Enum.KeyCode.R, Enum.KeyCode.ButtonR3},
+    {Enum.KeyCode.T, Enum.KeyCode.DPadRight},
     false
 )
 
