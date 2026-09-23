@@ -179,7 +179,7 @@ type ActiveEmote = {
     joints: {[string]: Motor6D?}
 }
 
-local activeEmote: {[Model]: ActiveEmote} = {}
+local activeEmote: {[Model]: any} = {}
 
 local function findJoint(character: Model, names: {string}): Motor6D?
     for _, name in ipairs(names) do
