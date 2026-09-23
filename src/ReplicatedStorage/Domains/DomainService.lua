@@ -128,7 +128,7 @@ local function pulse(entry)
     local damage, stun, knockback = 2.5, 0.25, 0
 
     if entry.characterId == "Sukuna" then
-        damage, stun, knockback = 5, 0.32, 38
+        damage, stun, knockback = 2.5, 0.24, 22
     elseif entry.characterId == "Yuji" then
         damage, stun, knockback = 3.5, 0.3, 24
     elseif entry.characterId == "Gojo" then
@@ -249,5 +249,11 @@ function DomainService:ForceClashState(player, active)
         player:SetAttribute("DomainActive", false)
     end
 end
+
+Players.PlayerRemoving:Connect(function(player)
+    if domains[player] then
+        DomainService:Stop(player)
+    end
+end)
 
 return DomainService
