@@ -4,7 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local AnimationData = require(ReplicatedStorage.Animation.AnimationData)
-local AnimationCache = require(script.Parent.AnimationCache)
+local AnimationCache: any = require(script.Parent.AnimationCache)
 local AnimationController: any = require(script.Parent.AnimationController)
 
 local player = Players.LocalPlayer
