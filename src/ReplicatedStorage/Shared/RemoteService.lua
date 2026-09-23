@@ -4,12 +4,15 @@ local RemoteService = {}
 
 local function ensure(parent, className, name)
     local existing = parent:FindFirstChild(name)
+
     if existing and existing.ClassName == className then
         return existing
     end
+
     if existing then
         existing:Destroy()
     end
+
     local object = Instance.new(className)
     object.Name = name
     object.Parent = parent
@@ -18,6 +21,7 @@ end
 
 function RemoteService:Get()
     local folder = ReplicatedStorage:FindFirstChild("Remotes")
+
     if not folder then
         folder = Instance.new("Folder")
         folder.Name = "Remotes"
@@ -32,7 +36,9 @@ function RemoteService:Get()
         Selection = ensure(folder, "RemoteEvent", "Selection"),
         AccountAction = ensure(folder, "RemoteEvent", "AccountAction"),
         AccountEvent = ensure(folder, "RemoteEvent", "AccountEvent"),
-        AdminAction = ensure(folder, "RemoteEvent", "AdminAction")
+        AdminAction = ensure(folder, "RemoteEvent", "AdminAction"),
+        GamePassAction = ensure(folder, "RemoteEvent", "GamePassAction"),
+        GamePassEvent = ensure(folder, "RemoteEvent", "GamePassEvent")
     }
 end
 
