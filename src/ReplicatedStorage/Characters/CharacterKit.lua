@@ -233,7 +233,7 @@ end
 local function defaultVars(id: string): {[string]: any}
     return {
         Momentum = 0,
-        Infinity = id == "Gojo",
+        Infinity = false,
         InfinityUntil = 0,
         ShrineMode = "Dismantle",
         TenShadowsMode = "Divine Dog",
