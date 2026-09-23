@@ -1,7 +1,7 @@
 --!strict
 
 local Players = game:GetService("Players")
-local StateManager = require(script.Parent.StateManager)
+local StateManager: any = require(script.Parent.StateManager)
 
 local RagdollService = {}
 
