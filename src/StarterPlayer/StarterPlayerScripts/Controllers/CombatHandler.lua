@@ -172,7 +172,10 @@ function CombatHandler:OnCombatEvent(payload: any, combatAction: RemoteEvent)
         if actor and actor:IsA("Model") then
             AnimationController:Bind(actor)
             AnimationController:StopIdleCombat(actor)
-            AnimationCache:Play(getAnimator(actor) :: Animator, payload.air and "AirDash" or "Dash")
+            local animator = getAnimator(actor)
+            if animator then
+                AnimationCache:Play(animator, payload.air and "AirDash" or "Dash")
+            end
         end
         return true
     end
