@@ -22,7 +22,7 @@ export type State = {
     Vars: {[string]: any}
 }
 
-local store: {[Player]: State} = setmetatable({}, {__mode = "k"}) :: any
+local store: {[Player]: State} = {} :: any
 
 local allowed: {[Phase]: {[Phase]: boolean}} = {
     Idle = {Idle=true, Running=true, Jumping=true, Falling=true, Attacking=true, Blocking=true, Dashing=true, UsingAbility=true, Ultimate=true, Awakening=true, Stunned=true, Dead=true},
