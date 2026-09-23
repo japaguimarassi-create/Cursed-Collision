@@ -65,24 +65,27 @@ local function moveCooldown(action: string): number
 end
 
 local function fire(action: string, payload: any?)
+    local actionName: string = tostring(action)
+
     if menuOpen()
-        and action ~= "BlockEnd" then
+        and actionName ~= "BlockEnd" then
         return
     end
 
-    local isBlockAction = action == "BlockStart" or action == "BlockEnd"
+    local isBlockAction: boolean =
+        actionName == "BlockStart" or actionName == "BlockEnd"
 
-    if not isBlockAction and remaining(action) > 0 then
+    if not isBlockAction and remaining(actionName) > 0 then
         return
     end
 
-    local cooldown = if isBlockAction then 0 else moveCooldown(action)
+    local cooldown = if isBlockAction then 0 else moveCooldown(actionName)
 
     if cooldown > 0 then
-        localCooldowns[action] = os.clock() + cooldown
+        localCooldowns[actionName] = os.clock() + cooldown
     end
 
-    combatAction:FireServer(action, payload)
+    combatAction:FireServer(actionName, payload)
 end
 
 local function setBlocking(active: boolean)
