@@ -160,6 +160,19 @@ function DataService:SpendCredits(player, amount)
     return self:SetCredits(player, data.Credits - amount)
 end
 
+function DataService:SetUltimateSkin(player, skinId)
+    local data = sessions[player]
+
+    if not data or type(skinId) ~= "string" or #skinId > 96 then
+        return false
+    end
+
+    data.UltimateSkin = skinId
+    player:SetAttribute("UltimateSkin", skinId)
+    dirty[player] = true
+    return true
+end
+
 function DataService:Save(player)
     local data = sessions[player]
     if not data or not ready[player] then
