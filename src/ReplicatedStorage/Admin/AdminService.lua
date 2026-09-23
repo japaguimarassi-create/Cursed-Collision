@@ -48,15 +48,10 @@ function AdminService:Execute(actor, action, payload, announce)
         DataService:Save(target)
         return true, "Removed " .. tostring(amount) .. " Credits."
 
-    elseif action == "GiveAllEmotes" then
-        ShopService:GiveAllEmotes(target)
-        DataService:Save(target)
-        return true, "All 150 emotes granted."
-
     elseif action == "GiveAllSkins" then
         ShopService:GiveAllSkins(target)
         DataService:Save(target)
-        return true, "All skins for the current character granted."
+        return true, "All skins granted."
 
     elseif action == "ResetQuests" then
         QuestService:ResetAll(target)
@@ -66,30 +61,37 @@ function AdminService:Execute(actor, action, payload, announce)
 
     elseif action == "CompleteQuest" then
         local questId = type(payload.questId) == "string" and payload.questId or ""
+
         if #questId > 96 then
             return false, "INVALID_QUEST"
         end
+
         if QuestService:CompleteQuest(target, questId) then
             DataService:Save(target)
             return true, "Quest completed: " .. questId
         end
+
         return false, "QUEST_NOT_FOUND"
 
     elseif action == "Heal" then
         local character = target.Character
         local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
         if not humanoid then
             return false, "NO_HUMANOID"
         end
+
         humanoid.Health = humanoid.MaxHealth
         return true, "Healed " .. target.Name .. "."
 
     elseif action == "Announce" then
         local message = type(payload.message) == "string" and payload.message or ""
         message = message:sub(1, 180)
+
         if message == "" then
             return false, "EMPTY_MESSAGE"
         end
+
         announce(nil, "[OWNER] " .. message)
         return true, "Announcement sent."
 
@@ -97,16 +99,19 @@ function AdminService:Execute(actor, action, payload, announce)
         if target == actor then
             return false, "CANNOT_KICK_SELF"
         end
-        local reason = type(payload.reason) == "string" and payload.reason:sub(1, 120) or "Removed by Owner."
+
+        local reason = type(payload.reason) == "string"
+            and payload.reason:sub(1, 120)
+            or "Removed by Owner."
+
         target:Kick(reason)
         return true, "Player kicked."
 
     elseif action == "SaveAll" then
-        for _, player in ipairs(Players:GetPlayers()) do
-            DataService:Save(player)
+        for _, currentPlayer in ipairs(Players:GetPlayers()) do
+            DataService:Save(currentPlayer)
         end
         return true, "All active profiles saved."
-
     end
 
     return false, "UNKNOWN_ADMIN_ACTION"
