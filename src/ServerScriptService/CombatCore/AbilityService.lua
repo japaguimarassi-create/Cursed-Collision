@@ -91,6 +91,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
     }
 
     self.Active[player] = record
+    state.Vars.ActiveAttackId = attackId
 
     local root = rootOf(player)
 
@@ -140,6 +141,11 @@ function AbilityService:Execute(player: Player, slot: number): boolean
         end
 
         HitRegistry:End(player, attackId)
+
+        local latestState = StateManager:Get(player)
+        if latestState and latestState.Vars.ActiveAttackId == attackId then
+            latestState.Vars.ActiveAttackId = nil
+        end
 
         if self.Active[player] == record then
             self.Active[player] = nil
