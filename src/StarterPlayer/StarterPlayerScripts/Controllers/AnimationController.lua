@@ -24,14 +24,7 @@ local function animatorOf(character: Model): Animator?
         return nil
     end
 
-    local animator = humanoid:FindFirstChildOfClass("Animator")
-    if animator then
-        return animator
-    end
-
-    local created = Instance.new("Animator")
-    created.Parent = humanoid
-    return created
+    return humanoid:FindFirstChildOfClass("Animator")
 end
 
 local function fallback(character: Model, key: string, payload: any): boolean
