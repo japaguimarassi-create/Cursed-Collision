@@ -150,7 +150,11 @@ fx.OnClientEvent:Connect(function(kind, _, payload)
     if kind ~= "Hit" and kind ~= "PerfectBlock" and kind ~= "Death" then
         return
     end
-    local actor = type(payload) == "table" and payload.actor
+    local actor: Instance? = nil
+    if type(payload) == "table" then
+        actor = payload.actor
+    end
+
     if actor and actor:IsA("Model") then
         stop(actor)
     end
