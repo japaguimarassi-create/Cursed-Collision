@@ -107,6 +107,7 @@ end
 
 local function resetCharacter(player: Player)
     StateManager:Reset(player)
+    combat:CancelPlayer(player)
     CooldownService:Clear(player)
     HitRegistry:Clear(player)
     CombatMarkerService:Clear(player)
@@ -148,8 +149,6 @@ local function handleCombatAction(
 
     if action == "M1" then
         combat:M1(player)
-    elseif action == "M1Hit" then
-        combat:M1Hit(player, payload.attackId)
     elseif action == "Dash" then
         combat:Dash(
             player,
@@ -232,6 +231,7 @@ end)
 
 Players.PlayerRemoving:Connect(function(player)
     activePlayers[player] = nil
+    combat:CancelPlayer(player)
     CooldownService:Clear(player)
     HitRegistry:Clear(player)
     CombatMarkerService:Clear(player)
