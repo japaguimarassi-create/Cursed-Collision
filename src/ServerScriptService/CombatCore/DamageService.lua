@@ -4,11 +4,11 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
-local StateManager = require(script.Parent.StateManager)
-local MovementController = require(script.Parent.MovementController)
-local RagdollService = require(script.Parent.RagdollService)
-local GamePassService = require(ReplicatedStorage.Monetization.GamePassService)
-local UltimateService = require(script.Parent.UltimateService)
+local StateManager: any = require(script.Parent.StateManager)
+local MovementController: any = require(script.Parent.MovementController)
+local RagdollService: any = require(script.Parent.RagdollService)
+local GamePassService: any = require(ReplicatedStorage.Monetization.GamePassService)
+local UltimateService: any = require(script.Parent.UltimateService)
 
 local DamageService = {}
 local context: any = nil
