@@ -124,11 +124,13 @@ function CombatService:_applyM1(player: Player, attackId: string, attack: any): 
         32
     )[1]
 
+    local success = false
+
     if target and not HitRegistry:Has(player, attackId, target.model) then
         HitRegistry:Add(player, attackId, target.model)
 
         -- O marcador controla o instante do hit; o servidor continua dono do dano.
-        self.Context.damage(
+        success = self.Context.damage(
             player,
             target.humanoid,
             attack.Damage,
@@ -147,6 +149,12 @@ function CombatService:_applyM1(player: Player, attackId: string, attack: any): 
             }
         )
     end
+
+    CharacterService:OnM1Hit(
+        player,
+        attack.Combo,
+        success
+    )
 
     task.delay(
         (tonumber(attack.Active) or 0.05) + (tonumber(attack.Recovery) or 0.1),
