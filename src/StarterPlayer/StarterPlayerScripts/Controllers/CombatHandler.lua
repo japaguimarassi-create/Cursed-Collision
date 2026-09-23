@@ -207,10 +207,16 @@ function CombatHandler:OnCombatEvent(payload: {[string]: any}, combatAction: Rem
             return false
         end
 
-        AnimationCache:Play(
-            animator,
-            payload.air == true and "AirDash" or "Dash"
-        )
+        local key = if payload.air == true
+            then "AirDash"
+            elseif payload.dashDirection == "Back"
+            then "BackDash"
+            elseif payload.dashDirection == "Left"
+                or payload.dashDirection == "Right"
+            then "SideDash"
+            else "Dash"
+
+        AnimationCache:Play(animator, key)
 
         return true
     end
