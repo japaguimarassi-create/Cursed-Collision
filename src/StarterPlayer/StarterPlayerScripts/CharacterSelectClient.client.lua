@@ -221,11 +221,26 @@ local function setOpen(open: boolean)
 
     if open then
         player:SetAttribute("CCHUD_MenuOpen", true)
+
         local accountGui = playerGui:FindFirstChild("CursedCollisionAccountUI")
         local accountPanel = accountGui and accountGui:FindFirstChild("AccountPanel")
         if accountPanel and accountPanel:IsA("GuiObject") then
             accountPanel.Visible = false
         end
+
+        local ownerGui = playerGui:FindFirstChild("CursedCollisionOwnerUI")
+        local ownerPanel = ownerGui and ownerGui:FindFirstChild("OwnerPanel")
+        if ownerPanel and ownerPanel:IsA("GuiObject") then
+            ownerPanel.Visible = false
+        end
+
+        local emoteGui = playerGui:FindFirstChild("CursedCollisionEmoteUI")
+        local emoteRoot = emoteGui and emoteGui:FindFirstChild("Root")
+        local emoteWheel = emoteRoot and emoteRoot:FindFirstChild("EmoteWheel")
+        if emoteWheel and emoteWheel:IsA("GuiObject") then
+            emoteWheel.Visible = false
+        end
+        player:SetAttribute("CCHUD_EmoteWheelOpen", false)
 
         panelScale.Scale = 0.96
         TweenService:Create(panelScale, TweenInfo.new(0.15, Enum.EasingStyle.Back), {Scale = 1}):Play()
