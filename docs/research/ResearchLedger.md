@@ -172,3 +172,12 @@ The current image-query pass returned representative references rather than the 
 - F/UI/menu/emote wheel pattern reference: https://cdn-offer-photos.zeusx.com/b9d5d102-e73c-43b4-85d0-25fb56f8868a.jpg
 
 Visual notes: use these as composition/readability references only. They are not implementation assets for Cursed Collision.
+
+### Implementation checkpoint — 2026-09-23
+SOURCE: Cursed Collision implementation branch
+TYPE: Internal engineering checkpoint
+OBSERVATION: Combat M1/skills/Special now use server-owned marker windows; client animation markers only request resolution.
+TECHNICAL LESSON: The client never directly applies damage; CombatMarkerService validates token, timing window and travel origin before the server callback executes.
+HUD LESSON: ScreenInsets, responsive scaling, touch sizing and gamepad selection are centralized in the modular HUD layer.
+EMOTE LESSON: Emotes stop on movement, damage, stun, ragdoll and combat-state attributes and use cached tracks when an asset ID is configured.
+STATUS: Implemented; CI/static validation required; live Roblox device testing remains outstanding.
