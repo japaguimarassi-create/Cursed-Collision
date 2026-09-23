@@ -181,3 +181,30 @@ TECHNICAL LESSON: The client never directly applies damage; CombatMarkerService 
 HUD LESSON: ScreenInsets, responsive scaling, touch sizing and gamepad selection are centralized in the modular HUD layer.
 EMOTE LESSON: Emotes stop on movement, damage, stun, ragdoll and combat-state attributes and use cached tracks when an asset ID is configured.
 STATUS: Implemented; CI/static validation required; live Roblox device testing remains outstanding.
+
+### Fresh platform/UI research — 2026-09-23
+SOURCE: Roblox Creator Hub — Create HUD meters
+URL: https://create.roblox.com/docs/tutorials/use-case-tutorials/ui/create-hud-meters
+OBSERVATION: Roblox recommends safe-area handling with ScreenInsets for device cutouts and the Roblox top bar; Device Emulator is the documented route for multi-device UI validation.
+IMPLEMENTATION: Cursed Collision uses ScreenInsets/CoreUISafeInsets plus responsive short-axis scaling and minimum touch button constraints.
+
+SOURCE: Roblox Creator Hub — Console development guidelines
+URL: https://create.roblox.com/docs/production/publishing/console-guidelines
+OBSERVATION: TV-safe areas, scalable UI and controller navigation are required considerations for console UI.
+IMPLEMENTATION: Cursed Collision enables GuiNavigationEnabled and SelectedObject for gamepad focus and keeps key controls inside the responsive HUD composition.
+
+SOURCE: Roblox Creator Hub — AnimationTrack
+URL: https://create.roblox.com/docs/reference/engine/classes/AnimationTrack
+OBSERVATION: AnimationTrack exposes Priority and GetMarkerReachedSignal.
+IMPLEMENTATION: CombatHandler listens for the exact Hit marker; server CombatMarkerService validates the attack before hitbox/damage execution.
+
+SOURCE: Jujutsu Shenanigans official Roblox page
+URL: https://www.roblox.com/games/9391468976/Jujutsu-Shenanigans
+OBSERVATION: The public description documents a compact battleground input model centered on M1, 1–4 skills, dash, block, special, sprint and awaken.
+IMPLEMENTATION: Cursed Collision mirrors the interaction hierarchy while using original code/assets and its own character/moveset data.
+
+SOURCE: Jujutsu Shenanigans visual references (third-party screenshots)
+URL: https://thenerdstash.com/how-to-use-special-abilities-in-roblox-jujutsu-shenanigans/
+URL: https://www.sportskeeda.com/roblox-news/jujutsu-shenanigans-guide
+OBSERVATION: Screenshots show a restrained lower-center four-skill rail and a separate action/control hierarchy around the combat view.
+IMPLEMENTATION: Cursed Collision uses a four-skill rail, central power meter, top identity/status, and right-side mobile action cluster.
