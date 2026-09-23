@@ -54,7 +54,7 @@ local function moveCooldown(action: string): number
     end
 
     if action == "Special" then
-        local id = player:GetAttribute("CharacterId") or "PotentialMan"
+        local id = player:GetAttribute("CharacterId") or "Yuji"
         local definition = Definitions[id]
         return math.clamp(
             tonumber(definition and definition.SpecialCooldown) or Config.Combat.Special.Cooldown,
@@ -65,7 +65,7 @@ local function moveCooldown(action: string): number
 
     local slot = tonumber(string.match(action, "^Skill(%d)$") or "")
     if slot then
-        local id = player:GetAttribute("CharacterId") or "PotentialMan"
+        local id = player:GetAttribute("CharacterId") or "Yuji"
         local move = Movesets.GetMove(id, slot)
         return math.clamp(
             tonumber(move and move.Cooldown) or 1,
@@ -311,7 +311,7 @@ local function bindHealth(character: Model)
 end
 
 local function refreshCharacter()
-    local id = player:GetAttribute("CharacterId") or "PotentialMan"
+    local id = player:GetAttribute("CharacterId") or "Yuji"
     local profile = Definitions[id]
     local moves = Movesets.Get(id)
 
