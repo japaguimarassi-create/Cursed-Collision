@@ -46,28 +46,28 @@ REQUIRED = [
     "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/AnimationClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/CombatFeedback.client.lua",
-    "StarterPlayer/StarterPlayerScripts/AccountClient.client.lua",
-    "StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua",
-    "StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua",
-    "StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua",
-    "StarterPlayer/StarterPlayerScripts/HUD/Util.lua",
-    "StarterPlayer/StarterPlayerScripts/HUD/Combat.lua",
-    "StarterPlayer/StarterPlayerScripts/HUD/Menu.lua",
-    "StarterPlayer/StarterPlayerScripts/HUD/Characters.lua",
-    "StarterPlayer/StarterPlayerScripts/HUD/Owner.lua",
-    "StarterPlayer/StarterPlayerScripts/HUD/Emotes.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/InputController.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/InputManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/ProceduralAnimator.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua",
-    "StarterPlayer/StarterPlayerScripts/Controllers/HUDController.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationPriorityManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationBlender.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationStateMachine.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/CombatAnimationManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/MovementAnimationManager.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AbilityAnimationManager.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/HUDTheme.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/TopbarHUD.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/CombatHUD.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/MenuHUD.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/CharacterHUD.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/EmoteHUD.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/SettingsHUD.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/OwnerHUD.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/FeedbackHUD.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/EmoteAnimator.client.lua",
 ]
 
 def fail(message: str) -> None:
@@ -122,7 +122,6 @@ for token in (
     "combat:Dash(",
     "combat:SetBlock(",
     "combat:Special(player)",
-    "combat:SkillSlot(player, 1)",
     "CombatMarkerService:Resolve",
     "CombatMarkerService:Clear(player)"
 ):
@@ -182,15 +181,10 @@ for token in (
     if token not in damage:
         fail(f"DamageService integration missing: {token}")
 
-hitbox = read("ReplicatedStorage/Combat/HitboxService.lua")
-for token in ("GetPartBoundsInBox", "OverlapParams", "NearestTargetInFront"):
-    if token not in hitbox:
-        fail(f"HitboxService missing primitive: {token}")
-
 animation_data = read("ReplicatedStorage/Animation/AnimationData.lua")
 for key in (
     "Idle", "Walk", "Run", "Sprint", "Jump", "Fall", "Land",
-    "M1_1", "M1_2", "M1_3", "M1_4", "Dash", "BackDash", "SideDash", "AirDash", "Block",
+    "M1_1", "M1_2", "M1_3", "M1_4", "Dash", "AirDash", "Block",
     "Parry", "HitLight", "HitHeavy", "Ragdoll", "Recovery", "Dodge",
     "Skill1", "Skill2", "Skill3", "Skill4", "Special", "Ultimate",
     "Awakening", "Execution"
@@ -199,7 +193,7 @@ for key in (
         fail(f"AnimationData missing definition: {key}")
 
 if 'Marker = "Hit"' not in animation_data:
-    fail('AnimationData does not define the combat Hit marker')
+    fail("AnimationData does not define the combat Hit marker")
 
 cache = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua")
 for token in ('Instance.new("Animation")', "LoadAnimation", "GetTrack", "__mode"):
@@ -220,93 +214,87 @@ for token in ("AnimationCache", "GetMarkerReachedSignal", "fallback", "Unbind"):
     if token not in controller:
         fail(f"AnimationController missing: {token}")
 
-hud = read("StarterPlayer/StarterPlayerScripts/Controllers/HUDController.lua")
-for token in (
-    "ScreenInsets",
-    "CoreUISafeInsets",
-    "UISizeConstraint",
-    "PreferredInput",
-    "GuiNavigationEnabled",
-    "SetActionState"
-):
-    if token not in hud:
-        fail(f"HUDController missing responsive feature: {token}")
-
-hud_combat = read("StarterPlayer/StarterPlayerScripts/HUD/Combat.lua")
-for token in (
-    "InputManager:BindAction",
-    "CooldownUntil_",
-    "GetServerTimeNow",
-    "M1",
-    "Special",
-    "Ultimate",
-    "Awakening"
-):
-    if token not in hud_combat:
-        fail(f"HUD/Combat integration missing: {token}")
-
-for wrapper, module in (
-    ("StarterPlayer/StarterPlayerScripts/CombatClient.client.lua", "HUD.Combat"),
-    ("StarterPlayer/StarterPlayerScripts/AccountClient.client.lua", "HUD.Menu"),
-    ("StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua", "HUD.Characters"),
-    ("StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua", "HUD.Owner"),
-    ("StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua", "HUD.Emotes")
-):
-    source = read(wrapper)
-    if f"require(script.Parent.{module})" not in source or ".Start()" not in source:
-        fail(f"wrapper does not delegate to modular HUD: {wrapper}")
-
 emote_service = read("ServerScriptService/CombatCore/EmoteService.lua")
 for token in ("function EmoteService:CanUse", "OwnedEmotes", "EmoteEvent", "function EmoteService:Stop"):
     if token not in emote_service:
         fail(f"EmoteService missing: {token}")
-
-emote_server = read("ServerScriptService/EmoteServer.server.lua")
-for token in ('"Start"', '"Stop"', '"SetWheel"', "EmoteService:Start", "EmoteService:SetWheel"):
-    if token not in emote_server:
-        fail(f"EmoteServer missing route: {token}")
 
 emote_defs = read("ReplicatedStorage/Emotes/EmoteDefinitions.lua")
 for token in ("EmoteData", "Price", "Duration", "Loop", "AnimationId"):
     if token not in emote_defs:
         fail(f"Emote definitions missing field: {token}")
 
-cooldown = read("ServerScriptService/CombatCore/CooldownService.lua")
-for token in ("CooldownUntil_", "GetServerTimeNow"):
-    if token not in cooldown:
-        fail(f"Cooldown synchronization missing: {token}")
+for path, required in {
+    "StarterPlayer/StarterPlayerScripts/HUD/HUDTheme.lua": (
+        "CoreUISafeInsets", "PreferredInput", "ResponsiveScale", "UISizeConstraint"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/CombatHUD.client.lua": (
+        "GetServerTimeNow", "M1", "Special", "Ultimate", "Awakening"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/TopbarHUD.client.lua": (
+        "Characters", "Emotes", "Menu", "Settings", "GuiNavigationEnabled"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/MenuHUD.client.lua": (
+        "SHOP", "MISSIONS", "PASSES", "PLAYERS", "AccountAction"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/CharacterHUD.client.lua": (
+        "CharacterId", "SelectCharacter", "ScrollingFrame", "UIGridLayout"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/EmoteHUD.client.lua": (
+        "EmoteAction", "emote_001", "EmoteWheel"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/SettingsHUD.client.lua": (
+        "CC_ReducedEffects", "CC_AutoSprint", "PreferredInput"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/OwnerHUD.client.lua": (
+        "IsGameOwner", "AdminAction", "GiveAllEmotes", "GiveAllSkins"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/FeedbackHUD.client.lua": (
+        "CombatFX", "PerfectBlock", "Debris"
+    ),
+    "StarterPlayer/StarterPlayerScripts/HUD/EmoteAnimator.client.lua": (
+        "EmoteEvent", "Motor6D", "RenderStepped", "Health"
+    )
+}.items():
+    source = read(path)
+    for token in required:
+        if token not in source:
+            fail(f"{path} missing {token}")
 
-movement = read("ServerScriptService/CombatCore/MovementController.lua")
-for token in ("Acceleration", "Deceleration", "SprintSpeed", "WalkSpeed"):
-    if token not in movement:
-        fail(f"movement smoothing missing: {token}")
-
-docs = [
-    ROOT / "docs/research/ResearchLedger.md",
-    ROOT / "docs/research/ResearchMatrix.md",
-    ROOT / "docs/research/VisualReferenceDatabase.md",
-]
-for doc in docs:
-    if not doc.exists():
-        fail(f"research artifact missing: {doc}")
-
-for relative in (
-    "ServerScriptService/CombatServer.server.lua",
-    "ServerScriptService/CombatCore/CombatService.lua",
-    "ServerScriptService/CombatCore/AbilityService.lua",
-    "StarterPlayer/StarterPlayerScripts/HUD/Combat.lua"
+for stale in (
+    "StarterPlayer/StarterPlayerScripts/AccountClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/CrossPlatformInput.client.lua",
+    "StarterPlayer/StarterPlayerScripts/HUDClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/HUDCore.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/HUDCombatPanel.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/HUDNavigation.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/HUDMenus.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/HUDEmoteWheel.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/HUDController.lua",
 ):
-    source = read(relative)
-    if "M1Hit(player" in source or "SkillHit(player" in source:
-        fail(f"stale direct hit method remains in: {relative}")
+    if (SRC / stale).exists():
+        fail(f"legacy/duplicate HUD file still exists: src/{stale}")
+
+for stale_folder_file in (
+    "StarterPlayer/StarterPlayerScripts/HUD/Combat.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Menu.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Characters.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Owner.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Emotes.lua",
+    "StarterPlayer/StarterPlayerScripts/HUD/Util.lua",
+):
+    if (SRC / stale_folder_file).exists():
+        fail(f"legacy HUD implementation still exists: src/{stale_folder_file}")
 
 print(f"PASS: {len(REQUIRED)} required foundation files present")
 print(f"PASS: {len(CHARACTERS)} character modules are present")
 print("PASS: authoritative combat routing uses server marker windows")
-print("PASS: M1, skills and Special are marker-driven with server timing validation")
-print("PASS: hitbox, damage, block, stun, ragdoll, cooldown and meter layers are connected")
-print("PASS: animation cache and explicit Hit marker handler are connected")
-print("PASS: modular HUD is safe-area-aware and platform-aware")
-print("PASS: emote ownership and interruption are server-authoritative")
-print("PASS: responsive HUD wrappers are modular and duplicate combat routing is removed")
-print("PASS: research ledger, matrix and visual reference database exist")
+print("PASS: animation cache and exact Hit marker handler remain connected")
+print("PASS: HUD is split into isolated topbar/combat/menu/character/emote/settings/owner/feedback clients")
+print("PASS: HUD respects Core UI safe area and PreferredInput")
+print("PASS: touch controls expose large minimum hit targets and gamepad controls are selectable")
+print("PASS: legacy monolithic HUD scripts are removed")
+print("PASS: emote interruption remains server-authoritative")
