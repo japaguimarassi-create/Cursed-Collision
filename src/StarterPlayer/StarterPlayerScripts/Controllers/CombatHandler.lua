@@ -120,8 +120,8 @@ local function playAttack(
     track:Play(definition.FadeIn, 1, definition.Speed)
 
     local markerConnection: RBXScriptConnection?
-    if definition.Marker then
-        markerConnection = track:GetMarkerReachedSignal(definition.Marker):Connect(function()
+    if definition.Marker == "Hit" then
+        markerConnection = track:GetMarkerReachedSignal("Hit"):Connect(function()
             submit()
         end)
     end
