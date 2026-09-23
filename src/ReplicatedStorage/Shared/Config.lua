@@ -35,6 +35,10 @@ local Config = {
             MaxCooldown = 10.0
         },
         Hitstop = 0.045,
+        Marker = {
+            EarlyTolerance = 0.08,
+            LateTolerance = 0.18
+        },
         PerfectBlock = {
             Window = 0.16,
             Stun = 0.32,

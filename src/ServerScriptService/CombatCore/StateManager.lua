@@ -64,27 +64,47 @@ function StateManager:Clear(player: Player)
 end
 
 function StateManager:Reset(player: Player)
-    local state = store[player]
-    if not state then return end
+    if not store[player] then
+        return
+    end
+
     store[player] = fresh()
     self:Sync(player)
 end
 
 function StateManager:Sync(player: Player)
     local state = store[player]
-    if not state then return end
+    if not state then
+        return
+    end
+
     local now = os.clock()
+    local attacking =
+        state.Phase == "Attacking"
+        or state.Phase == "UsingAbility"
+        or state.Phase == "Ultimate"
+        or state.Phase == "Awakening"
+
+    local stunned = state.StunnedUntil > now
+    local ragdolled = state.RagdollUntil > now
+
     player:SetAttribute("CombatState", state.Phase)
     player:SetAttribute("Blocking", state.Blocking)
-    player:SetAttribute("CombatStunned", state.StunnedUntil > now)
+    player:SetAttribute("CombatStunned", stunned)
+    player:SetAttribute("Stunned", stunned)
     player:SetAttribute("Invulnerable", state.InvulnerableUntil > now)
-    player:SetAttribute("Ragdolled", state.RagdollUntil > now)
+    player:SetAttribute("Ragdolled", ragdolled)
+    player:SetAttribute("IsRagdolled", ragdolled)
+    player:SetAttribute("IsAttacking", attacking)
     player:SetAttribute("PerfectBlockWindow", math.max(0, state.PerfectBlockUntil - now))
 end
 
 function StateManager:SetPhase(player: Player, phase: Phase): boolean
     local state = store[player]
-    if not state or not allowed[state.Phase][phase] then return false end
+    if not state or not allowed[state.Phase][phase] then
+        return false
+    end
+
     state.Phase = phase
     self:Sync(player)
     return true
@@ -102,7 +122,10 @@ end
 
 function StateManager:SetStun(player: Player, duration: number, now: number)
     local state = store[player]
-    if not state then return end
+    if not state then
+        return
+    end
+
     state.StunnedUntil = math.max(state.StunnedUntil, now + math.max(0, duration))
     state.AbilityToken += 1
     state.PerfectBlockUntil = 0
@@ -112,14 +135,23 @@ end
 
 function StateManager:SetInvulnerable(player: Player, duration: number, now: number)
     local state = store[player]
-    if not state then return end
-    state.InvulnerableUntil = math.max(state.InvulnerableUntil, now + math.max(0, duration))
+    if not state then
+        return
+    end
+
+    state.InvulnerableUntil = math.max(
+        state.InvulnerableUntil,
+        now + math.max(0, duration)
+    )
     self:Sync(player)
 end
 
 function StateManager:BeginBlock(player: Player, perfectWindow: number, now: number): boolean
     local state = store[player]
-    if not state or not self:CanAct(player, now) then return false end
+    if not state or not self:CanAct(player, now) then
+        return false
+    end
+
     state.Blocking = true
     state.PerfectBlockUntil = now + math.max(0, perfectWindow)
     return self:SetPhase(player, "Blocking")
@@ -127,9 +159,13 @@ end
 
 function StateManager:EndBlock(player: Player)
     local state = store[player]
-    if not state then return end
+    if not state then
+        return
+    end
+
     state.Blocking = false
     state.PerfectBlockUntil = 0
+
     if state.StunnedUntil <= os.clock() then
         self:SetPhase(player, "Idle")
     end
@@ -137,11 +173,18 @@ end
 
 function StateManager:BeginAbility(player: Player, action: string, now: number): number?
     local state = store[player]
-    if not state or not self:CanAct(player, now) then return nil end
+    if not state or not self:CanAct(player, now) then
+        return nil
+    end
+
     state.AbilityToken += 1
     state.LastAction = action
     state.Blocking = false
-    if not self:SetPhase(player, "UsingAbility") then return nil end
+
+    if not self:SetPhase(player, "UsingAbility") then
+        return nil
+    end
+
     return state.AbilityToken
 end
 
@@ -156,7 +199,10 @@ end
 
 function StateManager:BeginRagdoll(player: Player, duration: number, now: number)
     local state = store[player]
-    if not state then return end
+    if not state then
+        return
+    end
+
     state.RagdollUntil = math.max(state.RagdollUntil, now + math.max(0, duration))
     state.AbilityToken += 1
     state.Blocking = false
@@ -176,16 +222,22 @@ end
 
 function StateManager:ClearStunWhenReady(player: Player, now: number)
     local state = store[player]
-    if not state then return end
+    if not state then
+        return
+    end
 
     if state.StunnedUntil <= now then
         state.StunnedUntil = 0
-        if state.Phase == "Stunned" then self:SetPhase(player, "Idle") end
+        if state.Phase == "Stunned" then
+            self:SetPhase(player, "Idle")
+        end
     end
 
     if state.RagdollUntil <= now then
         state.RagdollUntil = 0
-        if state.Phase == "Ragdolled" then self:SetPhase(player, "Idle") end
+        if state.Phase == "Ragdolled" then
+            self:SetPhase(player, "Idle")
+        end
     end
 
     self:Sync(player)

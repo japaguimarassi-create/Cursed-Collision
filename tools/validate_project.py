@@ -23,6 +23,7 @@ REQUIRED = [
     "ReplicatedStorage/Combat/AbilityTimeline.lua",
     "ReplicatedStorage/Combat/HitRegistry.lua",
     "ReplicatedStorage/Animation/AnimationRegistry.lua",
+    "ReplicatedStorage/Animation/AnimationData.lua",
     "ServerScriptService/CombatCore/StateManager.lua",
     "ServerScriptService/CombatCore/CooldownService.lua",
     "ServerScriptService/CombatCore/NetworkService.lua",
@@ -37,6 +38,9 @@ REQUIRED = [
     "StarterPlayer/StarterPlayerScripts/Controllers/InputManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/ProceduralAnimator.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/HUDController.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationPriorityManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationBlender.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/AnimationStateMachine.lua",
@@ -199,9 +203,30 @@ for token in ("HitFrame", "Startup", "Recovery", "Markers"):
     if token not in ability_timeline:
         fail(f"ability timeline marker missing: {token}")
 
+animation_data = read("ReplicatedStorage/Animation/AnimationData.lua")
+animation_cache = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua")
+combat_handler = read("StarterPlayer/StarterPlayerScripts/Controllers/CombatHandler.lua")
+hud_controller = read("StarterPlayer/StarterPlayerScripts/Controllers/HUDController.lua")
+
 for token in ("GetMarkerReachedSignal", "AnimationPriority"):
-    if token not in animation_controller and token not in animation_priority:
+    if token not in combat_handler and token not in animation_controller and token not in animation_priority:
         fail(f"marker/priority animation infrastructure missing: {token}")
+
+for token in ("M1_1", "M1_4", "Skill1", "Skill4", "Emote_001", "Execution"):
+    if token not in animation_data:
+        fail(f"animation data definition missing: {token}")
+
+for token in ('Instance.new("Animation")', "LoadAnimation", "__mode"):
+    if token not in animation_cache:
+        fail(f"animation cache missing performance primitive: {token}")
+
+for token in ("function CombatHandler:PlayM1", "function CombatHandler:PlaySkill", "GetMarkerReachedSignal"):
+    if token not in combat_handler:
+        fail(f"combat marker handler missing: {token}")
+
+for token in ("ScreenInsets", "CoreUISafeInsets", "GuiNavigationEnabled", "UpdateHealth", "SetCooldown"):
+    if token not in hud_controller:
+        fail(f"cross-platform HUD foundation missing: {token}")
 
 for token in ("BindAction", "Emit"):
     if token not in input_manager:
@@ -248,9 +273,13 @@ gamepass_server = read("ServerScriptService/GamePassServer.server.lua")
 damage_service = read("ServerScriptService/CombatCore/DamageService.lua")
 character_client = read("StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua")
 emote_client = read("StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua")
-for token in ("M1", "DASH", "BLOCK", "SPECIAL", "combatAction:FireServer", 'WaitForChild("Remotes", 30)'):
+for token in ("M1", "combatAction:FireServer", 'WaitForChild("Remotes", 30)', "HUDController.new"):
     if token not in client:
         fail(f"combat HUD/input missing expected element: {token}")
+
+for token in ('"M1"', '"Dash"', '"Block"', '"Special"', '"Sprint"', '"Ultimate"', '"Awakening"'):
+    if token not in hud_controller:
+        fail(f"combat HUD control missing: {token}")
 
 for token in ('"MenuButton"', '"AccountPanel"', 'CCHUD_MenuOpen'):
     if token not in account_client:
@@ -265,6 +294,8 @@ for token in ('"OwnerButton"', '"OwnerPanel"', "CCHUD_OwnerPanelOpen", 'GetAttri
 for forbidden in ("Domain", "OneTime"):
     if forbidden in cross_platform:
         fail(f"unsupported gamepad action remains in CrossPlatformInput: {forbidden}")
+if "FireServer" in cross_platform:
+    fail("CrossPlatformInput must not duplicate combat RemoteEvent routing")
 
 if 'RemoteService:Get()' not in remote_bootstrap:
     fail("RemoteBootstrap does not initialize server remotes")
@@ -278,9 +309,9 @@ for token in ('"EmoteAction"', '"EmoteEvent"', '"GamePassAction"', '"GamePassEve
     if token not in remote:
         fail(f"remote missing: {token}")
 
-for token in ('"Start"', '"Stop"', '"SetWheel"'):
+for token in ('"Start"', '"Stop"', '"SetWheel"', "HealthChanged", "MoveDirection", "IsAttacking", "Ragdolled"):
     if token not in emote_server:
-        fail(f"emote server route missing: {token}")
+        fail(f"emote server interruption/route missing: {token}")
 
 for token in ("UltimateSkin", "KillSound", "InstantSkin"):
     if token not in gamepass_config or token not in gamepass_service:
@@ -293,9 +324,9 @@ for token in ('"CharacterButton"', '"CharacterPanel"', "CCHUD_CharacterMenuOpen"
     if token not in character_client:
         fail(f"character selection UI token missing: {token}")
 
-for token in ('"EmoteButton"', '"EmoteWheel"', "CCHUD_EmoteWheelOpen"):
+for token in ('"EmoteButton"', '"EmoteWheel"', "CCHUD_EmoteWheelOpen", "AnimationCache:GetTrack", "setWheel(false)"):
     if token not in emote_client:
-        fail(f"emote UI token missing: {token}")
+        fail(f"emote UI/cache integration token missing: {token}")
 
 for relative in ACTIVE:
     source = read(relative)
