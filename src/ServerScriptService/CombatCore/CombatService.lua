@@ -94,8 +94,6 @@ function CombatService:CanAttack(player: Player): boolean
         and state.RecoveryUntil <= t
         and not state.Blocking
         and state.Phase ~= "UsingAbility"
-        and state.Phase ~= "Ultimate"
-        and state.Phase ~= "Awakening"
 end
 
 function CombatService:_finishM1(player: Player, record: M1Record)
@@ -287,8 +285,6 @@ function CombatService:Dash(player: Player, payload: string): boolean
         or state.RagdollUntil > t
         or state.Blocking
         or state.Phase == "UsingAbility"
-        or state.Phase == "Ultimate"
-        or state.Phase == "Awakening"
         or not CooldownService:Ready(player, "Dash", t) then
         return false
     end
@@ -359,9 +355,7 @@ function CombatService:SetBlock(player: Player, active: boolean): boolean
     if state.StunnedUntil > t
         or state.RagdollUntil > t
         or state.Blocking == active
-        or state.Phase == "UsingAbility"
-        or state.Phase == "Ultimate"
-        or state.Phase == "Awakening" then
+        or state.Phase == "UsingAbility" then
         return false
     end
 
