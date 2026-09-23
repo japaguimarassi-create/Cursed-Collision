@@ -148,6 +148,8 @@ local function handleCombatAction(
 
     if action == "M1" then
         combat:M1(player)
+    elseif action == "M1Hit" then
+        combat:M1Hit(player, payload.attackId)
     elseif action == "Dash" then
         combat:Dash(
             player,
