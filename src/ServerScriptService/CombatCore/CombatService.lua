@@ -367,6 +367,7 @@ function CombatService:Special(player: Player): boolean
 
             CharacterService:Special(player)
         end,
+        "Action",
         0.10,
         0.18
     )
