@@ -278,11 +278,14 @@ function CombatService:Dash(player: Player, payload: string): boolean
         action = "Dash",
         dashDirection = payload,
         direction = direction,
-        air = humanoidOf(player)
-            and (
-                humanoidOf(player):GetState() == Enum.HumanoidStateType.Jumping
-                or humanoidOf(player):GetState() == Enum.HumanoidStateType.Freefall
-            )
+        air = (function()
+            local humanoid = humanoidOf(player)
+            return humanoid ~= nil
+                and (
+                    humanoid:GetState() == Enum.HumanoidStateType.Jumping
+                    or humanoid:GetState() == Enum.HumanoidStateType.Freefall
+                )
+        end)()
     })
 
     task.delay(Config.Combat.Dash.Duration, function()
