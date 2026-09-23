@@ -66,7 +66,7 @@ local context: Context = {
 CharacterService:Configure(context)
 DamageService:Configure(context)
 
-local combat = CombatService.new(context)
+local combat: any = CombatService.new(context)
 
 local function allow(player: Player): boolean
     return AntiExploitService:AllowAction(
