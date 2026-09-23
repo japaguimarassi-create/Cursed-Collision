@@ -3,7 +3,6 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RemoteService = require(ReplicatedStorage.Shared.RemoteService)
-local GamePassConfig = require(ReplicatedStorage.Monetization.GamePassConfig)
 local GamePassService = require(ReplicatedStorage.Monetization.GamePassService)
 local ShopDefinitions = require(ReplicatedStorage.Economy.ShopDefinitions)
 local DataService = require(ReplicatedStorage.Economy.DataService)
