@@ -6,17 +6,37 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local StateManager = require(script.Parent.StateManager)
 local MovementController = require(script.Parent.MovementController)
+local RagdollService = require(script.Parent.RagdollService)
 local GamePassService = require(ReplicatedStorage.Monetization.GamePassService)
 
 local DamageService = {}
-local context = nil :: any
+local context: any = nil
 
-function DamageService:Configure(newContext)
+function DamageService:Configure(newContext: any)
     context = newContext
 end
 
 local function alive(humanoid: Humanoid): boolean
     return humanoid.Parent ~= nil and humanoid.Health > 0
+end
+
+local function impactReaction(meta: any): string
+    if meta.ragdoll then
+        return "Ragdoll"
+    end
+    if meta.final then
+        return "Finisher"
+    end
+    if meta.slam then
+        return "Slam"
+    end
+    if meta.launch then
+        return "Launch"
+    end
+    if meta.guardBreak then
+        return "Heavy"
+    end
+    return meta.reaction or "Light"
 end
 
 function DamageService:Apply(
@@ -25,132 +45,155 @@ function DamageService:Apply(
     amount: number,
     meta: any
 ): boolean
-    meta = meta or {}
+    meta = type(meta) == "table" and meta or {}
 
     if not alive(target) or type(amount) ~= "number" or amount <= 0 then
         return false
     end
 
     local targetModel = target.Parent
-
     if not targetModel or not targetModel:IsA("Model") then
         return false
     end
 
     local targetPlayer = Players:GetPlayerFromCharacter(targetModel)
-
     if targetPlayer == attacker then
         return false
     end
 
+    local now = os.clock()
+
     if targetPlayer then
         local targetState = StateManager:Get(targetPlayer)
 
-        if targetState and targetState.DashUntil > os.clock() then
-            return false
-        end
-
-        if targetState and targetState.Blocking and not meta.guardBreak then
-            amount *= Config.Combat.Block.DamageMultiplier
-            target:TakeDamage(amount)
-
-            local root = targetModel:FindFirstChild("HumanoidRootPart")
-
-            if root and root:IsA("BasePart") then
-                root.AssemblyLinearVelocity *= 0.25
-
-                context.fx("BlockImpact", root.Position, {
-                    actor = targetModel,
-                    attacker = attacker.Character,
-                    damage = amount
-                })
+        if targetState then
+            if targetState.InvulnerableUntil > now
+                or targetState.DashUntil > now
+                or targetState.Phase == "Dead" then
+                return false
             end
 
-            return true
-        end
+            if targetState.Blocking and not meta.guardBreak then
+                if targetState.PerfectBlockUntil > now then
+                    local attackerState = StateManager:Get(attacker)
+                    if attackerState then
+                        StateManager:SetStun(
+                            attacker,
+                            Config.Combat.PerfectBlock.Stun,
+                            now
+                        )
+                    end
 
-        if targetState then
-            local stunDuration = math.max(0, tonumber(meta.stun) or 0.2)
+                    local root = targetModel:FindFirstChild("HumanoidRootPart")
+                    if root and root:IsA("BasePart") then
+                        context.fx("PerfectBlock", root.Position, {
+                            actor = targetModel,
+                            attacker = attacker.Character,
+                            reaction = "Parry",
+                            stun = Config.Combat.PerfectBlock.Stun
+                        })
+                    end
+
+                    return false
+                end
+
+                amount *= Config.Combat.Block.DamageMultiplier
+                target:TakeDamage(amount)
+
+                local root = targetModel:FindFirstChild("HumanoidRootPart")
+                if root and root:IsA("BasePart") then
+                    root.AssemblyLinearVelocity *= 0.25
+                    context.fx("BlockImpact", root.Position, {
+                        actor = targetModel,
+                        attacker = attacker.Character,
+                        damage = amount
+                    })
+                end
+
+                return true
+            end
 
             StateManager:SetStun(
                 targetPlayer,
-                stunDuration,
-                os.clock()
+                math.max(0, tonumber(meta.stun) or 0.2),
+                now
             )
-
             MovementController:Stun(targetPlayer)
-
-            task.delay(stunDuration + 0.03, function()
-                if not targetPlayer.Parent then
-                    return
-                end
-
-                local state = StateManager:Get(targetPlayer)
-
-                if state
-                    and state.StunnedUntil <= os.clock()
-                    and not state.Blocking then
-                    StateManager:ClearStunWhenReady(targetPlayer, os.clock())
-                    MovementController:Combat(targetPlayer)
-                end
-            end)
         end
     end
 
     target:TakeDamage(amount)
 
     local root = targetModel:FindFirstChild("HumanoidRootPart")
-
     if root and root:IsA("BasePart") then
         local direction = meta.direction
 
         if typeof(direction) ~= "Vector3" or direction.Magnitude < 0.01 then
-            local attackerCharacter = attacker.Character
-            local attackerRoot = attackerCharacter
-                and attackerCharacter:FindFirstChild("HumanoidRootPart")
+            local attackerRoot = attacker.Character
+                and attacker.Character:FindFirstChild("HumanoidRootPart")
 
-            if attackerRoot and attackerRoot:IsA("BasePart") then
-                direction = attackerRoot.CFrame.LookVector
-            else
-                direction = Vector3.zAxis
-            end
+            direction = if attackerRoot and attackerRoot:IsA("BasePart")
+                then attackerRoot.CFrame.LookVector
+                else Vector3.zAxis
         end
 
         if meta.knockback then
+            local strength = math.max(0, tonumber(meta.knockback) or 0)
+            local lift = tonumber(meta.lift) or 0
+
             root.AssemblyLinearVelocity =
-                direction.Unit * tonumber(meta.knockback)
-                + Vector3.new(0, tonumber(meta.lift) or 0, 0)
+                direction.Unit * strength
+                + Vector3.new(0, lift, 0)
+        end
+
+        if meta.slam then
+            root.AssemblyLinearVelocity = Vector3.new(
+                root.AssemblyLinearVelocity.X * 0.35,
+                -math.max(10, tonumber(meta.slamForce) or 45),
+                root.AssemblyLinearVelocity.Z * 0.35
+            )
         end
     end
 
-    local hitPosition = targetModel:GetPivot().Position
+    if targetPlayer and (meta.ragdoll or meta.final and meta.ragdoll ~= false) then
+        RagdollService:Apply(
+            targetModel,
+            tonumber(meta.ragdollDuration) or Config.Combat.M1.FinalRagdoll,
+            impactReaction(meta)
+        )
+    end
 
+    local hitPosition = targetModel:GetPivot().Position
     if root and root:IsA("BasePart") then
         hitPosition = root.Position
     end
 
-    context.fx(
-        "Hit",
-        hitPosition,
-        {
-            actor = targetModel,
-            attacker = attacker.Character,
-            damage = amount,
-            reaction = meta.reaction or "Light",
-            final = meta.final == true,
-            tag = meta.tag or "Hit"
-        }
-    )
+    context.fx("Hit", hitPosition, {
+        actor = targetModel,
+        attacker = attacker.Character,
+        damage = amount,
+        reaction = impactReaction(meta),
+        final = meta.final == true,
+        guardBreak = meta.guardBreak == true,
+        ragdoll = meta.ragdoll == true,
+        tag = meta.tag or "Hit"
+    })
 
     if target.Health <= 0 then
-        context.fx(
-            "Death",
-            hitPosition,
-            {
-                actor = targetModel,
-                attacker = attacker.Character
-            }
-        )
+        if targetPlayer then
+            local state = StateManager:Get(targetPlayer)
+            if state then
+                state.Phase = "Dead"
+                state.Blocking = false
+                StateManager:Sync(targetPlayer)
+            end
+        end
+
+        context.fx("Death", hitPosition, {
+            actor = targetModel,
+            attacker = attacker.Character
+        })
+
         GamePassService:NotifyKill(attacker)
     end
 
