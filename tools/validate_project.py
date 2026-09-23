@@ -20,6 +20,9 @@ REQUIRED = [
     "ReplicatedStorage/Characters/CharacterDefinitions.lua",
     "ReplicatedStorage/Characters/CharacterService.lua",
     "ReplicatedStorage/Characters/PotentialMan.lua",
+    "ReplicatedStorage/Combat/AbilityTimeline.lua",
+    "ReplicatedStorage/Combat/HitRegistry.lua",
+    "ReplicatedStorage/Animation/AnimationRegistry.lua",
     "ServerScriptService/CombatCore/StateManager.lua",
     "ServerScriptService/CombatCore/CooldownService.lua",
     "ServerScriptService/CombatCore/NetworkService.lua",
@@ -28,9 +31,24 @@ REQUIRED = [
     "ServerScriptService/CombatCore/CombatService.lua",
     "ServerScriptService/CombatServer.server.lua",
     "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/CombatFeedback.client.lua",
+    "StarterPlayer/StarterPlayerScripts/AnimationClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/InputController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/InputManager.lua",
     "StarterPlayer/StarterPlayerScripts/Controllers/ProceduralAnimator.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AnimationPriorityManager.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AnimationBlender.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AnimationStateMachine.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/CombatAnimationManager.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/MovementAnimationManager.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/AbilityAnimationManager.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/CameraController.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/VFXManager.lua",
+    "StarterPlayer/StarterPlayerScripts/Controllers/SFXManager.lua",
     "StarterPlayer/StarterPlayerScripts/OwnerClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/CharacterSelectClient.client.lua",
+    "StarterPlayer/StarterPlayerScripts/EmoteClient.client.lua",
     "ServerScriptService/RemoteBootstrap.server.lua",
     "ServerScriptService/EmoteServer.server.lua",
     "ServerScriptService/GamePassServer.server.lua",
@@ -139,14 +157,29 @@ for legacy in (
     if legacy in combat_server:
         fail(f"legacy combat system still referenced by CombatServer: {legacy}")
 
+combo_service = read("ServerScriptService/CombatCore/ComboService.lua")
+ability_service = read("ServerScriptService/CombatCore/AbilityService.lua")
+ragdoll_service = read("ServerScriptService/CombatCore/RagdollService.lua")
+ultimate_service = read("ServerScriptService/CombatCore/UltimateService.lua")
+animation_registry = read("ReplicatedStorage/Animation/AnimationRegistry.lua")
+ability_timeline = read("ReplicatedStorage/Combat/AbilityTimeline.lua")
+hit_registry = read("ReplicatedStorage/Combat/HitRegistry.lua")
+animation_controller = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationController.lua")
+animation_priority = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationPriorityManager.lua")
+input_manager = read("StarterPlayer/StarterPlayerScripts/Controllers/InputManager.lua")
+camera_controller = read("StarterPlayer/StarterPlayerScripts/Controllers/CameraController.lua")
+vfx_manager = read("StarterPlayer/StarterPlayerScripts/Controllers/VFXManager.lua")
+sfx_manager = read("StarterPlayer/StarterPlayerScripts/Controllers/SFXManager.lua")
+combat_feedback = read("StarterPlayer/StarterPlayerScripts/CombatFeedback.client.lua")
 combat_service = read("ServerScriptService/CombatCore/CombatService.lua")
 for token in (
     "function CombatService:M1",
     "function CombatService:Dash",
     "function CombatService:SetBlock",
     "function CombatService:Special",
-    "HitboxService:NearestTargetInFront",
+    "HitboxService:TargetsInBox",
 ):
+
     if token not in combat_service:
         fail(f"CombatService missing required implementation: {token}")
 
@@ -167,6 +200,46 @@ if "RunService:UnbindFromRenderStep" not in animator:
     fail("procedural animator has no render-step cleanup")
 if "Motor6D" not in animator or ":Lerp" not in animator:
     fail("procedural animator is missing Motor6D pose interpolation")
+
+for token in ("HitFrame", "Startup", "Recovery", "Markers"):
+    if token not in ability_timeline:
+        fail(f"ability timeline marker missing: {token}")
+
+for token in ("GetMarkerReachedSignal", "AnimationPriority"):
+    if token not in animation_controller and token not in animation_priority:
+        fail(f"marker/priority animation infrastructure missing: {token}")
+
+for token in ("BindAction", "Emit"):
+    if token not in input_manager:
+        fail(f"input manager missing unified route: {token}")
+
+for token in ("Shake", "FovKick"):
+    if token not in camera_controller:
+        fail(f"camera controller missing game-feel control: {token}")
+
+for token in ("function VFXManager:Play", "Hit", "PerfectBlock", "Death"):
+    if token not in vfx_manager:
+        fail(f"VFX manager missing event support: {token}")
+
+for token in ("function SFXManager:Play", "LightHit", "HeavyHit", "Parry"):
+    if token not in sfx_manager:
+        fail(f"SFX manager missing contextual support: {token}")
+
+for token in ("AbilityService.new", "Timeline:Get", "HitRegistry:Begin"):
+    if token not in ability_service:
+        fail(f"ability pipeline missing phase integration: {token}")
+
+for token in ("PerfectBlock", "guardBreak", "RagdollService:Apply"):
+    if token not in damage:
+        fail(f"damage pipeline missing defense/impact integration: {token}")
+
+for token in ("UltimateMeter", "AwakeningMeter", "Activate"):
+    if token not in ultimate_service:
+        fail(f"ultimate/awakening service missing: {token}")
+
+for token in ("CombatAction", "AbilityRemote", "MovementRemote", "StateRemote", "UltimateAction"):
+    if token not in read("ReplicatedStorage/Shared/RemoteService.lua"):
+        fail(f"structured remote missing: {token}")
 
 client = read("StarterPlayer/StarterPlayerScripts/CombatClient.client.lua")
 account_client = read("StarterPlayer/StarterPlayerScripts/AccountClient.client.lua")
@@ -251,4 +324,7 @@ print("PASS: dedicated character selection and emote wheel UIs detected")
 print("PASS: combat HUD, main menu and Owner UI are isolated")
 print("PASS: Owner UI is server-authorized and not embedded in the main menu")
 print("PASS: mobile/gamepad action routes match the active NetworkService")
+print("PASS: centralized combo, ability, ragdoll and ultimate services detected")
+print("PASS: marker-aware animation, unified input, camera, VFX and SFX layers detected")
+print("PASS: structured combat/ability/movement/state/ultimate remotes detected")
 print("PASS: heavy/dodge/grab/counter/slam/domain/awakening routes are not in the active combat router")
