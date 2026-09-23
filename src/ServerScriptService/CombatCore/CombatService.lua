@@ -199,7 +199,7 @@ function CombatService:M1Hit(player: Player, attackId: string): boolean
             lift = tonumber(attack.launch) or 0,
             direction = root.CFrame.LookVector,
             final = attack.final == true,
-            launch = tonumber(attack.launch) and tonumber(attack.launch) > 2,
+            launch = (tonumber(attack.launch) or 0) > 2,
             ragdoll = attack.final == true,
             ragdollDuration = attack.final and Config.Combat.M1.FinalRagdoll or nil,
             guardBreak = attack.final == true,
