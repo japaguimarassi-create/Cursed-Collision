@@ -46,22 +46,36 @@ local function hit(
     tag: string,
     stun: number,
     knockback: number,
-    direction: Vector3?
+    direction: Vector3?,
+    extra: any?
 ): boolean
     if not target then
         return false
     end
 
+    local state = ctx.getState(player)
+    local attackId = state
+        and state.Vars
+        and state.Vars.ActiveAttackId
+
+    if attackId and ctx.hitRegistry then
+        if ctx.hitRegistry:Has(player, attackId, target.model) then
+            return false
+        end
+        ctx.hitRegistry:Add(player, attackId, target.model)
+    end
+
     local root = rootOf(player)
     local look = root and root.CFrame.LookVector or Vector3.zAxis
+    local meta = extra or {}
 
-    return ctx.damage(player, target.humanoid, math.max(0, damage), {
-        stun = math.max(0, stun),
-        knockback = math.max(0, knockback),
-        direction = direction or look,
-        reaction = "Skill",
-        tag = tag
-    })
+    meta.stun = math.max(0, stun)
+    meta.knockback = math.max(0, knockback)
+    meta.direction = direction or look
+    meta.reaction = meta.reaction or "Skill"
+    meta.tag = tag
+
+    return ctx.damage(player, target.humanoid, math.max(0, damage), meta)
 end
 
 local function pulse(
