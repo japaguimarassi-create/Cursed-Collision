@@ -657,7 +657,7 @@ local function inputLabel(preferred: Enum.PreferredInput, key: string): string
     return tostring((preset :: any)[key] or "")
 end
 
-function HUDController:UpdatePower(
+function HUDController.UpdatePower(
     self: HUD,
     ultimate: number,
     awakening: number,
