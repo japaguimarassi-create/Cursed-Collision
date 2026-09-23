@@ -35,7 +35,7 @@ local function getAnimation(definition: any): Animation?
     end
 
     local cached = animations[definition.Key]
-    if cached and cached.Parent then
+    if cached then
         return cached
     end
 
