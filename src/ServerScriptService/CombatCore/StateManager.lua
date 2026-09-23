@@ -67,7 +67,6 @@ function StateManager:Reset(player: Player)
     if not store[player] then
         return
     end
-
     store[player] = fresh()
     self:Sync(player)
 end
@@ -79,24 +78,27 @@ function StateManager:Sync(player: Player)
     end
 
     local now = os.clock()
-    local attacking =
-        state.Phase == "Attacking"
+    local character = player.Character
+    local isAttacking = state.Phase == "Attacking"
         or state.Phase == "UsingAbility"
         or state.Phase == "Ultimate"
         or state.Phase == "Awakening"
 
-    local stunned = state.StunnedUntil > now
-    local ragdolled = state.RagdollUntil > now
-
     player:SetAttribute("CombatState", state.Phase)
     player:SetAttribute("Blocking", state.Blocking)
-    player:SetAttribute("CombatStunned", stunned)
-    player:SetAttribute("Stunned", stunned)
+    player:SetAttribute("CombatStunned", state.StunnedUntil > now)
     player:SetAttribute("Invulnerable", state.InvulnerableUntil > now)
-    player:SetAttribute("Ragdolled", ragdolled)
-    player:SetAttribute("IsRagdolled", ragdolled)
-    player:SetAttribute("IsAttacking", attacking)
+    player:SetAttribute("Ragdolled", state.RagdollUntil > now)
+    player:SetAttribute("IsAttacking", isAttacking)
     player:SetAttribute("PerfectBlockWindow", math.max(0, state.PerfectBlockUntil - now))
+
+    -- O cliente e sistemas locais podem consultar o estado diretamente no personagem.
+    if character then
+        character:SetAttribute("Stunned", state.StunnedUntil > now)
+        character:SetAttribute("Ragdolled", state.RagdollUntil > now)
+        character:SetAttribute("IsAttacking", isAttacking)
+        character:SetAttribute("Blocking", state.Blocking)
+    end
 end
 
 function StateManager:SetPhase(player: Player, phase: Phase): boolean
@@ -203,7 +205,10 @@ function StateManager:BeginRagdoll(player: Player, duration: number, now: number
         return
     end
 
-    state.RagdollUntil = math.max(state.RagdollUntil, now + math.max(0, duration))
+    state.RagdollUntil = math.max(
+        state.RagdollUntil,
+        now + math.max(0, duration)
+    )
     state.AbilityToken += 1
     state.Blocking = false
     state.PerfectBlockUntil = 0

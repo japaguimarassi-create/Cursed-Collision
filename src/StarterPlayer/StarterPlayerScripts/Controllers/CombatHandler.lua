@@ -87,7 +87,7 @@ local function playMarkerAttack(
     track:Play(definition.FadeIn, 1, definition.Speed)
 
     local fired = false
-    local connection = track:GetMarkerReachedSignal(definition.Marker or "Hit"):Connect(function()
+    local connection = track:GetMarkerReachedSignal("Hit"):Connect(function()
         if fired then
             return
         end
@@ -104,6 +104,16 @@ local function playMarkerAttack(
         connection = connection,
         attackId = attackId
     }
+
+    track.Ended:Connect(function()
+        local current = active[model]
+        if current and current.track == track then
+            if current.connection then
+                current.connection:Disconnect()
+            end
+            active[model] = nil
+        end
+    end)
 end
 
 function CombatHandler:PlayM1(payload: any, combatAction: RemoteEvent)

@@ -1,21 +1,14 @@
 --!strict
 
-local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 
-local player = Players.LocalPlayer
-
+-- Combat input now belongs exclusively to the isolated Combat HUD module.
+-- Este script permanece apenas como compatibilidade para navegação de console.
 local function sync()
-    local preferred = UserInputService.PreferredInput
-    player:SetAttribute("InputDevice", tostring(preferred))
-
-    if preferred == Enum.PreferredInput.Gamepad then
-        GuiService.GuiNavigationEnabled = true
-    end
+    GuiService.GuiNavigationEnabled =
+        UserInputService.PreferredInput == Enum.PreferredInput.Gamepad
 end
 
 sync()
 UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(sync)
-
-return nil
