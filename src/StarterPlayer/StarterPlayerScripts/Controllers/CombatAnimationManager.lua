@@ -26,8 +26,10 @@ local function keyForAction(action: string, payload: any): string
         local model=payload and payload.actor
         local humanoid=model and model:FindFirstChildOfClass("Humanoid")
         local state=humanoid and humanoid:GetState()
-        return state==Enum.HumanoidStateType.Jumping or state==Enum.HumanoidStateType.Freefall
-            and "AirDash" or "Dash"
+        if state==Enum.HumanoidStateType.Jumping or state==Enum.HumanoidStateType.Freefall then
+            return "AirDash"
+        end
+        return "Dash"
     end
 
     if string.sub(action,1,5)=="Skill" then
