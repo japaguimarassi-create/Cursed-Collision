@@ -2,7 +2,7 @@
 
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local AnimationController = require(script.Parent.AnimationController)
+local AnimationController: any = require(script.Parent.AnimationController)
 local Registry = require(ReplicatedStorage.Animation.AnimationRegistry)
 
 local MovementAnimationManager = {}
