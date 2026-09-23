@@ -493,13 +493,9 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
-player.CharacterAdded:Connect(function(character)
-    ProceduralAnimator:Bind(character)
+player.CharacterAdded:Connect(function(_character)
+    bindHealth()
 end)
-
-if player.Character then
-    ProceduralAnimator:Bind(player.Character)
-end
 
 player:GetAttributeChangedSignal("CharacterId"):Connect(refreshCharacter)
 
@@ -537,6 +533,15 @@ end
 
 player:GetAttributeChangedSignal("AwakeningMeter"):Connect(readAwakening)
 player:GetAttributeChangedSignal("AwakeningProgress"):Connect(readAwakening)
+
+for _, attribute in ipairs({
+    "UltimateMeter",
+    "AwakeningMeter",
+    "UltimateReady",
+    "AwakeningReady"
+}) do
+    player:GetAttributeChangedSignal(attribute):Connect(readPowerMeters)
+end
 
 combatFX.OnClientEvent:Connect(function(kind, _, payload)
     if kind == "CombatAction" and payload and payload.actor then
@@ -592,4 +597,5 @@ end)
 
 refreshCharacter()
 readAwakening()
+readPowerMeters()
 hideForMenu()
