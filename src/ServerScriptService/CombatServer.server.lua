@@ -143,7 +143,7 @@ local function handle(player: Player, action: any, payload: any)
         UltimateService:Activate(player, "Ultimate")
     elseif action == "Awakening" then
         UltimateService:Activate(player, "Awakening")
-    elseif action == "M1Hit" or action == "SkillHit" then
+    elseif action == "M1Hit" or action == "SkillHit" or action == "SpecialHit" then
         CombatMarkerService:Resolve(
             player,
             payload.attackId
