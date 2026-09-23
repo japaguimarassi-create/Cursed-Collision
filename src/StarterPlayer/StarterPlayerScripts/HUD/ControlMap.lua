@@ -24,6 +24,8 @@ local hints: {[Platform]: {[string]: string}} = {
         Sprint = "↗"
     },
 
+    Mobile = {},
+
     Console = {
         M1 = "B",
         Dash = "Y",
@@ -53,7 +55,7 @@ local hints: {[Platform]: {[string]: string}} = {
     }
 }
 
-local bindings = {
+local bindings: {[Platform]: {[string]: {any}}} = {
     PC = {
         M1 = {Enum.UserInputType.MouseButton1},
         Dash = {Enum.KeyCode.Q},
