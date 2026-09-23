@@ -17,6 +17,7 @@ local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
 local UltimateService = require(script.Parent.CombatCore.UltimateService)
 local MovementController = require(script.Parent.CombatCore.MovementController)
+local CombatMarkerService = require(script.Parent.CombatCore.CombatMarkerService)
 
 local remotes = RemoteService:Get()
 local activePlayers: {[Player]: boolean} = {}
@@ -89,6 +90,8 @@ local function setupPlayer(player: Player)
 
             CharacterService:Initialize(player)
             UltimateService:Init(player)
+            CombatMarkerService:Clear(player)
+            HitRegistry:Clear(player)
 
             local humanoid = player.Character
                 and player.Character:FindFirstChildOfClass("Humanoid")
@@ -140,6 +143,11 @@ local function handle(player: Player, action: any, payload: any)
         UltimateService:Activate(player, "Ultimate")
     elseif action == "Awakening" then
         UltimateService:Activate(player, "Awakening")
+    elseif action == "M1Hit" or action == "SkillHit" then
+        CombatMarkerService:Resolve(
+            player,
+            payload.attackId
+        )
     end
 end
 
@@ -156,6 +164,8 @@ Players.PlayerRemoving:Connect(function(player)
     CooldownService:Clear(player)
     HitRegistry:Clear(player)
     AntiExploitService:Clear(player)
+    CombatMarkerService:Clear(player)
+    MovementController:Clear(player)
     StateManager:Clear(player)
     activePlayers[player] = nil
 end)
