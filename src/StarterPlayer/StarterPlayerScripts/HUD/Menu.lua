@@ -186,24 +186,22 @@ function M.Start()
         local scroll = list()
         local order = 0
 
-        local sections = {
-            {"DAILY", state.quests.Daily},
-            {"WEEKLY", state.quests.Weekly},
-            {"MASTERY", state.quests.General}
-        }
-
-        for _, section in ipairs(sections) do
+        local function renderSection(titleText: string, quests: {any})
             order += 1
-            local header = Util.label(scroll, section[1], UDim2.new(1, -8, 0, 28), UDim2.new(), 12, Enum.Font.GothamBlack)
+            local header = Util.label(scroll, titleText, UDim2.new(1, -8, 0, 28), UDim2.new(), 12, Enum.Font.GothamBlack)
             header.LayoutOrder = order
             header.TextColor3 = colors.Accent2
             header.TextXAlignment = Enum.TextXAlignment.Left
 
-            for _, quest in ipairs(section[2] or {}) do
+            for _, quest in ipairs(quests) do
                 order += 1
                 questCard(scroll, quest, order)
             end
         end
+
+        renderSection("DAILY", state.quests.Daily)
+        renderSection("WEEKLY", state.quests.Weekly)
+        renderSection("MASTERY", state.quests.General)
     end
 
     local function renderPasses()
@@ -260,15 +258,15 @@ function M.Start()
         GuiService.SelectedObject = tabShop
     end
 
-    local function close()
+    local function closePanel()
         panel.Visible = false
         Util.setMenuAttributes("Menu", false)
     end
 
     menuButton.Activated:Connect(function()
-        if panel.Visible then close() else open() end
+        if panel.Visible then closePanel() else open() end
     end)
-    close.Activated:Connect(close)
+    close.Activated:Connect(closePanel)
 
     tabShop.Activated:Connect(function()
         state.activeTab = "Shop"
@@ -290,7 +288,7 @@ function M.Start()
             return
         end
         if input.KeyCode == Enum.KeyCode.ButtonStart then
-            if panel.Visible then close() else open() end
+            if panel.Visible then closePanel() else open() end
         end
     end)
 

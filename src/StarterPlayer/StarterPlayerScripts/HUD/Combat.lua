@@ -226,15 +226,15 @@ local function updateCooldowns()
         end
     end
 
-    local cooldownActions = {
-        {m1Button, "M1"},
-        {dashButton, "Dash"},
-        {specialButton, "Special"}
+    local cooldownActions: {{button: TextButton, action: string}} = {
+        {button = m1Button, action = "M1"},
+        {button = dashButton, action = "Dash"},
+        {button = specialButton, action = "Special"}
     }
 
     for _, entry in ipairs(cooldownActions) do
-        local button = entry[1] :: TextButton
-        local action = entry[2] :: string
+        local button = entry.button
+        local action = entry.action
         local remaining = math.max(0, (localCooldowns[action] or 0) - os.clock())
         if remaining > 0 then
             button.TextTransparency = 0.30
