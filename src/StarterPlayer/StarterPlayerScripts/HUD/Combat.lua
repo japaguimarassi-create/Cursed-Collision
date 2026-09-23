@@ -343,10 +343,6 @@ local function start()
     end)
 end
 
-function start()
-    start()
-end
-
 return {
     Start = start
 }
