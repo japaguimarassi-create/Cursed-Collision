@@ -14,6 +14,7 @@ local ACTIONS = {
     Skill3 = true,
     Skill4 = true,
     SkillHit = true,
+    SpecialHit = true,
     SelectCharacter = true,
     Ultimate = true,
     Awakening = true
@@ -46,7 +47,7 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
         return payload == nil
     end
 
-    if action == "M1Hit" or action == "SkillHit" then
+    if action == "M1Hit" or action == "SkillHit" or action == "SpecialHit" then
         return validAttackId(payload)
     end
 
