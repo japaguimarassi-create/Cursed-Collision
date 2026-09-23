@@ -260,7 +260,9 @@ function M.Start()
                 if humanoid and (
                     humanoid.MoveDirection.Magnitude > 0.08
                     or humanoid.Health <= 0
-                    or humanoid:GetAttribute("Stunned") == true
+                    or player:GetAttribute("IsAttacking") == true
+                    or player:GetAttribute("Stunned") == true
+                    or player:GetAttribute("Ragdolled") == true
                     or model:GetAttribute("Ragdolled") == true
                     or model:GetAttribute("Stunned") == true
                 ) then
