@@ -508,7 +508,7 @@ function M.Start()
         if inputState == Enum.UserInputState.Begin then
             fire("M1")
         end
-    end, {Enum.KeyCode.ButtonR2}, false)
+    end, {Enum.KeyCode.ButtonB}, false)
 
     InputManager:BindAction("CC_HUD_Dash", function(_, inputState)
         if inputState == Enum.UserInputState.Begin then
@@ -550,13 +550,13 @@ function M.Start()
         if inputState == Enum.UserInputState.Begin then
             fire("Skill2")
         end
-    end, {Enum.KeyCode.Two, Enum.KeyCode.ButtonR1}, false)
+    end, {Enum.KeyCode.Two, Enum.KeyCode.ButtonL2}, false)
 
     InputManager:BindAction("CC_HUD_Skill3", function(_, inputState)
         if inputState == Enum.UserInputState.Begin then
             fire("Skill3")
         end
-    end, {Enum.KeyCode.Three, Enum.KeyCode.ButtonL2}, false)
+    end, {Enum.KeyCode.Three, Enum.KeyCode.ButtonR1}, false)
 
     InputManager:BindAction("CC_HUD_Skill4", function(_, inputState)
         if inputState == Enum.UserInputState.Begin then
