@@ -22,7 +22,7 @@ local function airborne(player: Player): boolean
         or state == Enum.HumanoidStateType.Freefall
 end
 
-function ComboService:Next(player: Player, now: number)
+function ComboService:Next(player: Player, now: number): any?
     local state = StateManager:Get(player)
     if not state then return nil end
 
