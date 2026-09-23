@@ -154,6 +154,28 @@ local Data: {[string]: AnimationDefinition} = {
         FadeOut = 0.06,
         Speed = 1
     },
+    BackDash = {
+        Key = "BackDash",
+        Name = "Back Dash",
+        AnimationId = "",
+        Loop = false,
+        Priority = Action,
+        Marker = nil,
+        FadeIn = 0.02,
+        FadeOut = 0.06,
+        Speed = 1
+    },
+    SideDash = {
+        Key = "SideDash",
+        Name = "Side Dash",
+        AnimationId = "",
+        Loop = false,
+        Priority = Action,
+        Marker = nil,
+        FadeIn = 0.02,
+        FadeOut = 0.06,
+        Speed = 1
+    },
     AirDash = {
         Key = "AirDash",
         Name = "Air Dash",
