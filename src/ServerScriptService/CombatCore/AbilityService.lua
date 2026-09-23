@@ -32,10 +32,12 @@ export type Service = {
 }
 
 function AbilityService.new(context: any): Service
-    return {
+    local service = setmetatable({
         Context = context,
         Active = {}
-    }
+    }, AbilityService)
+
+    return service :: any
 end
 
 local function moveOf(player: Player, slot: number)
