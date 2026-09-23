@@ -8,7 +8,7 @@ local Registry = require(ReplicatedStorage.Animation.AnimationRegistry)
 
 local MovementAnimationManager = {}
 
-local bound: {[Model]: {connection: RBXScriptConnection, last: string}} = setmetatable({}, {__mode="k"})
+local bound: {[Model]: {connection: RBXScriptConnection, last: string}} = setmetatable({}, {__mode="k"}) :: any
 
 function MovementAnimationManager:Bind(character: Model)
     if bound[character] then return end
