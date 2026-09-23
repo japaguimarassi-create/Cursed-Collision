@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Theme = require(script.Parent.HUDTheme)
+local Layouts = require(script.Parent.HUDLayout)
 local InputController = require(script.Parent.Parent.Controllers.InputController)
 
 local player = Players.LocalPlayer
@@ -16,9 +17,10 @@ if not combatRemote or not movementRemote then
 end
 
 local platform = Theme.Platform()
+local layout = Layouts:Get(platform)
 local gui = Theme.CreateGui("CursedCollisionHUD_Combat", 30)
 local root = Theme.Root(gui)
-Theme.ResponsiveScale(root, platform == "Mobile" and 690 or 820, 0.68, 1.10)
+Theme.ResponsiveScale(root, layout.CombatScaleReference, layout.CombatMinScale, layout.CombatMaxScale)
 
 local blocked = function(): boolean
     return player:GetAttribute("CCHUD_MenuOpen") == true
@@ -36,7 +38,7 @@ local function fire(action: string, payload: any?)
 end
 
 local identity = Instance.new("Frame")
-identity.Size = UDim2.fromScale(platform == "Mobile" and 0.54 or 0.32, 0.075)
+identity.Size = UDim2.fromScale(layout.IdentityWidth, 0.075)
 identity.Position = UDim2.fromScale(0.50, 0.025)
 identity.AnchorPoint = Vector2.new(0.5, 0)
 identity.BackgroundColor3 = Theme.Colors.Surface
@@ -97,8 +99,8 @@ local powerText = Theme.Label(power, "Text", "ULTIMATE 0%", UDim2.fromScale(1, 1
 powerText.Font = Enum.Font.GothamBlack
 
 local skills = Instance.new("Frame")
-skills.Size = UDim2.fromScale(platform == "Mobile" and 0.78 or 0.72, platform == "Mobile" and 0.12 or 0.13)
-skills.Position = UDim2.fromScale(0.50, 0.812)
+skills.Size = UDim2.fromScale(layout.SkillsWidth, platform == "Mobile" and 0.12 or 0.13)
+skills.Position = UDim2.fromScale(0.50, layout.SkillsY)
 skills.AnchorPoint = Vector2.new(0.5, 0.5)
 skills.BackgroundTransparency = 1
 skills.Parent = root
@@ -141,7 +143,7 @@ end
 
 local actions = Instance.new("Frame")
 actions.Size = UDim2.fromScale(platform == "Mobile" and 0.32 or 0.29, platform == "Mobile" and 0.34 or 0.31)
-actions.Position = UDim2.fromScale(platform == "Mobile" and 0.78 or 0.755, 0.55)
+actions.Position = UDim2.fromScale(layout.ActionsX, layout.ActionsY)
 actions.BackgroundTransparency = 1
 actions.Parent = root
 
