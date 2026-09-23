@@ -104,7 +104,7 @@ end
 
 local function renderShop()
     clear()
-    local characterId = tostring(player:GetAttribute("CharacterId") or "PotentialMan")
+    local characterId = tostring(player:GetAttribute("CharacterId") or "Yuji")
     local order = 0
 
     for _, item in pairs(Shop.Skins) do
