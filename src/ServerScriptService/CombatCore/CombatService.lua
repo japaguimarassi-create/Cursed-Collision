@@ -52,9 +52,18 @@ function CombatService:CanAttack(player: Player): boolean
 
     local t = now()
 
-    return StateManager:CanAct(player, t)
-        and state.RecoveryUntil <= t
-        and not state.Blocking
+    if not StateManager:CanAct(player, t) then
+        return false
+    end
+
+    if state.Phase == "Blocking"
+        or state.Phase == "UsingAbility"
+        or state.Phase == "Ultimate"
+        or state.Phase == "Awakening" then
+        return false
+    end
+
+    return state.RecoveryUntil <= t
 end
 
 local function finishAttack(
@@ -122,6 +131,7 @@ function CombatService:M1(player: Player): boolean
         if not current
             or current.ActionToken ~= token
             or current.Vars.ActiveAttackId ~= attackId
+            or current.Phase ~= "Attacking"
             or current.StunnedUntil > now()
             or current.RagdollUntil > now() then
             HitRegistry:End(player, attackId)
@@ -296,6 +306,14 @@ function CombatService:SetBlock(player: Player, active: boolean): boolean
     end
 
     if active then
+        if state.Phase == "Attacking"
+            or state.Phase == "UsingAbility"
+            or state.Phase == "Dashing"
+            or state.Phase == "Ultimate"
+            or state.Phase == "Awakening" then
+            return false
+        end
+
         if not StateManager:BeginBlock(
             player,
             Config.Combat.PerfectBlock.Window,
@@ -361,6 +379,7 @@ function CombatService:Special(player: Player): boolean
             if not current
                 or current.ActionToken ~= token
                 or current.Vars.ActiveAttackId ~= attackId
+                or current.Phase ~= "UsingAbility"
                 or not StateManager:CanAct(player, os.clock()) then
                 return
             end
