@@ -337,7 +337,7 @@ local function start()
 
             if attacker == character and actor and actor:IsA("Model") then
                 comboCount += 1
-                _comboExpiresAt = os.clock() + Config.Combat.M1.ComboReset
+                __comboExpiresAt = os.clock() + Config.Combat.M1.ComboReset
 
                 local targetName = actor:GetAttribute("CharacterName")
                     or actor.Name
