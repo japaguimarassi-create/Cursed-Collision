@@ -76,6 +76,20 @@ local function allow(player: Player): boolean
     )
 end
 
+local function ensureAnimator(player: Player)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+    if not humanoid then
+        return
+    end
+
+    if not humanoid:FindFirstChildOfClass("Animator") then
+        local animator = Instance.new("Animator")
+        animator.Parent = humanoid
+    end
+end
+
 local function setupPlayer(player: Player)
     StateManager:Init(player)
     activePlayers[player] = true
@@ -88,6 +102,7 @@ local function setupPlayer(player: Player)
 
     CharacterService:Initialize(player)
     UltimateService:Init(player)
+    ensureAnimator(player)
 end
 
 local function resetCharacter(player: Player)
@@ -105,6 +120,7 @@ local function resetCharacter(player: Player)
 
     CharacterService:Initialize(player)
     UltimateService:Init(player)
+    ensureAnimator(player)
 
     local humanoid = player.Character
         and player.Character:FindFirstChildOfClass("Humanoid")
