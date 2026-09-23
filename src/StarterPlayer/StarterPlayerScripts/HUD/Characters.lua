@@ -52,8 +52,8 @@ function M.Start()
     sub.TextColor3 = Util.Colors.Muted
     sub.TextXAlignment = Enum.TextXAlignment.Left
 
-    local close = Util.button(panel, "Close", "×", UDim2.fromScale(0.062, 0.078), UDim2.fromScale(0.923, 0.022), true)
-    close.TextSize = 22
+    local closeButton = Util.button(panel, "Close", "×", UDim2.fromScale(0.062, 0.078), UDim2.fromScale(0.923, 0.022), true)
+    closeButton.TextSize = 22
 
     local selected = player:GetAttribute("CharacterId") or "PotentialMan"
     local selectedName = Util.label(panel, "", UDim2.fromScale(0.55, 0.08), UDim2.fromScale(0.035, 0.155), 13, Enum.Font.GothamBlack)
@@ -142,27 +142,27 @@ function M.Start()
         GuiService.SelectedObject = cards[selected]
     end
 
-    local function close()
+    local function closePanel()
         panel.Visible = false
         Util.setMenuAttributes("Character", false)
     end
 
     button.Activated:Connect(function()
-        if panel.Visible then close() else open() end
+        if panel.Visible then closePanel() else open() end
     end)
-    close.Activated:Connect(close)
+    closeButton.Activated:Connect(closePanel)
 
     confirm.Activated:Connect(function()
         if definitions[selected] then
             combatAction:FireServer("SelectCharacter", selected)
-            close()
+            closePanel()
         end
     end)
 
     UserInputService.InputBegan:Connect(function(input, processed)
         if processed then return end
         if input.KeyCode == Enum.KeyCode.M then
-            if panel.Visible then close() else open() end
+            if panel.Visible then closePanel() else open() end
         end
     end)
 
