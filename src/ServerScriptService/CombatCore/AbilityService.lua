@@ -173,6 +173,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
         slot = slot,
         move = move.Name,
         attackId = attackId,
+        phase = "Startup",
         marker = "Hit",
         markerRequired = animationDefinition ~= nil
             and animationDefinition.AnimationId ~= "",
