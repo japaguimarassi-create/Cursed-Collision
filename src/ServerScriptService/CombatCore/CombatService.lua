@@ -5,17 +5,23 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
 local CharacterService = require(ReplicatedStorage.Characters.CharacterService)
-local StateManager = require(script.Parent.StateManager)
+local StateManager: any = require(script.Parent.StateManager)
 local CooldownService = require(script.Parent.CooldownService)
 local MovementController = require(script.Parent.MovementController)
+local ComboService = require(script.Parent.ComboService)
+local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
+local AbilityService = require(script.Parent.AbilityService)
 
 local CombatService = {}
 CombatService.__index = CombatService
 
 function CombatService.new(context: any)
-    return setmetatable({
+    local self = setmetatable({
         Context = context
     }, CombatService)
+
+    self.Abilities = AbilityService.new(context)
+    return self
 end
 
 local function now()
@@ -47,7 +53,7 @@ function CombatService:CanAttack(player: Player): boolean
 
     local t = now()
 
-    return state.StunnedUntil <= t
+    return StateManager:CanAct(player, t)
         and state.RecoveryUntil <= t
         and not state.Blocking
 end
@@ -58,114 +64,92 @@ function CombatService:M1(player: Player): boolean
     end
 
     local t = now()
-
     if not CooldownService:Ready(player, "M1", t) then
         return false
     end
 
     local state = StateManager:Get(player)
     local root = rootOf(player)
-
     if not state or not root then
         return false
     end
 
-    if t - state.LastM1 > Config.Combat.M1.ComboReset then
-        state.Combo = 0
+    local attack = ComboService:Next(player, t)
+    if not attack then
+        return false
     end
 
-    state.Combo = math.clamp(
-        state.Combo + 1,
-        1,
-        Config.Combat.M1.MaxCombo
-    )
+    state.LastAction = "M1"
+    StateManager:SetPhase(player, "Attacking")
 
-    state.LastM1 = t
-    state.Phase = "Attack"
+    CooldownService:Set(player, "M1", Config.Combat.M1.Cooldown, t)
 
-    CooldownService:Set(
-        player,
-        "M1",
-        Config.Combat.M1.Cooldown,
-        t
-    )
-
-    local combo = state.Combo
-    local final = combo == Config.Combat.M1.MaxCombo
-    local direction = root.CFrame.LookVector
+    local attackId = tostring(player.UserId) .. ":M1:" .. tostring(math.floor(t * 1000))
+    state.Vars.ActiveAttackId = attackId
+    HitRegistry:Begin(player, attackId)
 
     self.Context.fx("CombatAction", root.Position, {
         actor = player.Character,
         action = "M1",
-        combo = combo,
-        direction = direction
+        combo = attack.Combo,
+        variant = attack.Variant,
+        direction = root.CFrame.LookVector
     })
 
-    local target = HitboxService:NearestTargetInFront(
-        player,
-        Config.Combat.M1.Range,
-        Config.Combat.M1.Width,
-        Config.Combat.M1.Height
-    )
-
-    if not target then
-        state.RecoveryUntil = t + (final and 0.28 or 0.11)
-        if final then
-            state.Combo = 0
+    task.delay(attack.Startup, function()
+        local current = StateManager:Get(player)
+        if not current or current.AbilityToken ~= state.AbilityToken then
+            HitRegistry:End(player, attackId)
+            return
         end
-        return true
-    end
 
-    local success = self.Context.damage(
-        player,
-        target.humanoid,
-        Config.Combat.M1.Damage[combo],
-        {
-            stun = Config.Combat.M1.Stun[combo],
-            knockback = Config.Combat.M1.Knockback[combo],
-            lift = Config.Combat.M1.Lift[combo],
-            direction = direction,
-            final = final,
-            reaction = final and "Finisher" or "Light",
-            tag = "M1_" .. tostring(combo)
-        }
-    )
+        local target = HitboxService:TargetsInBox(
+            player,
+            root.CFrame + root.CFrame.LookVector * attack.Offset,
+            attack.Hitbox,
+            32
+        )[1]
 
-    state.RecoveryUntil = t + (final and 0.28 or 0.11)
+        if target and not HitRegistry:Has(player, attackId, target.model) then
+            HitRegistry:Add(player, attackId, target.model)
 
-    if final then
-        state.Combo = 0
-    end
+            self.Context.damage(
+                player,
+                target.humanoid,
+                attack.Damage,
+                {
+                    stun = attack.Stun,
+                    knockback = attack.Knockback,
+                    lift = attack.Launch,
+                    direction = root.CFrame.LookVector,
+                    final = attack.Final,
+                    launch = attack.Launch > 2,
+                    ragdoll = attack.Final,
+                    ragdollDuration = attack.Final and Config.Combat.M1.FinalRagdoll or nil,
+                    guardBreak = attack.Final,
+                    reaction = attack.Final and "Finisher" or "Light",
+                    tag = "M1_" .. tostring(attack.Combo)
+                }
+            )
+        end
 
-    return success
+        task.delay(attack.Active + attack.Recovery, function()
+            HitRegistry:End(player, attackId)
+            local latest = StateManager:Get(player)
+
+            if latest and latest.Vars.ActiveAttackId == attackId then
+                latest.Vars.ActiveAttackId = nil
+                latest.RecoveryUntil = now() + attack.Recovery
+                StateManager:SetPhase(player, "Idle")
+            end
+        end)
+    end)
+
+    return true
 end
 
 function CombatService:SkillSlot(player: Player, slot: number): boolean
-    if slot < 1 or slot > 4 or not self:CanAttack(player) then
-        return false
-    end
-
-    local state = StateManager:Get(player)
-    if not state then
-        return false
-    end
-
-    local t = now()
-    local key = "Skill" .. tostring(slot)
-    local cooldown = CharacterService:GetSkillCooldown(player, slot)
-
-    if not CooldownService:Ready(player, key, t) then
-        return false
-    end
-
-    CooldownService:Set(player, key, cooldown, t)
-    state.Phase = "Attack"
-    state.RecoveryUntil = t + math.min(
-        0.18 + cooldown * 0.12,
-        0.75
-    )
-
-    return CharacterService:SkillSlot(player, slot)
+    return self.Abilities:Execute(player, slot)
 end
 
 function CombatService:Dash(player: Player, payload: string): boolean
@@ -213,8 +197,7 @@ function CombatService:Dash(player: Player, payload: string): boolean
         Config.Combat.Dash.Duration
     )
 
-    state.Phase = "Dash"
-
+    StateManager:SetPhase(player, "Dashing")
     root.AssemblyLinearVelocity = Vector3.new(
         direction.X * speed,
         root.AssemblyLinearVelocity.Y,
@@ -231,7 +214,7 @@ function CombatService:Dash(player: Player, payload: string): boolean
     task.delay(Config.Combat.Dash.Duration, function()
         local current = StateManager:Get(player)
 
-        if current and current.Phase == "Dash" then
+        if current and current.Phase == "Dashing" then
             current.Phase = "Idle"
         end
     end)
@@ -253,7 +236,6 @@ function CombatService:SetBlock(player: Player, active: boolean): boolean
     end
 
     state.Blocking = active
-    state.Phase = active and "Block" or "Idle"
     player:SetAttribute("Blocking", active)
 
     if active then
@@ -291,8 +273,7 @@ function CombatService:Special(player: Player): boolean
 
     CooldownService:Set(player, "Special", cooldown, t)
 
-    state.Phase = "Attack"
-    state.RecoveryUntil = t + 0.55
+    StateManager:SetPhase(player, "Attacking")    state.RecoveryUntil = t + 0.55
 
     self.Context.fx("CombatAction", root.Position, {
         actor = player.Character,
@@ -315,7 +296,7 @@ function CombatService:Special(player: Player): boolean
     return success
 end
 
-function CombatService:StepPlayer(player: Player)
+function CombatService:StepPlayer(player: Player): ()
     local state = StateManager:Get(player)
 
     if not state then
@@ -334,7 +315,7 @@ function CombatService:StepPlayer(player: Player)
         state.RecoveryUntil = 0
 
         if not state.Blocking and state.StunnedUntil <= t then
-            state.Phase = "Idle"
+            StateManager:SetPhase(player, "Idle")
         end
     end
 end

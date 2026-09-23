@@ -1,47 +1,95 @@
 --!strict
 
+local Players = game:GetService("Players")
+local StateManager: any = require(script.Parent.StateManager)
+
 local RagdollService = {}
 
-local active = setmetatable({}, {__mode = "k"})
+type Active = {
+    token: number,
+    duration: number
+}
 
-function RagdollService:Apply(character: Model, duration: number, reason: string?)
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid or humanoid.Health <= 0 then
+local active: {[Player]: Active} = {}
+
+function RagdollService:Apply(player: Player, duration: number, reason: string?): boolean
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+    if not character or not humanoid or humanoid.Health <= 0 then
         return false
     end
 
-    local token = (active[character] or 0) + 1
-    active[character] = token
+    local state = StateManager:Get(player)
+    if not state then
+        return false
+    end
 
-    character:SetAttribute("Ragdolled", true)
+    local token = (active[player] and active[player].token or 0) + 1
+    active[player] = {
+        token = token,
+        duration = math.max(0.08, duration)
+    }
+
+    StateManager:BeginRagdoll(player, duration, os.clock())
+
     character:SetAttribute("RagdollReason", reason or "Impact")
     humanoid.AutoRotate = false
     humanoid.PlatformStand = true
-    humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 
     task.delay(math.max(0.08, duration), function()
-        if active[character] ~= token or not character.Parent then
+        local current = active[player]
+        if not current or current.token ~= token or not player.Parent then
             return
         end
 
-        active[character] = nil
-        character:SetAttribute("Ragdolled", false)
-        character:SetAttribute("RagdollReason", nil)
-        humanoid.PlatformStand = false
-        humanoid.AutoRotate = true
+        active[player] = nil
 
-        if humanoid.Health > 0 then
-            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        local latestCharacter = player.Character
+        local latestHumanoid = latestCharacter and latestCharacter:FindFirstChildOfClass("Humanoid")
+
+        if latestHumanoid then
+            latestHumanoid.PlatformStand = false
+            latestHumanoid.AutoRotate = true
+
+            if latestHumanoid.Health > 0 then
+                latestHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end
         end
+
+        if latestCharacter then
+            latestCharacter:SetAttribute("RagdollReason", nil)
+        end
+
+        StateManager:ClearStunWhenReady(player, os.clock())
     end)
 
     return true
 end
 
-function RagdollService:Cancel(character: Model)
-    if active[character] then
-        active[character] += 1
+function RagdollService:Cancel(player: Player)
+    local current = active[player]
+    if not current then
+        return
     end
+
+    current.token += 1
+    active[player] = nil
+
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        humanoid.PlatformStand = false
+        humanoid.AutoRotate = true
+    end
+
+    StateManager:ClearStunWhenReady(player, os.clock())
 end
+
+Players.PlayerRemoving:Connect(function(player)
+    active[player] = nil
+end)
 
 return RagdollService

@@ -34,11 +34,46 @@ local Config = {
             MinCooldown = 0.25,
             MaxCooldown = 10.0
         },
-        Hitstop = 0.045
+        Hitstop = 0.045,
+        PerfectBlock = {
+            Window = 0.16,
+            Stun = 0.32,
+            GuardBreakStun = 0.68
+        },
+        Heavy = {
+            GuardBreak = true,
+            Stun = 0.75
+        },
+        HitReaction = {
+            Light = 0.18,
+            Heavy = 0.42,
+            Launch = 0.55,
+            Slam = 0.62,
+            Finisher = 0.85
+        }
     },
     Movement = {
         WalkSpeed = 16,
-        JumpPower = 50
+        JumpPower = 50,
+        SprintSpeed = 23,
+        AirControl = 0.72,
+        Acceleration = 90,
+        Deceleration = 110
+    },
+    GameFeel = {
+        HitStop = 0.045,
+        HitShake = 0.28,
+        HeavyShake = 0.55,
+        FovKick = 3.5,
+        HeavyFovKick = 6,
+        DamagePopupLifetime = 0.75
+    },
+    Camera = {
+        DefaultFov = 70,
+        SprintFov = 74,
+        DashFov = 78,
+        UltimateFov = 80,
+        ShakeMaxDistance = 90
     },
     PerfectCombo = {
         StepWindow = 1.15

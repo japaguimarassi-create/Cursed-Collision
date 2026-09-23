@@ -9,7 +9,7 @@ local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local CharacterMoves = require(ReplicatedStorage.Characters.CharacterMoves)
 local CustomMovesets = require(ReplicatedStorage.Characters.CustomMovesets)
 local InputController = require(script.Parent.Controllers.InputController)
-local ProceduralAnimator = require(script.Parent.Controllers.ProceduralAnimator)
+local InputManager = require(script.Parent.Controllers.InputManager)
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -129,6 +129,27 @@ local titleLabel = label(identity, "Shadow Potential", UDim2.fromScale(0.94, 0.2
 titleLabel.TextColor3 = Color3.fromRGB(150, 154, 168)
 titleLabel.TextXAlignment = Enum.TextXAlignment.Center
 
+local healthBar = Instance.new("Frame")
+healthBar.Name = "HealthBar"
+healthBar.Size = UDim2.fromScale(0.29, 0.032)
+healthBar.Position = UDim2.fromScale(0.018, 0.122)
+healthBar.BackgroundColor3 = Color3.fromRGB(37, 39, 49)
+healthBar.BorderSizePixel = 0
+healthBar.Parent = root
+corner(healthBar, 8)
+stroke(healthBar, 0.72)
+
+local healthFill = Instance.new("Frame")
+healthFill.Name = "Fill"
+healthFill.Size = UDim2.fromScale(1, 1)
+healthFill.BackgroundColor3 = Color3.fromRGB(210, 70, 86)
+healthFill.BorderSizePixel = 0
+healthFill.Parent = healthBar
+corner(healthFill, 8)
+
+local healthText = label(healthBar, "100 / 100", UDim2.fromScale(1, 1), UDim2.new(), 8)
+healthText.TextXAlignment = Enum.TextXAlignment.Center
+
 local status = Instance.new("Frame")
 status.Name = "Status"
 status.Size = UDim2.fromScale(0.18, 0.042)
@@ -225,6 +246,26 @@ local special = button(root, "Special", "SPECIAL", UDim2.fromScale(0.18, 0.066),
 special.AnchorPoint = Vector2.new(0.5, 0.5)
 special.TextSize = 10
 
+local ultimateButton = button(
+    root,
+    "Ultimate",
+    "ULTIMATE",
+    UDim2.fromScale(0.14, 0.066),
+    UDim2.fromScale(0.39, 0.935)
+)
+ultimateButton.AnchorPoint = Vector2.new(0.5, 0.5)
+ultimateButton.TextSize = 9
+
+local awakeningButton = button(
+    root,
+    "Awakening",
+    "AWAKEN",
+    UDim2.fromScale(0.14, 0.066),
+    UDim2.fromScale(0.61, 0.935)
+)
+awakeningButton.AnchorPoint = Vector2.new(0.5, 0.5)
+awakeningButton.TextSize = 9
+
 local localCooldowns: {[string]: number} = {}
 
 local function remaining(action: string): number
@@ -302,6 +343,89 @@ local function setBlocking(active: boolean)
     fire(active and "BlockStart" or "BlockEnd")
 end
 
+local function activatePower(action: string)
+    if player:GetAttribute("CCHUD_MenuOpen") == true
+        or player:GetAttribute("CCHUD_CharacterMenuOpen") == true
+        or player:GetAttribute("CCHUD_EmoteWheelOpen") == true
+        or player:GetAttribute("CCHUD_OwnerPanelOpen") == true then
+        return
+    end
+
+    combatAction:FireServer(action)
+end
+
+ultimateButton.Activated:Connect(function()
+    activatePower("Ultimate")
+end)
+
+awakeningButton.Activated:Connect(function()
+    activatePower("Awakening")
+end)
+
+local function readHealth()
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    local ratio = math.clamp(humanoid.Health / math.max(1, humanoid.MaxHealth), 0, 1)
+    healthFill.Size = UDim2.fromScale(ratio, 1)
+    healthText.Text = string.format(
+        "%d / %d",
+        math.max(0, math.floor(humanoid.Health + 0.5)),
+        math.max(1, math.floor(humanoid.MaxHealth + 0.5))
+    )
+end
+
+local function bindHealth()
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    humanoid.HealthChanged:Connect(readHealth)
+    humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(readHealth)
+    readHealth()
+end
+
+local function readPowerMeters()
+    local ultimate = math.clamp(
+        (tonumber(player:GetAttribute("UltimateMeter")) or 0) / 100,
+        0,
+        1
+    )
+
+    local awakeningValue = math.clamp(
+        (tonumber(player:GetAttribute("AwakeningMeter")) or 0) / 100,
+        0,
+        1
+    )
+
+    awakeningFill.Size = UDim2.fromScale(ultimate, 1)
+    awakeningName.Text = ultimate >= 1
+        and "ULTIMATE READY"
+        or string.format("ULTIMATE %d%%", math.floor(ultimate * 100))
+
+    ultimateButton.Text = player:GetAttribute("UltimateReady") == true
+        and "ULTIMATE\nREADY"
+        or "ULTIMATE"
+
+    awakeningButton.Text = player:GetAttribute("AwakeningReady") == true
+        and "AWAKEN\nREADY"
+        or "AWAKEN"
+
+    if awakeningValue > ultimate then
+        awakeningFill.BackgroundColor3 = Color3.fromRGB(255, 94, 177)
+        awakeningFill.Size = UDim2.fromScale(awakeningValue, 1)
+    else
+        awakeningFill.BackgroundColor3 = Color3.fromRGB(155, 112, 255)
+    end
+end
+
+bindHealth()
+
 for slot = 1, 4 do
     skillButtons[slot].Activated:Connect(function()
         fire("Skill" .. tostring(slot))
@@ -324,58 +448,134 @@ special.Activated:Connect(function()
     fire("Special")
 end)
 
-local keySkills = {
-    [Enum.KeyCode.One] = 1,
-    [Enum.KeyCode.Two] = 2,
-    [Enum.KeyCode.Three] = 3,
-    [Enum.KeyCode.Four] = 4
-}
+InputManager:BindAction(
+    "CC_M1",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("M1")
+        end
+    end,
+    {Enum.KeyCode.ButtonR2},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Dash",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Dash", InputController:GetDashDirection())
+        end
+    end,
+    {Enum.KeyCode.Q, Enum.KeyCode.ButtonA},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Special",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Special")
+        end
+    end,
+    {Enum.KeyCode.E, Enum.KeyCode.ButtonX},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill1",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill1")
+        end
+    end,
+    {Enum.KeyCode.One, Enum.KeyCode.ButtonR1},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill2",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill2")
+        end
+    end,
+    {Enum.KeyCode.Two, Enum.KeyCode.ButtonY},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill3",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill3")
+        end
+    end,
+    {Enum.KeyCode.Three, Enum.KeyCode.DPadUp},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill4",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill4")
+        end
+    end,
+    {Enum.KeyCode.Four, Enum.KeyCode.DPadDown},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Block",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            if player:GetAttribute("LocalBlocking") ~= true then
+                setBlocking(true)
+            end
+        elseif state == Enum.UserInputState.End or state == Enum.UserInputState.Cancel then
+            if player:GetAttribute("LocalBlocking") == true then
+                setBlocking(false)
+            end
+        end
+    end,
+    {Enum.KeyCode.F, Enum.KeyCode.ButtonL2},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Ultimate",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            activatePower("Ultimate")
+        end
+    end,
+    {Enum.KeyCode.R, Enum.KeyCode.ButtonR3},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Awakening",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            activatePower("Awakening")
+        end
+    end,
+    {Enum.KeyCode.G, Enum.KeyCode.ButtonL3},
+    false
+)
 
 UserInputService.InputBegan:Connect(function(input, processed)
-    if processed or player:GetAttribute("CCHUD_MenuOpen") == true then
+    if processed then
         return
     end
-
-    local slot = keySkills[input.KeyCode]
-    if slot then
-        fire("Skill" .. tostring(slot))
-        return
-    end
-
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         fire("M1")
-        return
-    end
-
-    if input.KeyCode == Enum.KeyCode.Q then
-        fire("Dash", InputController:GetDashDirection())
-        return
-    end
-
-    if input.KeyCode == Enum.KeyCode.E then
-        fire("Special")
-        return
-    end
-
-    if input.KeyCode == Enum.KeyCode.F
-        and player:GetAttribute("LocalBlocking") ~= true then
-        setBlocking(true)
     end
 end)
 
-UserInputService.InputEnded:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.F and player:GetAttribute("LocalBlocking") == true then
-        setBlocking(false)
-    end
+player.CharacterAdded:Connect(function(_character)
+    bindHealth()
 end)
-
-player.CharacterAdded:Connect(function(character)
-    ProceduralAnimator:Bind(character)
-end)
-
-if player.Character then
-    ProceduralAnimator:Bind(player.Character)
-end
 
 player:GetAttributeChangedSignal("CharacterId"):Connect(refreshCharacter)
 
@@ -414,12 +614,17 @@ end
 player:GetAttributeChangedSignal("AwakeningMeter"):Connect(readAwakening)
 player:GetAttributeChangedSignal("AwakeningProgress"):Connect(readAwakening)
 
+for _, attribute in ipairs({
+    "UltimateMeter",
+    "AwakeningMeter",
+    "UltimateReady",
+    "AwakeningReady"
+}) do
+    player:GetAttributeChangedSignal(attribute):Connect(readPowerMeters)
+end
+
 combatFX.OnClientEvent:Connect(function(kind, _, payload)
     if kind == "CombatAction" and payload and payload.actor then
-        if payload.actor:IsA("Model") then
-            ProceduralAnimator:Play(payload.actor, tostring(payload.action or ""), payload)
-        end
-
         if payload.actor == player.Character then
             stateLabel.Text = string.upper(tostring(payload.action or "ACTION"))
             task.delay(0.18, function()
@@ -468,4 +673,5 @@ end)
 
 refreshCharacter()
 readAwakening()
+readPowerMeters()
 hideForMenu()
