@@ -148,13 +148,13 @@ for slot = 1, 4 do
     cell.Parent = skills
 
     local b = Theme.Button(cell, "Skill" .. slot, "", UDim2.fromScale(1, 1), UDim2.new(), platform == "Mobile" and 58 or 44)
-    local hint = if platform == "Mobile"
+    local slotHint = if platform == "Mobile"
         then tostring(slot)
         elseif platform == "Console"
         then ({[1]="RB", [2]="Y", [3]="D-UP", [4]="D-DOWN"})[slot]
         else tostring(slot)
 
-    Theme.Label(b, "Hint", hint or "", UDim2.fromScale(0.25, 0.20), UDim2.fromScale(0.06, 0.04), 7)
+    Theme.Label(b, "Hint", slotHint or "", UDim2.fromScale(0.25, 0.20), UDim2.fromScale(0.06, 0.04), 7)
     skillLabels[slot] = Theme.Label(b, "Name", "Skill " .. slot, UDim2.fromScale(0.88, 0.45), UDim2.fromScale(0.06, 0.23), 8)
     cooldownLabels[slot] = Theme.Label(b, "Cooldown", "READY", UDim2.fromScale(0.84, 0.20), UDim2.fromScale(0.08, 0.76), 7)
 
