@@ -354,7 +354,7 @@ local function toggle()
         return
     end
 
-    closeMainMenu()
+    closeOtherInterfaces()
     setMenuOpen(true)
     accountAction:FireServer("SyncOwner", {})
     panelScale.Scale = 0.96
