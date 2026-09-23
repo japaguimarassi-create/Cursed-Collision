@@ -117,6 +117,7 @@ function StateManager:SetStun(player: Player, duration: number, now: number)
 
     state.StunnedUntil = math.max(state.StunnedUntil, now + math.max(0, duration))
     state.AbilityToken += 1
+    state.ActionToken += 1
     state.PerfectBlockUntil = 0
     state.Blocking = false
     self:SetPhase(player, "Stunned")
@@ -191,7 +192,7 @@ function StateManager:IsAbilityValid(player: Player, token: number): boolean
         and state.AbilityToken == token
         and state.StunnedUntil <= current
         and state.RagdollUntil <= current
-        and state.Phase ~= "Dead"
+        and state.Phase == "UsingAbility"
 end
 
 function StateManager:BeginRagdoll(player: Player, duration: number, now: number)
@@ -202,6 +203,7 @@ function StateManager:BeginRagdoll(player: Player, duration: number, now: number
 
     state.RagdollUntil = math.max(state.RagdollUntil, now + math.max(0, duration))
     state.AbilityToken += 1
+    state.ActionToken += 1
     state.Blocking = false
     state.PerfectBlockUntil = 0
     self:SetPhase(player, "Ragdolled")
