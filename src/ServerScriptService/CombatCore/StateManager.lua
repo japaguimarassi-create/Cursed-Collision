@@ -190,6 +190,16 @@ function StateManager:NextActionToken(player: Player): number?
     return state.ActionToken
 end
 
+function StateManager:NextActionToken(player: Player): number?
+    local state = store[player]
+    if not state then
+        return nil
+    end
+
+    state.ActionToken += 1
+    return state.ActionToken
+end
+
 function StateManager:BeginAbility(player: Player, action: string, now: number): number?
     local state = store[player]
     if not state or not self:CanAct(player, now) then
