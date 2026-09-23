@@ -16,6 +16,7 @@ local CombatService = require(script.Parent.CombatCore.CombatService)
 local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
 local UltimateService = require(script.Parent.CombatCore.UltimateService)
+local MovementController = require(script.Parent.CombatCore.MovementController)
 
 local remotes = RemoteService:Get()
 local activePlayers: {[Player]: boolean} = {}
@@ -161,8 +162,30 @@ for _, player in ipairs(Players:GetPlayers()) do
     setupPlayer(player)
 end
 
-RunService.Heartbeat:Connect(function()
+RunService.Heartbeat:Connect(function(dt)
     for player in pairs(activePlayers) do
         combat:StepPlayer(player)
+        MovementController:Step(player, dt)
     end
 end)
+
+
+remotes.MovementRemote.OnServerEvent:Connect(function(player, action, payload)
+    if not activePlayers[player]
+        or type(action) ~= "string"
+        or #action > 24
+        or payload ~= nil then
+        return
+    end
+
+    if not allow(player) then
+        return
+    end
+
+    if action == "SprintStart" then
+        MovementController:SetSprinting(player, true)
+    elseif action == "SprintEnd" then
+        MovementController:SetSprinting(player, false)
+    end
+end)
+

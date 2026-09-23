@@ -21,8 +21,9 @@ end
 
 local combatAction = remotes:WaitForChild("CombatAction", 15)
 local combatFX = remotes:WaitForChild("CombatFX", 15)
+local movementRemote = remotes:WaitForChild("MovementRemote", 15)
 
-if not combatAction or not combatFX then
+if not combatAction or not combatFX or not movementRemote then
     return
 end
 
@@ -232,6 +233,15 @@ actionFrame.Position = UDim2.fromScale(0.725, 0.54)
 actionFrame.BackgroundTransparency = 1
 actionFrame.Parent = root
 
+local sprintButton = button(
+    actionFrame,
+    "Sprint",
+    "SPRINT",
+    UDim2.fromScale(0.34, 0.20),
+    UDim2.fromScale(0.18, 0.08)
+)
+sprintButton.AnchorPoint = Vector2.new(0.5, 0.5)
+
 local m1 = button(actionFrame, "M1", "M1", UDim2.fromScale(0.46, 0.46), UDim2.fromScale(0.63, 0.50))
 m1.AnchorPoint = Vector2.new(0.5, 0.5)
 m1.TextSize = 22
@@ -342,6 +352,22 @@ local function setBlocking(active: boolean)
     block.Text = active and "BLOCKING" or "BLOCK"
     fire(active and "BlockStart" or "BlockEnd")
 end
+
+local function setSprinting(active: boolean)
+    player:SetAttribute("LocalSprinting", active)
+
+    if active then
+        movementRemote:FireServer("SprintStart")
+    else
+        movementRemote:FireServer("SprintEnd")
+    end
+
+    sprintButton.Text = active and "SPRINTING" or "SPRINT"
+end
+
+sprintButton.Activated:Connect(function()
+    setSprinting(player:GetAttribute("LocalSprinting") ~= true)
+end)
 
 local function activatePower(action: string)
     if player:GetAttribute("CCHUD_MenuOpen") == true
@@ -543,6 +569,19 @@ InputManager:BindAction(
 )
 
 InputManager:BindAction(
+    "CC_Sprint",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            setSprinting(true)
+        elseif state == Enum.UserInputState.End or state == Enum.UserInputState.Cancel then
+            setSprinting(false)
+        end
+    end,
+    {Enum.KeyCode.LeftShift, Enum.KeyCode.ButtonL1},
+    false
+)
+
+InputManager:BindAction(
     "CC_Ultimate",
     function(_, state)
         if state == Enum.UserInputState.Begin then
@@ -587,6 +626,10 @@ local function hideForMenu()
         or player:GetAttribute("CCHUD_OwnerPanelOpen") == true
 
     root.Visible = not hidden
+
+    if hidden and player:GetAttribute("LocalSprinting") == true then
+        setSprinting(false)
+    end
 
     if hidden and player:GetAttribute("LocalBlocking") == true then
         player:SetAttribute("LocalBlocking", false)
