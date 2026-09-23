@@ -106,8 +106,8 @@ local function setupPlayer(player: Player)
 end
 
 local function resetCharacter(player: Player)
-    StateManager:Reset(player)
     combat:CancelPlayer(player)
+    StateManager:Reset(player)
     CooldownService:Clear(player)
     HitRegistry:Clear(player)
     CombatMarkerService:Clear(player)
