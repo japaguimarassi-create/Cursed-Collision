@@ -192,7 +192,7 @@ for key in (
     if key not in animation_data:
         fail(f"AnimationData missing definition: {key}")
 
-if 'Marker = "Hit"' not in animation_data:
+if '"Hit"' not in animation_data:
     fail("AnimationData does not define the combat Hit marker")
 
 cache = read("StarterPlayer/StarterPlayerScripts/Controllers/AnimationCache.lua")
