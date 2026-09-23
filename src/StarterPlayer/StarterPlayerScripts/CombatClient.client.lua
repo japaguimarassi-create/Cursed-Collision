@@ -2,18 +2,22 @@
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local InputManager = require(script.Parent.Controllers.InputManager)
+local InputController = require(script.Parent.Controllers.InputController)
 
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes", 30)
+
 if not remotes then
     return
 end
 
-local combat = remotes:WaitForChild("CombatAction", 15)
-local movement = remotes:WaitForChild("MovementRemote", 15)
-if not combat or not movement then
+local combatAction = remotes:WaitForChild("CombatAction", 15)
+local movementRemote = remotes:WaitForChild("MovementRemote", 15)
+
+if not combatAction or not movementRemote then
     return
 end
 
@@ -25,60 +29,176 @@ local function menuOpen(): boolean
         or player:GetAttribute("CCHUD_OwnerPanelOpen") == true
 end
 
+local function combatBlocked(): boolean
+    return menuOpen()
+        or player:GetAttribute("Stunned") == true
+        or player:GetAttribute("Ragdolled") == true
+end
+
 local function fire(action: string, payload: any?)
-    if menuOpen() then
+    if combatBlocked() then
         return
     end
-    combat:FireServer(action, payload)
+
+    combatAction:FireServer(action, payload)
 end
 
-local function bind(name: string, action: string, keys: {Enum.KeyCode})
-    ContextActionService:BindAction(name, function(_, state)
+local function setBlock(active: boolean)
+    if active and combatBlocked() then
+        return
+    end
+
+    player:SetAttribute("LocalBlocking", active)
+    combatAction:FireServer(active and "BlockStart" or "BlockEnd")
+end
+
+local function setSprint(active: boolean)
+    if active and combatBlocked() then
+        return
+    end
+
+    player:SetAttribute("LocalSprinting", active)
+    movementRemote:FireServer(active and "SprintStart" or "SprintEnd")
+end
+
+InputManager:BindAction(
+    "CC_M1",
+    function(_, state)
         if state == Enum.UserInputState.Begin then
-            fire(action, action == "Dash" and "Forward" or nil)
+            fire("M1")
         end
-        return Enum.ContextActionResult.Pass
-    end, false, table.unpack(keys))
-end
+    end,
+    {Enum.KeyCode.ButtonR2},
+    false
+)
 
-bind("CC_M1", "M1", {Enum.KeyCode.ButtonR2})
-bind("CC_Dash", "Dash", {Enum.KeyCode.Q, Enum.KeyCode.ButtonA})
-bind("CC_Special", "Special", {Enum.KeyCode.E, Enum.KeyCode.ButtonX})
-bind("CC_Skill1", "Skill1", {Enum.KeyCode.One, Enum.KeyCode.ButtonR1})
-bind("CC_Skill2", "Skill2", {Enum.KeyCode.Two, Enum.KeyCode.ButtonY})
-bind("CC_Skill3", "Skill3", {Enum.KeyCode.Three, Enum.KeyCode.DPadUp})
-bind("CC_Skill4", "Skill4", {Enum.KeyCode.Four, Enum.KeyCode.DPadDown})
-bind("CC_Ultimate", "Ultimate", {Enum.KeyCode.R, Enum.KeyCode.ButtonR3})
-bind("CC_Awakening", "Awakening", {Enum.KeyCode.G, Enum.KeyCode.ButtonL3})
+InputManager:BindAction(
+    "CC_Dash",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Dash", InputController:GetDashDirection())
+        end
+    end,
+    {Enum.KeyCode.Q, Enum.KeyCode.ButtonA},
+    false
+)
 
-ContextActionService:BindAction("CC_Block", function(_, state)
-    if state == Enum.UserInputState.Begin then
-        fire("BlockStart")
-    elseif state == Enum.UserInputState.End or state == Enum.UserInputState.Cancel then
-        fire("BlockEnd")
-    end
-    return Enum.ContextActionResult.Pass
-end, false, Enum.KeyCode.F, Enum.KeyCode.ButtonL2)
+InputManager:BindAction(
+    "CC_Special",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Special")
+        end
+    end,
+    {Enum.KeyCode.E, Enum.KeyCode.ButtonX},
+    false
+)
 
-ContextActionService:BindAction("CC_Sprint", function(_, state)
-    if menuOpen() then
-        return Enum.ContextActionResult.Pass
-    end
+InputManager:BindAction(
+    "CC_Skill1",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill1")
+        end
+    end,
+    {Enum.KeyCode.One, Enum.KeyCode.ButtonR1},
+    false
+)
 
-    if state == Enum.UserInputState.Begin then
-        movement:FireServer("SprintStart")
-    elseif state == Enum.UserInputState.End or state == Enum.UserInputState.Cancel then
-        movement:FireServer("SprintEnd")
-    end
-    return Enum.ContextActionResult.Pass
-end, false, Enum.KeyCode.LeftShift, Enum.KeyCode.ButtonL1)
+InputManager:BindAction(
+    "CC_Skill2",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill2")
+        end
+    end,
+    {Enum.KeyCode.Two, Enum.KeyCode.ButtonY},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill3",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill3")
+        end
+    end,
+    {Enum.KeyCode.Three, Enum.KeyCode.DPadUp},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Skill4",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Skill4")
+        end
+    end,
+    {Enum.KeyCode.Four, Enum.KeyCode.DPadDown},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Block",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            setBlock(true)
+        elseif state == Enum.UserInputState.End
+            or state == Enum.UserInputState.Cancel then
+            setBlock(false)
+        end
+    end,
+    {Enum.KeyCode.F, Enum.KeyCode.ButtonL2},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Sprint",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            setSprint(true)
+        elseif state == Enum.UserInputState.End
+            or state == Enum.UserInputState.Cancel then
+            setSprint(false)
+        end
+    end,
+    {Enum.KeyCode.LeftShift, Enum.KeyCode.ButtonL1},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Ultimate",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Ultimate")
+        end
+    end,
+    {Enum.KeyCode.R, Enum.KeyCode.ButtonR3},
+    false
+)
+
+InputManager:BindAction(
+    "CC_Awakening",
+    function(_, state)
+        if state == Enum.UserInputState.Begin then
+            fire("Awakening")
+        end
+    end,
+    {Enum.KeyCode.G, Enum.KeyCode.ButtonL3},
+    false
+)
 
 UserInputService.InputBegan:Connect(function(input, processed)
-    if processed or menuOpen() then
+    if processed then
         return
     end
 
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         fire("M1")
     end
+end)
+
+player.CharacterAdded:Connect(function()
+    player:SetAttribute("LocalBlocking", false)
+    player:SetAttribute("LocalSprinting", false)
 end)

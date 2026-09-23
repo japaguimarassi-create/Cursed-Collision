@@ -1,25 +1,37 @@
 --!strict
 
 local Players = game:GetService("Players")
-
-local Controller = require(script.Parent.Controllers.HUDController)
-local Registry = require(script.Parent.Controllers.HUDRegistry)
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
-local ok, hud = pcall(function()
-    return Controller.new()
-end)
-
-if not ok then
-    warn("[CursedCollisionHUD] initialization failed", hud)
-    return
+-- Limpa interfaces antigas de versões anteriores durante a atualização.
+for _, name in ipairs({
+    "CursedCollisionCombatHUD",
+    "CursedCollisionAccountUI",
+    "CursedCollisionCharacterUI",
+    "CursedCollisionOwnerUI",
+    "CursedCollisionEmoteUI"
+}) do
+    local legacy = playerGui:FindFirstChild(name)
+    if legacy then
+        legacy:Destroy()
+    end
 end
 
-Registry:Set(hud)
+for _, attribute in ipairs({
+    "CCHUD_MenuOpen",
+    "CCHUD_CharacterMenuOpen",
+    "CCHUD_EmoteWheelOpen",
+    "CCHUD_SettingsOpen",
+    "CCHUD_OwnerPanelOpen"
+}) do
+    player:SetAttribute(attribute, false)
+end
 
-player:GetAttributeChangedSignal("CCHUD_MenuOpen"):Connect(function()
-    hud:SetVisible(player:GetAttribute("CCHUD_MenuOpen") ~= true)
+player:SetAttribute("CC_HUD_Input", tostring(UserInputService.PreferredInput))
+
+UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
+    player:SetAttribute("CC_HUD_Input", tostring(UserInputService.PreferredInput))
 end)
-
-return nil

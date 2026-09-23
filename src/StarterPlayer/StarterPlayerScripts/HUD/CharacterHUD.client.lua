@@ -79,7 +79,7 @@ for id in pairs(Definitions) do
 end
 table.sort(order)
 
-local selectedId = tostring(player:GetAttribute("CharacterId") or "PotentialMan")
+local selectedId = tostring(player:GetAttribute("CharacterId") or "Yuji")
 
 local function setSelected(id: string)
     local profile = Definitions[id]
@@ -148,7 +148,7 @@ player:GetAttributeChangedSignal("CCHUD_CharacterMenuOpen"):Connect(function()
 end)
 
 player:GetAttributeChangedSignal("CharacterId"):Connect(function()
-    setSelected(tostring(player:GetAttribute("CharacterId") or "PotentialMan"))
+    setSelected(tostring(player:GetAttribute("CharacterId") or "Yuji"))
 end)
 
 UserInputService.InputBegan:Connect(function(input, processed)
