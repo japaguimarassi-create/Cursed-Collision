@@ -4,14 +4,14 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
+local MarketplaceService = game:GetService("MarketplaceService")
 local Theme = require(script.Parent.HUDTheme)
 
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes", 30)
 local account = remotes and remotes:WaitForChild("AccountAction", 15)
 local accountEvent = remotes and remotes:WaitForChild("AccountEvent", 15)
-local passEvent = remotes and remotes:WaitForChild("GamePassEvent", 15)
-if not account or not accountEvent or not passEvent then
+if not account or not accountEvent then
     return
 end
 
@@ -26,20 +26,23 @@ local backdrop = Instance.new("TextButton")
 backdrop.Size = UDim2.fromScale(1, 1)
 backdrop.BackgroundColor3 = Theme.Colors.Background
 backdrop.BackgroundTransparency = 0.34
-backdrop.BorderSizePixel = 0
 backdrop.Text = ""
 backdrop.AutoButtonColor = false
 backdrop.Visible = false
 backdrop.Parent = root
 
-local panel = Theme.Panel(root, "MenuPanel", UDim2.fromScale(0.84, 0.78))
+local panel = Theme.Panel(root, "Panel", UDim2.fromScale(0.84, 0.78))
 panel.Visible = false
 
-local title = Theme.Label(panel, "Title", "CURSED COLLISION", UDim2.fromScale(0.60, 0.08), UDim2.fromScale(0.04, 0.028), 20)
+local title = Theme.Label(panel, "Title", "CURSED COLLISION", UDim2.fromScale(0.60, 0.08), UDim2.fromScale(0.04, 0.03), 20)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBlack
 
-local credits = Theme.Label(panel, "Credits", "0 C", UDim2.fromScale(0.22, 0.06), UDim2.fromScale(0.69, 0.04), 12)
+local sub = Theme.Label(panel, "Sub", "SHOP • MISSIONS • PASSES • PLAYERS", UDim2.fromScale(0.70, 0.045), UDim2.fromScale(0.04, 0.10), 8)
+sub.TextXAlignment = Enum.TextXAlignment.Left
+sub.TextColor3 = Theme.Colors.Muted
+
+local credits = Theme.Label(panel, "Credits", "0 C", UDim2.fromScale(0.20, 0.06), UDim2.fromScale(0.70, 0.045), 12)
 credits.TextXAlignment = Enum.TextXAlignment.Right
 credits.TextColor3 = Theme.Colors.Warning
 
@@ -47,25 +50,25 @@ local close = Theme.Button(panel, "Close", "×", UDim2.fromOffset(52, 44), UDim2
 close.AnchorPoint = Vector2.new(1, 0)
 close.TextSize = 21
 
-local tabBar = Instance.new("Frame")
-tabBar.Size = UDim2.fromScale(0.92, 0.085)
-tabBar.Position = UDim2.fromScale(0.04, 0.145)
-tabBar.BackgroundTransparency = 1
-tabBar.Parent = panel
+local tabs = Instance.new("Frame")
+tabs.Size = UDim2.fromScale(0.92, 0.085)
+tabs.Position = UDim2.fromScale(0.04, 0.15)
+tabs.BackgroundTransparency = 1
+tabs.Parent = panel
 
 local tabLayout = Instance.new("UIListLayout")
 tabLayout.FillDirection = Enum.FillDirection.Horizontal
-tabLayout.Padding = UDim.new(0, 8)
-tabLayout.Parent = tabBar
+tabLayout.Padding = UDim.new(0, 7)
+tabLayout.Parent = tabs
 
 local content = Instance.new("ScrollingFrame")
 content.Size = UDim2.fromScale(0.92, 0.69)
-content.Position = UDim2.fromScale(0.04, 0.245)
+content.Position = UDim2.fromScale(0.04, 0.25)
 content.BackgroundTransparency = 1
 content.BorderSizePixel = 0
+content.ScrollBarThickness = 5
 content.AutomaticCanvasSize = Enum.AutomaticSize.Y
 content.CanvasSize = UDim2.fromOffset(0, 0)
-content.ScrollBarThickness = 5
 content.Selectable = true
 content.Parent = panel
 
@@ -74,13 +77,13 @@ layout.Padding = UDim.new(0, 8)
 layout.Parent = content
 
 local state = {
-    tab = "Shop",
-    economy = {Credits = 0, OwnedSkins = {}, EquippedSkin = ""},
-    quests = {Daily = {}, Weekly = {}, General = {}},
-    passes = {UltimateSkin = false, InstantSkin = false, KillSound = false}
+    Tab = "Shop",
+    Credits = 0,
+    OwnedSkins = {} :: {[string]: boolean},
+    Quests = {Daily = {}, Weekly = {}, General = {}}
 }
 
-local function clearContent()
+local function clear()
     for _, child in ipairs(content:GetChildren()) do
         if child ~= layout then
             child:Destroy()
@@ -88,8 +91,8 @@ local function clearContent()
     end
 end
 
-local function row(text: string, order: number, callback: (() -> ())?): TextButton
-    local b = Theme.Button(content, "Row" .. order, text, UDim2.new(1, -8, 0, 70), UDim2.new(), 54)
+local function row(order: number, text: string, callback: (() -> ())?): TextButton
+    local b = Theme.Button(content, "Row" .. order, text, UDim2.new(1, -8, 0, 70), UDim2.new(), 56)
     b.LayoutOrder = order
     b.TextXAlignment = Enum.TextXAlignment.Left
     b.TextSize = 10
@@ -100,51 +103,49 @@ local function row(text: string, order: number, callback: (() -> ())?): TextButt
 end
 
 local function renderShop()
-    clearContent()
+    clear()
     local characterId = tostring(player:GetAttribute("CharacterId") or "PotentialMan")
     local order = 0
 
-    for id, item in pairs(Shop.Skins) do
+    for _, item in pairs(Shop.Skins) do
         if item.Character == characterId then
             order += 1
-            local owned = state.economy.OwnedSkins[id] == true
+            local owned = state.OwnedSkins[item.Id] == true
             row(
-                item.Name .. "\n" .. (owned and "OWNED / TAP TO EQUIP" or tostring(item.Price) .. " CREDITS"),
                 order,
+                tostring(item.Name) .. "\n" .. (owned and "OWNED • TAP TO EQUIP" or tostring(item.Price) .. " CREDITS"),
                 function()
-                    account:FireServer(owned and "Equip" or "Buy", {category = "Skins", id = id})
+                    account:FireServer(owned and "Equip" or "Buy", {category = "Skins", id = item.Id})
                 end
             )
         end
     end
 
     if order == 0 then
-        row("No skins registered for this fighter.", 1, nil)
+        row(1, "NO SKINS REGISTERED", nil)
     end
 end
 
 local function renderMissions()
-    clearContent()
+    clear()
     local order = 0
 
     for _, section in ipairs({"Daily", "Weekly", "General"}) do
         order += 1
-        local heading = row(section:upper(), order, nil)
+        local heading = row(order, section:upper(), nil)
         heading.TextColor3 = Theme.Colors.Accent
-        heading.TextSize = 11
-
-        for _, quest in ipairs(state.quests[section] or {}) do
+        for _, quest in ipairs(state.Quests[section] or {}) do
             order += 1
             row(
+                order,
                 tostring(quest.Name or "Mission")
                     .. "\n"
                     .. tostring(quest.Progress or 0)
                     .. " / "
                     .. tostring(quest.Target or 1)
-                    .. "   •   +"
+                    .. "  •  +"
                     .. tostring(quest.Reward or 0)
                     .. " C",
-                order,
                 nil
             )
         end
@@ -152,66 +153,61 @@ local function renderMissions()
 end
 
 local function renderPasses()
-    clearContent()
-    local data = {
-        {"UltimateSkin", "ULTIMATE SKIN"},
-        {"InstantSkin", "INSTANT SKIN"},
-        {"KillSound", "KILL SOUND"}
+    clear()
+    local passes = {
+        {Key = "UltimateSkin", Name = "ULTIMATE SKIN"},
+        {Key = "InstantSkin", Name = "INSTANT SKIN"},
+        {Key = "KillSound", Name = "KILL SOUND"}
     }
 
-    for index, item in ipairs(data) do
-        local key, titleText = item[1], item[2]
-        row(
-            titleText .. "\n" .. (state.passes[key] and "OWNED" or "PURCHASE"),
-            index,
-            function()
-                local config = Passes[key]
-                if config and tonumber(config.Id) and config.Id > 0 then
-                    local marketplace = game:GetService("MarketplaceService")
-                    pcall(function()
-                        marketplace:PromptGamePassPurchase(player, config.Id)
-                    end)
-                end
+    for index, data in ipairs(passes) do
+        row(index, data.Name .. "\nOPEN ROBLOX PURCHASE", function()
+            local info = Passes[data.Key]
+            if info and tonumber(info.Id) and info.Id > 0 then
+                pcall(function()
+                    MarketplaceService:PromptGamePassPurchase(player, info.Id)
+                end)
             end
-        )
+        end)
+    end
+end
+
+local function renderPlayers()
+    clear()
+    for index, target in ipairs(Players:GetPlayers()) do
+        row(index, string.format("%02d  %s  @%s", index, target.DisplayName, target.Name), nil)
     end
 end
 
 local function render()
-    if state.tab == "Shop" then
+    if state.Tab == "Shop" then
         renderShop()
-    elseif state.tab == "Missions" then
+    elseif state.Tab == "Missions" then
         renderMissions()
-    elseif state.tab == "Passes" then
+    elseif state.Tab == "Passes" then
         renderPasses()
     else
-        clearContent()
-        local players = Players:GetPlayers()
-        for index, target in ipairs(players) do
-            row(string.format("%02d   %s   @%s", index, target.DisplayName, target.Name), index, nil)
-        end
+        renderPlayers()
     end
 end
 
-local tabShop = Theme.Button(tabBar, "Shop", "SHOP", UDim2.fromScale(0.23, 0.86), UDim2.new(), 54)
-local tabMissions = Theme.Button(tabBar, "Missions", "MISSIONS", UDim2.fromScale(0.25, 0.86), UDim2.new(), 54)
-local tabPasses = Theme.Button(tabBar, "Passes", "PASSES", UDim2.fromScale(0.20, 0.86), UDim2.new(), 54)
-local tabPlayers = Theme.Button(tabBar, "Players", "PLAYERS", UDim2.fromScale(0.25, 0.86), UDim2.new(), 54)
+local tabShop = Theme.Button(tabs, "Shop", "SHOP", UDim2.fromScale(0.23, 0.86), UDim2.new(), 54)
+local tabMissions = Theme.Button(tabs, "Missions", "MISSIONS", UDim2.fromScale(0.25, 0.86), UDim2.new(), 54)
+local tabPasses = Theme.Button(tabs, "Passes", "PASSES", UDim2.fromScale(0.20, 0.86), UDim2.new(), 54)
+local tabPlayers = Theme.Button(tabs, "Players", "PLAYERS", UDim2.fromScale(0.25, 0.86), UDim2.new(), 54)
 
-tabShop.Activated:Connect(function() state.tab = "Shop"; render() end)
-tabMissions.Activated:Connect(function() state.tab = "Missions"; render() end)
-tabPasses.Activated:Connect(function() state.tab = "Passes"; render() end)
-tabPlayers.Activated:Connect(function() state.tab = "Players"; render() end)
+tabShop.Activated:Connect(function() state.Tab = "Shop"; render() end)
+tabMissions.Activated:Connect(function() state.Tab = "Missions"; render() end)
+tabPasses.Activated:Connect(function() state.Tab = "Passes"; render() end)
+tabPlayers.Activated:Connect(function() state.Tab = "Players"; render() end)
 
-local function closePanel()
+local function closeMenu()
     panel.Visible = false
     backdrop.Visible = false
-    if player:GetAttribute("CCHUD_MenuOpen") == true then
-        player:SetAttribute("CCHUD_MenuOpen", false)
-    end
+    player:SetAttribute("CCHUD_MenuOpen", false)
 end
 
-local function openPanel()
+local function openMenu()
     player:SetAttribute("CCHUD_CharacterMenuOpen", false)
     player:SetAttribute("CCHUD_EmoteWheelOpen", false)
     player:SetAttribute("CCHUD_SettingsOpen", false)
@@ -227,53 +223,49 @@ local function openPanel()
     end
 end
 
-close.Activated:Connect(closePanel)
-backdrop.Activated:Connect(closePanel)
+close.Activated:Connect(closeMenu)
+backdrop.Activated:Connect(closeMenu)
 
-accountEvent.OnClientEvent:Connect(function(event, payload)
-    if event ~= "Sync" or not payload then
+player:GetAttributeChangedSignal("CCHUD_MenuSection"):Connect(function()
+    if player:GetAttribute("CCHUD_MenuOpen") ~= true then
         return
     end
-    state.economy = payload.Economy or state.economy
-    state.quests = payload.Quests or state.quests
-    credits.Text = tostring(state.economy.Credits or 0) .. " C"
+    state.Tab = tostring(player:GetAttribute("CCHUD_MenuSection") or "Shop")
+    render()
+end)
+
+player:GetAttributeChangedSignal("CCHUD_MenuOpen"):Connect(function()
+    if player:GetAttribute("CCHUD_MenuOpen") == true
+        and player:GetAttribute("CCHUD_CharacterMenuOpen") ~= true
+        and player:GetAttribute("CCHUD_EmoteWheelOpen") ~= true
+        and player:GetAttribute("CCHUD_SettingsOpen") ~= true
+        and player:GetAttribute("CCHUD_OwnerPanelOpen") ~= true then
+        openMenu()
+    else
+        closeMenu()
+    end
+end)
+
+accountEvent.OnClientEvent:Connect(function(event, payload)
+    if event ~= "Sync" or type(payload) ~= "table" then
+        return
+    end
+    local economy = payload.Economy
+    if type(economy) == "table" then
+        state.Credits = tonumber(economy.Credits) or state.Credits
+        state.OwnedSkins = economy.OwnedSkins or state.OwnedSkins
+        credits.Text = tostring(state.Credits) .. " C"
+    end
+    if type(payload.Quests) == "table" then
+        state.Quests = payload.Quests
+    end
     if panel.Visible then
         render()
     end
 end)
 
-passEvent.OnClientEvent:Connect(function(event, payload)
-    if event ~= "Sync" then
-        return
-    end
-    for key, value in pairs(payload or {}) do
-        if state.passes[key] ~= nil then
-            state.passes[key] = value == true
-        end
-    end
-    if panel.Visible and state.tab == "Passes" then
-        render()
-    end
-end)
-
-player:GetAttributeChangedSignal("CCHUD_MenuOpen"):Connect(function()
-    local open = player:GetAttribute("CCHUD_MenuOpen") == true
-        and player:GetAttribute("CCHUD_CharacterMenuOpen") ~= true
-        and player:GetAttribute("CCHUD_EmoteWheelOpen") ~= true
-        and player:GetAttribute("CCHUD_SettingsOpen") ~= true
-        and player:GetAttribute("CCHUD_OwnerPanelOpen") ~= true
-
-    if open then
-        local section = tostring(player:GetAttribute("CCHUD_MenuSection") or "")
-        state.tab = section == "Leaderboard" and "Players" or "Shop"
-        openPanel()
-    else
-        closePanel()
-    end
-end)
-
 player:GetAttributeChangedSignal("CharacterId"):Connect(function()
-    if panel.Visible and state.tab == "Shop" then
+    if panel.Visible and state.Tab == "Shop" then
         render()
     end
 end)
@@ -283,6 +275,6 @@ UserInputService.InputBegan:Connect(function(input, processed)
         return
     end
     if input.KeyCode == Enum.KeyCode.ButtonStart and panel.Visible then
-        closePanel()
+        closeMenu()
     end
 end)
