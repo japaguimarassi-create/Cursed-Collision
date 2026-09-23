@@ -125,6 +125,10 @@ function CombatMarkerService:Resolve(player: Player, attackId: string): boolean
 
     local now = os.clock()
 
+    if not StateManager:CanAct(player, now) then
+        return false
+    end
+
     if now < record.EarlyAt then
         return false
     end
