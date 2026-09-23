@@ -4,33 +4,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
 local CharacterMoves = require(ReplicatedStorage.Characters.CharacterMoves)
+local PlayableRoster = require(ReplicatedStorage.Characters.PlayableRoster)
 
 local CharacterModules = {
-    PotentialMan = require(ReplicatedStorage.Characters.PotentialMan),
     Yuji = require(ReplicatedStorage.Characters.Yuji),
     Gojo = require(ReplicatedStorage.Characters.Gojo),
     Sukuna = require(ReplicatedStorage.Characters.Sukuna),
-    Megumi = require(ReplicatedStorage.Characters.Megumi),
-    Yuta = require(ReplicatedStorage.Characters.Yuta),
-    Maki = require(ReplicatedStorage.Characters.Maki),
-    Toji = require(ReplicatedStorage.Characters.Toji),
-    Mahito = require(ReplicatedStorage.Characters.Mahito),
-    Todo = require(ReplicatedStorage.Characters.Todo),
-    Hakari = require(ReplicatedStorage.Characters.Hakari),
-    Choso = require(ReplicatedStorage.Characters.Choso),
-    Kashimo = require(ReplicatedStorage.Characters.Kashimo),
-    Naoya = require(ReplicatedStorage.Characters.Naoya),
-    Kenjaku = require(ReplicatedStorage.Characters.Kenjaku),
-    Jogo = require(ReplicatedStorage.Characters.Jogo),
-    Dagon = require(ReplicatedStorage.Characters.Dagon),
-    Hanami = require(ReplicatedStorage.Characters.Hanami),
-    Higuruma = require(ReplicatedStorage.Characters.Higuruma),
-    Takaba = require(ReplicatedStorage.Characters.Takaba),
-    Uraume = require(ReplicatedStorage.Characters.Uraume),
-    Yorozu = require(ReplicatedStorage.Characters.Yorozu),
-    Ryu = require(ReplicatedStorage.Characters.Ryu),
-    Uro = require(ReplicatedStorage.Characters.Uro),
-    Kusakabe = require(ReplicatedStorage.Characters.Kusakabe)
+    Megumi = require(ReplicatedStorage.Characters.Megumi)
 }
 
 local CharacterService = {}
@@ -43,23 +23,19 @@ end
 function CharacterService:GetAvailable()
     local result: {any} = {}
 
-    for id, definition in pairs(Definitions) do
-        if CharacterModules[id] then
+    for _, id in ipairs(PlayableRoster.Order) do
+        local definition = Definitions[id]
+        if definition and CharacterModules[id] then
             table.insert(result, {
                 Id = id,
                 Name = definition.Name,
                 Subtitle = definition.Subtitle,
                 Archetype = definition.Archetype,
-                SpecialName = CharacterMoves[id]
-                    and CharacterMoves[id].SpecialName
-                    or "Special"
+                SpecialName = CharacterMoves[id].SpecialName,
+                AwakeningName = definition.AwakeningName
             })
         end
     end
-
-    table.sort(result, function(a: any, b: any)
-        return a.Id < b.Id
-    end)
 
     return result
 end
@@ -68,12 +44,13 @@ function CharacterService:GetId(player: Player): string
     local id = player:GetAttribute("CharacterId")
 
     if type(id) == "string"
+        and PlayableRoster:Contains(id)
         and Definitions[id]
         and CharacterModules[id] then
         return id
     end
 
-    return "PotentialMan"
+    return PlayableRoster.Default
 end
 
 function CharacterService:GetModule(player: Player)
@@ -92,10 +69,8 @@ function CharacterService:Initialize(player: Player): (boolean, string)
     player:SetAttribute("CharacterId", id)
     player:SetAttribute("CharacterName", definition.Name)
     player:SetAttribute("CharacterTitle", definition.Subtitle)
-    player:SetAttribute(
-        "SpecialName",
-        CharacterMoves[id] and CharacterMoves[id].SpecialName or "Special"
-    )
+    player:SetAttribute("SpecialName", CharacterMoves[id].SpecialName)
+    player:SetAttribute("AwakeningName", definition.AwakeningName)
 
     if module.Init then
         module.Init(player, context)
@@ -105,11 +80,15 @@ function CharacterService:Initialize(player: Player): (boolean, string)
 end
 
 function CharacterService:Select(player: Player, id: string): (boolean, string)
-    if not Definitions[id] or not CharacterModules[id] then
+    if not PlayableRoster:Contains(id)
+        or not Definitions[id]
+        or not CharacterModules[id] then
         return false, "UnknownCharacter"
     end
 
-    if player:GetAttribute("CombatStunned") then
+    if player:GetAttribute("CombatStunned") == true
+        or player:GetAttribute("Blocking") == true
+        or player:GetAttribute("Ragdolled") == true then
         return false, "Busy"
     end
 
@@ -155,6 +134,36 @@ function CharacterService:Special(player: Player): boolean
     end
 
     return module.Special(player, context)
+end
+
+function CharacterService:OnIncomingDamage(
+    player: Player,
+    amount: number,
+    meta: any
+): number
+    local module = self:GetModule(player)
+
+    if module and module.OnIncomingDamage then
+        return math.max(
+            0,
+            tonumber(module.OnIncomingDamage(player, context, amount, meta))
+                or amount
+        )
+    end
+
+    return amount
+end
+
+function CharacterService:OnM1Hit(
+    player: Player,
+    combo: number,
+    success: boolean
+)
+    local module = self:GetModule(player)
+
+    if module and module.OnM1Hit then
+        module.OnM1Hit(player, context, combo, success)
+    end
 end
 
 return CharacterService
