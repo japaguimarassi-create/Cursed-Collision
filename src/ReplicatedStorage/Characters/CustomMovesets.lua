@@ -16,62 +16,74 @@ export type Move = {
     Launch: boolean?,
     Slam: boolean?,
     Ragdoll: boolean?,
-    EnergyCost: number?
+    EnergyCost: number?,
+    Startup: number?,
+    ActiveTime: number?,
+    Recovery: number?,
+    Hits: number?,
+    HitInterval: number?,
+    SecondaryDamage: number?,
+    SecondaryDelay: number?,
+    Domain: string?,
+    DomainRadius: number?,
+    DomainDuration: number?,
+    BypassInfinity: boolean?,
+    LowDamage: boolean?
 }
 
 type MoveList = {Move}
 
 local Base: {[string]: MoveList} = {
     Yuji = {
-        {Name = "Divergent Fist", Type = "Melee", Tag = "Yuji_DivergentFist", Range = 8, Damage = 14, Stun = 0.30, Knockback = 20, Cooldown = 0.55, EnergyCost = 8},
-        {Name = "Manji Kick", Type = "Melee", Tag = "Yuji_ManjiKick", Range = 9, Damage = 20, Stun = 0.42, Knockback = 34, Cooldown = 1.20, EnergyCost = 12},
-        {Name = "Black Flash", Type = "Melee", Tag = "Yuji_BlackFlash", Range = 9, Damage = 28, Stun = 0.62, Knockback = 58, Cooldown = 3.40, GuardBreak = true, EnergyCost = 22},
-        {Name = "Soul Impact", Type = "Burst", Tag = "Yuji_SoulImpact", Radius = 11, Damage = 34, Stun = 0.80, Knockback = 76, Cooldown = 5.50, GuardBreak = true, Ragdoll = true, EnergyCost = 35}
+        {Name = "Cursed Strikes", Type = "Melee", Tag = "Yuji_CursedStrikes", Range = 9, Damage = 10, Stun = 0.26, Knockback = 10, Cooldown = 0.75, Hits = 3, HitInterval = 0.07, Startup = 0.08, ActiveTime = 0.22, Recovery = 0.20, EnergyCost = 8},
+        {Name = "Crushing Blow", Type = "Melee", Tag = "Yuji_CrushingBlow", Range = 10, Damage = 22, Stun = 0.42, Knockback = 42, Cooldown = 1.35, Launch = true, Startup = 0.16, ActiveTime = 0.08, Recovery = 0.34, EnergyCost = 12},
+        {Name = "Divergent Fist", Type = "Melee", Tag = "Yuji_DivergentFist", Range = 9, Damage = 15, SecondaryDamage = 12, SecondaryDelay = 0.17, Stun = 0.38, Knockback = 24, Cooldown = 2.15, Startup = 0.13, ActiveTime = 0.22, Recovery = 0.34, EnergyCost = 16},
+        {Name = "Manji Kick", Type = "Melee", Tag = "Yuji_ManjiKick", Range = 9, Damage = 26, Stun = 0.60, Knockback = 58, Cooldown = 4.20, Ragdoll = true, Startup = 0.11, ActiveTime = 0.07, Recovery = 0.46, EnergyCost = 24}
     },
     Gojo = {
-        {Name = "Lapse Blue", Type = "Control", Tag = "Gojo_LapseBlue", Range = 20, Damage = 15, Stun = 0.36, Knockback = 8, Pull = 68, Cooldown = 1.45, EnergyCost = 10},
-        {Name = "Reversal Red", Type = "Burst", Tag = "Gojo_ReversalRed", Radius = 12, Damage = 25, Stun = 0.54, Knockback = 88, Cooldown = 2.50, GuardBreak = true, EnergyCost = 18},
-        {Name = "Rapid Punches", Type = "Melee", Tag = "Gojo_RapidPunches", Range = 8, Damage = 22, Stun = 0.50, Knockback = 26, Cooldown = 1.85, EnergyCost = 16},
-        {Name = "Hollow Purple", Type = "Projectile", Tag = "Gojo_HollowPurple", Range = 34, Damage = 50, Stun = 0.95, Knockback = 126, Cooldown = 8.80, GuardBreak = true, Ragdoll = true, EnergyCost = 48}
-    },
-    Sukuna = {
-        {Name = "Dismantle", Type = "Projectile", Tag = "Sukuna_Dismantle", Range = 24, Damage = 17, Stun = 0.32, Knockback = 28, Cooldown = 0.85, EnergyCost = 9},
-        {Name = "Cleave", Type = "Area", Tag = "Sukuna_Cleave", Radius = 10, Damage = 22, Stun = 0.46, Knockback = 36, Cooldown = 1.50, GuardBreak = true, EnergyCost = 13},
-        {Name = "Flame Arrow", Type = "Projectile", Tag = "Sukuna_FlameArrow", Range = 28, Damage = 34, Stun = 0.58, Knockback = 70, Cooldown = 3.80, GuardBreak = true, EnergyCost = 28},
-        {Name = "World Cutting Slash", Type = "Projectile", Tag = "Sukuna_WorldCut", Range = 38, Damage = 58, Stun = 1.05, Knockback = 136, Cooldown = 9.50, GuardBreak = true, Ragdoll = true, EnergyCost = 52}
+        {Name = "Lapse Blue", Type = "Control", Tag = "Gojo_LapseBlue", Range = 22, Damage = 14, Stun = 0.36, Knockback = 8, Pull = 76, Cooldown = 1.45, Startup = 0.16, ActiveTime = 0.08, Recovery = 0.30, EnergyCost = 10},
+        {Name = "Reversal Red", Type = "Burst", Tag = "Gojo_ReversalRed", Radius = 12, Damage = 26, Stun = 0.54, Knockback = 76, Cooldown = 2.60, GuardBreak = true, Startup = 0.18, ActiveTime = 0.08, Recovery = 0.38, EnergyCost = 18},
+        {Name = "Rapid Punches", Type = "Melee", Tag = "Gojo_RapidPunches", Range = 8, Damage = 8, Stun = 0.28, Knockback = 8, Cooldown = 1.85, Hits = 5, HitInterval = 0.055, Startup = 0.10, ActiveTime = 0.30, Recovery = 0.28, EnergyCost = 16},
+        {Name = "Twofold Kick", Type = "Melee", Tag = "Gojo_TwofoldKick", Range = 10, Damage = 24, Stun = 0.48, Knockback = 42, Cooldown = 2.80, Launch = true, Startup = 0.13, ActiveTime = 0.08, Recovery = 0.34, EnergyCost = 20}
     },
     Megumi = {
-        {Name = "Divine Dog", Type = "Melee", Tag = "Megumi_DivineDog", Range = 11, Damage = 16, Stun = 0.38, Knockback = 30, Cooldown = 0.95, EnergyCost = 10},
-        {Name = "Nue", Type = "Projectile", Tag = "Megumi_Nue", Range = 24, Damage = 19, Stun = 0.42, Knockback = 44, Cooldown = 1.85, EnergyCost = 14},
-        {Name = "Max Elephant", Type = "Area", Tag = "Megumi_MaxElephant", Radius = 13, Damage = 26, Stun = 0.60, Knockback = 68, Cooldown = 3.60, EnergyCost = 24},
-        {Name = "Divine Dog: Totality", Type = "Melee", Tag = "Megumi_Totality", Range = 13, Damage = 34, Stun = 0.76, Knockback = 74, Cooldown = 5.80, GuardBreak = true, Ragdoll = true, EnergyCost = 36}
+        {Name = "Divine Dogs", Type = "Melee", Tag = "Megumi_DivineDogs", Range = 11, Damage = 16, Stun = 0.34, Knockback = 24, Cooldown = 1.10, Hits = 2, HitInterval = 0.12, Startup = 0.11, ActiveTime = 0.18, Recovery = 0.28, EnergyCost = 10},
+        {Name = "Toad", Type = "Control", Tag = "Megumi_Toad", Range = 17, Damage = 12, Stun = 0.48, Knockback = 12, Pull = 58, Cooldown = 1.70, Startup = 0.17, ActiveTime = 0.07, Recovery = 0.30, EnergyCost = 13},
+        {Name = "Nue", Type = "Projectile", Tag = "Megumi_Nue", Range = 28, Damage = 20, Stun = 0.42, Knockback = 38, Cooldown = 2.00, Startup = 0.18, ActiveTime = 0.08, Recovery = 0.28, EnergyCost = 15},
+        {Name = "Rabbit Escape", Type = "Area", Tag = "Megumi_RabbitEscape", Radius = 11, Damage = 6, Stun = 0.24, Knockback = 10, Cooldown = 3.10, Hits = 3, HitInterval = 0.16, Startup = 0.10, ActiveTime = 0.52, Recovery = 0.32, EnergyCost = 18}
+    },
+    Sukuna = {
+        {Name = "Dismantle", Type = "Projectile", Tag = "Sukuna_Dismantle", Range = 30, Damage = 17, Stun = 0.30, Knockback = 24, Cooldown = 0.90, Startup = 0.11, ActiveTime = 0.05, Recovery = 0.24, EnergyCost = 9},
+        {Name = "Cleave", Type = "Area", Tag = "Sukuna_Cleave", Radius = 10, Damage = 22, Stun = 0.42, Knockback = 36, Cooldown = 1.50, GuardBreak = true, Startup = 0.12, ActiveTime = 0.06, Recovery = 0.30, EnergyCost = 13},
+        {Name = "Spiderweb", Type = "Burst", Tag = "Sukuna_Spiderweb", Radius = 13, Damage = 18, Stun = 0.30, Knockback = 18, Cooldown = 2.70, Startup = 0.18, ActiveTime = 0.08, Recovery = 0.35, EnergyCost = 18},
+        {Name = "Shrine Slash", Type = "Control", Tag = "Sukuna_ShrineSlash", Range = 18, Damage = 28, Stun = 0.55, Knockback = 48, Cooldown = 4.20, GuardBreak = true, Startup = 0.16, ActiveTime = 0.08, Recovery = 0.40, EnergyCost = 24}
     }
 }
 
 local Awakening: {[string]: MoveList} = {
     Yuji = {
-        {Name = "Black Flash Barrage", Type = "Melee", Tag = "Yuji_Awake_Barrage", Range = 9, Damage = 25, Stun = 0.42, Knockback = 30, Cooldown = 0.75, EnergyCost = 0},
-        {Name = "Dismantle", Type = "Projectile", Tag = "Yuji_Awake_Dismantle", Range = 24, Damage = 20, Stun = 0.34, Knockback = 34, Cooldown = 1.25, EnergyCost = 0},
-        {Name = "Soul Rattle", Type = "Control", Tag = "Yuji_Awake_SoulRattle", Range = 12, Damage = 30, Stun = 0.72, Knockback = 22, Cooldown = 2.40, GuardBreak = true, EnergyCost = 0},
-        {Name = "Black Flash: Chain", Type = "Burst", Tag = "Yuji_Awake_Chain", Radius = 12, Damage = 46, Stun = 0.95, Knockback = 104, Cooldown = 6.20, GuardBreak = true, Ragdoll = true, EnergyCost = 0}
+        {Name = "Shrine: Dismantle", Type = "Projectile", Tag = "Yuji_Shujuku_Dismantle", Range = 34, Damage = 24, Stun = 0.30, Knockback = 34, Cooldown = 1.05, Startup = 0.10, ActiveTime = 0.04, Recovery = 0.22, BypassInfinity = true},
+        {Name = "Piercing Blood", Type = "Projectile", Tag = "Yuji_PiercingBlood", Range = 42, Damage = 32, Stun = 0.45, Knockback = 56, Cooldown = 2.60, Startup = 0.22, ActiveTime = 0.05, Recovery = 0.34},
+        {Name = "Blood Hardened Fist", Type = "Melee", Tag = "Yuji_BloodFist", Range = 10, Damage = 28, Stun = 0.48, Knockback = 40, Cooldown = 2.10, Hits = 2, HitInterval = 0.08, Startup = 0.10, ActiveTime = 0.15, Recovery = 0.30},
+        {Name = "Black Flash Chain", Type = "Burst", Tag = "Yuji_Shujuku_BlackFlash", Radius = 10, Damage = 48, Stun = 0.78, Knockback = 86, Cooldown = 5.60, GuardBreak = true, Ragdoll = true, Startup = 0.18, ActiveTime = 0.10, Recovery = 0.46}
     },
     Gojo = {
-        {Name = "Blue Barrage", Type = "Control", Tag = "Gojo_Awake_Blue", Range = 22, Damage = 20, Stun = 0.42, Knockback = 20, Pull = 86, Cooldown = 0.90, EnergyCost = 0},
-        {Name = "Red Burst", Type = "Burst", Tag = "Gojo_Awake_Red", Radius = 14, Damage = 34, Stun = 0.66, Knockback = 108, Cooldown = 1.90, GuardBreak = true, EnergyCost = 0},
-        {Name = "Infinity Rush", Type = "Melee", Tag = "Gojo_Awake_Rush", Range = 10, Damage = 31, Stun = 0.62, Knockback = 54, Cooldown = 1.40, EnergyCost = 0},
-        {Name = "Unlimited Void Impact", Type = "Burst", Tag = "Gojo_Awake_Void", Radius = 16, Damage = 54, Stun = 1.10, Knockback = 120, Cooldown = 7.50, GuardBreak = true, Ragdoll = true, EnergyCost = 0}
-    },
-    Sukuna = {
-        {Name = "Dismantle Rain", Type = "Projectile", Tag = "Sukuna_Awake_Rain", Range = 30, Damage = 24, Stun = 0.38, Knockback = 38, Cooldown = 0.90, EnergyCost = 0},
-        {Name = "Cleave Storm", Type = "Area", Tag = "Sukuna_Awake_Cleave", Radius = 14, Damage = 30, Stun = 0.60, Knockback = 62, Cooldown = 1.60, GuardBreak = true, EnergyCost = 0},
-        {Name = "Divine Flame", Type = "Projectile", Tag = "Sukuna_Awake_Flame", Range = 30, Damage = 42, Stun = 0.66, Knockback = 82, Cooldown = 3.25, GuardBreak = true, EnergyCost = 0},
-        {Name = "World Slash: Enma", Type = "Projectile", Tag = "Sukuna_Awake_World", Range = 42, Damage = 66, Stun = 1.20, Knockback = 148, Cooldown = 8.20, GuardBreak = true, Ragdoll = true, EnergyCost = 0}
+        {Name = "Lapse Blue: MAX", Type = "Control", Tag = "Gojo_MaxBlue", Range = 30, Damage = 25, Stun = 0.44, Knockback = 12, Pull = 110, Cooldown = 1.10, Startup = 0.15, ActiveTime = 0.08, Recovery = 0.26},
+        {Name = "Reversal Red: MAX", Type = "Burst", Tag = "Gojo_MaxRed", Radius = 15, Damage = 40, Stun = 0.62, Knockback = 112, Cooldown = 2.10, GuardBreak = true, Startup = 0.20, ActiveTime = 0.08, Recovery = 0.36},
+        {Name = "Hollow Purple", Type = "Projectile", Tag = "Gojo_HollowPurple", Range = 55, Damage = 68, Stun = 1.00, Knockback = 150, Cooldown = 7.80, GuardBreak = true, Ragdoll = true, BypassInfinity = true, Startup = 0.42, ActiveTime = 0.05, Recovery = 0.60},
+        {Name = "Unlimited Void", Type = "Domain", Tag = "Gojo_UnlimitedVoid", Damage = 0, Stun = 0, Knockback = 0, Cooldown = 10.0, Domain = "UnlimitedVoid", DomainRadius = 22, DomainDuration = 8.0, Startup = 0.34, ActiveTime = 0.05, Recovery = 0.50}
     },
     Megumi = {
-        {Name = "Shadow Hounds", Type = "Melee", Tag = "Megumi_Awake_Hounds", Range = 13, Damage = 22, Stun = 0.46, Knockback = 38, Cooldown = 0.80, EnergyCost = 0},
-        {Name = "Winged Nue", Type = "Projectile", Tag = "Megumi_Awake_Nue", Range = 30, Damage = 26, Stun = 0.50, Knockback = 54, Cooldown = 1.40, EnergyCost = 0},
-        {Name = "Max Elephant: Flood", Type = "Area", Tag = "Megumi_Awake_Elephant", Radius = 16, Damage = 34, Stun = 0.70, Knockback = 76, Cooldown = 2.90, GuardBreak = true, EnergyCost = 0},
-        {Name = "Chimera Shadow Garden", Type = "Area", Tag = "Megumi_Awake_Garden", Radius = 18, Damage = 48, Stun = 0.98, Knockback = 96, Cooldown = 7.20, GuardBreak = true, Ragdoll = true, EnergyCost = 0}
+        {Name = "Great Serpent", Type = "Control", Tag = "Megumi_GreatSerpent", Range = 24, Damage = 30, Stun = 0.52, Knockback = 34, Pull = 44, Cooldown = 2.10, Startup = 0.18, ActiveTime = 0.08, Recovery = 0.30},
+        {Name = "Max Elephant", Type = "Area", Tag = "Megumi_MaxElephant", Radius = 16, Damage = 36, Stun = 0.56, Knockback = 72, Cooldown = 3.10, GuardBreak = true, Startup = 0.22, ActiveTime = 0.10, Recovery = 0.42},
+        {Name = "Round Deer", Type = "Area", Tag = "Megumi_RoundDeer", Radius = 12, Damage = 4, Stun = 0.20, Knockback = 0, Cooldown = 4.20, Startup = 0.18, ActiveTime = 0.10, Recovery = 0.34},
+        {Name = "Mahoraga", Type = "Utility", Tag = "Megumi_Mahoraga", Damage = 0, Stun = 0, Knockback = 0, Cooldown = 1.40, Startup = 0.20, ActiveTime = 0.05, Recovery = 0.30}
+    },
+    Sukuna = {
+        {Name = "Strong Dismantle", Type = "Projectile", Tag = "Sukuna_StrongDismantle", Range = 42, Damage = 36, Stun = 0.36, Knockback = 58, Cooldown = 1.15, Startup = 0.16, ActiveTime = 0.05, Recovery = 0.25, BypassInfinity = true},
+        {Name = "Rush", Type = "Control", Tag = "Sukuna_Rush", Range = 24, Damage = 34, Stun = 0.55, Knockback = 68, Cooldown = 2.40, Pull = 0, GuardBreak = true, Startup = 0.20, ActiveTime = 0.08, Recovery = 0.36},
+        {Name = "Fuga", Type = "Projectile", Tag = "Sukuna_Fuga", Range = 40, Damage = 54, Stun = 0.68, Knockback = 92, Cooldown = 4.20, GuardBreak = true, Ragdoll = true, Startup = 0.38, ActiveTime = 0.08, Recovery = 0.50},
+        {Name = "Malevolent Shrine", Type = "Domain", Tag = "Sukuna_MalevolentShrine", Damage = 0, Stun = 0, Knockback = 0, Cooldown = 10.0, Domain = "MalevolentShrine", DomainRadius = 25, DomainDuration = 8.0, LowDamage = true, Startup = 0.32, ActiveTime = 0.05, Recovery = 0.52}
     }
 }
 
@@ -94,13 +106,20 @@ function Movesets.Get(id: string, isAwakened: boolean?): MoveList
     for slot, move in ipairs(source) do
         result[slot] = cloneMove(move, slot)
     end
+
     return result
 end
 
 function Movesets.GetMove(id: string, slot: number, isAwakened: boolean?): Move?
     local source = isAwakened and Awakening[id] or Base[id]
     source = source or Base.Yuji
-    return source[slot]
+    local move = source[slot]
+
+    if not move then
+        return nil
+    end
+
+    return cloneMove(move, slot)
 end
 
 function Movesets.IsPlayable(id: string): boolean
