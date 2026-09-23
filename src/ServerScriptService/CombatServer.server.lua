@@ -14,6 +14,7 @@ local AntiExploitService = require(script.Parent.CombatCore.AntiExploitService)
 local DamageService = require(script.Parent.CombatCore.DamageService)
 local CombatService = require(script.Parent.CombatCore.CombatService)
 local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
+local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
 
 local remotes = RemoteService:Get()
 local activePlayers: {[Player]: boolean} = {}
@@ -23,6 +24,7 @@ type Context = {
     fx: (string, Vector3, any) -> (),
     damage: (Player, Humanoid, number, any) -> boolean,
     hitbox: any,
+    hitRegistry: any,
     getState: (Player) -> any
 }
 
@@ -44,6 +46,7 @@ local context: Context = {
     end,
 
     hitbox = HitboxService,
+    hitRegistry = HitRegistry,
 
     getState = function(player: Player)
         return StateManager:Get(player)
