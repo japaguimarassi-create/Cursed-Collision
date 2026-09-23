@@ -65,13 +65,9 @@ function NetworkService:ValidatePayload(action: string, payload: any): boolean
             return false
         end
 
-        if action == "SkillHit" then
-            return type(payload.token) == "number"
-                and payload.token >= 0
-                and payload.token % 1 == 0
-        end
-
-        return true
+        return type(payload.token) == "number"
+            and payload.token >= 0
+            and payload.token % 1 == 0
     end
 
     return false
