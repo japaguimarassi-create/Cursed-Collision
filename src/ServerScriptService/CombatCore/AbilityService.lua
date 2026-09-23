@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Timeline = require(ReplicatedStorage.Combat.AbilityTimeline)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
-local StateManager: any = require(script.Parent.StateManager)
+local StateManager = require(script.Parent.StateManager)
 local CooldownService = require(script.Parent.CooldownService)
 local CharacterService = require(ReplicatedStorage.Characters.CharacterService)
 local Movesets = require(ReplicatedStorage.Characters.CustomMovesets)
@@ -12,23 +12,21 @@ local Movesets = require(ReplicatedStorage.Characters.CustomMovesets)
 local AbilityService: any = {}
 AbilityService.__index = AbilityService
 
-type Record = {
-    token: number,
-    attackId: string,
-    slot: number,
-    move: any,
-    started: number,
-    hitAt: number,
-    hitWindowStart: number,
-    hitWindowEnd: number,
-    confirmed: boolean,
-    cancelled: boolean
+type AbilityRecord = {
+    Token: number,
+    AttackId: string,
+    Slot: number,
+    StartedAt: number,
+    HitAt: number,
+    HitUntil: number,
+    HitConsumed: boolean,
+    Cancelled: boolean
 }
 
 function AbilityService.new(context: any)
     return setmetatable({
         Context = context,
-        Active = {}
+        Active = {} :: {[Player]: AbilityRecord}
     }, AbilityService)
 end
 
@@ -44,53 +42,24 @@ local function rootOf(player: Player): BasePart?
 end
 
 function AbilityService:Cancel(player: Player)
-    local current: Record? = self.Active[player]
+    local current = self.Active[player]
     if not current then
         return
     end
 
-    current.cancelled = true
-    HitRegistry:End(player, current.attackId)
-    self.Active[player] = nil
+    current.Cancelled = true
+    HitRegistry:End(player, current.AttackId)
 
     local state = StateManager:Get(player)
-    if state and state.Vars.ActiveAttackId == current.attackId then
+    if state and state.Vars.ActiveAttackId == current.AttackId then
         state.Vars.ActiveAttackId = nil
-    end
-end
-
-function AbilityService:Confirm(player: Player, attackId: string): boolean
-    local record: Record? = self.Active[player]
-    if not record or record.attackId ~= attackId or record.cancelled or record.confirmed then
-        return false
+        state.Vars.ActiveMove = nil
+        if state.Phase == "UsingAbility" then
+            StateManager:SetPhase(player, "Idle")
+        end
     end
 
-    local t = os.clock()
-
-    if t < record.hitWindowStart or t > record.hitWindowEnd then
-        return false
-    end
-
-    if not StateManager:IsAbilityValid(player, record.token) then
-        self:Cancel(player)
-        return false
-    end
-
-    record.confirmed = true
-
-    local root = rootOf(player)
-    if root then
-        self.Context.fx("AbilityTimeline", root.Position, {
-            actor = player.Character,
-            action = "Skill" .. tostring(record.slot),
-            move = record.move.Name,
-            phase = "HitFrame",
-            attackId = attackId
-        })
-    end
-
-    local success = CharacterService:SkillSlot(player, record.slot)
-    return success
+    self.Active[player] = nil
 end
 
 function AbilityService:Execute(player: Player, slot: number): boolean
@@ -99,9 +68,8 @@ function AbilityService:Execute(player: Player, slot: number): boolean
         return false
     end
 
-    local started = os.clock()
-
-    if not StateManager:CanAct(player, started) then
+    local t = os.clock()
+    if self.Active[player] or not StateManager:CanAct(player, t) then
         return false
     end
 
@@ -111,11 +79,11 @@ function AbilityService:Execute(player: Player, slot: number): boolean
     end
 
     local key = "Skill" .. tostring(slot)
-    if not CooldownService:Ready(player, key, started) then
+    if not CooldownService:Ready(player, key, t) then
         return false
     end
 
-    local token = StateManager:BeginAbility(player, key, started)
+    local token = StateManager:BeginAbility(player, key, t)
     if not token then
         return false
     end
@@ -124,76 +92,96 @@ function AbilityService:Execute(player: Player, slot: number): boolean
     local markers = Timeline:Markers(move)
     local attackId = tostring(player.UserId) .. ":" .. key .. ":" .. tostring(token)
 
-    local record: Record = {
-        token = token,
-        attackId = attackId,
-        slot = slot,
-        move = move,
-        started = started,
-        hitAt = started + timeline.Startup,
-        hitWindowStart = started + timeline.Startup - 0.05,
-        hitWindowEnd = started + timeline.Startup + 0.16,
-        confirmed = false,
-        cancelled = false
+    HitRegistry:Begin(player, attackId)
+
+    local cooldown = math.clamp(tonumber(move.Cooldown) or 1, 0.25, 10)
+    CooldownService:Set(player, key, cooldown, t)
+
+    state.Vars.ActiveAttackId = attackId
+    state.Vars.ActiveMove = move
+
+    local record: AbilityRecord = {
+        Token = token,
+        AttackId = attackId,
+        Slot = slot,
+        StartedAt = t,
+        HitAt = t + timeline.Startup,
+        HitUntil = t + timeline.Startup + timeline.Active + 0.16,
+        HitConsumed = false,
+        Cancelled = false
     }
 
-    HitRegistry:Begin(player, attackId)
-    CooldownService:Set(player, key, math.clamp(tonumber(move.Cooldown) or 1, 0.25, 10), started)
-
     self.Active[player] = record
-    state.Vars.ActiveAttackId = attackId
 
     local root = rootOf(player)
     if root then
         self.Context.fx("AbilityTimeline", root.Position, {
             actor = player.Character,
-            action = key,
+            action = "SkillStart",
+            slot = slot,
             move = move.Name,
             phase = "Startup",
             markers = markers,
             attackId = attackId,
-            slot = slot,
-            fallbackHitDelay = timeline.Startup
-        })
-
-        self.Context.fx("CombatAction", root.Position, {
-            actor = player.Character,
-            action = "SkillStart",
-            move = move.Name,
-            attackId = attackId,
-            slot = slot,
             fallbackHitDelay = timeline.Startup
         })
     end
 
-    task.delay(math.max(0, timeline.Startup + 0.09), function()
-        local current: Record? = self.Active[player]
-        if current == record and not record.confirmed and not record.cancelled then
-            self:Confirm(player, attackId)
+    task.delay(timeline.Total + 0.22, function()
+        local current = self.Active[player]
+        if current and current.AttackId == attackId then
+            self:Finish(player, attackId)
         end
-    end)
-
-    task.delay(math.max(0, timeline.Total), function()
-        local current: Record? = self.Active[player]
-        if current ~= record or record.cancelled then
-            return
-        end
-
-        HitRegistry:End(player, attackId)
-
-        local latestState = StateManager:Get(player)
-        if latestState and latestState.Vars.ActiveAttackId == attackId then
-            latestState.Vars.ActiveAttackId = nil
-        end
-
-        if latestState and StateManager:IsAbilityValid(player, token) then
-            StateManager:SetPhase(player, "Idle")
-        end
-
-        self.Active[player] = nil
     end)
 
     return true
+end
+
+function AbilityService:Hit(player: Player, payload: {[string]: any}): boolean
+    local record = self.Active[player]
+    if not record or record.Cancelled or record.HitConsumed then
+        return false
+    end
+
+    if type(payload.attackId) ~= "string" or payload.attackId ~= record.AttackId then
+        return false
+    end
+
+    local state = StateManager:Get(player)
+    if not state or state.AbilityToken ~= record.Token then
+        return false
+    end
+
+    local t = os.clock()
+    if t < record.HitAt - 0.12
+        or t > record.HitUntil
+        or state.StunnedUntil > t
+        or state.RagdollUntil > t then
+        return false
+    end
+
+    record.HitConsumed = true
+    local success = CharacterService:SkillSlot(player, record.Slot)
+    return success
+end
+
+function AbilityService:Finish(player: Player, attackId: string)
+    local record = self.Active[player]
+    if not record or record.AttackId ~= attackId then
+        return
+    end
+
+    HitRegistry:End(player, attackId)
+    self.Active[player] = nil
+
+    local state = StateManager:Get(player)
+    if state and state.Vars.ActiveAttackId == attackId then
+        state.Vars.ActiveAttackId = nil
+        state.Vars.ActiveMove = nil
+        if state.AbilityToken == record.Token and state.Phase == "UsingAbility" then
+            StateManager:SetPhase(player, "Idle")
+        end
+    end
 end
 
 return AbilityService
