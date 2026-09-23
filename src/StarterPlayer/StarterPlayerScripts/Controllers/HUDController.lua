@@ -523,7 +523,7 @@ function HUDController.new(): HUD
     return hud
 end
 
-function HUDController:SetPreferredInput(self: HUD, preferred: Enum.PreferredInput)
+function HUDController.SetPreferredInput(self: HUD, preferred: Enum.PreferredInput)
     self.PreferredInput = preferred
     local preset
 
@@ -570,7 +570,7 @@ function HUDController:SetPreferredInput(self: HUD, preferred: Enum.PreferredInp
         or "AWAKEN\n" .. preset.Awakening
 end
 
-function HUDController:SetVisible(self: HUD, visible: boolean)
+function HUDController.SetVisible(self: HUD, visible: boolean)
     self.Root.Visible = visible
 end
 
@@ -605,7 +605,7 @@ function HUDController:UpdateHealth(
     )
 end
 
-function HUDController:UpdateState(self: HUD, state: string)
+function HUDController.UpdateState(self: HUD, state: string)
     local display = ({
         Attacking = "ATTACK",
         UsingAbility = "SKILL",
@@ -620,18 +620,18 @@ function HUDController:UpdateState(self: HUD, state: string)
     self.StateText.Text = display
 end
 
-function HUDController:SetTarget(self: HUD, targetName: string?)
+function HUDController.SetTarget(self: HUD, targetName: string?)
     self.TargetText.Text = targetName and ("TARGET • " .. targetName) or "TARGET —"
 end
 
-function HUDController:SetDomain(self: HUD, domainName: string?)
+function HUDController.SetDomain(self: HUD, domainName: string?)
     self.DomainText.Visible = domainName ~= nil and domainName ~= ""
     self.DomainText.Text = domainName
         and ("DOMAIN • " .. domainName)
         or "DOMAIN —"
 end
 
-function HUDController:ShowCombo(self: HUD, count: number)
+function HUDController.ShowCombo(self: HUD, count: number)
     if count < 2 then
         self.ComboText.Text = ""
         return
@@ -640,7 +640,7 @@ function HUDController:ShowCombo(self: HUD, count: number)
     self.ComboText.Text = tostring(count) .. " HIT"
 end
 
-function HUDController:Notify(self: HUD, textValue: string)
+function HUDController.Notify(self: HUD, textValue: string)
     self.NotificationText.Text = textValue
 end
 
@@ -718,7 +718,7 @@ function HUDController:SetCooldown(
     buttonObject.BackgroundTransparency = 0.22
 end
 
-function HUDController:SetActionState(self: HUD, action: "Block" | "Sprint", active: boolean)
+function HUDController.SetActionState(self: HUD, action: "Block" | "Sprint", active: boolean)
     if action == "Block" then
         self:SetBlocking(active)
     else
@@ -726,11 +726,11 @@ function HUDController:SetActionState(self: HUD, action: "Block" | "Sprint", act
     end
 end
 
-function HUDController:SetBlocking(self: HUD, active: boolean)
+function HUDController.SetBlocking(self: HUD, active: boolean)
     self.BlockButton.Text = active and "BLOCKING" or "BLOCK"
 end
 
-function HUDController:SetSprinting(self: HUD, active: boolean)
+function HUDController.SetSprinting(self: HUD, active: boolean)
     self.SprintButton.Text = active and "SPRINTING" or "SPRINT"
 end
 
