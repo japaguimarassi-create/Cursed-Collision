@@ -2,7 +2,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Registry=require(ReplicatedStorage.Animation.AnimationRegistry)
+local Registry: any=require(ReplicatedStorage.Animation.AnimationRegistry)
 local Blender: any=require(script.Parent.AnimationBlender)
 local Priority: any=require(script.Parent.AnimationPriorityManager)
 local StateMachine: any=require(script.Parent.AnimationStateMachine)
@@ -17,7 +17,7 @@ type CharacterData={
     tracks: {[string]: AnimationTrack}
 }
 
-local bound:{[Model]: CharacterData}=setmetatable({}, {__mode="k"}) :: any
+local bound:{[Model]: CharacterData}={}
 
 local function animatorOf(character: Model): Animator?
     local humanoid=character:FindFirstChildOfClass("Humanoid")
