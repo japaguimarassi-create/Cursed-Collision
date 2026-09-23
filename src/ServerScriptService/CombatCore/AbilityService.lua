@@ -2,6 +2,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Config = require(ReplicatedStorage.Shared.Config)
 local Timeline = require(ReplicatedStorage.Combat.AbilityTimeline)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
 local StateManager = require(script.Parent.StateManager)
