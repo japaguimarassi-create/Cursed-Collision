@@ -113,7 +113,12 @@ function M.Start()
     local playersList: {Player} = {}
 
     local function send(action: string, payload: {[string]: any}?)
-        local data = payload or {}
+        local data: {[string]: any} = {}
+        if payload then
+            for key, value in pairs(payload) do
+                data[key] = value
+            end
+        end
         data.targetUserId = selectedUserId
         adminAction:FireServer(action, data)
     end
