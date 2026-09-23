@@ -3,7 +3,6 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
@@ -172,14 +171,15 @@ for index = 1, 5 do
     wheelButtons[index] = b
 end
 
-local activeEmote: {[Model]: {
+type ActiveEmote = {
     id: string,
     started: number,
     duration: number,
     loop: boolean,
-    phase: number,
     joints: {[string]: Motor6D?}
-}} = {}
+}
+
+local activeEmote: {[Model]: ActiveEmote} = {}
 
 local function findJoint(character: Model, names: {string}): Motor6D?
     for _, name in ipairs(names) do
@@ -280,14 +280,15 @@ local function playModel(model: Model, id: string, duration: number, loop: boole
         stopModel(model)
     end
 
-    activeEmote[model] = {
+    local data: ActiveEmote = {
         id = id,
         started = os.clock(),
         duration = duration,
         loop = loop,
-        phase = 0,
         joints = jointsOf(model)
     }
+
+    activeEmote[model] = data
 end
 
 local function menuBlocked()
