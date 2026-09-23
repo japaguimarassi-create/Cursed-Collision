@@ -9,7 +9,6 @@ local Camera=require(script.Parent.Controllers.CameraController)
 local VFX=require(script.Parent.Controllers.VFXManager)
 local SFX=require(script.Parent.Controllers.SFXManager)
 
-local player=Players.LocalPlayer
 
 local function popup(position: Vector3, text: string, strong: boolean)
     local gui=Instance.new("BillboardGui")
