@@ -73,7 +73,10 @@ local function openWheel()
 
     if UserInputService.PreferredInput == Enum.PreferredInput.Gamepad then
         GuiService.GuiNavigationEnabled = true
-        GuiService.SelectedObject = wheel:FindFirstChild("Slot1")
+        local first = wheel:FindFirstChild("Slot1")
+        if first and first:IsA("GuiButton") then
+            GuiService.SelectedObject = first
+        end
     end
 end
 
