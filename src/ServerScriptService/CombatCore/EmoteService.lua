@@ -122,7 +122,11 @@ end
 
 function EmoteService:CanUse(player: Player): boolean
     local character = player.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not character then
+        return false
+    end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
     local state = StateManager:Get(player)
 
     if not humanoid or humanoid.Health <= 0 or not state then
