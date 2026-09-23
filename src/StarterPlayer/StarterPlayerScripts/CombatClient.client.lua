@@ -30,6 +30,10 @@ end
 local hud: any = HUDController.new()
 
 local localCooldowns: {[string]: number} = {}
+local blockActions: {[string]: boolean} = {
+    BlockStart = true,
+    BlockEnd = true
+}
 local healthConnection: RBXScriptConnection?
 local maxHealthConnection: RBXScriptConnection?
 
@@ -72,8 +76,7 @@ local function fire(action: string, payload: any?)
         return
     end
 
-    local isBlockAction: boolean =
-        actionName == "BlockStart" or actionName == "BlockEnd"
+    local isBlockAction: boolean = blockActions[actionName] == true
 
     if not isBlockAction and remaining(actionName) > 0 then
         return
