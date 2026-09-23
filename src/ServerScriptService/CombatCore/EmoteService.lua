@@ -1,5 +1,6 @@
 --!strict
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RemoteService = require(ReplicatedStorage.Shared.RemoteService)
@@ -13,10 +14,27 @@ local remotes = RemoteService:Get()
 
 local cooldownUntil: {[Player]: number} = {}
 local active: {[Player]: string} = {}
+local connections: {[Player]: {RBXScriptConnection}} = {}
+local lastHealth: {[Player]: number} = {}
+
+local function disconnect(player: Player)
+    local list = connections[player]
+    if not list then
+        return
+    end
+
+    for _, connection in ipairs(list) do
+        connection:Disconnect()
+    end
+
+    connections[player] = nil
+end
 
 local function cleanup(player: Player)
+    disconnect(player)
     active[player] = nil
     cooldownUntil[player] = nil
+    lastHealth[player] = nil
 end
 
 local function stop(player: Player)
@@ -28,6 +46,78 @@ local function stop(player: Player)
     remotes.EmoteEvent:FireAllClients("Stop", {
         UserId = player.UserId
     })
+end
+
+local function watchAttribute(player: Player, attribute: string)
+    table.insert(connections[player], player:GetAttributeChangedSignal(attribute):Connect(function()
+        if player:GetAttribute(attribute) == true then
+            stop(player)
+        end
+    end))
+end
+
+local function watchCharacter(player: Player, character: Model)
+    disconnect(player)
+    connections[player] = {}
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    lastHealth[player] = humanoid.Health
+
+    table.insert(connections[player], humanoid.HealthChanged:Connect(function(health)
+        local previous = lastHealth[player] or health
+        lastHealth[player] = health
+
+        if health < previous then
+            stop(player)
+        end
+
+        if health <= 0 then
+            stop(player)
+        end
+    end))
+
+    table.insert(connections[player], humanoid.Running:Connect(function(speed)
+        if speed > 0.08 or humanoid.MoveDirection.Magnitude > 0.08 then
+            stop(player)
+        end
+    end))
+
+    for _, attribute in ipairs({
+        "IsAttacking",
+        "Stunned",
+        "Ragdolled",
+        "Blocking"
+    }) do
+        watchAttribute(player, attribute)
+    end
+
+    table.insert(connections[player], humanoid.StateChanged:Connect(function(_, newState)
+        if newState == Enum.HumanoidStateType.Jumping
+            or newState == Enum.HumanoidStateType.Freefall
+            or newState == Enum.HumanoidStateType.Dead then
+            stop(player)
+        end
+    end))
+end
+
+function EmoteService:BindPlayer(player: Player)
+    cleanup(player)
+
+    connections[player] = {}
+
+    local character = player.Character
+    if character then
+        watchCharacter(player, character)
+    end
+
+    table.insert(connections[player], player.CharacterAdded:Connect(function(newCharacter)
+        stop(player)
+        watchCharacter(player, newCharacter)
+    end))
 end
 
 function EmoteService:CanUse(player: Player): boolean
@@ -46,14 +136,14 @@ function EmoteService:CanUse(player: Player): boolean
     if player:GetAttribute("IsAttacking") == true
         or player:GetAttribute("Stunned") == true
         or player:GetAttribute("Ragdolled") == true
-        or state.Blocking
+        or player:GetAttribute("Blocking") == true
         or state.StunnedUntil > os.clock()
         or state.RagdollUntil > os.clock()
         or state.RecoveryUntil > os.clock() then
         return false
     end
 
-    return true
+    return state.Phase == "Idle" or state.Phase == "Running"
 end
 
 function EmoteService:Start(player: Player, id: string): boolean
@@ -111,6 +201,7 @@ function EmoteService:SetWheel(player: Player, ids: {string}): boolean
         local id = ids[index]
 
         if type(id) ~= "string"
+            or #id > 64
             or not Emotes[id]
             or data.OwnedEmotes[id] ~= true
             or seen[id] then
