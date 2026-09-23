@@ -35,7 +35,7 @@ local function getAnimation(cacheKey: string, rawId: string): Animation?
     end
 
     local cached = animations[cacheKey]
-    if cached and cached.Parent then
+    if cached then
         return cached
     end
 
@@ -95,7 +95,7 @@ function AnimationCache:GetTrackForId(
     local bucket = bucketFor(animator)
     local cached = bucket[cacheKey]
 
-    if cached and cached.Parent then
+    if cached then
         return cached
     end
 
