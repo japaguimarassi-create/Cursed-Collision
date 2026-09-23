@@ -76,8 +76,8 @@ function M.Start()
     platform.TextColor3 = colors.Muted
     platform.TextXAlignment = Enum.TextXAlignment.Right
 
-    local close = Util.button(panel, "Close", "×", UDim2.fromScale(0.062, 0.078), UDim2.fromScale(0.923, 0.022), true)
-    close.TextSize = 22
+    local closeButton = Util.button(panel, "Close", "×", UDim2.fromScale(0.062, 0.078), UDim2.fromScale(0.923, 0.022), true)
+    closeButton.TextSize = 22
 
     local tabs = Instance.new("Frame")
     tabs.Size = UDim2.fromScale(0.88, 0.075)
@@ -260,15 +260,15 @@ function M.Start()
         GuiService.SelectedObject = tabShop
     end
 
-    local function close()
+    local function closePanel()
         panel.Visible = false
         Util.setMenuAttributes("Menu", false)
     end
 
     menuButton.Activated:Connect(function()
-        if panel.Visible then close() else open() end
+        if panel.Visible then closePanel() else open() end
     end)
-    close.Activated:Connect(close)
+    closeButton.Activated:Connect(closePanel)
 
     tabShop.Activated:Connect(function()
         state.activeTab = "Shop"
@@ -290,7 +290,7 @@ function M.Start()
             return
         end
         if input.KeyCode == Enum.KeyCode.ButtonStart then
-            if panel.Visible then close() else open() end
+            if panel.Visible then closePanel() else open() end
         end
     end)
 
