@@ -9,7 +9,6 @@ local CombatAnimation=require(script.Parent.Controllers.CombatAnimationManager)
 local MovementAnimation=require(script.Parent.Controllers.MovementAnimationManager)
 local AnimationController=require(script.Parent.Controllers.AnimationController)
 
-local localPlayer=Players.LocalPlayer
 
 local function bind(player: Player)
     local character=player.Character
