@@ -5,7 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
 local CharacterService = require(ReplicatedStorage.Characters.CharacterService)
-local StateManager = require(script.Parent.StateManager)
+local StateManager: any = require(script.Parent.StateManager)
 local CooldownService = require(script.Parent.CooldownService)
 local MovementController = require(script.Parent.MovementController)
 local ComboService = require(script.Parent.ComboService)
@@ -153,13 +153,14 @@ function CombatService:M1(player: Player): boolean
         )
 
         local target = targets[1]
+        local targetHumanoid = target and target.humanoid
 
-        if target and not HitRegistry:Has(player, attackId, target.model) then
+        if target and targetHumanoid and not HitRegistry:Has(player, attackId, target.model) then
             HitRegistry:Add(player, attackId, target.model)
 
             self.Context.damage(
                 player,
-                target.humanoid,
+                targetHumanoid,
                 attack.Damage,
                 {
                     stun = attack.Stun,
