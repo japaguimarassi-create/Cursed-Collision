@@ -214,7 +214,7 @@ for token in ('"Start"', '"Stop"', '"SetWheel"'):
     if token not in emote_server:
         fail(f"emote server route missing: {token}")
 
-for token in ('"UltimateSkin"', '"KillSound"', '"InstantSkin"'):
+for token in ("UltimateSkin", "KillSound", "InstantSkin"):
     if token not in gamepass_config or token not in gamepass_service or token not in gamepass_server:
         fail(f"gamepass integration missing: {token}")
 
