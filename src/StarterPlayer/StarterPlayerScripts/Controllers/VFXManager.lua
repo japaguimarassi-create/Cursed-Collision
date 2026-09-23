@@ -52,8 +52,116 @@ local function sparks(position: Vector3, accent: Color3, count: number)
     Debris:AddItem(attachment,0.6)
 end
 
+local function burst(position: Vector3, radius: number, accent: Color3, count: number)
+    ring(position, radius, accent)
+    sparks(position, accent, count)
+end
+
+local function slash(position: Vector3, direction: Vector3, length: number, accent: Color3)
+    if typeof(direction) ~= "Vector3" or direction.Magnitude < 0.01 then
+        direction = Vector3.zAxis
+    end
+
+    local part = Instance.new("Part")
+    part.Name = "CC_VFX_Slash"
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = false
+    part.Material = Enum.Material.Neon
+    part.Color = accent
+    part.Transparency = 0.22
+    part.Size = Vector3.new(0.18, 0.18, length)
+    part.CFrame = CFrame.lookAt(position, position + direction.Unit)
+    part.Parent = workspace
+
+    TweenService:Create(
+        part,
+        TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {
+            Size = Vector3.new(0.05, 0.05, length * 1.15),
+            Transparency = 1
+        }
+    ):Play()
+
+    Debris:AddItem(part, 0.20)
+end
+
 function VFXManager:Play(kind: string, position: Vector3, payload: any)
     local accent=Color3.fromRGB(175,130,255)
+
+    if kind=="CharacterMove" and payload then
+        local move = tostring(payload.move or "")
+        local character = tostring(payload.character or "")
+        local direction = payload.direction
+
+        if character == "Gojo" then
+            if string.find(move, "Blue") then
+                burst(position, 8, Color3.fromRGB(90,180,255), 16)
+            elseif string.find(move, "Red") then
+                burst(position, 10, Color3.fromRGB(255,92,92), 22)
+            elseif string.find(move, "Purple") then
+                burst(position, 16, Color3.fromRGB(190,100,255), 34)
+                slash(position, direction, 18, Color3.fromRGB(205,120,255))
+            elseif string.find(move, "Void") then
+                burst(position, 20, Color3.fromRGB(105,150,255), 28)
+            elseif string.find(move, "Infinity") then
+                burst(position, 7, Color3.fromRGB(160,220,255), 12)
+            end
+        elseif character == "Yuji" then
+            if string.find(move, "Black Flash") or string.find(move, "BlackFlash") then
+                burst(position, 9, Color3.fromRGB(30,30,35), 24)
+                sparks(position, Color3.fromRGB(255,70,100), 18)
+            elseif string.find(move, "Dismantle") then
+                slash(position, direction, 15, Color3.fromRGB(205,70,80))
+            elseif string.find(move, "Piercing Blood") then
+                slash(position, direction, 20, Color3.fromRGB(180,35,50))
+            elseif string.find(move, "Simple Domain") then
+                burst(position, 12, Color3.fromRGB(235,235,255), 18)
+            end
+        elseif character == "Megumi" then
+            if string.find(move, "Mahoraga") or payload.shikigami == "Mahoraga" then
+                burst(position, 16, Color3.fromRGB(215,205,180), 30)
+                ring(position, 11, Color3.fromRGB(255,220,130))
+            elseif payload.shikigami then
+                burst(position, 8, Color3.fromRGB(80,70,115), 12)
+            elseif string.find(move, "Garden") then
+                burst(position, 18, Color3.fromRGB(65,65,115), 24)
+            end
+        elseif character == "Sukuna" then
+            if string.find(move, "Dismantle") or string.find(move, "Cleave") then
+                slash(position, direction, 17, Color3.fromRGB(220,50,55))
+                sparks(position, Color3.fromRGB(255,95,65), 10)
+            elseif string.find(move, "Fuga") then
+                burst(position, 15, Color3.fromRGB(255,120,45), 28)
+            elseif string.find(move, "Rush") then
+                sparks(position, Color3.fromRGB(225,55,65), 14)
+            end
+        end
+
+        return
+    end
+
+    if kind=="Enchain" then
+        burst(position, 14, Color3.fromRGB(165,70,180), 30)
+        return
+    end
+
+    if kind=="TechniqueSwitch" then
+        burst(position, 9, Color3.fromRGB(115,80,180), 14)
+        return
+    end
+
+    if kind=="MahoragaSummon" then
+        burst(position, 18, Color3.fromRGB(230,205,150), 38)
+        return
+    end
+
+    if kind=="MahoragaMode" then
+        ring(position, 12, Color3.fromRGB(255,215,125))
+        sparks(position, Color3.fromRGB(205,205,220), 22)
+        return
+    end
 
     if kind=="PerfectBlock" then
         accent=Color3.fromRGB(255,225,120)
