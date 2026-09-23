@@ -13,6 +13,7 @@ local EmoteService = {}
 local remotes = RemoteService:Get()
 
 local cooldownUntil: {[Player]: number} = {}
+local wheelEditUntil: {[Player]: number} = {}
 local active: {[Player]: string} = {}
 local connections: {[Player]: {RBXScriptConnection}} = {}
 local lastHealth: {[Player]: number} = {}
@@ -34,6 +35,7 @@ local function cleanup(player: Player)
     disconnect(player)
     active[player] = nil
     cooldownUntil[player] = nil
+    wheelEditUntil[player] = nil
     lastHealth[player] = nil
 end
 
@@ -194,6 +196,11 @@ function EmoteService:SetWheel(player: Player, ids: {string}): boolean
         return false
     end
 
+    local now = os.clock()
+    if (wheelEditUntil[player] or 0) > now then
+        return false
+    end
+
     local seen: {[string]: boolean} = {}
     local nextWheel = {}
 
@@ -214,6 +221,7 @@ function EmoteService:SetWheel(player: Player, ids: {string}): boolean
 
     data.EmoteWheel = nextWheel
     DataService:MarkDirty(player)
+    wheelEditUntil[player] = now + 0.50
     return true
 end
 
