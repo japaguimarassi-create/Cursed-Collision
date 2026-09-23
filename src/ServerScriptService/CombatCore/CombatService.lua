@@ -53,7 +53,7 @@ function CombatService:CanAttack(player: Player): boolean
 
     local t = now()
 
-    return state.StunnedUntil <= t
+    return StateManager:CanAct(player, t)
         and state.RecoveryUntil <= t
         and not state.Blocking
 end
@@ -80,7 +80,7 @@ function CombatService:M1(player: Player): boolean
     end
 
     state.LastAction = "M1"
-    state.Phase = "Attacking"
+    StateManager:SetPhase(player, "Attacking")
 
     CooldownService:Set(player, "M1", Config.Combat.M1.Cooldown, t)
 
@@ -198,8 +198,7 @@ function CombatService:Dash(player: Player, payload: string): boolean
         Config.Combat.Dash.Duration
     )
 
-    state.Phase = "Dash"
-
+    StateManager:SetPhase(player, "Dashing")
     root.AssemblyLinearVelocity = Vector3.new(
         direction.X * speed,
         root.AssemblyLinearVelocity.Y,
@@ -216,7 +215,7 @@ function CombatService:Dash(player: Player, payload: string): boolean
     task.delay(Config.Combat.Dash.Duration, function()
         local current = StateManager:Get(player)
 
-        if current and current.Phase == "Dash" then
+        if current and current.Phase == "Dashing" then
             current.Phase = "Idle"
         end
     end)
@@ -276,8 +275,7 @@ function CombatService:Special(player: Player): boolean
 
     CooldownService:Set(player, "Special", cooldown, t)
 
-    state.Phase = "Attack"
-    state.RecoveryUntil = t + 0.55
+    StateManager:SetPhase(player, "Attacking")    state.RecoveryUntil = t + 0.55
 
     self.Context.fx("CombatAction", root.Position, {
         actor = player.Character,
