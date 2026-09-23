@@ -20,16 +20,21 @@ type CharacterData={
 local bound:{[Model]: CharacterData}={}
 
 local function animatorOf(character: Model): Animator?
-    local humanoid: Humanoid? = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return nil end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
 
-    local animator=humanoid:FindFirstChildOfClass("Animator")
-    if not animator then
-        animator=Instance.new("Animator")
-        animator.Parent=humanoid
+    if not humanoid or not humanoid:IsA("Humanoid") then
+        return nil
     end
 
-    return animator
+    local existing = humanoid:FindFirstChildOfClass("Animator")
+
+    if existing and existing:IsA("Animator") then
+        return existing
+    end
+
+    local created = Instance.new("Animator")
+    created.Parent = humanoid
+    return created
 end
 
 local function fallback(character: Model,key: string,payload: any): boolean
