@@ -140,8 +140,7 @@ function CombatService:M1(player: Player): boolean
             if latest and latest.Vars.ActiveAttackId == attackId then
                 latest.Vars.ActiveAttackId = nil
                 latest.RecoveryUntil = now() + attack.Recovery
-                latest.Phase = "Idle"
-                StateManager:Sync(player)
+                StateManager:SetPhase(player, "Idle")
             end
         end)
     end)
@@ -237,7 +236,6 @@ function CombatService:SetBlock(player: Player, active: boolean): boolean
     end
 
     state.Blocking = active
-    state.Phase = active and "Block" or "Idle"
     player:SetAttribute("Blocking", active)
 
     if active then
