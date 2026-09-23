@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GuiService = game:GetService("GuiService")
 
 local Util = require(script.Parent.Util)
+local AnimationCache: any = require(script.Parent.Parent.Controllers.AnimationCache)
 
 local player = Players.LocalPlayer
 local M = {}
@@ -17,7 +18,8 @@ type Active = {
     started: number,
     duration: number,
     loop: boolean,
-    joints: {[string]: Motor6D?}
+    joints: {[string]: Motor6D?},
+    track: AnimationTrack?
 }
 
 local active: {[Model]: Active} = {}
@@ -58,6 +60,9 @@ local function stopModel(model: Model)
         return
     end
     apply(data, {})
+    if data.track and data.track.IsPlaying then
+        data.track:Stop(0.05)
+    end
     active[model] = nil
 end
 
@@ -235,12 +240,29 @@ function M.Start()
             local info = definitions[payload.Id]
             if not info then return end
             stopModel(model)
+            local humanoid = model:FindFirstChildOfClass("Humanoid")
+            local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
+            local track: AnimationTrack? = nil
+
+            if animator and type(payload.AnimationId) == "string" then
+                track = AnimationCache:PlayExternal(
+                    animator,
+                    "Emote_" .. tostring(info.Id),
+                    payload.AnimationId,
+                    payload.Loop == true,
+                    info.Priority,
+                    0.08,
+                    1
+                )
+            end
+
             active[model] = {
                 id = tostring(info.Id),
                 started = os.clock(),
                 duration = math.max(0.05, tonumber(payload.Duration) or tonumber(info.Duration) or 1),
                 loop = payload.Loop == true,
-                joints = joints(model)
+                joints = joints(model),
+                track = track
             }
         elseif event == "Stop" then
             stopModel(model)
@@ -287,8 +309,14 @@ function M.Start()
                 end
             end
 
-            local cycle = data.loop and (elapsed % math.max(0.1, data.duration)) or elapsed
-            apply(data, pose(data.id, cycle))
+            if data.track then
+                if not data.track.IsPlaying and data.loop then
+                    data.track:Play(0.05, 1, 1)
+                end
+            else
+                local cycle = data.loop and (elapsed % math.max(0.1, data.duration)) or elapsed
+                apply(data, pose(data.id, cycle))
+            end
         end
     end)
 end
