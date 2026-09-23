@@ -1,6 +1,7 @@
 --!strict
 
-local Config = require(script.Parent.Parent.Parent.ReplicatedStorage.Shared.Config)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Config = require(ReplicatedStorage.Shared.Config)
 local StateManager = require(script.Parent.StateManager)
 
 local ComboService = {}
