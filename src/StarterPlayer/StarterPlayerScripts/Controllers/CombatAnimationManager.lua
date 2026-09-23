@@ -1,6 +1,6 @@
 --!strict
 
-local AnimationController = require(script.Parent.AnimationController)
+local AnimationController: any = require(script.Parent.AnimationController)
 
 local CombatAnimationManager = {}
 
