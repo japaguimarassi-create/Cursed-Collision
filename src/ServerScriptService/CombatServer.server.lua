@@ -19,6 +19,7 @@ local HitboxService = require(ReplicatedStorage.Combat.HitboxService)
 local HitRegistry = require(ReplicatedStorage.Combat.HitRegistry)
 local UltimateService = require(script.Parent.CombatCore.UltimateService)
 local MovementController = require(script.Parent.CombatCore.MovementController)
+local DomainService = require(ReplicatedStorage.Domains.DomainService)
 
 local remotes = RemoteService:Get()
 local activePlayers: {[Player]: boolean} = {}
@@ -29,7 +30,8 @@ type Context = {
     damage: (Player, Humanoid, number, {[string]: any}) -> boolean,
     hitbox: any,
     hitRegistry: any,
-    getState: (Player) -> any
+    getState: (Player) -> any,
+    domainStart: ((Player, string, number, number, string) -> boolean)?
 }
 
 local context: Context = {
@@ -63,8 +65,25 @@ local context: Context = {
     end
 }
 
+context.domainStart = function(
+    player: Player,
+    domainName: string,
+    radius: number,
+    duration: number,
+    characterId: string
+): boolean
+    return DomainService:start(
+        player,
+        domainName,
+        characterId,
+        radius,
+        duration
+    )
+end
+
 CharacterService:Configure(context)
 DamageService:Configure(context)
+DomainService:Configure(context)
 
 local combat: any = CombatService.new(context)
 
@@ -236,6 +255,7 @@ Players.PlayerRemoving:Connect(function(player)
     HitRegistry:Clear(player)
     CombatMarkerService:Clear(player)
     MovementController:Clear(player)
+    DomainService:Stop(player)
     AntiExploitService:Clear(player)
     StateManager:Clear(player)
 end)
