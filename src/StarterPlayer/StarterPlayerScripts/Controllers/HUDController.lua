@@ -692,6 +692,14 @@ function HUDController:SetCooldown(
     buttonObject.BackgroundTransparency = 0.22
 end
 
+function HUDController:SetActionState(self: HUD, action: "Block" | "Sprint", active: boolean)
+    if action == "Block" then
+        self:SetBlocking(active)
+    else
+        self:SetSprinting(active)
+    end
+end
+
 function HUDController:SetBlocking(self: HUD, active: boolean)
     self.BlockButton.Text = active and "BLOCKING" or "BLOCK"
 end
