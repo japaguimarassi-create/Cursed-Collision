@@ -313,7 +313,11 @@ end
 local function refreshCharacter()
     local id = player:GetAttribute("CharacterId") or "Yuji"
     local profile = Definitions[id]
-    local moves = Movesets.Get(id)
+    local moves = Movesets.Get(
+        id,
+        player:GetAttribute("AwakeningActive") == true
+            or player:GetAttribute("UltimateActive") == true
+    )
 
     hud:UpdateCharacter(
         profile and profile.Name or id,
