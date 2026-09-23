@@ -648,6 +648,15 @@ function HUDController:ClearNotification(self: HUD)
     self.NotificationText.Text = ""
 end
 
+local function inputLabel(preferred: Enum.PreferredInput, key: string): string
+    local preset = if preferred == Enum.PreferredInput.Gamepad
+        then HUDConfig.Inputs.Gamepad
+        elseif preferred == Enum.PreferredInput.Touch
+        then HUDConfig.Inputs.Touch
+        else HUDConfig.Inputs.KeyboardAndMouse
+    return tostring((preset :: any)[key] or "")
+end
+
 function HUDController:UpdatePower(
     self: HUD,
     ultimate: number,
@@ -673,11 +682,11 @@ function HUDController:UpdatePower(
 
     self.UltimateButton.Text = ultimateReady
         and "ULTIMATE\nREADY"
-        or self.UltimateButton.Text
+        or "ULTIMATE\n" .. inputLabel(self.PreferredInput, "Ultimate")
 
     self.AwakeningButton.Text = awakeningReady
         and "AWAKEN\nREADY"
-        or self.AwakeningButton.Text
+        or "AWAKEN\n" .. inputLabel(self.PreferredInput, "Awakening")
 end
 
 function HUDController:SetCooldown(
