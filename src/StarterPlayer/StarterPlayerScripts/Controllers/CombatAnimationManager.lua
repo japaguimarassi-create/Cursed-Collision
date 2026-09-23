@@ -1,6 +1,5 @@
 --!strict
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AnimationController = require(script.Parent.AnimationController)
 
 local CombatAnimationManager = {}
