@@ -27,7 +27,9 @@ export type HUD = {
     DashButton: TextButton,
     BlockButton: TextButton,
     SprintButton: TextButton,
-    SpecialButton: TextButton
+    SpecialButton: TextButton,
+    _combat: any,
+    _menus: any
 }
 
 local Controller = {}
