@@ -58,14 +58,13 @@ local function watchCharacter(player: Player, character: Model)
         return
     end
 
+    local previousHealth = humanoid.Health
     table.insert(characterConnections[player], humanoid.HealthChanged:Connect(function(health)
-        if health < humanoid.Health + 0.0001 and health < (humanoid:GetAttribute("CC_LastEmoteHealth") or health) then
+        if health < previousHealth - 0.001 then
             stop(player)
         end
-        humanoid:SetAttribute("CC_LastEmoteHealth", health)
+        previousHealth = health
     end))
-
-    humanoid:SetAttribute("CC_LastEmoteHealth", humanoid.Health)
 
     table.insert(characterConnections[player], humanoid.Running:Connect(function(speed)
         if speed > 0.08 or humanoid.MoveDirection.Magnitude > 0.08 then
