@@ -113,7 +113,7 @@ function M.Start()
     local playersList: {Player} = {}
 
     local function send(action: string, payload: {[string]: any}?)
-        local data: {[string]: any} = {}
+        local data = {} :: {[string]: any}
         if payload then
             for key, value in pairs(payload) do
                 data[key] = value
