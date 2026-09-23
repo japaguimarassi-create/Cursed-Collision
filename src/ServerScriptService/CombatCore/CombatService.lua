@@ -18,6 +18,7 @@ CombatService.__index = CombatService
 type AttackRecord = {
     AttackId: string,
     Token: number,
+    Combo: number,
     StartedAt: number,
     HitAt: number,
     HitUntil: number,
@@ -127,6 +128,7 @@ function CombatService:M1(player: Player): boolean
     self.ActiveM1[player] = {
         AttackId = attackId,
         Token = token,
+        Combo = attack.Combo,
         StartedAt = t,
         HitAt = hitAt,
         HitUntil = hitUntil,
@@ -178,9 +180,8 @@ function CombatService:M1Hit(player: Player, payload: {[string]: any}): boolean
 
     record.HitConsumed = true
 
-    local attack = ComboService:Next
-    -- Combo data is not advanced here; the original server-side attack context is authoritative.
-    local comboNumber = math.clamp(tonumber(player:GetAttribute("ActiveM1Combo")) or state.Combo, 1, 4)
+    -- O servidor mantém o combo da ação original; o cliente só informa o instante do marcador.
+    local comboNumber = math.clamp(record.Combo, 1, 4)
     local comboData = {
         Combo = comboNumber,
         Damage = Config.Combat.M1.Damage[comboNumber],
