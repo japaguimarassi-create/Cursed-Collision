@@ -23,11 +23,19 @@ export type ActiveAbility = {
     Cancelled: boolean
 }
 
-function AbilityService.new(context: any)
-    return setmetatable({
+export type Service = {
+    Context: any,
+    Active: {[Player]: ActiveAbility},
+    Cancel: (self: Service, player: Player) -> (),
+    Execute: (self: Service, player: Player, slot: number) -> boolean,
+    ClearPlayer: (self: Service, player: Player) -> ()
+}
+
+function AbilityService.new(context: any): Service
+    return {
         Context = context,
-        Active = {} :: {[Player]: ActiveAbility}
-    }, AbilityService)
+        Active = {}
+    }
 end
 
 local function moveOf(player: Player, slot: number)
@@ -41,7 +49,7 @@ local function rootOf(player: Player): BasePart?
     return if root and root:IsA("BasePart") then root else nil
 end
 
-function AbilityService:Cancel(player: Player)
+function AbilityService.Cancel(self: Service, player: Player)
     local record = self.Active[player]
     if not record then
         return
@@ -62,14 +70,13 @@ function AbilityService:Cancel(player: Player)
     end
 end
 
-function AbilityService:Execute(player: Player, slot: number): boolean
+function AbilityService.Execute(self: Service, player: Player, slot: number): boolean
     local state = StateManager:Get(player)
     if not state or slot < 1 or slot > 4 then
         return false
     end
 
     local now = os.clock()
-
     if self.Active[player] or not StateManager:CanAct(player, now) then
         return false
     end
@@ -91,6 +98,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
 
     local root = rootOf(player)
     if not root then
+        StateManager:SetPhase(player, "Idle")
         return false
     end
 
@@ -198,7 +206,7 @@ function AbilityService:Execute(player: Player, slot: number): boolean
     return true
 end
 
-function AbilityService:ClearPlayer(player: Player)
+function AbilityService.ClearPlayer(self: Service, player: Player)
     self:Cancel(player)
 end
 
