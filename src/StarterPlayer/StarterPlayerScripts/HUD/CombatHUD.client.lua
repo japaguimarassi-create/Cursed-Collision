@@ -273,7 +273,9 @@ local function updatePower()
     local value = math.max(ultimateValue, awakeningValue)
 
     powerFill.Size = UDim2.fromScale(value, 1)
-    powerFill.BackgroundColor3 = useAwakening and Theme.Colors.AccentBright or Theme.Colors.Accent
+    powerFill.BackgroundColor3 = player:GetAttribute("TransformationActive") == true
+        and Theme.Colors.Warning
+        or Theme.Colors.AccentBright
     powerText.Text = string.format(
         "AWAKENING  %d%%",
         math.floor(value * 100)
@@ -311,11 +313,22 @@ local function updateCooldowns()
 end
 
 player:GetAttributeChangedSignal("CharacterId"):Connect(updateCharacter)
+player:GetAttributeChangedSignal("AwakeningActive"):Connect(function()
+    updateCharacter()
+    updatePower()
+end)
+player:GetAttributeChangedSignal("UltimateActive"):Connect(function()
+    updateCharacter()
+    updatePower()
+end)
+player:GetAttributeChangedSignal("TransformationActive"):Connect(function()
+    updateCharacter()
+    updatePower()
+end)
 player:GetAttributeChangedSignal("UltimateMeter"):Connect(updatePower)
 player:GetAttributeChangedSignal("AwakeningMeter"):Connect(updatePower)
 player:GetAttributeChangedSignal("UltimateReady"):Connect(updatePower)
 player:GetAttributeChangedSignal("AwakeningReady"):Connect(updatePower)
-player:GetAttributeChangedSignal("TransformationActive"):Connect(updatePower)
 player:GetAttributeChangedSignal("CombatState"):Connect(updateState)
 
 player.CharacterAdded:Connect(function(character)
