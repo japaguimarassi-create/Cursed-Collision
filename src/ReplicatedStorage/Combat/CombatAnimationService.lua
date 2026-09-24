@@ -135,12 +135,33 @@ local function characterId(character: Model): string
 end
 
 local function suppressed(character: Model): boolean
-    return character:GetAttribute("IsAttacking") == true
+    local player = game:GetService("Players"):GetPlayerFromCharacter(character)
+    local attacking = character:GetAttribute("IsAttacking") == true
+        or character:GetAttribute("UsingAbility") == true
         or character:GetAttribute("Blocking") == true
         or character:GetAttribute("Ragdolled") == true
         or character:GetAttribute("Stunned") == true
         or character:GetAttribute("CombatStunned") == true
-        or character:GetAttribute("UsingAbility") == true
+
+    if player then
+        attacking = attacking
+            or player:GetAttribute("IsAttacking") == true
+            or player:GetAttribute("UsingAbility") == true
+            or player:GetAttribute("Blocking") == true
+            or player:GetAttribute("Ragdolled") == true
+            or player:GetAttribute("Stunned") == true
+            or player:GetAttribute("CombatStunned") == true
+    end
+
+    local animationState = stateMachine:GetState(character)
+    if animationState ~= "Idle"
+        and animationState ~= "Walk"
+        and animationState ~= "Run"
+        and animationState ~= "Sprint" then
+        return true
+    end
+
+    return attacking
 end
 
 local function basicProfile(character: Model, transformed: boolean?): {[string]: CFrame}
@@ -569,6 +590,10 @@ end
 
 function AnimationService.UpdateLocomotion(character: Model, movementState: string, speed: number, timeNow: number?)
     if not character or not character.Parent or suppressed(character) then
+        return false
+    end
+
+    if stateMachine:GetState(character) ~= "Idle" then
         return false
     end
 
