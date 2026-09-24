@@ -404,9 +404,19 @@ function AnimationService.PlayAttack(character: Model, move: string, options: an
         transformed
     )
 
-    if tonumber(options.entry) then entry = tonumber(options.entry) end
-    if tonumber(options.hold) then hold = tonumber(options.hold) end
-    if tonumber(options.exit) then exit = tonumber(options.exit) end
+    local entryOverride = tonumber(options.entry)
+    local holdOverride = tonumber(options.hold)
+    local exitOverride = tonumber(options.exit)
+
+    if entryOverride then
+        entry = entryOverride
+    end
+    if holdOverride then
+        hold = holdOverride
+    end
+    if exitOverride then
+        exit = exitOverride
+    end
 
     apply(
         joints,
@@ -439,24 +449,24 @@ function AnimationService.PlayAttack(character: Model, move: string, options: an
     return true, token
 end
 
-function AnimationService.PlaySkill(character: Model, skill: string, options: any?)
-    options = options or {}
-    options.transformed = options.transformed == true
+function AnimationService.PlaySkill(character: Model, skill: string, options: {[string]: any}?)
+    local config: {[string]: any} = options or {}
+    config.transformed = config.transformed == true
         or character:GetAttribute("AwakeningActive") == true
         or character:GetAttribute("UltimateActive") == true
-    options.state = options.state or "UsingAbility"
-    options.pulse = options.pulse or (options.transformed and 4 or 3)
-    return AnimationService.PlayAttack(character, skill, options)
+    config.state = config.state or "UsingAbility"
+    config.pulse = config.pulse or (config.transformed and 4 or 3)
+    return AnimationService.PlayAttack(character, skill, config)
 end
 
-function AnimationService.PlayDomain(character: Model, options: any?)
-    options = options or {}
-    options.transformed = true
-    options.state = "Ultimate"
-    options.pulse = options.pulse or 4
-    options.entry = options.entry or 0.18
-    options.hold = options.hold or 0.38
-    return AnimationService.PlayAttack(character, "Domain Expansion", options)
+function AnimationService.PlayDomain(character: Model, options: {[string]: any}?)
+    local config: {[string]: any} = options or {}
+    config.transformed = true
+    config.state = "Ultimate"
+    config.pulse = config.pulse or 4
+    config.entry = config.entry or 0.18
+    config.hold = config.hold or 0.38
+    return AnimationService.PlayAttack(character, "Domain Expansion", config)
 end
 
 function AnimationService.HitReact(character: Model, intensity: number, reaction: string, direction: Vector3?)
