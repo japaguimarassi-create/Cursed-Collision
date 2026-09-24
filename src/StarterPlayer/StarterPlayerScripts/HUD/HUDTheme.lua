@@ -6,18 +6,19 @@ local UserInputService = game:GetService("UserInputService")
 local Theme = {}
 
 Theme.Colors = {
-    Background = Color3.fromRGB(6, 8, 12),
-    Surface = Color3.fromRGB(12, 14, 21),
-    Surface2 = Color3.fromRGB(19, 22, 31),
-    SurfacePressed = Color3.fromRGB(35, 39, 52),
-    Stroke = Color3.fromRGB(118, 122, 138),
-    Text = Color3.fromRGB(241, 243, 248),
-    Muted = Color3.fromRGB(157, 161, 179),
-    Accent = Color3.fromRGB(113, 167, 255),
-    AccentBright = Color3.fromRGB(177, 118, 255),
-    Health = Color3.fromRGB(232, 70, 91),
-    Success = Color3.fromRGB(96, 220, 142),
-    Warning = Color3.fromRGB(255, 190, 84)
+    Background = Color3.fromRGB(4, 6, 10),
+    Surface = Color3.fromRGB(10, 13, 19),
+    Surface2 = Color3.fromRGB(17, 21, 29),
+    SurfacePressed = Color3.fromRGB(29, 35, 48),
+    Stroke = Color3.fromRGB(112, 125, 150),
+    Text = Color3.fromRGB(244, 247, 252),
+    Muted = Color3.fromRGB(145, 153, 169),
+    Accent = Color3.fromRGB(93, 154, 255),
+    AccentBright = Color3.fromRGB(146, 92, 255),
+    Health = Color3.fromRGB(235, 72, 91),
+    Success = Color3.fromRGB(90, 222, 145),
+    Warning = Color3.fromRGB(255, 194, 86),
+    Black = Color3.fromRGB(0, 0, 0)
 }
 
 function Theme.Platform(): "Mobile" | "Console" | "PC"
@@ -64,11 +65,18 @@ function Theme.Corner(object: GuiObject, radius: number)
     corner.Parent = object
 end
 
+function Theme.Circle(object: GuiObject)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = object
+end
+
 function Theme.Stroke(object: GuiObject, transparency: number?, thickness: number?)
     local stroke = Instance.new("UIStroke")
     stroke.Color = Theme.Colors.Stroke
     stroke.Transparency = transparency or 0.55
     stroke.Thickness = thickness or 1
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Parent = object
 end
 
@@ -101,7 +109,7 @@ function Theme.Button(parent: Instance, name: string, text: string, size: UDim2,
     button.Size = size
     button.Position = position
     button.BackgroundColor3 = Theme.Colors.Surface2
-    button.BackgroundTransparency = 0.08
+    button.BackgroundTransparency = 0.06
     button.BorderSizePixel = 0
     button.Text = text
     button.TextColor3 = Theme.Colors.Text
@@ -113,8 +121,8 @@ function Theme.Button(parent: Instance, name: string, text: string, size: UDim2,
     button.Selectable = true
     button.Parent = parent
 
-    Theme.Corner(button, 14)
-    Theme.Stroke(button, 0.52)
+    Theme.Corner(button, 12)
+    Theme.Stroke(button, 0.58, 1)
 
     if minTouch then
         local constraint = Instance.new("UISizeConstraint")
@@ -124,9 +132,47 @@ function Theme.Button(parent: Instance, name: string, text: string, size: UDim2,
 
     button.Activated:Connect(function()
         button.BackgroundColor3 = Theme.Colors.SurfacePressed
-        task.delay(0.08, function()
+        task.delay(0.09, function()
             if button.Parent then
                 button.BackgroundColor3 = Theme.Colors.Surface2
+            end
+        end)
+    end)
+
+    return button
+end
+
+function Theme.CircleButton(parent: Instance, name: string, text: string, size: number): TextButton
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Size = UDim2.fromOffset(size, size)
+    button.BackgroundColor3 = Theme.Colors.Surface
+    button.BackgroundTransparency = 0.08
+    button.BorderSizePixel = 0
+    button.Text = text
+    button.TextColor3 = Theme.Colors.Text
+    button.Font = Enum.Font.GothamBlack
+    button.TextSize = math.max(14, math.floor(size * 0.29))
+    button.TextWrapped = true
+    button.AutoButtonColor = false
+    button.Active = true
+    button.Selectable = true
+    button.Parent = parent
+    Theme.Circle(button)
+    Theme.Stroke(button, 0.35, 1.25)
+
+    local scale = Instance.new("UIScale")
+    scale.Name = "PressScale"
+    scale.Scale = 1
+    scale.Parent = button
+
+    button.Activated:Connect(function()
+        scale.Scale = 0.92
+        button.BackgroundColor3 = Theme.Colors.SurfacePressed
+        task.delay(0.09, function()
+            if button.Parent then
+                scale.Scale = 1
+                button.BackgroundColor3 = Theme.Colors.Surface
             end
         end)
     end)
@@ -141,10 +187,10 @@ function Theme.Panel(parent: Instance, name: string, size: UDim2): Frame
     panel.Position = UDim2.fromScale(0.50, 0.51)
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.BackgroundColor3 = Theme.Colors.Surface
-    panel.BackgroundTransparency = 0.04
+    panel.BackgroundTransparency = 0.035
     panel.BorderSizePixel = 0
     panel.Parent = parent
-    Theme.Corner(panel, 20)
+    Theme.Corner(panel, 18)
     Theme.Stroke(panel, 0.28, 1.25)
 
     local sizeConstraint = Instance.new("UISizeConstraint")
