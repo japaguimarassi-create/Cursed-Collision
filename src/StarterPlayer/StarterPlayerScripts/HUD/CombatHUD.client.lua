@@ -119,6 +119,22 @@ Theme.Corner(powerFill, 7)
 local powerText = Theme.Label(power, "Text", "AWAKENING 0%", UDim2.fromScale(0.98, 1), UDim2.new(), 7)
 powerText.Font = Enum.Font.GothamBlack
 
+local powerButton = Instance.new("TextButton")
+powerButton.Name = "Activate"
+powerButton.Size = UDim2.fromScale(1, 1)
+powerButton.BackgroundTransparency = 1
+powerButton.BorderSizePixel = 0
+powerButton.Text = ""
+powerButton.AutoButtonColor = false
+powerButton.Active = platform ~= "PC"
+powerButton.Selectable = platform ~= "PC"
+powerButton.Parent = power
+powerButton.Activated:Connect(function()
+    if platform ~= "PC" then
+        fire("Awakening")
+    end
+end)
+
 local skills = Instance.new("Frame")
 skills.Name = "Skills"
 skills.Size = UDim2.fromScale(platform == "Mobile" and 0.78 or 0.80, 0.34)
@@ -179,22 +195,6 @@ for slot = 1, 4 do
         fire("Skill" .. tostring(slot))
     end)
 end
-
-local awakening = Theme.Button(
-    combatZone,
-    "AwakeningButton",
-    hint("Awakening"),
-    UDim2.fromScale(0.22, 0.17),
-    UDim2.fromScale(0.86, 0.98),
-    platform == "Mobile" and 52 or 46
-)
-awakening.AnchorPoint = Vector2.new(0.5, 1)
-awakening.TextSize = 8
-awakening.Visible = platform ~= "PC"
-
-awakening.Activated:Connect(function()
-    fire("Awakening")
-end)
 
 local actions = Instance.new("Frame")
 actions.Name = "MobileActions"
@@ -359,13 +359,13 @@ local function refreshPlatform()
     layout = Layouts:Get(platform)
 
     actions.Visible = platform ~= "PC"
-    awakening.Visible = platform ~= "PC"
+    powerButton.Active = platform ~= "PC"
+    powerButton.Selectable = platform ~= "PC"
 
     for slot = 1, 4 do
         skillHints[slot].Text = ControlMap:GetHint(platform, "Skill" .. tostring(slot))
     end
 
-    awakening.Text = hint("Awakening")
 end
 
 UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(refreshPlatform)
