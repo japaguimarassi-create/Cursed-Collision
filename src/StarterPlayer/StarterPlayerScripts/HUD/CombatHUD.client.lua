@@ -269,7 +269,6 @@ end
 local function updatePower()
     local ultimateValue = math.clamp((tonumber(player:GetAttribute("UltimateMeter")) or 0) / 100, 0, 1)
     local awakeningValue = math.clamp((tonumber(player:GetAttribute("AwakeningMeter")) or 0) / 100, 0, 1)
-    local useAwakening = awakeningValue > ultimateValue
     local value = math.max(ultimateValue, awakeningValue)
 
     powerFill.Size = UDim2.fromScale(value, 1)
