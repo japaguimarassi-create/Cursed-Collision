@@ -196,9 +196,7 @@ local function handleCombatAction(
         )
     elseif action == "SelectCharacter" then
         CharacterService:Select(player, payload)
-    elseif action == "Ultimate" then
-        UltimateService:Activate(player, "Ultimate")
-    elseif action == "Awakening" then
+    elseif action == "Ultimate" or action == "Awakening" then
         UltimateService:Activate(player, "Awakening")
     end
 end
