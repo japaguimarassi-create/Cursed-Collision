@@ -332,9 +332,9 @@ local function updatePower()
     powerFill.BackgroundColor3 = active and Theme.Colors.Warning or Theme.Colors.AccentBright
     powerText.Text = active
         and "TRANSFORMAÇÃO ATIVA"
-        or string.format("DESPERTAR  %d%%", math.floor(value * 100))
-
-    awakening.Text = ready and "DESPERTAR" or hint("Awakening")
+        or ready
+            and (platform == "Mobile" and "TOQUE PARA DESPERTAR" or "DESPERTAR PRONTO")
+            or string.format("DESPERTAR  %d%%", math.floor(value * 100))
 end
 
 local function updateCooldowns()
