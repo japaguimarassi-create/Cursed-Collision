@@ -5,7 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AnimationData = require(ReplicatedStorage.Animation.AnimationData)
 local AnimationCache: any = require(script.Parent.AnimationCache)
 local StateMachine: any = require(script.Parent.AnimationStateMachine)
-local Procedural = require(ReplicatedStorage.Combat.CombatAnimationService)
+local Procedural: any = require(ReplicatedStorage.Combat.CombatAnimationService)
 
 local AnimationController = {}
 AnimationController.__index = AnimationController
