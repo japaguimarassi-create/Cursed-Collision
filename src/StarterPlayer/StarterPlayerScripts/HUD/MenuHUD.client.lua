@@ -245,7 +245,7 @@ local function renderRewards()
     row(1, "CREDITS", tostring(state.Credits) .. " C", nil)
     row(2, "SKINS OWNED", tostring(ownedCount), nil)
     row(3, "TRANSFORMATION", ready and "READY • FULL METER" or "BUILD METER IN COMBAT", nil)
-    row(4, "CURRENT FIGHTER", tostring(player:GetAttribute("CharacterName") or "Yuji"), tostring(player:GetAttribute("CharacterTitle") or ""), nil)
+    row(4, "CURRENT FIGHTER", tostring(player:GetAttribute("CharacterName") or "Yuji") .. " • " .. tostring(player:GetAttribute("CharacterTitle") or ""), nil)
 end
 
 local function render()
