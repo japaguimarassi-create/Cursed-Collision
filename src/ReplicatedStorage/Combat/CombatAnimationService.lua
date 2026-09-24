@@ -1,11 +1,15 @@
+--!strict
+
 local TweenService = game:GetService("TweenService")
+
 local CombatStateMachine = require(script.Parent.CombatStateMachine)
 
 local AnimationService = {}
 
-local cache = setmetatable({}, {__mode = "k"})
 local stateMachine = CombatStateMachine.new()
-local idleTokens = setmetatable({}, {__mode = "k"})
+local cache: {[Model]: {[string]: Motor6D}} = setmetatable({}, {__mode = "k"}) :: any
+local tokens: {[Model]: number} = setmetatable({}, {__mode = "k"}) :: any
+
 local JOINT_ALIASES = {
     RootJoint = {"RootJoint", "Root"},
     Waist = {"Waist"},
@@ -14,39 +18,47 @@ local JOINT_ALIASES = {
     RightShoulder = {"Right Shoulder", "RightShoulder"},
     LeftElbow = {"Left Elbow", "LeftElbow"},
     RightElbow = {"Right Elbow", "RightElbow"},
+    LeftWrist = {"Left Wrist", "LeftWrist"},
+    RightWrist = {"Right Wrist", "RightWrist"},
     LeftHip = {"Left Hip", "LeftHip"},
-    RightHip = {"Right Hip", "RightHip"}
+    RightHip = {"Right Hip", "RightHip"},
+    LeftKnee = {"Left Knee", "LeftKnee"},
+    RightKnee = {"Right Knee", "RightKnee"}
 }
 
-local function rad(x)
-    return math.rad(x)
+local function rad(value: number): number
+    return math.rad(value)
 end
 
-local function pose(rx, ry, rz)
-    return CFrame.Angles(rad(rx or 0), rad(ry or 0), rad(rz or 0))
+local function pose(rx: number?, ry: number?, rz: number?): CFrame
+    return CFrame.Angles(
+        rad(rx or 0),
+        rad(ry or 0),
+        rad(rz or 0)
+    )
 end
 
-local function getJoints(character)
-    local cached = cache[character]
-    if cached then
-        local valid = false
-        for _, joint in pairs(cached) do
-            if joint and joint.Parent then
-                valid = true
+local function findJoints(character: Model): {[string]: Motor6D}
+    local existing = cache[character]
+    if existing then
+        local alive = false
+        for _, joint in pairs(existing) do
+            if joint.Parent then
+                alive = true
                 break
             end
         end
-        if valid then
-            return cached
+        if alive then
+            return existing
         end
     end
 
-    local result = {}
-    for key, aliases in pairs(JOINT_ALIASES) do
+    local result: {[string]: Motor6D} = {}
+    for name, aliases in pairs(JOINT_ALIASES) do
         for _, alias in ipairs(aliases) do
-            local joint = character:FindFirstChild(alias, true)
-            if joint and joint:IsA("Motor6D") then
-                result[key] = joint
+            local object = character:FindFirstChild(alias, true)
+            if object and object:IsA("Motor6D") then
+                result[name] = object
                 break
             end
         end
@@ -56,561 +68,539 @@ local function getJoints(character)
     return result
 end
 
-local function nextToken(character, state)
-    return stateMachine:Begin(character, state or "Attack", true)
+local function nextToken(character: Model, state: string): number
+    local current = (tokens[character] or 0) + 1
+    tokens[character] = current
+    stateMachine:Begin(character, state, true)
+    return current
 end
 
-local function valid(character, token)
-    return type(token) == "number" and stateMachine:IsCurrent(character, token)
+local function valid(character: Model, token: number): boolean
+    return character.Parent ~= nil
+        and tokens[character] == token
+        and stateMachine:GetState(character) ~= "Dead"
 end
 
-local function tween(joint, target, duration, style, direction)
+local function tween(joint: Motor6D?, target: CFrame, duration: number, style: Enum.EasingStyle?, direction: Enum.EasingDirection?): Tween?
     if not joint or not joint.Parent then
         return nil
     end
+
     local info = TweenInfo.new(
-        math.max(0, duration or 0.08),
+        math.max(0.01, duration),
         style or Enum.EasingStyle.Quart,
         direction or Enum.EasingDirection.Out
     )
-    local t = TweenService:Create(joint, info, {Transform = target})
-    t:Play()
-    return t
+
+    local track = TweenService:Create(joint, info, {
+        Transform = target
+    })
+    track:Play()
+    return track
 end
 
-local function apply(joints, transforms, duration, style, direction)
-    for key, transform in pairs(transforms) do
-        tween(joints[key], transform, duration, style, direction)
+local function apply(joints: {[string]: Motor6D}, transforms: {[string]: CFrame}, duration: number, style: Enum.EasingStyle?, direction: Enum.EasingDirection?)
+    for name, target in pairs(transforms) do
+        tween(joints[name], target, duration, style, direction)
     end
 end
 
-local function reset(character, joints, duration, style)
-    for _, joint in pairs(joints) do
-        tween(joint, CFrame.identity, duration, style or Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    end
+local function reset(character: Model, duration: number)
+    local joints = findJoints(character)
+    apply(joints, {
+        RootJoint = CFrame.identity,
+        Waist = CFrame.identity,
+        Neck = CFrame.identity,
+        LeftShoulder = CFrame.identity,
+        RightShoulder = CFrame.identity,
+        LeftElbow = CFrame.identity,
+        RightElbow = CFrame.identity,
+        LeftWrist = CFrame.identity,
+        RightWrist = CFrame.identity,
+        LeftHip = CFrame.identity,
+        RightHip = CFrame.identity,
+        LeftKnee = CFrame.identity,
+        RightKnee = CFrame.identity
+    }, duration)
 end
 
-local Poses = {
-    ["Divergent Fist"] = {
-        entry = 0.07, hold = 0.06, exit = 0.16,
-        pose = {
-            RootJoint = pose(-6, 0, -4),
-            Waist = pose(2, 0, -3),
-            Neck = pose(-2, 0, 3),
-            RightShoulder = pose(-42, 8, -42),
-            RightElbow = pose(0, -18, -8),
-            LeftShoulder = pose(10, -7, 20),
-            LeftElbow = pose(-8, 12, 4),
-            RightHip = pose(3, 0, 4),
-            LeftHip = pose(-3, 0, -2)
+local function characterId(character: Model): string
+    return tostring(
+        character:GetAttribute("CharacterId")
+            or character:GetAttribute("Character")
+            or ""
+    )
+end
+
+local function suppressed(character: Model): boolean
+    return character:GetAttribute("IsAttacking") == true
+        or character:GetAttribute("Blocking") == true
+        or character:GetAttribute("Ragdolled") == true
+        or character:GetAttribute("Stunned") == true
+        or character:GetAttribute("CombatStunned") == true
+        or character:GetAttribute("UsingAbility") == true
+end
+
+local function basicProfile(character: Model, transformed: boolean?): {[string]: CFrame}
+    local id = characterId(character)
+    local profile: {[string]: CFrame}
+
+    if id == "Gojo" then
+        profile = {
+            RootJoint = pose(-3, 0, 0),
+            Waist = pose(-2, 0, 0),
+            Neck = pose(-1, 0, 0),
+            LeftShoulder = pose(-12, 0, 26),
+            RightShoulder = pose(-12, 0, -26),
+            LeftElbow = pose(-8, -8, 4),
+            RightElbow = pose(-8, 8, -4)
         }
-    },
-    ["Black Flash"] = {
-        entry = 0.055, hold = 0.075, exit = 0.18,
-        pose = {
-            RootJoint = pose(-13, 0, -8),
-            Waist = pose(-8, -3, -5),
-            Neck = pose(-7, 0, 6),
-            RightShoulder = pose(-68, -18, -54),
-            RightElbow = pose(18, -28, -6),
-            LeftShoulder = pose(17, 10, 28),
-            LeftElbow = pose(-10, 15, 8),
-            RightHip = pose(5, -2, 7),
-            LeftHip = pose(-4, 1, -5)
+    elseif id == "Megumi" then
+        profile = {
+            RootJoint = pose(4, 0, 0),
+            Waist = pose(6, 0, 0),
+            Neck = pose(3, 0, 0),
+            LeftShoulder = pose(-20, -10, 22),
+            RightShoulder = pose(-20, 10, -22),
+            LeftElbow = pose(-28, 12, 0),
+            RightElbow = pose(-28, -12, 0)
         }
-    },
-    ["Lapse Blue"] = {
-        entry = 0.1, hold = 0.16, exit = 0.22,
-        pose = {
-            RootJoint = pose(-5, 0, -10),
-            Waist = pose(-10, 0, -5),
-            Neck = pose(-8, 0, 8),
-            RightShoulder = pose(-82, 4, -30),
-            RightElbow = pose(-8, -18, -6),
-            LeftShoulder = pose(-52, 12, 34),
-            LeftElbow = pose(-12, 20, 5),
-            RightHip = pose(5, 0, 7),
-            LeftHip = pose(-5, 0, -7)
+    elseif id == "Sukuna" then
+        profile = {
+            RootJoint = pose(-2, 0, -2),
+            Waist = pose(-3, 0, -4),
+            Neck = pose(0, 0, 3),
+            LeftShoulder = pose(-18, 4, 28),
+            RightShoulder = pose(-18, -4, -28),
+            LeftElbow = pose(-14, 18, 0),
+            RightElbow = pose(-14, -18, 0)
         }
-    },
-    ["Reversal Red"] = {
-        entry = 0.09, hold = 0.14, exit = 0.2,
-        pose = {
-            RootJoint = pose(-7, 0, 0),
-            Waist = pose(-5, 0, 0),
-            Neck = pose(-4, 0, 0),
-            RightShoulder = pose(-35, 0, 58),
-            RightElbow = pose(-15, 22, 0),
-            LeftShoulder = pose(-35, 0, -58),
-            LeftElbow = pose(-15, -22, 0),
-            RightHip = pose(3, 0, 4),
-            LeftHip = pose(-3, 0, -4)
+    else
+        profile = {
+            RootJoint = pose(-2, 0, 0),
+            Waist = pose(-1, 0, -2),
+            Neck = pose(0, 0, 1),
+            LeftShoulder = pose(-14, 5, 20),
+            RightShoulder = pose(-14, -5, -20),
+            LeftElbow = pose(-8, 12, 0),
+            RightElbow = pose(-8, -12, 0)
         }
-    },
-    ["Domain Expansion"] = {
-        entry = 0.18, hold = 0.35, exit = 0.28,
-        pose = {
-            RootJoint = pose(-4, 0, 0),
-            Waist = pose(-8, 0, 0),
-            Neck = pose(-10, 0, 0),
-            RightShoulder = pose(-72, 0, -34),
-            RightElbow = pose(-20, 12, 5),
-            LeftShoulder = pose(-72, 0, 34),
-            LeftElbow = pose(-20, -12, -5),
-            RightHip = pose(4, 0, 5),
-            LeftHip = pose(-4, 0, -5)
-        }
-    },
-    ["Counter"] = {
-        entry = 0.05, hold = 0.2, exit = 0.16,
-        pose = {
-            RootJoint = pose(-6, 0, 0),
-            Waist = pose(-5, 0, 0),
-            Neck = pose(-4, 0, 0),
-            RightShoulder = pose(-36, 12, -44),
-            RightElbow = pose(-20, -20, -6),
-            LeftShoulder = pose(-36, -12, 44),
-            LeftElbow = pose(-20, 20, 6)
-        }
-    },
-    ["Slam"] = {
-        entry = 0.06, hold = 0.12, exit = 0.2,
-        pose = {
-            RootJoint = pose(12, 0, 0),
-            Waist = pose(9, 0, 0),
-            Neck = pose(6, 0, 0),
-            RightShoulder = pose(-52, 6, -38),
-            RightElbow = pose(18, -16, 0),
-            LeftShoulder = pose(-52, -6, 38),
-            LeftElbow = pose(18, 16, 0),
-            RightHip = pose(12, 0, 6),
-            LeftHip = pose(12, 0, -6)
-        }
-    },
-    ["AirM1"] = {
-        entry = 0.045, hold = 0.04, exit = 0.12,
-        pose = {
-            RootJoint = pose(7, -6, -4),
-            Waist = pose(5, -5, -3),
-            Neck = pose(3, 0, 4),
-            RightShoulder = pose(-58, 8, -44),
-            RightElbow = pose(12, -18, -6),
-            LeftShoulder = pose(-12, -6, 24),
-            LeftElbow = pose(-8, 12, 4),
-            RightHip = pose(14, -3, 8),
-            LeftHip = pose(10, 2, -6)
-        }
-    },
-    ["M1_1"] = {
-        entry = 0.045, hold = 0.035, exit = 0.11,
-        pose = {
-            RootJoint = pose(-4, 0, -3),
-            Waist = pose(-3, -4, -2),
-            RightShoulder = pose(-45, -8, -48),
-            RightElbow = pose(8, -18, -6),
-            LeftShoulder = pose(8, 6, 18),
-            LeftElbow = pose(-6, 10, 3)
-        }
-    },
-    ["M1_2"] = {
-        entry = 0.045, hold = 0.035, exit = 0.11,
-        pose = {
-            RootJoint = pose(-3, 8, 5),
-            Waist = pose(-3, 7, 4),
-            RightShoulder = pose(10, -8, 18),
-            RightElbow = pose(-10, 18, 5),
-            LeftShoulder = pose(-52, 10, -52),
-            LeftElbow = pose(8, -18, -4)
-        }
-    },
-    ["M1_3"] = {
-        entry = 0.05, hold = 0.04, exit = 0.12,
-        pose = {
-            RootJoint = pose(-6, -8, -5),
-            Waist = pose(-4, -7, -4),
-            RightShoulder = pose(-58, -12, -38),
-            RightElbow = pose(10, -20, -5),
-            LeftShoulder = pose(12, 5, 22),
-            LeftElbow = pose(-5, 10, 4)
-        }
-    },
-    ["M1_4"] = {
-        entry = 0.055, hold = 0.05, exit = 0.14,
-        pose = {
-            RootJoint = pose(-11, 0, 7),
-            Waist = pose(-7, 0, 6),
-            Neck = pose(-6, 0, -5),
-            RightShoulder = pose(-70, 6, -42),
-            RightElbow = pose(16, -22, -5),
-            LeftShoulder = pose(20, -4, 25),
-            LeftElbow = pose(-10, 14, 5)
-        }
-    },
-    ["Heavy"] = {
-        entry = 0.08, hold = 0.08, exit = 0.18,
-        pose = {
-            RootJoint = pose(-14, 0, -7),
-            Waist = pose(-10, 0, -5),
-            Neck = pose(-5, 0, 4),
-            RightShoulder = pose(-78, -10, -52),
-            RightElbow = pose(22, -28, -5),
-            LeftShoulder = pose(22, 8, 28),
-            LeftElbow = pose(-12, 18, 5)
-        }
-    },
-    ["Grab"] = {
-        entry = 0.07, hold = 0.12, exit = 0.17,
-        pose = {
+    end
+
+    if transformed then
+        profile.RootJoint = profile.RootJoint * pose(-2, 0, 0)
+        profile.Waist = profile.Waist * pose(-3, 0, 0)
+    end
+
+    return profile
+end
+
+local function resolveProfile(character: Model, move: string, transformed: boolean?): ({[string]: CFrame}, number, number, number)
+    local lower = string.lower(move)
+    local id = characterId(character)
+    local base = basicProfile(character, transformed)
+    local entry = transformed and 0.055 or 0.065
+    local hold = transformed and 0.075 or 0.065
+    local exit = transformed and 0.16 or 0.13
+
+    local function set(values: {[string]: CFrame})
+        for name, transform in pairs(values) do
+            base[name] = transform
+        end
+    end
+
+    if string.find(lower, "blue") then
+        entry, hold, exit = 0.09, 0.18, 0.20
+        set({
+            RootJoint = pose(-6, 0, -10),
+            Waist = pose(-8, 0, -7),
+            RightShoulder = pose(-84, 6, -25),
+            RightElbow = pose(-18, -14, 0),
+            LeftShoulder = pose(-48, 12, 34),
+            LeftElbow = pose(-18, 14, 0),
+            RightWrist = pose(0, 0, -10)
+        })
+    elseif string.find(lower, "red") then
+        entry, hold, exit = 0.08, 0.16, 0.20
+        set({
             RootJoint = pose(-8, 0, 0),
             Waist = pose(-6, 0, 0),
-            RightShoulder = pose(-44, 0, -48),
-            RightElbow = pose(-18, 22, 0),
-            LeftShoulder = pose(-44, 0, 48),
-            LeftElbow = pose(-18, -22, 0)
-        }
-    },
-    ["Dash"] = {
-        entry = 0.055, hold = 0.09, exit = 0.14,
-        pose = {
-            RootJoint = pose(8, 0, -4),
-            Waist = pose(8, 0, -3),
-            Neck = pose(4, 0, 3),
-            RightShoulder = pose(-35, 0, -28),
-            LeftShoulder = pose(18, 0, 26),
-            RightHip = pose(16, 0, 12),
-            LeftHip = pose(-12, 0, -10)
-        }
-    },
-    ["Divergent"] = {
-        entry = 0.07, hold = 0.06, exit = 0.16,
-        pose = {
-            RootJoint = pose(-6, 0, -4),
-            Waist = pose(2, 0, -3),
-            RightShoulder = pose(-42, 8, -42),
-            LeftShoulder = pose(10, -7, 20)
-        }
-    },
-    ["Cursed Slash"] = {
-        entry = 0.06, hold = 0.05, exit = 0.15,
-        pose = {
-            RootJoint = pose(-5, -12, -7),
-            Waist = pose(-4, -10, -6),
-            Neck = pose(-3, -8, 4),
-            RightShoulder = pose(-74, 18, -56),
-            RightElbow = pose(8, -24, -8),
-            LeftShoulder = pose(12, -10, 22),
+            RightShoulder = pose(-44, 0, 60),
+            LeftShoulder = pose(-44, 0, -60),
+            RightElbow = pose(-14, 24, 0),
+            LeftElbow = pose(-14, -24, 0)
+        })
+    elseif string.find(lower, "purple") or string.find(lower, "void") then
+        entry, hold, exit = 0.13, 0.22, 0.25
+        set({
+            RootJoint = pose(-7, 0, 0),
+            Waist = pose(-8, 0, 0),
+            Neck = pose(-5, 0, 0),
+            RightShoulder = pose(-64, -16, -40),
+            LeftShoulder = pose(-64, 16, 40),
+            RightElbow = pose(-10, -20, 0),
+            LeftElbow = pose(-10, 20, 0),
+            RightWrist = pose(0, 0, -18),
+            LeftWrist = pose(0, 0, 18)
+        })
+    elseif string.find(lower, "dismantle") or string.find(lower, "cleave") or string.find(lower, "slash") then
+        entry, hold, exit = 0.055, 0.065, 0.15
+        set({
+            RootJoint = pose(-8, -10, -4),
+            Waist = pose(-6, -8, -5),
+            RightShoulder = pose(-78, 16, -52),
+            RightElbow = pose(10, -24, -5),
+            LeftShoulder = pose(8, -6, 22),
+            LeftElbow = pose(-6, 12, 4)
+        })
+    elseif string.find(lower, "punch") or string.find(lower, "fist") or string.find(lower, "strike") then
+        entry, hold, exit = 0.045, 0.055, 0.14
+        set({
+            RootJoint = pose(-9, 0, -7),
+            Waist = pose(-7, -5, -5),
+            Neck = pose(-4, 0, 4),
+            RightShoulder = pose(-72, -18, -50),
+            RightElbow = pose(12, -28, 0),
+            LeftShoulder = pose(18, 8, 26),
             LeftElbow = pose(-8, 14, 4)
-        }
-    },
-    ["Fire Arrow"] = {
-        entry = 0.1, hold = 0.18, exit = 0.2,
-        pose = {
-            RootJoint = pose(-5, 0, 4),
-            Waist = pose(-4, 0, 3),
-            RightShoulder = pose(-84, 0, -15),
-            RightElbow = pose(-18, -10, 0),
-            LeftShoulder = pose(-28, 0, 18),
-            LeftElbow = pose(-10, 16, 0)
-        }
-    },
-    ["Piercing Blood"] = {
-        entry = 0.09, hold = 0.14, exit = 0.19,
-        pose = {
+        })
+    elseif string.find(lower, "kick") then
+        entry, hold, exit = 0.055, 0.07, 0.17
+        set({
+            RootJoint = pose(-10, 0, -7),
+            Waist = pose(-8, 0, -5),
+            RightShoulder = pose(-24, 0, -30),
+            LeftShoulder = pose(-18, 0, 30),
+            RightHip = pose(-22, 18, -6),
+            RightKnee = pose(-30, 0, 0),
+            LeftHip = pose(12, 0, 8)
+        })
+    elseif string.find(lower, "blood") then
+        entry, hold, exit = 0.08, 0.15, 0.18
+        set({
             RootJoint = pose(-6, 0, -4),
             Waist = pose(-4, 0, -3),
             RightShoulder = pose(-62, 0, -16),
             RightElbow = pose(-8, -16, 0),
             LeftShoulder = pose(-45, 0, 28),
             LeftElbow = pose(-8, 18, 0)
-        }
-    },
-    ["Gravity"] = {
-        entry = 0.1, hold = 0.18, exit = 0.2,
-        pose = {
-            RootJoint = pose(-10, 0, 0),
+        })
+    elseif string.find(lower, "elephant") or string.find(lower, "gravity") then
+        entry, hold, exit = 0.10, 0.18, 0.22
+        set({
+            RootJoint = pose(7, 0, 0),
+            Waist = pose(6, 0, 0),
+            LeftShoulder = pose(32, 0, 48),
+            RightShoulder = pose(32, 0, -48),
+            LeftElbow = pose(18, -8, 0),
+            RightElbow = pose(18, 8, 0),
+            LeftHip = pose(8, 0, -5),
+            RightHip = pose(8, 0, 5)
+        })
+    elseif string.find(lower, "mahoraga") then
+        entry, hold, exit = 0.12, 0.28, 0.26
+        set({
+            RootJoint = pose(-4, 0, 0),
             Waist = pose(-7, 0, 0),
-            Neck = pose(-5, 0, 0),
-            RightShoulder = pose(-42, 0, -54),
+            Neck = pose(-6, 0, 0),
+            LeftShoulder = pose(-74, -8, 48),
+            RightShoulder = pose(-74, 8, -48),
+            LeftElbow = pose(-18, 22, 4),
+            RightElbow = pose(-18, -22, -4)
+        })
+    elseif string.find(lower, "domain") or string.find(lower, "shrine") or string.find(lower, "void") then
+        entry, hold, exit = 0.16, 0.34, 0.28
+        set({
+            RootJoint = pose(-5, 0, 0),
+            Waist = pose(-9, 0, 0),
+            Neck = pose(-10, 0, 0),
+            LeftShoulder = pose(-74, 0, 34),
+            RightShoulder = pose(-74, 0, -34),
+            LeftElbow = pose(-18, -10, 0),
+            RightElbow = pose(-18, 10, 0)
+        })
+    elseif string.find(lower, "fuga") or string.find(lower, "fire") then
+        entry, hold, exit = 0.11, 0.20, 0.23
+        set({
+            RootJoint = pose(-7, 0, 4),
+            Waist = pose(-6, 0, 3),
+            RightShoulder = pose(-86, -2, -18),
+            RightElbow = pose(-20, -12, 0),
+            LeftShoulder = pose(-34, 0, 22),
+            LeftElbow = pose(-12, 16, 0)
+        })
+    elseif string.find(lower, "rush") then
+        entry, hold, exit = 0.06, 0.08, 0.16
+        set({
+            RootJoint = pose(-13, 0, -8),
+            Waist = pose(-12, 0, -5),
+            RightShoulder = pose(-58, -10, -48),
+            LeftShoulder = pose(18, 8, 28),
+            RightHip = pose(12, 0, 10),
+            LeftHip = pose(-14, 0, -10)
+        })
+    elseif string.find(lower, "toad") or string.find(lower, "serpent") or string.find(lower, "nue") then
+        entry, hold, exit = 0.09, 0.16, 0.20
+        set({
+            RootJoint = pose(4, 0, 0),
+            Waist = pose(4, 0, 0),
+            LeftShoulder = pose(-50, -12, 34),
+            RightShoulder = pose(-50, 12, -34),
+            LeftElbow = pose(-20, 18, 0),
+            RightElbow = pose(-20, -18, 0)
+        })
+    elseif string.find(lower, "deer") or string.find(lower, "garden") then
+        entry, hold, exit = 0.10, 0.24, 0.24
+        set({
+            RootJoint = pose(-5, 0, 0),
+            Waist = pose(-7, 0, 0),
             LeftShoulder = pose(-42, 0, 54),
-            RightElbow = pose(-12, 16, 0),
-            LeftElbow = pose(-12, -16, 0)
-        }
-    },
-    ["Ice Formation"] = {
-        entry = 0.1, hold = 0.18, exit = 0.2,
-        pose = {
-            RootJoint = pose(-8, 0, 0),
-            Waist = pose(-6, 0, 0),
-            RightShoulder = pose(-66, 0, -28),
-            LeftShoulder = pose(-66, 0, 28),
-            RightElbow = pose(-16, 18, 0),
-            LeftElbow = pose(-16, -18, 0)
-        }
-    }
-}
+            RightShoulder = pose(-42, 0, -54),
+            LeftElbow = pose(-12, 18, 0),
+            RightElbow = pose(-12, -18, 0)
+        })
+    elseif string.find(lower, "blue") == nil and string.find(lower, "red") == nil and id == "Megumi" then
+        set({
+            RootJoint = pose(5, 0, 0),
+            Waist = pose(4, 0, 0),
+            LeftShoulder = pose(-28, -8, 34),
+            RightShoulder = pose(-28, 8, -34)
+        })
+    end
 
-local ALIASES = {
-    ["BlackFlash"] = "Black Flash",
-    ["Domain"] = "Domain Expansion",
-    ["DomainExpansion"] = "Domain Expansion",
-    ["Blue"] = "Lapse Blue",
-    ["Red"] = "Reversal Red",
-    ["DivergentFist"] = "Divergent Fist",
-    ["CursedSlash"] = "Cursed Slash",
-    ["IceFormation"] = "Ice Formation",
-    ["PiercingBlood"] = "Piercing Blood",
-    ["FireArrow"] = "Fire Arrow"
-}
-
-local function resolve(name)
-    name = tostring(name or "")
-    if Poses[name] then
-        return Poses[name]
-    end
-    local alias = ALIASES[name]
-    if alias and Poses[alias] then
-        return Poses[alias]
-    end
-    local lower = string.lower(name)
-    if string.find(lower, "black") and string.find(lower, "flash") then
-        return Poses["Black Flash"]
-    elseif string.find(lower, "divergent") then
-        return Poses["Divergent Fist"]
-    elseif string.find(lower, "domain") then
-        return Poses["Domain Expansion"]
-    elseif string.find(lower, "blue") then
-        return Poses["Lapse Blue"]
-    elseif string.find(lower, "red") then
-        return Poses["Reversal Red"]
-    elseif string.find(lower, "slash") then
-        return Poses["Cursed Slash"]
-    elseif string.find(lower, "blood") then
-        return Poses["Piercing Blood"]
-    elseif string.find(lower, "fire") then
-        return Poses["Fire Arrow"]
-    elseif string.find(lower, "ice") then
-        return Poses["Ice Formation"]
-    elseif string.find(lower, "grab") then
-        return Poses["Grab"]
-    elseif string.find(lower, "heavy") then
-        return Poses["Heavy"]
-    elseif string.find(lower, "dash") or string.find(lower, "ambush") or string.find(lower, "rush") then
-        return Poses["Dash"]
-    elseif string.find(lower, "kick") then
-        return Poses["Heavy"]
-    elseif string.find(lower, "palm") or string.find(lower, "punch") or string.find(lower, "strike") then
-        return Poses["Divergent Fist"]
-    elseif string.find(lower, "sphere") or string.find(lower, "blast") or string.find(lower, "meteor") or string.find(lower, "uzumaki") then
-        return Poses["Hollow Purple"]
-    elseif string.find(lower, "gravity") or string.find(lower, "domain") or string.find(lower, "garden") then
-        return Poses["Domain Expansion"]
-    end
-    return Poses["M1_1"]
+    return base, entry, hold, exit
 end
 
-local function playPose(character, name, options)
-    if not character or not character.Parent then
+function AnimationService:Cancel(character: Model)
+    if not character then
+        return
+    end
+
+    tokens[character] = (tokens[character] or 0) + 1
+    stateMachine:Cancel(character)
+end
+
+function AnimationService:ResetJoints(character: Model, duration: number?)
+    if not character then
         return false
     end
 
-    local joints = getJoints(character)
-    if not joints.RootJoint and not joints.Waist and not joints.Neck then
-        return false
-    end
+    self:Cancel(character)
+    reset(character, duration or 0.12)
+    return true
+end
 
+function AnimationService.PlayAttack(character: Model, move: string, options: any?)
     options = options or {}
 
-    local resolvedName = tostring(name or "")
-    if resolvedName == "M1" and type(options.combo) == "number" then
-        resolvedName = "M1_" .. tostring(math.clamp(math.floor(options.combo), 1, 4))
-    elseif resolvedName == "AirM1" then
-        resolvedName = "AirM1"
-    end
+    local joints = findJoints(character)
+    local token = nextToken(character, tostring(options.state or "Attacking"))
+    local transformed = options.transformed == true
+        or character:GetAttribute("AwakeningActive") == true
+        or character:GetAttribute("UltimateActive") == true
+    local transforms, entry, hold, exit = resolveProfile(
+        character,
+        tostring(move or "Attack"),
+        transformed
+    )
 
-    local definition = resolve(resolvedName)
-    local token = nextToken(character, options.state or "Attack")
-    local entry = options.entry or definition.entry
-    local hold = options.hold or definition.hold
-    local exit = options.exit or definition.exit
-    local style = options.style or Enum.EasingStyle.Quart
-    local direction = options.direction or Enum.EasingDirection.Out
-    local transforms = definition.pose
+    if tonumber(options.entry) then entry = tonumber(options.entry) end
+    if tonumber(options.hold) then hold = tonumber(options.hold) end
+    if tonumber(options.exit) then exit = tonumber(options.exit) end
 
-    apply(joints, transforms, entry, style, direction)
+    apply(
+        joints,
+        transforms,
+        entry,
+        options.style or Enum.EasingStyle.Quart,
+        options.direction or Enum.EasingDirection.Out
+    )
 
     task.delay(entry + hold, function()
         if not valid(character, token) then
             return
         end
 
-        if options.pulse then
-            local accent = {}
-            for key, value in pairs(transforms) do
-                accent[key] = value * pose(options.pulse, 0, options.pulse * 0.35)
-            end
-            apply(joints, accent, 0.05, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-            task.delay(0.05, function()
-                if valid(character, token) then
-                    apply(joints, transforms, 0.06, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                end
-            end)
+        if tonumber(options.pulse) and tonumber(options.pulse) > 0 then
+            local pulse = tonumber(options.pulse) or 2
+            apply(joints, {
+                RootJoint = transforms.RootJoint and transforms.RootJoint * pose(pulse, 0, pulse * 0.18) or CFrame.identity,
+                Waist = transforms.Waist and transforms.Waist * pose(-pulse * 0.35, 0, 0) or CFrame.identity
+            }, 0.045, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            task.wait(0.05)
         end
 
-        task.delay(options.exitDelay or 0, function()
-            if valid(character, token) then
-                reset(character, joints, exit)
-                stateMachine:Finish(character, token, "Idle")
-            end
-        end)
+        if valid(character, token) then
+            reset(character, exit)
+            stateMachine:Finish(character, token, "Idle")
+        end
     end)
 
     return true, token
 end
 
-function AnimationService.Cancel(character)
-    if character then
-        stateMachine:Cancel(character)
-        idleTokens[character] = (idleTokens[character] or 0) + 1
-    end
-end
-
-function AnimationService.ResetJoints(character, duration)
-    if not character then
-        return
-    end
-    AnimationService.Cancel(character)
-    local joints = getJoints(character)
-    reset(character, joints, duration or 0.12)
-end
-
-function AnimationService.PlayAttack(character, move, options)
+function AnimationService.PlaySkill(character: Model, skill: string, options: any?)
     options = options or {}
-    options.pulse = options.pulse or 2
-    return playPose(character, move, options)
+    options.transformed = options.transformed == true
+        or character:GetAttribute("AwakeningActive") == true
+        or character:GetAttribute("UltimateActive") == true
+    options.state = options.state or "UsingAbility"
+    options.pulse = options.pulse or (options.transformed and 4 or 3)
+    return AnimationService.PlayAttack(character, skill, options)
 end
 
-function AnimationService.PlaySkill(character, skill, options)
+function AnimationService.PlayDomain(character: Model, options: any?)
     options = options or {}
-    options.pulse = options.pulse or 3
-    options.style = options.style or Enum.EasingStyle.Back
-    return playPose(character, skill, options)
+    options.transformed = true
+    options.state = "Ultimate"
+    options.pulse = options.pulse or 4
+    options.entry = options.entry or 0.18
+    options.hold = options.hold or 0.38
+    return AnimationService.PlayAttack(character, "Domain Expansion", options)
 end
 
-function AnimationService.PlayDomain(character, options)
-    options = options or {}
-    options.pulse = options.pulse or 2
-    options.entry = options.entry or 0.2
-    options.hold = options.hold or 0.4
-    return playPose(character, "Domain Expansion", options)
-end
-
-function AnimationService.HitReact(character, intensity, tag)
+function AnimationService.HitReact(character: Model, intensity: number, reaction: string, direction: Vector3?)
     if not character or not character.Parent then
         return false
     end
 
-    local joints = getJoints(character)
-    local amount = math.clamp(tonumber(intensity) or 1, 0.4, 2)
-    local token = nextToken(character, "HitReact")
-    local spread = math.random(-12, 12) * amount
+    local joints = findJoints(character)
+    local amount = math.clamp(tonumber(intensity) or 1, 0.4, 2.2)
+    local spread = math.random(-13, 13) * amount
 
     local profile = {
         Light = {back = 7, twist = 1.0, arm = 5, recovery = 0.11},
-        Air = {back = 4, twist = 1.6, arm = 6, recovery = 0.1},
-        Heavy = {back = 13, twist = 1.3, arm = 9, recovery = 0.17},
-        Launcher = {back = 10, twist = 2.0, arm = 8, recovery = 0.16},
-        Slam = {back = 18, twist = 0.7, arm = 12, recovery = 0.2},
-        Special = {back = 14, twist = 1.7, arm = 10, recovery = 0.19},
-        Parry = {back = 5, twist = 2.8, arm = 4, recovery = 0.1},
-        Counter = {back = 12, twist = 2.1, arm = 8, recovery = 0.16},
-        Death = {back = 20, twist = 2.4, arm = 14, recovery = 0.28},
-        BlackFlash = {back = 17, twist = 2.2, arm = 12, recovery = 0.22}
+        Air = {back = 4, twist = 1.5, arm = 6, recovery = 0.10},
+        Heavy = {back = 13, twist = 1.4, arm = 9, recovery = 0.16},
+        Launcher = {back = 11, twist = 1.8, arm = 8, recovery = 0.17},
+        Slam = {back = 19, twist = 0.8, arm = 12, recovery = 0.21},
+        Special = {back = 15, twist = 1.7, arm = 11, recovery = 0.19},
+        Parry = {back = 5, twist = 2.6, arm = 4, recovery = 0.10},
+        Counter = {back = 12, twist = 2.0, arm = 8, recovery = 0.16},
+        Death = {back = 22, twist = 2.5, arm = 15, recovery = 0.29},
+        BlackFlash = {back = 18, twist = 2.3, arm = 13, recovery = 0.22}
     }
 
-    local selected = profile[tag] or profile.Light
-    local root = pose(selected.back * amount, 0, spread * selected.twist)
-    local neck = pose(-8 * amount, spread * 0.25, 0)
-    local shoulder = pose(-selected.arm * amount, 0, -spread * 0.65)
+    local selected = profile[reaction] or profile.Light
+    local sign = 1
+
+    if typeof(direction) == "Vector3" and direction.Magnitude > 0.01 then
+        local characterRoot = character:FindFirstChild("HumanoidRootPart")
+        if characterRoot and characterRoot:IsA("BasePart") then
+            local localVector = characterRoot.CFrame:VectorToObjectSpace(direction.Unit)
+            sign = localVector.X >= 0 and -1 or 1
+        end
+    end
 
     apply(joints, {
-        RootJoint = root,
-        Waist = pose(selected.back * 0.45 * amount, 0, spread * 0.35 * selected.twist),
-        Neck = neck,
-        RightShoulder = shoulder,
-        LeftShoulder = shoulder:Inverse(),
+        RootJoint = pose(selected.back * amount, 0, spread * selected.twist * sign),
+        Waist = pose(selected.back * 0.45 * amount, 0, spread * 0.35 * selected.twist * sign),
+        Neck = pose(-8 * amount, spread * 0.22 * sign, 0),
+        RightShoulder = pose(-selected.arm * amount, 0, -spread * 0.6 * sign),
+        LeftShoulder = pose(-selected.arm * amount, 0, spread * 0.6 * sign),
         RightElbow = pose(4 * amount, 0, -spread * 0.18),
         LeftElbow = pose(4 * amount, 0, spread * 0.18)
     }, 0.035, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
     task.delay(selected.recovery, function()
-        if valid(character, token) then
-            reset(character, joints, 0.13, Enum.EasingStyle.Back)
+        if character.Parent then
+            reset(character, 0.12)
         end
     end)
 
     return true
 end
 
-function AnimationService.StartIdleCombat(character, intensity)
+function AnimationService.UpdateLocomotion(character: Model, movementState: string, speed: number, timeNow: number?)
+    if not character or not character.Parent or suppressed(character) then
+        return false
+    end
+
+    local joints = findJoints(character)
+    local t = timeNow or os.clock()
+    local normalizedSpeed = math.clamp(speed / 18, 0, 2.4)
+    local phase = t * (3.2 + normalizedSpeed * 2.2)
+    local state = tostring(movementState)
+
+    if state == "Jump" then
+        apply(joints, {
+            RootJoint = pose(-4, 0, 0),
+            Waist = pose(-7, 0, 0),
+            LeftHip = pose(-12, 0, -6),
+            RightHip = pose(-12, 0, 6),
+            LeftShoulder = pose(10, 0, 18),
+            RightShoulder = pose(10, 0, -18)
+        }, 0.08)
+        return true
+    end
+
+    if state == "Fall" then
+        apply(joints, {
+            RootJoint = pose(10, 0, 0),
+            Waist = pose(8, 0, 0),
+            LeftHip = pose(14, 0, -8),
+            RightHip = pose(14, 0, 8),
+            LeftShoulder = pose(-5, 0, 16),
+            RightShoulder = pose(-5, 0, -16)
+        }, 0.10)
+        return true
+    end
+
+    if state == "Idle" then
+        local breathe = math.sin(phase * 0.55) * 1.8
+        apply(joints, {
+            RootJoint = pose(1.4 + breathe * 0.2, 0, math.sin(phase * 0.45) * 0.8),
+            Waist = pose(-1.1 + breathe * 0.18, 0, math.sin(phase * 0.45) * 1.1),
+            Neck = pose(-0.6 + breathe * 0.10, 0, math.sin(phase * 0.45) * -0.6)
+        }, 0.09)
+        return true
+    end
+
+    local locomotionScale = state == "Sprint" and 1.25
+        or state == "Running" and 1.05
+        or 0.82
+    local bob = math.sin(phase) * 2.6 * locomotionScale
+    local sway = math.cos(phase) * 2.1 * locomotionScale
+    local lift = math.abs(math.sin(phase)) * 1.4 * locomotionScale
+
+    apply(joints, {
+        RootJoint = pose(2.4 + lift, 0, sway * 0.45),
+        Waist = pose(-1.4, 0, sway * 0.75),
+        Neck = pose(-0.6, 0, -sway * 0.35),
+        LeftShoulder = pose(-8, 0, 17 + bob),
+        RightShoulder = pose(-8, 0, -17 - bob),
+        LeftHip = pose(-bob * 0.9, 0, -3),
+        RightHip = pose(bob * 0.9, 0, 3)
+    }, 0.055)
+
+    return true
+end
+
+function AnimationService.StartIdleCombat(character: Model, intensity: number?)
     if not character or not character.Parent then
         return false
     end
 
-    local joints = getJoints(character)
-    local token = (idleTokens[character] or 0) + 1
-    idleTokens[character] = token
-    stateMachine:Begin(character, "Idle", true)
-    local amount = math.clamp(tonumber(intensity) or 1, 0.5, 1.4)
+    local strength = math.clamp(tonumber(intensity) or 1, 0.5, 1.5)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return false
+    end
 
     task.spawn(function()
-        local phase = 0
-        while character.Parent and idleTokens[character] == token do
-            if stateMachine:GetState(character) ~= "Idle" then
-                task.wait(0.08)
-                continue
+        while character.Parent and humanoid.Health > 0 do
+            if not suppressed(character) then
+                AnimationService.UpdateLocomotion(character, "Idle", 0, os.clock() * strength)
             end
-
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            local root = character:FindFirstChild("HumanoidRootPart")
-            if humanoid and root and humanoid.Health > 0 and not character:GetAttribute("Ragdolled") then
-                phase += 1
-                local direction = phase % 2 == 0 and 1 or -1
-                local speed = root.AssemblyLinearVelocity.Magnitude
-                local movementScale = math.clamp(1 + speed / 55, 1, 1.55)
-                local rootPose = pose(1.8 * amount * movementScale, 0, 1.2 * amount * direction)
-                local waistPose = pose(-1.2 * amount * movementScale, 0, 1.8 * amount * direction)
-                local neckPose = pose(-0.8 * amount, 0, -1.2 * amount * direction)
-
-                apply(joints, {
-                    RootJoint = rootPose,
-                    Waist = waistPose,
-                    Neck = neckPose
-                }, 0.32, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-            end
-
-            task.wait(0.34)
+            task.wait(0.09)
         end
     end)
 
     return true
 end
-function AnimationService.StopIdleCombat(character)
-    if not character then
-        return
-    end
-    idleTokens[character] = (idleTokens[character] or 0) + 1
-    stateMachine:Cancel(character)
-end
 
-function AnimationService.Play(character, move, action)
-    if action == "Domain" or action == "DomainExpansion" then
-        return AnimationService.PlayDomain(character)
-    elseif action == "Skill" or action == "Special" or string.match(tostring(action), "^Skill%d$") then
-        return AnimationService.PlaySkill(character, move)
-    end
-    return AnimationService.PlayAttack(character, move)
+function AnimationService.StopIdleCombat(_character: Model)
+    return
 end
-
-AnimationService.Poses = Poses
 
 return AnimationService
