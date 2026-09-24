@@ -315,8 +315,14 @@ local function closeMenu()
         {BackgroundTransparency = 1}
     )
 
-    openTween:Play()
-    backdropTween:Play()
+    local closePanelTween = openTween
+    local closeBackdropTween = backdropTween
+    if closePanelTween then
+        closePanelTween:Play()
+    end
+    if closeBackdropTween then
+        closeBackdropTween:Play()
+    end
 
     task.delay(0.16, function()
         if player:GetAttribute("CCHUD_MenuOpen") ~= true then
@@ -357,8 +363,14 @@ local function openMenu()
         {BackgroundTransparency = 0.38}
     )
 
-    openTween:Play()
-    backdropTween:Play()
+    local openPanelTween = openTween
+    local openBackdropTween = backdropTween
+    if openPanelTween then
+        openPanelTween:Play()
+    end
+    if openBackdropTween then
+        openBackdropTween:Play()
+    end
 
     account:FireServer("Sync", {})
     render()
