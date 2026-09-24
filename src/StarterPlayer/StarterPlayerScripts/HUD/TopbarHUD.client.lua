@@ -51,37 +51,37 @@ end
 
 local characters = makeButton(
     "Characters",
-    "♙",
-    "♙  CHARACTERS",
+    "CHAR",
+    "CHAR  CHARACTERS",
     platform == "Mobile" and 48 or 104
 )
 
 local emotes = makeButton(
     "Emotes",
-    "☺",
-    "☺  EMOTES",
+    "EMT",
+    "EMT  EMOTES",
     platform == "Mobile" and 48 or 82
 )
 
 local credits = makeButton(
     "Credits",
-    "◉",
-    "◉  " .. tostring(player:GetAttribute("Credits") or 0),
+    "C",
+    "C  " .. tostring(player:GetAttribute("Credits") or 0),
     platform == "Mobile" and 48 or 84
 )
 credits.TextColor3 = Theme.Colors.Warning
 
 local settings = makeButton(
     "Settings",
-    "⚙",
-    "⚙  SETTINGS",
+    "SET",
+    "SET  SETTINGS",
     platform == "Mobile" and 48 or 92
 )
 
 local owner = makeButton(
     "Owner",
-    "◆",
-    "◆  OWNER",
+    "OWN",
+    "OWN  OWNER",
     platform == "Mobile" and 48 or 78
 )
 owner.TextColor3 = Theme.Colors.Warning
@@ -125,7 +125,7 @@ end)
 
 player:GetAttributeChangedSignal("Credits"):Connect(function()
     if platform ~= "Mobile" then
-        credits.Text = "◉  " .. tostring(player:GetAttribute("Credits") or 0)
+        credits.Text = "C  " .. tostring(player:GetAttribute("Credits") or 0)
     end
 end)
 
@@ -138,13 +138,13 @@ local function updatePlatform()
         0.064
     )
 
-    characters.Text = platform == "Mobile" and "♙" or "♙  CHARACTERS"
-    emotes.Text = platform == "Mobile" and "☺" or "☺  EMOTES"
+    characters.Text = platform == "Mobile" and "CHAR" or "CHAR  CHARACTERS"
+    emotes.Text = platform == "Mobile" and "EMT" or "EMT  EMOTES"
     credits.Text = platform == "Mobile"
-        and "◉"
-        or "◉  " .. tostring(player:GetAttribute("Credits") or 0)
-    settings.Text = platform == "Mobile" and "⚙" or "⚙  SETTINGS"
-    owner.Text = platform == "Mobile" and "◆" or "◆  OWNER"
+        and "C"
+        or "C  " .. tostring(player:GetAttribute("Credits") or 0)
+    settings.Text = platform == "Mobile" and "SET" or "SET  SETTINGS"
+    owner.Text = platform == "Mobile" and "OWN" or "OWN  OWNER"
     owner.Visible = player:GetAttribute("IsGameOwner") == true
 end
 
