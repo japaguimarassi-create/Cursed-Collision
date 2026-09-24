@@ -181,20 +181,30 @@ sprint.Activated:Connect(function()
     movementRemote:FireServer(active and "SprintEnd" or "SprintStart")
 end)
 
-local special = Theme.Button(root, "Special", hint("Special"), UDim2.fromScale(platform == "Mobile" and 0.21 or 0.18, 0.060), UDim2.fromScale(0.50, 0.930), platform == "Mobile" and 58 or 44)
+local special = Theme.Button(
+    root,
+    "Special",
+    hint("Special"),
+    UDim2.fromScale(platform == "Mobile" and 0.22 or 0.19, 0.062),
+    UDim2.fromScale(0.39, 0.930),
+    platform == "Mobile" and 58 or 44
+)
 special.AnchorPoint = Vector2.new(0.5, 0.5)
+special.TextSize = platform == "Mobile" and 10 or 9
 special.Activated:Connect(function()
     fire("Special")
 end)
 
-local ultimate = Theme.Button(root, "Ultimate", hint("Ultimate"), UDim2.fromScale(0.135, 0.060), UDim2.fromScale(0.385, 0.930), platform == "Mobile" and 54 or 42)
-ultimate.AnchorPoint = Vector2.new(0.5, 0.5)
-ultimate.Activated:Connect(function()
-    fire("Ultimate")
-end)
-
-local awakening = Theme.Button(root, "Awakening", hint("Awakening"), UDim2.fromScale(0.135, 0.060), UDim2.fromScale(0.615, 0.930), platform == "Mobile" and 54 or 42)
+local awakening = Theme.Button(
+    root,
+    "Awakening",
+    hint("Awakening"),
+    UDim2.fromScale(platform == "Mobile" and 0.24 or 0.21, 0.062),
+    UDim2.fromScale(0.61, 0.930),
+    platform == "Mobile" and 58 or 44
+)
 awakening.AnchorPoint = Vector2.new(0.5, 0.5)
+awakening.TextSize = platform == "Mobile" and 10 or 9
 awakening.Activated:Connect(function()
     fire("Awakening")
 end)
@@ -214,11 +224,8 @@ local function refreshPlatform()
         and (ControlMap:GetHint(platform, "Sprint") .. "+")
         or ControlMap:GetHint(platform, "Sprint")
     special.Text = ControlMap:GetHint(platform, "Special")
-    ultimate.Text = player:GetAttribute("UltimateReady") == true
-        and "ULTIMATE READY"
-        or ControlMap:GetHint(platform, "Ultimate")
     awakening.Text = player:GetAttribute("AwakeningReady") == true
-        and "AWAKEN READY"
+        and "AWAKENING READY"
         or ControlMap:GetHint(platform, "Awakening")
     actions.Visible = platform ~= "PC"
 end
@@ -267,12 +274,14 @@ local function updatePower()
 
     powerFill.Size = UDim2.fromScale(value, 1)
     powerFill.BackgroundColor3 = useAwakening and Theme.Colors.AccentBright or Theme.Colors.Accent
-    powerText.Text = useAwakening
-        and string.format("AWAKENING  %d%%", math.floor(awakeningValue * 100))
-        or string.format("ULTIMATE  %d%%", math.floor(ultimateValue * 100))
+    powerText.Text = string.format(
+        "AWAKENING  %d%%",
+        math.floor(value * 100)
+    )
 
-    ultimate.Text = player:GetAttribute("UltimateReady") == true and "ULTIMATE READY" or "ULTIMATE"
-    awakening.Text = player:GetAttribute("AwakeningReady") == true and "AWAKEN READY" or "AWAKEN"
+    awakening.Text = value >= 1
+        and "AWAKENING READY"
+        or "AWAKENING"
 end
 
 local function updateState()
@@ -306,6 +315,7 @@ player:GetAttributeChangedSignal("UltimateMeter"):Connect(updatePower)
 player:GetAttributeChangedSignal("AwakeningMeter"):Connect(updatePower)
 player:GetAttributeChangedSignal("UltimateReady"):Connect(updatePower)
 player:GetAttributeChangedSignal("AwakeningReady"):Connect(updatePower)
+player:GetAttributeChangedSignal("TransformationActive"):Connect(updatePower)
 player:GetAttributeChangedSignal("CombatState"):Connect(updateState)
 
 player.CharacterAdded:Connect(function(character)
