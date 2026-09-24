@@ -10,18 +10,34 @@ local MovementAnimation: any = require(script.Parent.Controllers.MovementAnimati
 local AnimationController: any = require(script.Parent.Controllers.AnimationController)
 local CombatHandler: any = require(script.Parent.Controllers.CombatHandler)
 
-local function bind(player: Player)
-    local character = player.Character
+local function bindCharacter(character: Model)
+    task.spawn(function()
+        local humanoid = character:WaitForChild("Humanoid", 10)
+        if not humanoid then
+            return
+        end
 
-    if character then
+        local animator = humanoid:FindFirstChildOfClass("Animator")
+        if not animator then
+            animator = humanoid:WaitForChild("Animator", 5)
+        end
+
+        if not animator then
+            animator = Instance.new("Animator")
+            animator.Parent = humanoid
+        end
+
         AnimationController:Bind(character)
         MovementAnimation:Bind(character)
+    end)
+end
+
+local function bind(player: Player)
+    if player.Character then
+        bindCharacter(player.Character)
     end
 
-    player.CharacterAdded:Connect(function(newCharacter)
-        AnimationController:Bind(newCharacter)
-        MovementAnimation:Bind(newCharacter)
-    end)
+    player.CharacterAdded:Connect(bindCharacter)
 end
 
 for _, player in ipairs(Players:GetPlayers()) do
