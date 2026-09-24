@@ -209,7 +209,45 @@ local function resolveProfile(character: Model, move: string, transformed: boole
         end
     end
 
-    if string.find(lower, "blue") then
+    if string.match(lower, "^m1_1$") then
+        entry, hold, exit = 0.035, 0.045, 0.11
+        set({
+            RootJoint = pose(-6, 0, -4),
+            Waist = pose(-5, -3, -3),
+            RightShoulder = pose(-66, -12, -48),
+            RightElbow = pose(8, -22, 0),
+            LeftShoulder = pose(10, 4, 20)
+        })
+    elseif string.match(lower, "^m1_2$") then
+        entry, hold, exit = 0.035, 0.050, 0.11
+        set({
+            RootJoint = pose(-5, 0, 6),
+            Waist = pose(-5, 4, 5),
+            LeftShoulder = pose(-68, 12, 48),
+            LeftElbow = pose(8, 22, 0),
+            RightShoulder = pose(12, -4, -20)
+        })
+    elseif string.match(lower, "^m1_3$") then
+        entry, hold, exit = 0.040, 0.055, 0.12
+        set({
+            RootJoint = pose(-9, 0, -8),
+            Waist = pose(-8, -6, -6),
+            RightShoulder = pose(-76, -20, -52),
+            RightElbow = pose(12, -28, 0),
+            LeftShoulder = pose(20, 10, 30)
+        })
+    elseif string.match(lower, "^m1_4$") then
+        entry, hold, exit = 0.055, 0.075, 0.16
+        set({
+            RootJoint = pose(-12, 0, -10),
+            Waist = pose(-10, -8, -8),
+            RightShoulder = pose(-82, -18, -52),
+            RightElbow = pose(16, -32, 0),
+            LeftShoulder = pose(28, 12, 34),
+            RightHip = pose(-12, 8, 6),
+            LeftHip = pose(8, -5, -6)
+        })
+    elseif string.find(lower, "blue") then
         entry, hold, exit = 0.09, 0.18, 0.20
         set({
             RootJoint = pose(-6, 0, -10),
@@ -398,9 +436,15 @@ function AnimationService.PlayAttack(character: Model, move: string, options: an
     local transformed = options.transformed == true
         or character:GetAttribute("AwakeningActive") == true
         or character:GetAttribute("UltimateActive") == true
+    local resolvedMove = tostring(move or "Attack")
+    local combo = tonumber(options.combo)
+    if combo then
+        resolvedMove = "M1_" .. tostring(math.clamp(math.floor(combo), 1, 4))
+    end
+
     local transforms, entry, hold, exit = resolveProfile(
         character,
-        tostring(move or "Attack"),
+        resolvedMove,
         transformed
     )
 
