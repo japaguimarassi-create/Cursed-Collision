@@ -358,8 +358,8 @@ player:GetAttributeChangedSignal("AwakeningMeter"):Connect(updatePower)
 
 local function bindHealth(character: Model)
     task.defer(updateHealth)
-    local humanoid = character:WaitForChild("Humanoid", 10)
-    if humanoid then
+    local humanoid = character:WaitForChild("Humanoid", 10) :: Humanoid?
+    if humanoid and humanoid:IsA("Humanoid") then
         humanoid.HealthChanged:Connect(updateHealth)
         humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(updateHealth)
     end
