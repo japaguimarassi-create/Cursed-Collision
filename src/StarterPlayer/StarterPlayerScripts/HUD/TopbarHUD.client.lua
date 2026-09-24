@@ -34,7 +34,7 @@ capsule.Size = UDim2.fromOffset(
     platform == "Mobile" and 160 or 224,
     layout.TopbarHeight
 )
-capsule.Position = UDim2.fromScale(0.50, 0.032)
+capsule.Position = UDim2.fromScale(0.50, 0.022)
 capsule.AnchorPoint = Vector2.new(0.5, 0)
 capsule.BackgroundColor3 = Theme.Colors.Surface
 capsule.BackgroundTransparency = 0.06
@@ -109,7 +109,7 @@ left.Size = UDim2.fromOffset(
     platform == "Mobile" and 112 or 190,
     layout.TopbarHeight
 )
-left.Position = UDim2.fromScale(0.018, 0.032)
+left.Position = UDim2.fromScale(0.018, 0.022)
 left.BackgroundTransparency = 1
 left.Parent = root
 
@@ -146,7 +146,7 @@ right.Size = UDim2.fromOffset(
     platform == "Mobile" and 54 or 210,
     layout.TopbarHeight
 )
-right.Position = UDim2.fromScale(0.982, 0.032)
+right.Position = UDim2.fromScale(0.982, 0.022)
 right.AnchorPoint = Vector2.new(1, 0)
 right.BackgroundTransparency = 1
 right.Parent = root

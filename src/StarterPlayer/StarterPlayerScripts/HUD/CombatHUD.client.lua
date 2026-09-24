@@ -44,8 +44,8 @@ local function fire(action: string, payload: any?)
 end
 
 local identity = Instance.new("Frame")
-identity.Size = UDim2.fromScale(layout.IdentityWidth, 0.075)
-identity.Position = UDim2.fromScale(0.50, 0.025)
+identity.Size = UDim2.fromScale(platform == "Mobile" and 0.28 or 0.22, 0.050)
+identity.Position = UDim2.fromScale(0.50, platform == "Mobile" and 0.785 or 0.765)
 identity.AnchorPoint = Vector2.new(0.5, 0)
 identity.BackgroundColor3 = Theme.Colors.Surface
 identity.BackgroundTransparency = 0.10
@@ -60,9 +60,9 @@ local title = Theme.Label(identity, "Title", "Shadow Potential", UDim2.fromScale
 title.TextColor3 = Theme.Colors.Muted
 
 local health = Instance.new("Frame")
-health.Size = UDim2.fromScale(platform == "Mobile" and 0.52 or 0.29, 0.040)
-health.Position = UDim2.fromScale(platform == "Mobile" and 0.50 or 0.018, platform == "Mobile" and 0.108 or 0.112)
-health.AnchorPoint = Vector2.new(platform == "Mobile" and 0.5 or 0, 0)
+health.Size = UDim2.fromScale(platform == "Mobile" and 0.46 or 0.31, 0.025)
+health.Position = UDim2.fromScale(0.50, platform == "Mobile" and 0.845 or 0.825)
+health.AnchorPoint = Vector2.new(0.5, 0)
 health.BackgroundColor3 = Theme.Colors.Surface2
 health.BorderSizePixel = 0
 health.Parent = root
@@ -79,14 +79,14 @@ Theme.Corner(healthFill, 8)
 local healthText = Theme.Label(health, "Text", "100 / 100", UDim2.fromScale(1, 1), UDim2.new(), 8)
 healthText.Font = Enum.Font.GothamBlack
 
-local state = Theme.Label(root, "State", "READY", UDim2.fromScale(0.18, 0.034), UDim2.fromScale(0.50, 0.156), 8)
+local state = Theme.Label(root, "State", "READY", UDim2.fromScale(0.16, 0.025), UDim2.fromScale(0.50, 0.875), 7)
 state.AnchorPoint = Vector2.new(0.5, 0)
 state.TextColor3 = Theme.Colors.Muted
 state.Font = Enum.Font.GothamBlack
 
 local power = Instance.new("Frame")
-power.Size = UDim2.fromScale(platform == "Mobile" and 0.62 or 0.58, 0.036)
-power.Position = UDim2.fromScale(0.50, 0.710)
+power.Size = UDim2.fromScale(platform == "Mobile" and 0.46 or 0.31, 0.026)
+power.Position = UDim2.fromScale(0.50, platform == "Mobile" and 0.900 or 0.875)
 power.AnchorPoint = Vector2.new(0.5, 0.5)
 power.BackgroundColor3 = Theme.Colors.Surface2
 power.BorderSizePixel = 0
@@ -105,14 +105,14 @@ local powerText = Theme.Label(power, "Text", "ULTIMATE 0%", UDim2.fromScale(1, 1
 powerText.Font = Enum.Font.GothamBlack
 
 local skills = Instance.new("Frame")
-skills.Size = UDim2.fromScale(layout.SkillsWidth, platform == "Mobile" and 0.12 or 0.13)
-skills.Position = UDim2.fromScale(0.50, layout.SkillsY)
+skills.Size = UDim2.fromScale(platform == "Mobile" and 0.52 or 0.34, platform == "Mobile" and 0.090 or 0.085)
+skills.Position = UDim2.fromScale(0.50, platform == "Mobile" and 0.965 or 0.945)
 skills.AnchorPoint = Vector2.new(0.5, 0.5)
 skills.BackgroundTransparency = 1
 skills.Parent = root
 
 local skillGrid = Instance.new("UIGridLayout")
-skillGrid.CellSize = UDim2.new(0.235, 0, 0.90, 0)
+skillGrid.CellSize = UDim2.new(0.235, 0, 0.88, 0)
 skillGrid.CellPadding = UDim2.new(0.02, 0, 0, 0)
 skillGrid.SortOrder = Enum.SortOrder.LayoutOrder
 skillGrid.Parent = skills
@@ -150,14 +150,14 @@ actions.Position = UDim2.fromScale(layout.ActionsX, layout.ActionsY)
 actions.BackgroundTransparency = 1
 actions.Parent = root
 
-local m1 = Theme.Button(actions, "M1", hint("M1"), UDim2.fromScale(0.52, 0.52), UDim2.fromScale(0.58, 0.51), platform == "Mobile" and 70 or 52)
+local m1 = Theme.Button(actions, "M1", "✊", UDim2.fromScale(0.44, 0.44), UDim2.fromScale(0.68, 0.58), platform == "Mobile" and 64 or 52)
 m1.AnchorPoint = Vector2.new(0.5, 0.5)
-m1.TextSize = platform == "Mobile" and 28 or 20
+m1.TextSize = platform == "Mobile" and 25 or 20
 m1.Activated:Connect(function()
     fire("M1")
 end)
 
-local block = Theme.Button(actions, "Block", hint("Block"), UDim2.fromScale(0.32, 0.30), UDim2.fromScale(0.15, 0.25), platform == "Mobile" and 62 or 44)
+local block = Theme.Button(actions, "Block", "◈", UDim2.fromScale(0.34, 0.34), UDim2.fromScale(0.20, 0.25), platform == "Mobile" and 58 or 44)
 block.AnchorPoint = Vector2.new(0.5, 0.5)
 block.Activated:Connect(function()
     local active = player:GetAttribute("LocalBlocking") == true
@@ -166,13 +166,13 @@ block.Activated:Connect(function()
     fire(active and "BlockEnd" or "BlockStart")
 end)
 
-local dash = Theme.Button(actions, "Dash", hint("Dash"), UDim2.fromScale(0.32, 0.30), UDim2.fromScale(0.15, 0.72), platform == "Mobile" and 62 or 44)
+local dash = Theme.Button(actions, "Dash", "➤", UDim2.fromScale(0.34, 0.34), UDim2.fromScale(0.20, 0.74), platform == "Mobile" and 58 or 44)
 dash.AnchorPoint = Vector2.new(0.5, 0.5)
 dash.Activated:Connect(function()
     fire("Dash", InputController:GetDashDirection())
 end)
 
-local sprint = Theme.Button(actions, "Sprint", hint("Sprint"), UDim2.fromScale(0.32, 0.18), UDim2.fromScale(0.15, 0.03), platform == "Mobile" and 58 or 44)
+local sprint = Theme.Button(actions, "Sprint", "↗", UDim2.fromScale(0.30, 0.22), UDim2.fromScale(0.20, 0.02), platform == "Mobile" and 52 or 44)
 sprint.AnchorPoint = Vector2.new(0.5, 0)
 sprint.Activated:Connect(function()
     local active = player:GetAttribute("LocalSprinting") == true
@@ -184,9 +184,9 @@ end)
 local special = Theme.Button(
     root,
     "Special",
-    hint("Special"),
-    UDim2.fromScale(platform == "Mobile" and 0.22 or 0.19, 0.062),
-    UDim2.fromScale(0.39, 0.930),
+    "★",
+    UDim2.fromScale(platform == "Mobile" and 0.115 or 0.10, 0.070),
+    UDim2.fromScale(0.885, 0.620),
     platform == "Mobile" and 58 or 44
 )
 special.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -199,8 +199,8 @@ local awakening = Theme.Button(
     root,
     "Awakening",
     hint("Awakening"),
-    UDim2.fromScale(platform == "Mobile" and 0.24 or 0.21, 0.062),
-    UDim2.fromScale(0.61, 0.930),
+    UDim2.fromScale(platform == "Mobile" and 0.16 or 0.14, 0.050),
+    UDim2.fromScale(0.50, 0.905),
     platform == "Mobile" and 58 or 44
 )
 awakening.AnchorPoint = Vector2.new(0.5, 0.5)
