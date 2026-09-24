@@ -25,8 +25,9 @@ local mapStatus: StringValue?
 for _ = 1, 300 do
     local candidate = Workspace:FindFirstChild("CursedCollisionMapStatus")
     if candidate and candidate:IsA("StringValue") then
-        mapStatus = candidate
-        if mapStatus.Value == "Ready" then
+        local readyStatus: StringValue = candidate
+        mapStatus = readyStatus
+        if readyStatus.Value == "Ready" then
             break
         end
     end
@@ -38,8 +39,9 @@ if not mapStatus or mapStatus.Value ~= "Ready" then
     return
 end
 
-if map:FindFirstChild(DETAIL_NAME) then
-    map:FindFirstChild(DETAIL_NAME):Destroy()
+local existingDetails = map:FindFirstChild(DETAIL_NAME)
+if existingDetails then
+    existingDetails:Destroy()
 end
 
 local details = Instance.new("Folder")
