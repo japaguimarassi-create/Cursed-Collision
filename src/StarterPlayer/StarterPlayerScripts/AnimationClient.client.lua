@@ -13,18 +13,22 @@ local CombatHandler: any = require(script.Parent.Controllers.CombatHandler)
 local function bindCharacter(character: Model)
     task.spawn(function()
         local humanoid = character:WaitForChild("Humanoid", 10)
-        if not humanoid then
+        if not humanoid or not humanoid:IsA("Humanoid") then
             return
         end
 
         local animator = humanoid:FindFirstChildOfClass("Animator")
+
         if not animator then
-            animator = humanoid:WaitForChild("Animator", 5)
+            local candidate = humanoid:WaitForChild("Animator", 5)
+            if candidate and candidate:IsA("Animator") then
+                animator = candidate
+            end
         end
 
         if not animator then
-            animator = Instance.new("Animator")
-            animator.Parent = humanoid
+            local created = Instance.new("Animator")
+            created.Parent = humanoid
         end
 
         AnimationController:Bind(character)
