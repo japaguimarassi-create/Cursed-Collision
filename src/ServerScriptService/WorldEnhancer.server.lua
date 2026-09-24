@@ -21,6 +21,23 @@ end
 
 local map: Folder = mapCandidate
 
+local mapStatus: StringValue?
+for _ = 1, 300 do
+    local candidate = Workspace:FindFirstChild("CursedCollisionMapStatus")
+    if candidate and candidate:IsA("StringValue") then
+        mapStatus = candidate
+        if mapStatus.Value == "Ready" then
+            break
+        end
+    end
+    task.wait(0.05)
+end
+
+if not mapStatus or mapStatus.Value ~= "Ready" then
+    warn("[Cursed Collision] Urban Detail V3 timed out waiting for base map.")
+    return
+end
+
 if map:FindFirstChild(DETAIL_NAME) then
     map:FindFirstChild(DETAIL_NAME):Destroy()
 end
