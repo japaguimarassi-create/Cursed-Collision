@@ -7,7 +7,7 @@ local CombatStateMachine = require(script.Parent.CombatStateMachine)
 local AnimationService = {}
 
 local stateMachine = CombatStateMachine.new()
-type Joint = Motor6D | AnimationConstraint
+type Joint = Motor6D | AnimationConstraint | Bone
 
 local cache: {[Model]: {[string]: Joint}} = setmetatable({}, {__mode = "k"}) :: any
 local tokens: {[Model]: number} = setmetatable({}, {__mode = "k"}) :: any
@@ -59,12 +59,37 @@ local function findJoints(character: Model): {[string]: Joint}
     for name, aliases in pairs(JOINT_ALIASES) do
         for _, alias in ipairs(aliases) do
             local object = character:FindFirstChild(alias, true)
-            if object and (object:IsA("AnimationConstraint") or object:IsA("Motor6D")) then
+            if object and (object:IsA("AnimationConstraint") or object:IsA("Motor6D") or object:IsA("Bone")) then
                 result[name] = object :: Joint
                 break
             end
         end
     end
+
+    local count = 0
+    local hasConstraint = false
+    local hasMotor = false
+    local hasBone = false
+
+    for _, joint in pairs(result) do
+        count += 1
+        if joint:IsA("AnimationConstraint") then
+            hasConstraint = true
+        elseif joint:IsA("Motor6D") then
+            hasMotor = true
+        elseif joint:IsA("Bone") then
+            hasBone = true
+        end
+    end
+
+    character:SetAttribute("CC_AnimationJointCount", count)
+    character:SetAttribute(
+        "CC_AnimationBackend",
+        hasConstraint and "AnimationConstraint"
+            or hasMotor and "Motor6D"
+            or hasBone and "Bone"
+            or "None"
+    )
 
     cache[character] = result
     return result
