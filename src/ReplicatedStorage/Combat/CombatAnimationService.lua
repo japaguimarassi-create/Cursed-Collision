@@ -541,6 +541,7 @@ function AnimationService.HitReact(character: Model, intensity: number, reaction
         return false
     end
 
+    local token = nextToken(character, "HitReact")
     local joints = findJoints(character)
     local amount = math.clamp(tonumber(intensity) or 1, 0.4, 2.2)
     local spread = math.random(-13, 13) * amount
@@ -580,9 +581,12 @@ function AnimationService.HitReact(character: Model, intensity: number, reaction
     }, 0.035, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
     task.delay(selected.recovery, function()
-        if character.Parent then
-            reset(character, 0.12)
+        if not valid(character, token) then
+            return
         end
+
+        reset(character, 0.12)
+        stateMachine:Finish(character, token, "Idle")
     end)
 
     return true
