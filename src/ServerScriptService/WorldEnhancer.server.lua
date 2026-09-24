@@ -5,20 +5,21 @@ local Workspace = game:GetService("Workspace")
 local MAP_NAME = "CursedCollisionMap"
 local DETAIL_NAME = "UrbanDetailV3"
 
-local map: Folder?
+local mapCandidate = Workspace:FindFirstChild(MAP_NAME)
 for _ = 1, 200 do
-    local candidate = Workspace:FindFirstChild(MAP_NAME)
-    if candidate and candidate:IsA("Folder") then
-        map = candidate
+    if mapCandidate and mapCandidate:IsA("Folder") then
         break
     end
     task.wait(0.05)
+    mapCandidate = Workspace:FindFirstChild(MAP_NAME)
 end
 
-if not map then
+if not mapCandidate or not mapCandidate:IsA("Folder") then
     warn("[Cursed Collision] Urban Detail V3 could not find map.")
     return
 end
+
+local map: Folder = mapCandidate
 
 if map:FindFirstChild(DETAIL_NAME) then
     map:FindFirstChild(DETAIL_NAME):Destroy()
@@ -37,6 +38,7 @@ local COLORS = {
     Purple = Color3.fromRGB(139, 95, 205),
     PurpleSoft = Color3.fromRGB(105, 76, 151),
     Crimson = Color3.fromRGB(210, 60, 75),
+    Red = Color3.fromRGB(230, 66, 80),
     Yellow = Color3.fromRGB(231, 195, 91),
     Cyan = Color3.fromRGB(92, 185, 224),
     Glass = Color3.fromRGB(64, 105, 132)
