@@ -39,6 +39,7 @@ REQUIRED = [
     "ServerScriptService/RemoteBootstrap.server.lua",
     "ServerScriptService/EmoteServer.server.lua",
     "ServerScriptService/GamePassServer.server.lua",
+    "ServerScriptService/WorldEnhancer.server.lua",
     "StarterPlayer/StarterPlayerScripts/CombatClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/AnimationClient.client.lua",
     "StarterPlayer/StarterPlayerScripts/CombatFeedback.client.lua",
@@ -190,6 +191,28 @@ for token in (
     if token not in damage:
         fail(f"DamageService integration missing: {token}")
 
+ultimate_service = read("ServerScriptService/CombatCore/UltimateService.lua")
+for token in (
+    "TRANSFORMATION_DURATION",
+    'player:SetAttribute("TransformationActive"',
+    'player:SetAttribute("AwakeningActive"',
+    'player:SetAttribute("UltimateActive"',
+    'Remotes.CombatFX:FireAllClients("Awakening"',
+):
+    if token not in ultimate_service:
+        fail(f"UltimateService unified transformation contract missing: {token}")
+
+enhancer = read("ServerScriptService/WorldEnhancer.server.lua")
+for token in (
+    "UrbanDetailV3",
+    "Skywalk",
+    "RooftopCombatDeck",
+    "CornerCafeInterior",
+    'map:SetAttribute("MapVersion", "3.0")',
+):
+    if token not in enhancer:
+        fail(f"WorldEnhancer missing: {token}")
+
 animation_data = read("ReplicatedStorage/Animation/AnimationData.lua")
 for key in (
     "Idle", "Walk", "Run", "Sprint", "Jump", "Fall", "Land",
@@ -250,7 +273,7 @@ for path, required in {
         "Characters", "Emotes", "Menu", "Settings", "GuiNavigationEnabled"
     ),
     "StarterPlayer/StarterPlayerScripts/HUD/MenuHUD.client.lua": (
-        "SHOP", "MISSIONS", "PASSES", "PLAYERS", "AccountAction"
+        "SHOP", "GAMEPASS", "QUESTS", "REWARDS", "AccountAction"
     ),
     "StarterPlayer/StarterPlayerScripts/HUD/CharacterHUD.client.lua": (
         "CharacterId", "SelectCharacter", "ScrollingFrame", "UIGridLayout"
