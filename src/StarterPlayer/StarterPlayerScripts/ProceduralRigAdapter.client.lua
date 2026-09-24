@@ -8,7 +8,7 @@ local RemoteService = require(ReplicatedStorage.Shared.RemoteService)
 local RigAnimator: any = require(script.Parent.Controllers.AnimationConstraintAnimator)
 
 local remotes = RemoteService:Get()
-local bound: {[Model]: boolean} = setmetatable({}, {__mode = "k"})
+local bound: {[Model]: boolean} = {}
 
 local function movementState(humanoid: Humanoid): string
     local state = humanoid:GetState()

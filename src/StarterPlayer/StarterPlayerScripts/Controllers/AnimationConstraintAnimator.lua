@@ -1,7 +1,5 @@
 --!strict
 
-local RunService = game:GetService("RunService")
-
 local Animator = {}
 
 type JointMap = {[string]: any}
@@ -18,7 +16,7 @@ type State = {
     seed: number
 }
 
-local states: {[Model]: State} = setmetatable({}, {__mode = "k"})
+local states: {[Model]: State} = {}
 
 local ALIASES = {
     RootJoint = {"RootJoint", "Root"},

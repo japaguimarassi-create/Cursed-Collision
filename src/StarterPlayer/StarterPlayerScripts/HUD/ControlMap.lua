@@ -24,7 +24,6 @@ local hints: {[Platform]: {[string]: string}} = {
         Sprint = "↗"
     },
 
-    Mobile = {},
 
     Console = {
         M1 = "B",
