@@ -170,7 +170,7 @@ InputManager:BindAction(
     "CC_Ultimate",
     function(_, state)
         if state == Enum.UserInputState.Begin then
-            fire("Ultimate")
+            fire("Awakening")
         end
     end,
     {Enum.KeyCode.T, Enum.KeyCode.DPadRight},
