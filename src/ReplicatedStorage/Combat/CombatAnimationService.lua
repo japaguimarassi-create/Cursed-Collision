@@ -7,7 +7,9 @@ local CombatStateMachine = require(script.Parent.CombatStateMachine)
 local AnimationService = {}
 
 local stateMachine = CombatStateMachine.new()
-local cache: {[Model]: {[string]: Motor6D}} = setmetatable({}, {__mode = "k"}) :: any
+type Joint = Motor6D | AnimationConstraint
+
+local cache: {[Model]: {[string]: Joint}} = setmetatable({}, {__mode = "k"}) :: any
 local tokens: {[Model]: number} = setmetatable({}, {__mode = "k"}) :: any
 
 local JOINT_ALIASES = {
@@ -38,7 +40,7 @@ local function pose(rx: number?, ry: number?, rz: number?): CFrame
     )
 end
 
-local function findJoints(character: Model): {[string]: Motor6D}
+local function findJoints(character: Model): {[string]: Joint}
     local existing = cache[character]
     if existing then
         local alive = false
@@ -53,11 +55,11 @@ local function findJoints(character: Model): {[string]: Motor6D}
         end
     end
 
-    local result: {[string]: Motor6D} = {}
+    local result: {[string]: Joint} = {}
     for name, aliases in pairs(JOINT_ALIASES) do
         for _, alias in ipairs(aliases) do
             local object = character:FindFirstChild(alias, true)
-            if object and object:IsA("Motor6D") then
+            if object and (object:IsA("AnimationConstraint") or object:IsA("Motor6D")) then
                 result[name] = object
                 break
             end
@@ -81,7 +83,7 @@ local function valid(character: Model, token: number): boolean
         and stateMachine:GetState(character) ~= "Dead"
 end
 
-local function tween(joint: Motor6D?, target: CFrame, duration: number, style: Enum.EasingStyle?, direction: Enum.EasingDirection?): Tween?
+local function tween(joint: Joint?, target: CFrame, duration: number, style: Enum.EasingStyle?, direction: Enum.EasingDirection?): Tween?
     if not joint or not joint.Parent then
         return nil
     end
@@ -99,7 +101,7 @@ local function tween(joint: Motor6D?, target: CFrame, duration: number, style: E
     return track
 end
 
-local function apply(joints: {[string]: Motor6D}, transforms: {[string]: CFrame}, duration: number, style: Enum.EasingStyle?, direction: Enum.EasingDirection?)
+local function apply(joints: {[string]: Joint}, transforms: {[string]: CFrame}, duration: number, style: Enum.EasingStyle?, direction: Enum.EasingDirection?)
     for name, target in pairs(transforms) do
         tween(joints[name], target, duration, style, direction)
     end
