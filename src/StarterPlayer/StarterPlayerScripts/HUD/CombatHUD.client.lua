@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+
 local Theme = require(script.Parent.HUDTheme)
 local Layouts = require(script.Parent.HUDLayout)
 local ControlMap = require(script.Parent.ControlMap)
@@ -13,9 +14,13 @@ local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("Remotes", 30)
 local combatRemote = remotes and remotes:WaitForChild("CombatAction", 15)
 local movementRemote = remotes and remotes:WaitForChild("MovementRemote", 15)
+
 if not combatRemote or not movementRemote then
     return
 end
+
+local Definitions = require(ReplicatedStorage.Characters.CharacterDefinitions)
+local MoveDefinitions = require(ReplicatedStorage.Characters.CustomMovesets)
 
 local platform: ControlMap.Platform = ControlMap:GetPlatform(UserInputService.PreferredInput)
 local layout = Layouts:Get(platform)
@@ -28,7 +33,7 @@ local gui = Theme.CreateGui("CursedCollisionHUD_Combat", 30)
 local root = Theme.Root(gui)
 Theme.ResponsiveScale(root, layout.CombatScaleReference, layout.CombatMinScale, layout.CombatMaxScale)
 
-local blocked = function(): boolean
+local function blocked(): boolean
     return player:GetAttribute("CCHUD_MenuOpen") == true
         or player:GetAttribute("CCHUD_CharacterMenuOpen") == true
         or player:GetAttribute("CCHUD_EmoteWheelOpen") == true
@@ -37,216 +42,269 @@ local blocked = function(): boolean
 end
 
 local function fire(action: string, payload: any?)
-    if blocked() then
+    if blocked()
+        or player:GetAttribute("Stunned") == true
+        or player:GetAttribute("Ragdolled") == true then
         return
     end
     combatRemote:FireServer(action, payload)
 end
 
+local combatZone = Instance.new("Frame")
+combatZone.Name = "CombatZone"
+combatZone.Size = UDim2.fromScale(0.60, 0.30)
+combatZone.Position = UDim2.fromScale(0.50, layout.SkillsY)
+combatZone.AnchorPoint = Vector2.new(0.5, 1)
+combatZone.BackgroundTransparency = 1
+combatZone.Parent = root
+
 local identity = Instance.new("Frame")
-identity.Size = UDim2.fromScale(platform == "Mobile" and 0.28 or 0.22, 0.050)
-identity.Position = UDim2.fromScale(0.50, platform == "Mobile" and 0.785 or 0.765)
+identity.Name = "Identity"
+identity.Size = UDim2.fromScale(platform == "Mobile" and 0.62 or 0.68, 0.18)
+identity.Position = UDim2.fromScale(0.50, 0.00)
 identity.AnchorPoint = Vector2.new(0.5, 0)
 identity.BackgroundColor3 = Theme.Colors.Surface
 identity.BackgroundTransparency = 0.10
 identity.BorderSizePixel = 0
-identity.Parent = root
-Theme.Corner(identity, 13)
-Theme.Stroke(identity, 0.70)
+identity.Parent = combatZone
+Theme.Corner(identity, 11)
+Theme.Stroke(identity, 0.48, 1)
 
-local name = Theme.Label(identity, "Name", "Potential Man", UDim2.fromScale(0.90, 0.48), UDim2.fromScale(0.05, 0.04), 14)
+local name = Theme.Label(identity, "Name", "Yuji Itadori", UDim2.fromScale(0.92, 0.56), UDim2.fromScale(0.04, 0.05), 13)
 name.Font = Enum.Font.GothamBlack
-local title = Theme.Label(identity, "Title", "Shadow Potential", UDim2.fromScale(0.90, 0.25), UDim2.fromScale(0.05, 0.57), 8)
+local title = Theme.Label(identity, "Title", "Shibuya Vessel → Shinjuku", UDim2.fromScale(0.92, 0.25), UDim2.fromScale(0.04, 0.65), 7)
 title.TextColor3 = Theme.Colors.Muted
 
 local health = Instance.new("Frame")
-health.Size = UDim2.fromScale(platform == "Mobile" and 0.46 or 0.31, 0.025)
-health.Position = UDim2.fromScale(0.50, platform == "Mobile" and 0.845 or 0.825)
+health.Name = "Health"
+health.Size = UDim2.fromScale(0.72, 0.10)
+health.Position = UDim2.fromScale(0.50, 0.195)
 health.AnchorPoint = Vector2.new(0.5, 0)
 health.BackgroundColor3 = Theme.Colors.Surface2
 health.BorderSizePixel = 0
-health.Parent = root
-Theme.Corner(health, 8)
-Theme.Stroke(health, 0.72)
+health.Parent = combatZone
+Theme.Corner(health, 7)
+Theme.Stroke(health, 0.52)
 
 local healthFill = Instance.new("Frame")
+healthFill.Name = "Fill"
 healthFill.Size = UDim2.fromScale(1, 1)
 healthFill.BackgroundColor3 = Theme.Colors.Health
 healthFill.BorderSizePixel = 0
 healthFill.Parent = health
-Theme.Corner(healthFill, 8)
+Theme.Corner(healthFill, 7)
 
-local healthText = Theme.Label(health, "Text", "100 / 100", UDim2.fromScale(1, 1), UDim2.new(), 8)
+local healthText = Theme.Label(health, "Text", "100 / 100", UDim2.fromScale(0.98, 1), UDim2.new(), 8)
 healthText.Font = Enum.Font.GothamBlack
 
-local state = Theme.Label(root, "State", "READY", UDim2.fromScale(0.16, 0.025), UDim2.fromScale(0.50, 0.875), 7)
-state.AnchorPoint = Vector2.new(0.5, 0)
-state.TextColor3 = Theme.Colors.Muted
-state.Font = Enum.Font.GothamBlack
-
 local power = Instance.new("Frame")
-power.Size = UDim2.fromScale(platform == "Mobile" and 0.46 or 0.31, 0.026)
-power.Position = UDim2.fromScale(0.50, platform == "Mobile" and 0.900 or 0.875)
-power.AnchorPoint = Vector2.new(0.5, 0.5)
+power.Name = "Awakening"
+power.Size = UDim2.fromScale(0.72, 0.085)
+power.Position = UDim2.fromScale(0.50, 0.305)
+power.AnchorPoint = Vector2.new(0.5, 0)
 power.BackgroundColor3 = Theme.Colors.Surface2
 power.BorderSizePixel = 0
-power.Parent = root
-Theme.Corner(power, 8)
-Theme.Stroke(power, 0.72)
+power.Parent = combatZone
+Theme.Corner(power, 7)
+Theme.Stroke(power, 0.52)
 
 local powerFill = Instance.new("Frame")
+powerFill.Name = "Fill"
 powerFill.Size = UDim2.fromScale(0, 1)
-powerFill.BackgroundColor3 = Theme.Colors.Accent
+powerFill.BackgroundColor3 = Theme.Colors.AccentBright
 powerFill.BorderSizePixel = 0
 powerFill.Parent = power
-Theme.Corner(powerFill, 8)
+Theme.Corner(powerFill, 7)
 
-local powerText = Theme.Label(power, "Text", "ULTIMATE 0%", UDim2.fromScale(1, 1), UDim2.new(), 8)
+local powerText = Theme.Label(power, "Text", "AWAKENING 0%", UDim2.fromScale(0.98, 1), UDim2.new(), 7)
 powerText.Font = Enum.Font.GothamBlack
 
 local skills = Instance.new("Frame")
-skills.Size = UDim2.fromScale(platform == "Mobile" and 0.52 or 0.34, platform == "Mobile" and 0.090 or 0.085)
-skills.Position = UDim2.fromScale(0.50, platform == "Mobile" and 0.965 or 0.945)
-skills.AnchorPoint = Vector2.new(0.5, 0.5)
+skills.Name = "Skills"
+skills.Size = UDim2.fromScale(platform == "Mobile" and 0.78 or 0.80, 0.34)
+skills.Position = UDim2.fromScale(0.50, 0.41)
+skills.AnchorPoint = Vector2.new(0.5, 0)
 skills.BackgroundTransparency = 1
-skills.Parent = root
+skills.Parent = combatZone
 
-local skillGrid = Instance.new("UIGridLayout")
-skillGrid.CellSize = UDim2.new(0.235, 0, 0.88, 0)
-skillGrid.CellPadding = UDim2.new(0.02, 0, 0, 0)
-skillGrid.SortOrder = Enum.SortOrder.LayoutOrder
-skillGrid.Parent = skills
+local grid = Instance.new("UIGridLayout")
+grid.CellSize = UDim2.new(0.24, -4, 1, 0)
+grid.CellPadding = UDim2.new(0.013, 0, 0, 0)
+grid.SortOrder = Enum.SortOrder.LayoutOrder
+grid.Parent = skills
 
+local skillButtons: {[number]: TextButton} = {}
 local skillLabels: {[number]: TextLabel} = {}
 local skillHints: {[number]: TextLabel} = {}
 local cooldownLabels: {[number]: TextLabel} = {}
-
-local function serverCooldown(action: string): number
-    local untilAt = tonumber(player:GetAttribute("CooldownUntil_" .. action)) or 0
-    return math.max(0, untilAt - workspace:GetServerTimeNow())
-end
+local skillOverlays: {[number]: Frame} = {}
 
 for slot = 1, 4 do
     local cell = Instance.new("Frame")
+    cell.Name = "Slot" .. tostring(slot)
     cell.BackgroundTransparency = 1
     cell.LayoutOrder = slot
     cell.Parent = skills
 
-    local b = Theme.Button(cell, "Skill" .. slot, "", UDim2.fromScale(1, 1), UDim2.new(), platform == "Mobile" and 58 or 44)
-    local slotHint = ControlMap:GetHint(platform, "Skill" .. tostring(slot))
+    local button = Theme.Button(cell, "Button", "", UDim2.fromScale(1, 1), UDim2.new(), platform == "Mobile" and 56 or 48)
+    button.Text = ""
+    button.Selectable = true
 
-    skillHints[slot] = Theme.Label(b, "Hint", slotHint or "", UDim2.fromScale(0.25, 0.20), UDim2.fromScale(0.06, 0.04), 7)
-    skillLabels[slot] = Theme.Label(b, "Name", "Skill " .. slot, UDim2.fromScale(0.88, 0.45), UDim2.fromScale(0.06, 0.23), 8)
-    cooldownLabels[slot] = Theme.Label(b, "Cooldown", "READY", UDim2.fromScale(0.84, 0.20), UDim2.fromScale(0.08, 0.76), 7)
+    local overlay = Instance.new("Frame")
+    overlay.Name = "CooldownOverlay"
+    overlay.AnchorPoint = Vector2.new(0, 1)
+    overlay.Position = UDim2.fromScale(0, 1)
+    overlay.Size = UDim2.fromScale(1, 0)
+    overlay.BackgroundColor3 = Theme.Colors.Background
+    overlay.BackgroundTransparency = 0.35
+    overlay.BorderSizePixel = 0
+    overlay.ZIndex = button.ZIndex + 1
+    overlay.Parent = button
+    Theme.Corner(overlay, 14)
 
-    b.Activated:Connect(function()
-        fire("Skill" .. slot)
+    local keyLabel = Theme.Label(button, "Key", hint("Skill" .. tostring(slot)), UDim2.fromScale(0.24, 0.20), UDim2.fromScale(0.07, 0.05), 8)
+    keyLabel.Font = Enum.Font.GothamBlack
+    skillHints[slot] = keyLabel
+
+    skillLabels[slot] = Theme.Label(button, "Name", "SKILL " .. tostring(slot), UDim2.fromScale(0.86, 0.42), UDim2.fromScale(0.07, 0.25), platform == "Mobile" and 9 or 10)
+    skillLabels[slot].Font = Enum.Font.GothamBold
+
+    cooldownLabels[slot] = Theme.Label(button, "Cooldown", "READY", UDim2.fromScale(0.86, 0.20), UDim2.fromScale(0.07, 0.74), 7)
+    cooldownLabels[slot].Font = Enum.Font.GothamBlack
+
+    skillButtons[slot] = button
+    skillOverlays[slot] = overlay
+
+    button.Activated:Connect(function()
+        fire("Skill" .. tostring(slot))
     end)
 end
 
-local actions = Instance.new("Frame")
-actions.Size = UDim2.fromScale(platform == "Mobile" and 0.32 or 0.29, platform == "Mobile" and 0.34 or 0.31)
-actions.Position = UDim2.fromScale(layout.ActionsX, layout.ActionsY)
-actions.BackgroundTransparency = 1
-actions.Parent = root
-
-local m1 = Theme.Button(actions, "M1", "✊", UDim2.fromScale(0.44, 0.44), UDim2.fromScale(0.68, 0.58), platform == "Mobile" and 64 or 52)
-m1.AnchorPoint = Vector2.new(0.5, 0.5)
-m1.TextSize = platform == "Mobile" and 25 or 20
-m1.Activated:Connect(function()
-    fire("M1")
-end)
-
-local block = Theme.Button(actions, "Block", "◈", UDim2.fromScale(0.34, 0.34), UDim2.fromScale(0.20, 0.25), platform == "Mobile" and 58 or 44)
-block.AnchorPoint = Vector2.new(0.5, 0.5)
-block.Activated:Connect(function()
-    local active = player:GetAttribute("LocalBlocking") == true
-    player:SetAttribute("LocalBlocking", not active)
-    block.Text = active and hint("Block") or (hint("Block") .. "ING")
-    fire(active and "BlockEnd" or "BlockStart")
-end)
-
-local dash = Theme.Button(actions, "Dash", "➤", UDim2.fromScale(0.34, 0.34), UDim2.fromScale(0.20, 0.74), platform == "Mobile" and 58 or 44)
-dash.AnchorPoint = Vector2.new(0.5, 0.5)
-dash.Activated:Connect(function()
-    fire("Dash", InputController:GetDashDirection())
-end)
-
-local sprint = Theme.Button(actions, "Sprint", "↗", UDim2.fromScale(0.30, 0.22), UDim2.fromScale(0.20, 0.02), platform == "Mobile" and 52 or 44)
-sprint.AnchorPoint = Vector2.new(0.5, 0)
-sprint.Activated:Connect(function()
-    local active = player:GetAttribute("LocalSprinting") == true
-    player:SetAttribute("LocalSprinting", not active)
-    sprint.Text = active and hint("Sprint") or (hint("Sprint") .. "+")
-    movementRemote:FireServer(active and "SprintEnd" or "SprintStart")
-end)
-
-local special = Theme.Button(
-    root,
-    "Special",
-    "★",
-    UDim2.fromScale(platform == "Mobile" and 0.115 or 0.10, 0.070),
-    UDim2.fromScale(0.885, 0.620),
-    platform == "Mobile" and 58 or 44
-)
-special.AnchorPoint = Vector2.new(0.5, 0.5)
-special.TextSize = platform == "Mobile" and 10 or 9
-special.Activated:Connect(function()
-    fire("Special")
-end)
-
 local awakening = Theme.Button(
-    root,
-    "Awakening",
+    combatZone,
+    "AwakeningButton",
     hint("Awakening"),
-    UDim2.fromScale(platform == "Mobile" and 0.16 or 0.14, 0.050),
-    UDim2.fromScale(0.50, 0.905),
-    platform == "Mobile" and 58 or 44
+    UDim2.fromScale(0.22, 0.17),
+    UDim2.fromScale(0.86, 0.98),
+    platform == "Mobile" and 52 or 46
 )
-awakening.AnchorPoint = Vector2.new(0.5, 0.5)
-awakening.TextSize = platform == "Mobile" and 10 or 9
+awakening.AnchorPoint = Vector2.new(0.5, 1)
+awakening.TextSize = 8
+awakening.Visible = platform ~= "PC"
+
 awakening.Activated:Connect(function()
     fire("Awakening")
 end)
 
-local function refreshPlatform()
-    platform = ControlMap:GetPlatform(UserInputService.PreferredInput)
-    for slot = 1, 4 do
-        skillHints[slot].Text = ControlMap:GetHint(platform, "Skill" .. tostring(slot))
-    end
+local actions = Instance.new("Frame")
+actions.Name = "MobileActions"
+actions.Size = UDim2.fromScale(0.28, 0.44)
+actions.Position = UDim2.fromScale(layout.ActionsX, layout.ActionsY)
+actions.AnchorPoint = Vector2.new(0.5, 0.5)
+actions.BackgroundTransparency = 1
+actions.Visible = platform ~= "PC"
+actions.Parent = root
 
-    m1.Text = ControlMap:GetHint(platform, "M1")
-    block.Text = player:GetAttribute("LocalBlocking") == true
-        and (ControlMap:GetHint(platform, "Block") .. "ING")
-        or ControlMap:GetHint(platform, "Block")
-    dash.Text = ControlMap:GetHint(platform, "Dash")
-    sprint.Text = player:GetAttribute("LocalSprinting") == true
-        and (ControlMap:GetHint(platform, "Sprint") .. "+")
-        or ControlMap:GetHint(platform, "Sprint")
-    special.Text = ControlMap:GetHint(platform, "Special")
-    awakening.Text = player:GetAttribute("AwakeningReady") == true
-        and "AWAKENING READY"
-        or ControlMap:GetHint(platform, "Awakening")
-    actions.Visible = platform ~= "PC"
+local function actionButton(
+    nameText: string,
+    label: string,
+    size: number,
+    position: UDim2,
+    textSize: number
+): TextButton
+    local button = Theme.Button(actions, nameText, label, UDim2.fromOffset(size, size), position, size)
+    button.AnchorPoint = Vector2.new(0.5, 0.5)
+    button.TextSize = textSize
+    return button
 end
 
-UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(refreshPlatform)
+local attack = actionButton(
+    "Attack",
+    "✊",
+    platform == "Mobile" and 72 or 64,
+    UDim2.fromScale(0.70, 0.74),
+    platform == "Mobile" and 24 or 20
+)
+local attackCaption = Theme.Label(attack, "Caption", "ATK", UDim2.fromScale(0.7, 0.18), UDim2.fromScale(0.15, 0.68), 7)
+attackCaption.Font = Enum.Font.GothamBlack
+attack.Activated:Connect(function()
+    fire("M1")
+end)
+
+local dash = actionButton(
+    "Dash",
+    "➤",
+    platform == "Mobile" and 56 or 50,
+    UDim2.fromScale(0.31, 0.54),
+    17
+)
+local dashCaption = Theme.Label(dash, "Caption", "DASH", UDim2.fromScale(0.74, 0.18), UDim2.fromScale(0.13, 0.67), 6)
+dashCaption.Font = Enum.Font.GothamBlack
+dash.Activated:Connect(function()
+    fire("Dash", InputController:GetDashDirection())
+end)
+
+local block = actionButton(
+    "Block",
+    "◇",
+    platform == "Mobile" and 54 or 48,
+    UDim2.fromScale(0.67, 0.22),
+    18
+)
+local blockCaption = Theme.Label(block, "Caption", "BLOCK", UDim2.fromScale(0.74, 0.18), UDim2.fromScale(0.13, 0.67), 6)
+blockCaption.Font = Enum.Font.GothamBlack
+block.Activated:Connect(function()
+    local active = player:GetAttribute("LocalBlocking") == true
+    player:SetAttribute("LocalBlocking", not active)
+    fire(active and "BlockEnd" or "BlockStart")
+end)
+
+local special = actionButton(
+    "Special",
+    "★",
+    platform == "Mobile" and 54 or 48,
+    UDim2.fromScale(0.31, 0.84),
+    18
+)
+local specialCaption = Theme.Label(special, "Caption", "SPECIAL", UDim2.fromScale(0.82, 0.18), UDim2.fromScale(0.09, 0.67), 6)
+specialCaption.Font = Enum.Font.GothamBlack
+special.Activated:Connect(function()
+    fire("Special")
+end)
+
+local sprint = actionButton(
+    "Sprint",
+    "↗",
+    platform == "Mobile" and 48 or 44,
+    UDim2.fromScale(0.20, 0.08),
+    16
+)
+local sprintCaption = Theme.Label(sprint, "Caption", "RUN", UDim2.fromScale(0.70, 0.20), UDim2.fromScale(0.15, 0.65), 6)
+sprintCaption.Font = Enum.Font.GothamBlack
+sprint.Activated:Connect(function()
+    local active = player:GetAttribute("LocalSprinting") == true
+    player:SetAttribute("LocalSprinting", not active)
+    movementRemote:FireServer(active and "SprintEnd" or "SprintStart")
+end)
+
+local function getMoves()
+    local id = tostring(player:GetAttribute("CharacterId") or "Yuji")
+    local transformed = player:GetAttribute("TransformationActive") == true
+        or player:GetAttribute("AwakeningActive") == true
+        or player:GetAttribute("UltimateActive") == true
+    return MoveDefinitions.Get(id, transformed)
+end
 
 local function updateCharacter()
     local id = tostring(player:GetAttribute("CharacterId") or "Yuji")
-    local defs = require(ReplicatedStorage.Characters.CharacterDefinitions)
-    local moves = require(ReplicatedStorage.Characters.CustomMovesets).Get(
-        id,
-        player:GetAttribute("AwakeningActive") == true
-            or player:GetAttribute("UltimateActive") == true
-    )
-    local profile = defs[id]
-
+    local profile = Definitions[id]
     name.Text = profile and profile.Name or id
     title.Text = profile and profile.Subtitle or ""
+
+    local moves = getMoves()
     for slot = 1, 4 do
         local move = moves[slot]
-        skillLabels[slot].Text = move and move.Name or ("Skill " .. slot)
+        skillLabels[slot].Text = move and tostring(move.Name) or ("SKILL " .. tostring(slot))
     end
 end
 
@@ -257,78 +315,67 @@ local function updateHealth()
         return
     end
 
-    local ratio = math.clamp(humanoid.Health / math.max(1, humanoid.MaxHealth), 0, 1)
+    local maxHealth = math.max(1, humanoid.MaxHealth)
+    local ratio = math.clamp(humanoid.Health / maxHealth, 0, 1)
     healthFill.Size = UDim2.fromScale(ratio, 1)
-    healthText.Text = string.format(
-        "%d / %d",
-        math.floor(math.max(0, humanoid.Health) + 0.5),
-        math.floor(math.max(1, humanoid.MaxHealth) + 0.5)
-    )
+    healthText.Text = string.format("%d / %d", math.floor(humanoid.Health + 0.5), math.floor(maxHealth + 0.5))
 end
 
 local function updatePower()
-    local ultimateValue = math.clamp((tonumber(player:GetAttribute("UltimateMeter")) or 0) / 100, 0, 1)
-    local awakeningValue = math.clamp((tonumber(player:GetAttribute("AwakeningMeter")) or 0) / 100, 0, 1)
-    local value = math.max(ultimateValue, awakeningValue)
-
+    local ultimate = math.clamp((tonumber(player:GetAttribute("UltimateMeter")) or 0) / 100, 0, 1)
+    local awakeningMeter = math.clamp((tonumber(player:GetAttribute("AwakeningMeter")) or 0) / 100, 0, 1)
+    local value = math.max(ultimate, awakeningMeter)
     powerFill.Size = UDim2.fromScale(value, 1)
-    powerFill.BackgroundColor3 = player:GetAttribute("TransformationActive") == true
-        and Theme.Colors.Warning
-        or Theme.Colors.AccentBright
-    powerText.Text = string.format(
-        "AWAKENING  %d%%",
-        math.floor(value * 100)
-    )
 
-    awakening.Text = value >= 1
-        and "AWAKENING READY"
-        or "AWAKENING"
-end
+    local active = player:GetAttribute("TransformationActive") == true
+    local ready = value >= 1
+    powerFill.BackgroundColor3 = active and Theme.Colors.Warning or Theme.Colors.AccentBright
+    powerText.Text = active
+        and "TRANSFORMAÇÃO ATIVA"
+        or string.format("DESPERTAR  %d%%", math.floor(value * 100))
 
-local function updateState()
-    local combatState = tostring(player:GetAttribute("CombatState") or "Idle")
-    local display = ({
-        Attacking = "ATTACK",
-        UsingAbility = "SKILL",
-        Blocking = "BLOCK",
-        Stunned = "STUNNED",
-        Ragdolled = "DOWN",
-        Dashing = "DASH",
-        Ultimate = "ULTIMATE",
-        Awakening = "AWAKEN"
-    })[combatState] or "READY"
-
-    state.Text = display
-    state.TextColor3 = (combatState == "Stunned" or combatState == "Ragdolled")
-        and Theme.Colors.Health
-        or Theme.Colors.Muted
+    awakening.Text = ready and "DESPERTAR" or hint("Awakening")
 end
 
 local function updateCooldowns()
     for slot = 1, 4 do
-        local left = serverCooldown("Skill" .. slot)
-        cooldownLabels[slot].Text = left > 0 and string.format("%.1fs", left) or "READY"
+        local action = "Skill" .. tostring(slot)
+        local untilAt = tonumber(player:GetAttribute("CooldownUntil_" .. action)) or 0
+        local left = math.max(0, untilAt - workspace:GetServerTimeNow())
+        local ratio = math.clamp(left / 15, 0, 1)
+
+        cooldownLabels[slot].Text = left > 0
+            and string.format("%.1f", left)
+            or "READY"
+        skillOverlays[slot].Size = UDim2.fromScale(1, ratio)
+        cooldownLabels[slot].TextColor3 = left > 0
+            and Theme.Colors.Muted
+            or Theme.Colors.Success
     end
 end
 
+local function refreshPlatform()
+    platform = ControlMap:GetPlatform(UserInputService.PreferredInput)
+    layout = Layouts:Get(platform)
+
+    actions.Visible = platform ~= "PC"
+    awakening.Visible = platform ~= "PC"
+
+    for slot = 1, 4 do
+        skillHints[slot].Text = ControlMap:GetHint(platform, "Skill" .. tostring(slot))
+    end
+
+    awakening.Text = hint("Awakening")
+end
+
+UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(refreshPlatform)
+
 player:GetAttributeChangedSignal("CharacterId"):Connect(updateCharacter)
-player:GetAttributeChangedSignal("AwakeningActive"):Connect(function()
-    updateCharacter()
-    updatePower()
-end)
-player:GetAttributeChangedSignal("UltimateActive"):Connect(function()
-    updateCharacter()
-    updatePower()
-end)
-player:GetAttributeChangedSignal("TransformationActive"):Connect(function()
-    updateCharacter()
-    updatePower()
-end)
+player:GetAttributeChangedSignal("TransformationActive"):Connect(updateCharacter)
+player:GetAttributeChangedSignal("AwakeningActive"):Connect(updateCharacter)
+player:GetAttributeChangedSignal("UltimateActive"):Connect(updateCharacter)
 player:GetAttributeChangedSignal("UltimateMeter"):Connect(updatePower)
 player:GetAttributeChangedSignal("AwakeningMeter"):Connect(updatePower)
-player:GetAttributeChangedSignal("UltimateReady"):Connect(updatePower)
-player:GetAttributeChangedSignal("AwakeningReady"):Connect(updatePower)
-player:GetAttributeChangedSignal("CombatState"):Connect(updateState)
 
 player.CharacterAdded:Connect(function(character)
     task.defer(updateHealth)
@@ -349,19 +396,13 @@ end
 updateCharacter()
 updateHealth()
 updatePower()
-updateState()
 refreshPlatform()
 
--- Loop apenas para texto/estado de cooldown; não cria Instances a cada frame.
 local accumulator = 0
 RunService.RenderStepped:Connect(function(dt)
     accumulator += dt
-    if accumulator >= 0.10 then
+    if accumulator >= 0.08 then
         accumulator = 0
         updateCooldowns()
     end
-end)
-
-UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
-    player:SetAttribute("CC_HUD_Input", tostring(UserInputService.PreferredInput))
 end)
