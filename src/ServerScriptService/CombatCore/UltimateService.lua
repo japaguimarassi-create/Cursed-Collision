@@ -1,98 +1,116 @@
 --!strict
 
-local Players=game:GetService("Players")
-local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local StateManager: any=require(script.Parent.StateManager)
-local Remotes=require(ReplicatedStorage.Shared.RemoteService):Get()
+local StateManager: any = require(script.Parent.StateManager)
+local Remotes = require(ReplicatedStorage.Shared.RemoteService):Get()
 
-local UltimateService={}
-local activeTokens:{[Player]:number}={}
+local UltimateService = {}
+local activeTokens: {[Player]: number} = {}
 
-local function setMeter(player: Player, name: string, value: number)
-    value=math.clamp(value,0,100)
-    player:SetAttribute(name,value)
+local TRANSFORMATION_DURATION = 15
+
+local function setMeter(player: Player, value: number)
+    local normalized = math.clamp(value, 0, 100)
+    player:SetAttribute("UltimateMeter", normalized)
+    player:SetAttribute("AwakeningMeter", normalized)
+
+    local ready = normalized >= 100
+    player:SetAttribute("UltimateReady", ready)
+    player:SetAttribute("AwakeningReady", ready)
 end
 
 function UltimateService:Init(player: Player)
-    setMeter(player,"UltimateMeter",0)
-    setMeter(player,"AwakeningMeter",0)
-    player:SetAttribute("UltimateReady",false)
-    player:SetAttribute("AwakeningReady",false)
-    player:SetAttribute("UltimateActive",false)
-    player:SetAttribute("AwakeningActive",false)
+    setMeter(player, 0)
+    player:SetAttribute("UltimateActive", false)
+    player:SetAttribute("AwakeningActive", false)
+    player:SetAttribute("TransformationActive", false)
+    player:SetAttribute("TransformationName", "")
 end
 
 function UltimateService:AddMeter(player: Player, damage: number)
-    local state=StateManager:Get(player)
-    if not state then return end
+    local state = StateManager:Get(player)
+    if not state then
+        return
+    end
 
-    local amount=math.clamp(tonumber(damage) or 0,0,100)
-    local ultimate=(tonumber(player:GetAttribute("UltimateMeter")) or 0)+amount*0.82
-    local awakening=(tonumber(player:GetAttribute("AwakeningMeter")) or 0)+amount*0.64
+    if player:GetAttribute("TransformationActive") == true then
+        return
+    end
 
-    setMeter(player,"UltimateMeter",ultimate)
-    setMeter(player,"AwakeningMeter",awakening)
-    player:SetAttribute("UltimateReady",ultimate>=100)
-    player:SetAttribute("AwakeningReady",awakening>=100)
+    local amount = math.clamp(tonumber(damage) or 0, 0, 100)
+    local current = tonumber(player:GetAttribute("AwakeningMeter"))
+        or tonumber(player:GetAttribute("UltimateMeter"))
+        or 0
+
+    setMeter(player, current + amount * 0.78)
 end
 
-function UltimateService:Activate(player: Player, kind: string): boolean
-    local state=StateManager:Get(player)
-    if not state then return false end
-
-    local meter=kind=="Awakening"
-        and tonumber(player:GetAttribute("AwakeningMeter")) or tonumber(player:GetAttribute("UltimateMeter"))
-
-    if (meter or 0)<100 then return false end
-    if player:GetAttribute(kind=="Awakening" and "AwakeningActive" or "UltimateActive")==true then
+function UltimateService:Activate(player: Player, _kind: string): boolean
+    local state = StateManager:Get(player)
+    if not state then
         return false
     end
-    if not StateManager:CanAct(player,os.clock()) then return false end
 
-    local phase: StateManager.Phase = if kind=="Awakening" then "Awakening" else "Ultimate"
-    if not StateManager:SetPhase(player,phase) then return false end
+    local meter = tonumber(player:GetAttribute("AwakeningMeter"))
+        or tonumber(player:GetAttribute("UltimateMeter"))
+        or 0
 
-    state.AbilityToken+=1
-    local token=state.AbilityToken
-    activeTokens[player]=token
-
-    if kind=="Awakening" then
-        setMeter(player,"AwakeningMeter",0)
-        player:SetAttribute("AwakeningReady",false)
-        player:SetAttribute("AwakeningActive",true)
-        StateManager:SetInvulnerable(player,0.85,os.clock())
-    else
-        setMeter(player,"UltimateMeter",0)
-        player:SetAttribute("UltimateReady",false)
-        player:SetAttribute("UltimateActive",true)
-        StateManager:SetInvulnerable(player,0.30,os.clock())
+    if meter < 100 then
+        return false
     end
 
-    local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if player:GetAttribute("TransformationActive") == true
+        or player:GetAttribute("AwakeningActive") == true
+        or player:GetAttribute("UltimateActive") == true then
+        return false
+    end
+
+    local now = os.clock()
+    if not StateManager:CanAct(player, now) then
+        return false
+    end
+
+    if not StateManager:SetPhase(player, "Awakening") then
+        return false
+    end
+
+    state.AbilityToken += 1
+    local token = state.AbilityToken
+    activeTokens[player] = token
+
+    setMeter(player, 0)
+    player:SetAttribute("AwakeningActive", true)
+    player:SetAttribute("UltimateActive", true)
+    player:SetAttribute("TransformationActive", true)
+    player:SetAttribute("TransformationName", player:GetAttribute("AwakeningName") or "Awakening")
+
+    StateManager:SetInvulnerable(player, 0.85, now)
+
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     if root and root:IsA("BasePart") then
-        Remotes.CombatFX:FireAllClients(kind,root.Position,{
-            actor=player.Character,
-            token=token
+        Remotes.CombatFX:FireAllClients("Awakening", root.Position, {
+            actor = player.Character,
+            token = token,
+            transformation = true
         })
     end
 
-    local duration=kind=="Awakening" and 15 or 4.5
-
-    task.delay(duration,function()
-        if not player.Parent or activeTokens[player]~=token then return end
-
-        if kind=="Awakening" then
-            player:SetAttribute("AwakeningActive",false)
-        else
-            player:SetAttribute("UltimateActive",false)
+    task.delay(TRANSFORMATION_DURATION, function()
+        if not player.Parent or activeTokens[player] ~= token then
+            return
         end
 
-        activeTokens[player]=nil
-        local latest=StateManager:Get(player)
+        player:SetAttribute("AwakeningActive", false)
+        player:SetAttribute("UltimateActive", false)
+        player:SetAttribute("TransformationActive", false)
+        player:SetAttribute("TransformationName", "")
+        activeTokens[player] = nil
 
-        if latest and latest.AbilityToken==token and latest.Phase~="Dead" then
-            StateManager:SetPhase(player,"Idle")
+        local latest = StateManager:Get(player)
+        if latest and latest.AbilityToken == token and latest.Phase ~= "Dead" then
+            StateManager:SetPhase(player, "Idle")
         end
     end)
 
@@ -103,12 +121,12 @@ Players.PlayerAdded:Connect(function(player)
     UltimateService:Init(player)
 end)
 
-for _,player in ipairs(Players:GetPlayers()) do
+for _, player in ipairs(Players:GetPlayers()) do
     UltimateService:Init(player)
 end
 
 Players.PlayerRemoving:Connect(function(player)
-    activeTokens[player]=nil
+    activeTokens[player] = nil
 end)
 
 return UltimateService
