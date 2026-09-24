@@ -1,7 +1,6 @@
 --!strict
 
 local Workspace = game:GetService("Workspace")
-local TweenService = game:GetService("TweenService")
 
 local MAP_NAME = "CursedCollisionMap"
 local DETAIL_NAME = "UrbanDetailV3"
@@ -186,7 +185,6 @@ end
 
 local function makeFacadeDetails(building: Model, index: number, center: Vector3, size: Vector3, accent: Color3)
     local frontZ = center.Z - size.Z * 0.5 - 0.28
-    local sideX = center.X + size.X * 0.5 + 0.28
     local y = center.Y
 
     for lane = -1, 1 do
@@ -242,35 +240,29 @@ local function makeFacadeDetails(building: Model, index: number, center: Vector3
     )
 end
 
-local buildingData = {
-    [1] = {Vector3.new(-70, 18, -70), Vector3.new(30, 36, 30), COLORS.Purple},
-    [2] = {Vector3.new(70, 24, -70), Vector3.new(30, 48, 30), COLORS.Crimson},
-    [3] = {Vector3.new(-70, 15, 70), Vector3.new(30, 30, 30), COLORS.Purple},
-    [4] = {Vector3.new(70, 20, 70), Vector3.new(30, 40, 30), COLORS.Crimson},
-    [5] = {Vector3.new(-70, 12, -20), Vector3.new(28, 24, 28), COLORS.Cyan},
-    [6] = {Vector3.new(70, 17, -20), Vector3.new(28, 34, 28), COLORS.Purple},
-    [7] = {Vector3.new(-70, 14, 20), Vector3.new(28, 28, 28), COLORS.Crimson},
-    [8] = {Vector3.new(70, 13, 20), Vector3.new(28, 26, 28), COLORS.Cyan},
-    [9] = {Vector3.new(-20, 11, -70), Vector3.new(30, 22, 30), COLORS.Cyan},
-    [10] = {Vector3.new(20, 15, -70), Vector3.new(30, 30, 30), COLORS.Purple},
-    [11] = {Vector3.new(-20, 12, 70), Vector3.new(30, 24, 30), COLORS.Crimson},
-    [12] = {Vector3.new(20, 18, 70), Vector3.new(30, 36, 30), COLORS.Cyan},
-    [13] = {Vector3.new(-108, 10, -48), Vector3.new(20, 20, 26), COLORS.Crimson},
-    [14] = {Vector3.new(108, 13, -48), Vector3.new(20, 26, 26), COLORS.Purple},
-    [15] = {Vector3.new(-108, 14, 48), Vector3.new(20, 28, 26), COLORS.Cyan},
-    [16] = {Vector3.new(108, 11, 48), Vector3.new(20, 22, 26), COLORS.Crimson}
+local buildingData: {[number]: {center: Vector3, size: Vector3, accent: Color3}} = {
+    [1] = {center = Vector3.new(-70, 18, -70), size = Vector3.new(30, 36, 30), accent = COLORS.Purple},
+    [2] = {center = Vector3.new(70, 24, -70), size = Vector3.new(30, 48, 30), accent = COLORS.Crimson},
+    [3] = {center = Vector3.new(-70, 15, 70), size = Vector3.new(30, 30, 30), accent = COLORS.Purple},
+    [4] = {center = Vector3.new(70, 20, 70), size = Vector3.new(30, 40, 30), accent = COLORS.Crimson},
+    [5] = {center = Vector3.new(-70, 12, -20), size = Vector3.new(28, 24, 28), accent = COLORS.Cyan},
+    [6] = {center = Vector3.new(70, 17, -20), size = Vector3.new(28, 34, 28), accent = COLORS.Purple},
+    [7] = {center = Vector3.new(-70, 14, 20), size = Vector3.new(28, 28, 28), accent = COLORS.Crimson},
+    [8] = {center = Vector3.new(70, 13, 20), size = Vector3.new(28, 26, 28), accent = COLORS.Cyan},
+    [9] = {center = Vector3.new(-20, 11, -70), size = Vector3.new(30, 22, 30), accent = COLORS.Cyan},
+    [10] = {center = Vector3.new(20, 15, -70), size = Vector3.new(30, 30, 30), accent = COLORS.Purple},
+    [11] = {center = Vector3.new(-20, 12, 70), size = Vector3.new(30, 24, 30), accent = COLORS.Crimson},
+    [12] = {center = Vector3.new(20, 18, 70), size = Vector3.new(30, 36, 30), accent = COLORS.Cyan},
+    [13] = {center = Vector3.new(-108, 10, -48), size = Vector3.new(20, 20, 26), accent = COLORS.Crimson},
+    [14] = {center = Vector3.new(108, 13, -48), size = Vector3.new(20, 26, 26), accent = COLORS.Purple},
+    [15] = {center = Vector3.new(-108, 14, 48), size = Vector3.new(20, 28, 26), accent = COLORS.Cyan},
+    [16] = {center = Vector3.new(108, 11, 48), size = Vector3.new(20, 22, 26), accent = COLORS.Crimson}
 }
 
 for index, data in pairs(buildingData) do
     local building = map:FindFirstChild("Building_" .. tostring(index))
     if building and building:IsA("Model") then
-        makeFacadeDetails(
-            building,
-            index,
-            data[1],
-            data[2],
-            data[3]
-        )
+        makeFacadeDetails(building, index, data.center, data.size, data.accent)
     end
 end
 
@@ -284,22 +276,25 @@ for _, position in ipairs({
 end
 
 for _, data in ipairs({
-    {Vector3.new(-49, 0, -48), 0},
-    {Vector3.new(49, 0, -48), 180},
-    {Vector3.new(-49, 0, 48), 0},
-    {Vector3.new(49, 0, 48), 180}
+    {position = Vector3.new(-49, 0, -48), rotation = 0, accent = COLORS.Purple},
+    {position = Vector3.new(49, 0, -48), rotation = 180, accent = COLORS.Crimson},
+    {position = Vector3.new(-49, 0, 48), rotation = 0, accent = COLORS.Cyan},
+    {position = Vector3.new(49, 0, 48), rotation = 180, accent = COLORS.Crimson}
 }) do
-    makeAwning(data[1], data[2], data[2] == 0 and COLORS.Purple or COLORS.Crimson)
+    makeAwning(data.position, data.rotation, data.accent)
 end
 
 for _, data in ipairs({
-    {Vector3.new(-55, 0, -36), 0, COLORS.Purple},
-    {Vector3.new(55, 0, -36), 180, COLORS.Crimson},
-    {Vector3.new(-55, 0, 36), 0, COLORS.Cyan},
-    {Vector3.new(55, 0, 36), 180, COLORS.Purple}
+    {position = Vector3.new(-55, 0, -36), rotation = 0, accent = COLORS.Purple},
+    {position = Vector3.new(55, 0, -36), rotation = 180, accent = COLORS.Crimson},
+    {position = Vector3.new(-55, 0, 36), rotation = 0, accent = COLORS.Cyan},
+    {position = Vector3.new(55, 0, 36), rotation = 180, accent = COLORS.Purple}
 }) do
-    makeBench(data[1], data[2])
-    makeDumpster(data[1] + Vector3.new(7, 0, data[2] == 0 and 1.5 or -1.5), data[3])
+    makeBench(data.position, data.rotation)
+    local dumpsterOffset = data.rotation == 0
+        and Vector3.new(7, 0, 1.5)
+        or Vector3.new(7, 0, -1.5)
+    makeDumpster(data.position + dumpsterOffset, data.accent)
 end
 
 local skywalk = Instance.new("Model")
