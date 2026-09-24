@@ -1,57 +1,78 @@
 --!strict
 
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AnimationController: any = require(script.Parent.AnimationController)
-local Registry = require(ReplicatedStorage.Animation.AnimationRegistry)
 
 local MovementAnimationManager = {}
 
-local bound: {[Model]: {connection: RBXScriptConnection, last: string}} = {}
+type Record = {
+    connection: RBXScriptConnection,
+    last: string,
+    accumulator: number
+}
+
+local bound: {[Model]: Record} = {}
 
 function MovementAnimationManager:Bind(character: Model)
-    if bound[character] then return end
+    if bound[character] then
+        return
+    end
 
-    local humanoid=character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
 
-local record = {last=""}
+    local record: Record = {
+        connection = nil :: any,
+        last = "",
+        accumulator = 0
+    }
 
-record.connection=RunService.Heartbeat:Connect(function()
-        if not character.Parent or humanoid.Health<=0 then
+    record.connection = RunService.Heartbeat:Connect(function(dt)
+        if not character.Parent or humanoid.Health <= 0 then
             return
         end
 
-        local speed=humanoid.MoveDirection.Magnitude * humanoid.WalkSpeed
-        local state=humanoid:GetState()
-        local nextState="Idle"
+        record.accumulator += dt
+        if record.accumulator < 0.033 then
+            return
+        end
+        record.accumulator = 0
 
-        if state==Enum.HumanoidStateType.Jumping then
-            nextState="Jump"
-        elseif state==Enum.HumanoidStateType.Freefall then
-            nextState="Fall"
-        elseif speed>humanoid.WalkSpeed*0.82 then
-            nextState="Sprint"
-        elseif speed>0.08 then
-            nextState="Walk"
+        local speed = humanoid.MoveDirection.Magnitude * humanoid.WalkSpeed
+        local state = humanoid:GetState()
+        local nextState = "Idle"
+
+        if state == Enum.HumanoidStateType.Jumping then
+            nextState = "Jump"
+        elseif state == Enum.HumanoidStateType.Freefall then
+            nextState = "Fall"
+        elseif speed > humanoid.WalkSpeed * 0.82 then
+            nextState = "Sprint"
+        elseif speed > 0.08 then
+            nextState = "Walk"
         end
 
-        if nextState~=record.last and Registry[nextState] and Registry[nextState].Id>0 then
-            AnimationController:Play(character,nextState,{},nil)
+        if nextState ~= record.last then
+            AnimationController:SetState(character, nextState)
+            record.last = nextState
         end
 
-        record.last=nextState
+        AnimationController:UpdateLocomotion(character, nextState, speed)
     end)
 
-    bound[character]=record
+    bound[character] = record
 end
 
 function MovementAnimationManager:Unbind(character: Model)
-    local record=bound[character]
-    if record then
-        record.connection:Disconnect()
-        bound[character]=nil
+    local record = bound[character]
+    if not record then
+        return
     end
+
+    record.connection:Disconnect()
+    bound[character] = nil
 end
 
 return MovementAnimationManager
