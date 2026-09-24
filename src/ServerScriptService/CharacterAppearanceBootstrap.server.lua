@@ -6,7 +6,7 @@ local StarterPlayer = game:GetService("StarterPlayer")
 StarterPlayer.LoadCharacterAppearance = true
 
 local function restoreAppearance(player: Player, character: Model)
-    local humanoid = character:WaitForChild("Humanoid", 10)
+    local humanoid = character:WaitForChild("Humanoid", 10) :: Humanoid?
     if not humanoid then
         return
     end

@@ -60,7 +60,7 @@ local function findJoints(character: Model): {[string]: Joint}
         for _, alias in ipairs(aliases) do
             local object = character:FindFirstChild(alias, true)
             if object and (object:IsA("AnimationConstraint") or object:IsA("Motor6D")) then
-                result[name] = object
+                result[name] = object :: Joint
                 break
             end
         end
