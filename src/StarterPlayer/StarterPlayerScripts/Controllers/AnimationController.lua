@@ -214,16 +214,26 @@ function AnimationController:PlaySkill(
     skill: string,
     options: any
 ): boolean
-    local slot = tonumber(options and options.slot) or 1
-    local key = if slot >= 1 and slot <= 4
-        then "Skill" .. tostring(math.floor(slot))
-        else "Skill1"
+    options = options or {}
+    local slot = tonumber(options.slot) or 1
+    local transformed = character:GetAttribute("AwakeningActive") == true
+        or character:GetAttribute("UltimateActive") == true
 
-    return self:Play(character, key, {
+    return self:Play(character, "Skill" .. tostring(math.clamp(math.floor(slot), 1, 4)), {
         move = skill,
         slot = slot,
+        transformed = transformed,
+        phase = transformed and "Awakening" or "Base",
         options = options
     })
+end
+
+function AnimationController:UpdateLocomotion(
+    character: Model,
+    state: string,
+    speed: number
+): boolean
+    return Procedural.UpdateLocomotion(character, state, speed, os.clock())
 end
 
 function AnimationController:PlayDomain(character: Model, options: any): boolean
