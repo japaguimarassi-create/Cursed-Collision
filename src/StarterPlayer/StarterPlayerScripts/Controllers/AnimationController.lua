@@ -48,9 +48,10 @@ local function fallback(character: Model, key: string, payload: any): boolean
 
     if string.match(key, "^M1_[1-4]$") then
         local combo = tonumber(string.sub(key, 4)) or 1
-        return Procedural.PlayAttack(character, "M1", {
+        return Procedural.PlayAttack(character, "M1_" .. tostring(combo), {
             combo = combo,
-            move = move
+            move = "M1_" .. tostring(combo),
+            transformed = character:GetAttribute("TransformationActive") == true
         })
     end
 
