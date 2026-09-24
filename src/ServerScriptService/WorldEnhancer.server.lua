@@ -6,8 +6,18 @@ local TweenService = game:GetService("TweenService")
 local MAP_NAME = "CursedCollisionMap"
 local DETAIL_NAME = "UrbanDetailV3"
 
-local map = Workspace:FindFirstChild(MAP_NAME)
-if not map or not map:IsA("Folder") then
+local map: Folder?
+for _ = 1, 200 do
+    local candidate = Workspace:FindFirstChild(MAP_NAME)
+    if candidate and candidate:IsA("Folder") then
+        map = candidate
+        break
+    end
+    task.wait(0.05)
+end
+
+if not map then
+    warn("[Cursed Collision] Urban Detail V3 could not find map.")
     return
 end
 
