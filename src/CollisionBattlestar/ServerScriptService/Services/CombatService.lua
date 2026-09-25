@@ -94,7 +94,11 @@ local function performHit(p:Player,s:any,name:string,d:any,scale:number?)
 	end
 
 	if name=="Heavy"or name=="Special"then
-		Destruction.BreakInBox(cf,size,name=="Special"and 2 or 1)
+		local strength=name=="Special"and 2 or 1
+		local broken=Destruction.BreakInBox(cf,size,strength)
+		if broken>0 then
+			fb(p,"BreakFX",{Position=cf.Position,Size=size,Strength=strength})
+		end
 	end
 
 	if s.Overdrive and s.Instability>=C.Combat.InstabilityMax then
