@@ -41,6 +41,25 @@ local function folder(name:string):Folder
 	return f
 end
 
+local function createSpawn(index:number,pos:Vector3)
+	local s=Instance.new("SpawnLocation")
+	s.Name=("CollisionSpawn_%d"):format(index)
+	s.Size=Vector3.new(10,1,10)
+	s.CFrame=CFrame.new(pos)
+	s.Anchored=true
+	s.CanCollide=true
+	s.CanTouch=false
+	s.CanQuery=false
+	s.Transparency=1
+	s.Material=Enum.Material.Neon
+	s.Neutral=true
+	s.AllowTeamChangeOnTouch=false
+	s.Duration=0
+	s.Enabled=true
+	s.Parent=workspace
+	return s
+end
+
 local function part(parent:Instance,name:string,size:Vector3,cf:CFrame,material:Enum.Material,color:Color3,collide:boolean?,query:boolean?):Part
 	local p=U.Part(parent,name,size,cf,material,color,true)
 	p.CanCollide=collide~=false
@@ -362,11 +381,27 @@ end
 
 function S.Init()
 	if root then return end
+	workspace:SetAttribute("CollisionBattlestarMapReady",false)
+	workspace:SetAttribute("CollisionBattlestarMapError","")
 	root=Instance.new("Folder");root.Name="CollisionBattlestarWorld";root.Parent=workspace
 	environment=folder("Environment")
 	gameplay=folder("Gameplay")
 	landmarks=folder("Landmarks")
 	regionVolumes=folder("RegionVolumes")
+
+	for index,offset in ipairs({
+		Vector3.new(0,0,0),
+		Vector3.new(20,0,0),
+		Vector3.new(-20,0,0),
+		Vector3.new(0,0,20),
+		Vector3.new(0,0,-20),
+		Vector3.new(20,0,20),
+		Vector3.new(-20,0,20),
+		Vector3.new(20,0,-20),
+		Vector3.new(-20,0,-20),
+	}) do
+		createSpawn(index,C.Region.Spawn+offset-Vector3.new(0,4.5,0))
+	end
 
 	ground(environment)
 	roads(environment)
@@ -463,6 +498,8 @@ function S.Init()
 	Lighting.ClockTime=17.5
 	Lighting.Brightness=2.2
 	Lighting.GlobalShadows=true
+	workspace:SetAttribute("CollisionBattlestarMapReady",true)
+	workspace:SetAttribute("CollisionBattlestarMapError","")
 end
 
 function S.GetSpawnPoints():{Vector3}
