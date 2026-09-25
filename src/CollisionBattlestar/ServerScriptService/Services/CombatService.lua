@@ -11,6 +11,8 @@ local function performHit(p:Player,s:any,name:string,d:any,scale:number?)
 	local seen:{[Model]=boolean}={}
 	for _,part in workspace:GetPartBoundsInBox(cf,Vector3.new(d.Width*style.Range,d.Height,range),params)do local model=U.Model(part);if model and not seen[model]then seen[model]=true;local targetHum=U.Hum(model);local targetRoot=U.Root(model);local targetPlayer=Players:GetPlayerFromCharacter(model);local enemy=model:GetAttribute("Archetype")~=nil
 		if targetHum and targetRoot and targetHum.Health>0 and ((enemy and not targetPlayer)or(targetPlayer and targetPlayer~=p))then
+			local ownerUserId=tonumber(model:GetAttribute("BattleStreakOwnerUserId"))or 0
+			if ownerUserId>0 and p.UserId~=ownerUserId then continue end
 			local targetState=targetPlayer and states[targetPlayer]
 			if targetState and targetState.ParryUntil>=os.clock()then s.Busy=os.clock()+.6;s.Momentum=U.Clamp(s.Momentum-18,0,100);fb(p,"Parried");fb(targetPlayer,"ParrySuccess");continue end
 			local styleScale=(name=="Light"and style.Light)or(name=="Heavy"and style.Heavy)or style.Special;local damage=d.Damage*styleScale*(scale or 1);if s.Overdrive then damage*=C.Combat.Actions.Overdrive.Power end
