@@ -11,6 +11,8 @@ REQUIRED=[
 "ReplicatedStorage/Shared/Util.lua",
 "ReplicatedStorage/Shared/CombatDefinitions.lua",
 "ReplicatedStorage/Shared/EventDefinitions.lua",
+"ReplicatedStorage/Shared/AnimationDefinitions.lua",
+"ReplicatedStorage/Shared/VFXDefinitions.lua",
 "ServerScriptService/Security/AntiCheatService.lua",
 "ServerScriptService/Services/PlayerDataService.lua",
 "ServerScriptService/Services/WorldStateService.lua",
@@ -25,12 +27,17 @@ REQUIRED=[
 "ServerScriptService/Services/BattleStreakService.lua",
 "ServerScriptService/Services/WorldPresentationService.lua",
 "ServerScriptService/Services/DestructionService.lua",
+"ServerScriptService/Services/HitboxService.lua",
+"ServerScriptService/Services/AnimationService.lua",
+"ServerScriptService/Services/MapAssetLoader.lua",
+"ServerScriptService/Services/MapDecorationService.lua",
 "ServerScriptService/World/WorldBuilder.server.lua",
 "ServerScriptService/Bootstrap.server.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CombatController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/MovementController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/UIController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/VFXController.client.lua",
+"StarterPlayer/StarterPlayerScripts/Client/AnimationClient.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CameraController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/ProgressMenuController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/AudioController.client.lua",
@@ -68,9 +75,29 @@ for token in ("MomentumMax","InstabilityMax","Reality","Fracture","Blade","Marti
         fail("configuration contract missing: "+token)
 
 combat=(SRC/"ServerScriptService/Services/CombatService.lua").read_text()
-for token in ("GetPartBoundsInBox","TakeDamage","Parry","Overdrive","IsBlocking","StyleToggle"):
+for token in ("Hitbox.Query","TakeDamage","Parry","Overdrive","IsBlocking","StyleToggle"):
     if token not in combat:
         fail("combat contract missing: "+token)
+
+hitbox=(SRC/"ServerScriptService/Services/HitboxService.lua").read_text()
+for token in ("GetPartBoundsInBox","workspace:Raycast","MaxParts"):
+    if token not in hitbox:
+        fail("hitbox contract missing: "+token)
+
+animation=(SRC/"ServerScriptService/Services/AnimationService.lua").read_text()
+for token in ("Animator","LoadAnimation","GetMarkerReachedSignal"):
+    if token not in animation:
+        fail("animation service contract missing: "+token)
+
+animation_client=(SRC/"StarterPlayer/StarterPlayerScripts/Client/AnimationClient.client.lua").read_text()
+for token in ("Animator","LoadAnimation","RenderStepped"):
+    if token not in animation_client:
+        fail("animation client contract missing: "+token)
+
+vfx=(SRC/"StarterPlayer/StarterPlayerScripts/Client/VFXController.client.lua").read_text()
+for token in ("TweenService","ParticleEmitter","Beam"):
+    if token not in vfx:
+        fail("vfx contract missing: "+token)
 
 world=(SRC/"ServerScriptService/Services/WorldStateService.lua").read_text()
 for token in ("Stable","Unstable","Distorted","Invaded","Collapsed","Recovering","Resonating"):
@@ -84,6 +111,9 @@ for token in ("AsterRoofLadder","VantaRoofLadder","ObservationRoofLadder"):
 battle=(SRC/"ServerScriptService/Services/BattleStreakService.lua").read_text()
 if "BattleStreakArena" not in battle:
     fail("Battle Streak arena integration missing")
+world_text=world_builder
+if world_text.count("Start Streak")!=0:
+    fail("Battle Streak prompt must be owned by BattleStreakService only")
 
 for token in ("CollisionBattlestarWorld","NeonHeights","IndustrialVerge","ShatterPark","CanalMarket","ArchiveQuarter","OldMetro","RiftCrater"):
     if token not in world_builder:
