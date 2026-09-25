@@ -41,8 +41,8 @@ local function riftZone(parent:Instance)
 		for angle=0,330,30 do
 			local rad=math.rad(angle)
 			local pos=Vector3.new(math.cos(rad)*radius,1+ringIndex*.4,-385+math.sin(rad)*(radius*.65))
-			T.Part(parent,"RiftRock",Vector3.new(7+ringIndex*2,4+ringIndex*2,7+ringIndex*2),CFrame.new(pos)*CFrame.Angles(math.rad(angle),rad,math.rad(angle*.5)),Enum.Material.Basalt,ringIndex==3 and Color3.fromRGB(63,49,74)or Color3.fromRGB(57,54,65),true,true)
-			T.Tag(T.Part(parent,"RiftMarker",Vector3.new(.1,.1,.1),CFrame.new(pos),Enum.Material.Air,Color3.new(0,0,0),false,false),"RiftPropMarker")
+			local rock=T.Part(parent,"RiftRock",Vector3.new(7+ringIndex*2,4+ringIndex*2,7+ringIndex*2),CFrame.new(pos)*CFrame.Angles(math.rad(angle),rad,math.rad(angle*.5)),Enum.Material.Basalt,ringIndex==3 and Color3.fromRGB(63,49,74)or Color3.fromRGB(57,54,65),true,true)
+			T.Tag(rock,"RiftProp")
 		end
 	end
 	local core=T.Part(parent,"RiftCore",Vector3.new(16,4,16),CFrame.new(0,3,-385),Enum.Material.Neon,P.Rift,false,false)
