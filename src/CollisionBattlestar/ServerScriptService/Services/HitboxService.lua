@@ -33,7 +33,7 @@ function S.Query(attacker:Model,cf:CFrame,size:Vector3,options:QueryOptions?):{T
 	params.MaxParts=48
 	local maxTargets=options and options.MaxTargets or 12
 	local result:{TargetInfo}={}
-	local seen:{[Model]=boolean}={}
+	local seen:{[Model]:boolean}={}
 	for _,part in ipairs(workspace:GetPartBoundsInBox(cf,size,params))do
 		local model=U.Model(part)
 		if model and model~=attacker and not seen[model]then
