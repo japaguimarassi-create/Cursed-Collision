@@ -17,16 +17,18 @@ function S.Init()
 	task.spawn(function()while task.wait(.25)do for m in pairs(active)do
 		local h=m:FindFirstChildOfClass("Humanoid");local root=m.PrimaryPart;local kind=m:GetAttribute("Archetype");local d=kind and C.Enemies[kind]
 		if not m.Parent or not h or not root or not d then active[m]=nil;continue end;if h.Health<=0 then continue end
-		local targetPlayers=Players:GetPlayers()
-		if (m:GetAttribute("BattleStreakOwnerUserId") or 0)>0 then
-			local owner=m:GetAttribute("BattleStreakOwnerUserId") or 0
-			for i,candidate in ipairs(targetPlayers) do if candidate.UserId~=owner then targetPlayers[i]=nil end end
+		local targetPlayers={}
+		local owner=m:GetAttribute("BattleStreakOwnerUserId") or 0
+		for _,candidate in ipairs(Players:GetPlayers()) do
+			if owner==0 or candidate.UserId==owner then table.insert(targetPlayers,candidate) end
 		end
 		local player=U.NearestPlayer(targetPlayers,root.Position,80)
 		if player and player.Character then local tr=U.Root(player.Character);local th=U.Hum(player.Character);if tr and th and th.Health>0 then
 			local delta=tr.Position-root.Position;local flat=Vector3.new(delta.X,0,delta.Z);local phase=(m:GetAttribute("IsBoss")and h.Health/h.MaxHealth<=.5)and 2 or 1;m:SetAttribute("Phase",phase);local speed=d.Speed*(phase==2 and 1.2 or 1)
 			if flat.Magnitude>d.Range then if flat.Magnitude>.1 then m:PivotTo(CFrame.lookAt(root.Position+flat.Unit*math.min(speed*.25,flat.Magnitude),Vector3.new(tr.Position.X,root.Position.Y,tr.Position.Z)))end
-			else local now=os.clock();if now-(attackAt[m]or 0)>=d.Cooldown then attackAt[m]=now;local parry=player:GetAttribute("ParryUntil")or 0;if now<=parry then player:SetAttribute("Momentum",U.Clamp((player:GetAttribute("Momentum")or 0)+10,0,100));game.ReplicatedStorage.CollisionRemotes.Feedback:FireClient(player,"ParrySuccess")else local block=player:GetAttribute("IsBlocking")==true;th:TakeDamage(d.Damage*(block and C.Combat.BlockMultiplier or 1)*(phase==2 and 1.15 or 1))end end end
+			else local now=os.clock();if now-(attackAt[m]or 0)>=d.Cooldown then attackAt[m]=now;local parry=player:GetAttribute("ParryUntil")or 0;local wave=tonumber(m:GetAttribute("BattleStreakWave"))or 0;local damageScale=tonumber(m:GetAttribute("BattleStreakDamageScale"))or (1+math.min(.55,wave*.04))
+			if now<=parry then player:SetAttribute("Momentum",U.Clamp((player:GetAttribute("Momentum")or 0)+10,0,100));game.ReplicatedStorage.CollisionRemotes.Feedback:FireClient(player,"ParrySuccess")
+			else local block=player:GetAttribute("IsBlocking")==true;th:TakeDamage(d.Damage*damageScale*(block and C.Combat.BlockMultiplier or 1)*(phase==2 and 1.15 or 1))end end end
 		end end
 	end end end)
 end
