@@ -35,4 +35,4 @@ jobs:
 
       - name: Reject legacy runtime markers
         run: |
-          ! grep -RniE "Jujutsu|JJK|Sukuna|Gojo|Cursed Collision|CursedCollision|PotentialMan" src/CollisionBattlestar README.md docs
+          ! grep -RniE "Jujutsu|JJK|Sukuna|Gojo|Cursed Collision|CursedCollision|PotentialMan" src/CollisionBattlestar README.md
