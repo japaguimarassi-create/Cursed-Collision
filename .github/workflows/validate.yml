@@ -14,16 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install Roblox toolchain
         uses: paradoxum-games/setup-rokit@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allow-external-github-orgs: true
-
-      - name: Install project tools
-        run: foreman install
+          cache: true
 
       - name: Structural validation
         run: python3 tools/validate_project.py
