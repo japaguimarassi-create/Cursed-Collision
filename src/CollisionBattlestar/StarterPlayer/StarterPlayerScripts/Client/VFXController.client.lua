@@ -154,6 +154,13 @@ feedback.OnClientEvent:Connect(function(key:string,value:any)
 	elseif key=="OverdriveCollapse"then
 		local pos=rootPosition()
 		if pos then burst(pos,V.Palette.HitTaken,1.5,.5);shockwave(pos,V.Palette.HitTaken,2.4)end
+	elseif key=="BreakFX"and typeof(value)=="table"and typeof(value.Position)=="Vector3"then
+		local strength=typeof(value.Strength)=="number"and value.Strength or 1
+		local size=typeof(value.Size)=="Vector3"and value.Size or Vector3.new(8,5,8)
+		local radius=math.clamp(math.max(size.X,size.Z)*.12,1.2,4)
+		burst(value.Position,V.Palette.Break,radius,.45)
+		shockwave(value.Position,V.Palette.Break,radius)
+		if strength>=2 then beamSlash(value.Position,V.Palette.Break,radius*2.5)end
 	elseif key=="GuardBreak"then
 		local pos=rootPosition()
 		if pos then beamSlash(pos,V.Palette.Heavy,2.8)end
