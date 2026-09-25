@@ -2,6 +2,13 @@
   "name": "CollisionBattlestar",
   "tree": {
     "$className": "DataModel",
+    "Workspace": {
+      "$properties": {
+        "StreamingEnabled": true,
+        "StreamingMinRadius": 64,
+        "StreamingTargetRadius": 1024
+      }
+    },
     "ReplicatedStorage": {"$path": "src/CollisionBattlestar/ReplicatedStorage"},
     "ServerScriptService": {"$path": "src/CollisionBattlestar/ServerScriptService"},
     "StarterPlayer": {
