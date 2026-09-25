@@ -1,4 +1,4 @@
-name: Cursed Collision Validation
+name: Collision Battlestar Validation
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
       - name: Build Rojo place
         run: |
           mkdir -p build
-          rojo build default.project.json --output build/CursedCollision.rbxl
+          rojo build default.project.json --output build/CollisionBattlestar.rbxl
 
       - name: Generate Rojo sourcemap
         run: rojo sourcemap default.project.json --output sourcemap.json
@@ -54,7 +54,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: cursed-collision-validation
+          name: collision-battlestar-validation
           path: |
             build/CursedCollision.rbxl
             sourcemap.json
