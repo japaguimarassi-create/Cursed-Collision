@@ -2,7 +2,7 @@
 
 Where Worlds Collide.
 
-Collision Battlestar is now the active Roblox project in this repository. The previous Cursed Collision implementation is no longer referenced by the active Rojo manifest.
+Collision Battlestar is now the active Roblox project in this repository. The active manifest points exclusively to the Collision Battlestar runtime.
 
 The active vertical-slice foundation includes:
 - Fracture District procedural world
