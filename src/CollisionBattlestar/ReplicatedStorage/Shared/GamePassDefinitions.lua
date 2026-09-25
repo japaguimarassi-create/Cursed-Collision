@@ -29,7 +29,7 @@ local P:DefinitionMap={
 	CinematicIntros={Id=1999004500,TargetPrice=55,Category="Premium",Actions={"UseCinematicIntro"},Enabled=true},
 	CharacterPosePack={Id=1999172493,TargetPrice=20,Category="Cosmetic",Actions={"UseCharacterPose"},Enabled=true},
 	DamageNumbersPlus={Id=1998020520,TargetPrice=24,Category="Cosmetic",Actions={"UsePremiumDamageNumbers"},Enabled=true},
-	PremiumCrosshair={Id=1998026507,TargetPrice=22,Category="Cosmetic",Actions={"UsePremiumCrosshair"},Enabled=false}}
+	PremiumCrosshair={Id=1998026507,TargetPrice=22,Category="Cosmetic",Actions={"UsePremiumCrosshair"},Enabled=true}
 }
 
 local A:{[string]:string}={}
