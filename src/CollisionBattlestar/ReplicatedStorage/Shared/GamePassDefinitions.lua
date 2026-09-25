@@ -18,7 +18,18 @@ local P:DefinitionMap={
 	InventoryPlus={Id=0,TargetPrice=25,Category="Convenience",Actions={"UseExtraInventory"},Enabled=false},
 	QuestExpansion={Id=0,TargetPrice=20,Category="Convenience",Actions={"UseExtraQuestSlots"},Enabled=false},
 	CreditBooster={Id=0,TargetPrice=30,Category="Convenience",Actions={"CreditBoost"},Enabled=false},
-	Founder={Id=0,TargetPrice=60,Category="Exclusive",Actions={"FounderCosmetics"},Enabled=false}}
+	Founder={Id=0,TargetPrice=60,Category="Exclusive",Actions={"FounderCosmetics"},Enabled=false},
+	PremiumCombatHUD={Id=0,TargetPrice=29,Category="Cosmetic",Actions={"UsePremiumCombatHUD"},Enabled=false},
+	RealityAura={Id=0,TargetPrice=45,Category="Cosmetic",Actions={"UseRealityAura"},Enabled=false},
+	VictoryPosePack={Id=0,TargetPrice=25,Category="Cosmetic",Actions={"UseVictoryPose"},Enabled=false},
+	BattleStreakBanner={Id=0,TargetPrice=35,Category="Cosmetic",Actions={"UseBattleStreakBanner"},Enabled=false},
+	ProfileShowcase={Id=0,TargetPrice=40,Category="Cosmetic",Actions={"UseProfileShowcase"},Enabled=false},
+	LobbyAnimations={Id=0,TargetPrice=30,Category="Cosmetic",Actions={"UseLobbyAnimation"},Enabled=false},
+	SpectatorFX={Id=0,TargetPrice=30,Category="Cosmetic",Actions={"UseSpectatorFX"},Enabled=false},
+	CinematicIntros={Id=0,TargetPrice=55,Category="Premium",Actions={"UseCinematicIntro"},Enabled=false},
+	CharacterPosePack={Id=0,TargetPrice=20,Category="Cosmetic",Actions={"UseCharacterPose"},Enabled=false},
+	DamageNumbersPlus={Id=0,TargetPrice=24,Category="Cosmetic",Actions={"UsePremiumDamageNumbers"},Enabled=false},
+	PremiumCrosshair={Id=0,TargetPrice=22,Category="Cosmetic",Actions={"UsePremiumCrosshair"},Enabled=false}}
 }
 
 local A:{[string]:string}={}
