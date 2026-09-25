@@ -15,36 +15,35 @@ local function animator(model:Model):Animator?
 	return created
 end
 
-local function configured(def:Animation.Definition?):boolean
-	return def~=nil and def.Id~=""
-end
-
 local function track(model:Model,name:string):AnimationTrack?
-	local def=Animation.Get(name)
-	if not configured(def) then return nil end
+	local definition=Animation.Get(name)
+	if not definition or definition.Id=="" then return nil end
 	local a=animator(model)
 	if not a then return nil end
 	local bucket=cache[model]
-	if not bucket then bucket={};cache[model]=bucket end
-	if bucket[name] then return bucket[name] end
+	if not bucket then
+		bucket={}
+		cache[model]=bucket
+	end
+	local existing=bucket[name]
+	if existing then return existing end
 	local animation=Instance.new("Animation")
 	animation.Name="CBS_"..name
-	animation.AnimationId=def.Id
+	animation.AnimationId=definition.Id
 	local ok,result=pcall(function()
 		return a:LoadAnimation(animation)
 	end)
 	animation:Destroy()
 	if not ok or not result then return nil end
 	local loaded=result::AnimationTrack
-	loaded.Priority=def.Priority
-	loaded.Looped=def.Looped
+	loaded.Priority=definition.Priority
+	loaded.Looped=definition.Looped
 	bucket[name]=loaded
 	return loaded
 end
 
 function S.Register(model:Model)
-	if not animator(model) then return end
-	if cache[model] then return end
+	if not animator(model) or cache[model] then return end
 	cache[model]={}
 	model.Destroying:Connect(function()
 		cache[model]=nil
@@ -62,14 +61,15 @@ end
 function S.Stop(model:Model,name:string,fadeTime:number?)
 	local bucket=cache[model]
 	local loaded=bucket and bucket[name]
-	if loaded and loaded.IsPlaying then loaded:Stop(fadeTime or .08) end
+	if loaded and loaded.IsPlaying then loaded:Stop(fadeTime or .08)end
 end
 
 function S.StopActions(model:Model,fadeTime:number?)
 	local bucket=cache[model]
 	if not bucket then return end
 	for name,loaded in pairs(bucket)do
-		if Animation.Get(name) and Animation.Get(name)!.Priority>=Enum.AnimationPriority.Action and loaded.IsPlaying then
+		local definition=Animation.Get(name)
+		if definition and definition.Priority>=Enum.AnimationPriority.Action and loaded.IsPlaying then
 			loaded:Stop(fadeTime or .08)
 		end
 	end
