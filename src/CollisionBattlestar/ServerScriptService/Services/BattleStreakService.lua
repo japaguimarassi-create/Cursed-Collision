@@ -37,7 +37,7 @@ end
 function Service.Init(enemy)
 	enemyService=enemy
 	local folder=workspace:FindFirstChild("BattleStreakArena");local start=folder and folder:FindFirstChild("StartPoint")
-	if start and start:IsA("BasePart")then local prompt=Instance.new("ProximityPrompt");prompt.ActionText="Start Streak";prompt.ObjectText="BATTLE STREAK";prompt.HoldDuration=.6;prompt.MaxActivationDistance=12;prompt.Parent=start;prompt.Triggered:Connect(function(p)if sessions[p]then return end;sessions[p]={Wave=1,Alive=0,Spawned={}};p:SetAttribute("BattleStreakActive",true);notify(p,"BattleStreakStart","BATTLE STREAK • WAVE 1");spawnWave(p)end)end
+	if start and start:IsA("BasePart")then local prompt=Instance.new("ProximityPrompt");prompt.ActionText="Start Streak";prompt.ObjectText="BATTLE STREAK";prompt.HoldDuration=.6;prompt.MaxActivationDistance=12;prompt.Parent=start;prompt.Triggered:Connect(function(p)if sessions[p]then return end;local character=p.Character;local humanoid=character and character:FindFirstChildOfClass("Humanoid");if not humanoid or humanoid.Health<=0 then return end;sessions[p]={Wave=1,Alive=0,Spawned={}};p:SetAttribute("BattleStreakActive",true);notify(p,"BattleStreakStart","BATTLE STREAK • WAVE 1");spawnWave(p);humanoid.Died:Once(function()stop(p,"BATTLE STREAK FAILED")end)end)end
 	enemy.Defeated.Event:Connect(function(model,killerUserId,kind,reward)
 		local p=Players:GetPlayerByUserId(killerUserId);local s=p and sessions[p];if not s or not s.Spawned[model]then return end
 		s.Spawned[model]=nil;s.Alive-=1
