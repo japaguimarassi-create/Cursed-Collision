@@ -76,7 +76,9 @@ for token in ("Stable","Unstable","Distorted","Invaded","Collapsed","Recovering"
         fail("Collision State missing: "+token)
 
 world_builder=(SRC/"ServerScriptService/World/WorldBuilder.server.lua").read_text()
-for token in ("GroundWest","GroundEast","GroundNorth","GroundSouth","MetroFloor","SkybridgeWest","SkybridgeNorth","ShatterPark","CanalWater","RiftCore","BossArena"):    if token not in world_builder:        fail("map contract missing: "+token)
+for token in ("GroundWest","GroundEast","GroundNorth","GroundSouth","MetroFloor","SkybridgeWest","SkybridgeNorth","ShatterPark","CanalWater","RiftCore","BossArena"):
+    if token not in world_builder:
+        fail("map contract missing: "+token)
 battle=(SRC/"ServerScriptService/Services/BattleStreakService.lua").read_text()
 for token in ("BattleStreak","spawnWave","makeWave","SetBattleStreakBest","BATTLE STREAK"):
     if token.lower() not in battle.lower():
