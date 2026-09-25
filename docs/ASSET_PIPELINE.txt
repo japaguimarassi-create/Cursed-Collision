@@ -1,0 +1,89 @@
+COLLISION BATTLESTAR ASSET PIPELINE
+================================
+
+Repository target
+japaguimarassi-create/Cursed-Collision
+
+Purpose
+Use external references for city design, animation timing, audio, VFX and cinematic framing without
+loading untrusted runtime content or bloating the mobile-first game repository.
+
+ROBLOX
+------
+Creator Store documentation:
+https://create.roblox.com/docs/production/creator-store
+
+Audio documentation:
+https://create.roblox.com/docs/audio
+
+Asset documentation:
+https://create.roblox.com/docs/projects/assets
+
+InsertService / AssetService documentation:
+https://create.roblox.com/docs/reference/engine/classes/AssetService
+
+Important
+- Runtime third-party model loading through AssetService:LoadAssetAsync requires the experience setting
+  Allow Loading Third Party Assets.
+- Do not depend on remote model loading for the default map.
+- Imported audio must be owned/authorized for use.
+- External models should be inspected for scripts, collision fidelity and part count before import.
+
+CC0 CITY / AUDIO SOURCES RESEARCHED
+------------------------------------
+Kenney City Kit (Commercial)
+https://kenney.nl/assets/city-kit-commercial
+50 files, CC0
+
+Kenney City Kit (Suburban)
+https://kenney.nl/assets/city-kit-suburban
+40 files, CC0
+
+Kenney City Kit (Roads)
+https://kenney.nl/assets/city-kit-roads
+90 files, CC0
+
+Kenney Impact Sounds
+https://kenney.nl/assets/impact-sounds
+130 files, CC0
+
+Kenney Car Kit
+https://kenney.nl/assets/car-kit
+45 files, CC0
+
+REFERENCE VIDEO SOURCES
+-----------------------
+Cyberpunk City, itch.io
+https://hearthing-dev.itch.io/cyberpunk-city
+A 31-second MP4 reference was listed on the page.
+
+Pixabay cyberpunk city video
+https://pixabay.com/pt/videos/cyberpunk-a-noite-da-cidade-95476/
+MP4, free under the Pixabay Content License.
+
+FILE-TYPE POLICY
+----------------
+TXT/MD: safe for research manifests and implementation notes.
+MP3/OGG/WAV/FLAC: import into Roblox only after rights and moderation requirements are satisfied.
+MP4/WEBM: use as reference or production material outside the runtime repository; Roblox video assets
+have their own platform workflow.
+ZIP: use for source packs and CI artifacts, then extract only approved content.
+
+WHY BINARY PACKS ARE NOT IN THE RUNTIME TREE
+---------------------------------------------
+The project is mobile-first and Rojo-managed. Binary packs are better treated as source/reference
+materials than as live replicated assets. This keeps cloning, review and CI deterministic.
+
+CURRENT RUNTIME APPROACH
+------------------------
+- Map geometry: procedural Parts and modular builder functions.
+- Combat VFX: client-side generated effects.
+- Server combat: authoritative spatial query plus optional line-of-sight raycast.
+- Animation: Animator + AnimationTrack when a valid animation ID is configured.
+- Fallback animation: local Motor6D transform when a custom animation ID is not configured.
+
+NEXT ASSET IMPORT STEP
+----------------------
+Create or upload approved animation/audio assets in the Roblox Creator Hub, then populate:
+src/CollisionBattlestar/ReplicatedStorage/Shared/AnimationDefinitions.lua
+and the audio definitions used by AudioController.client.lua.

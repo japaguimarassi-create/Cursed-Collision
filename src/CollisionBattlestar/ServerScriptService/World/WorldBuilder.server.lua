@@ -440,7 +440,6 @@ function S.Init()
 	local streakFloor=U.Part(streak,"Floor",Vector3.new(120,2,90),CFrame.new(-365,1,330),Enum.Material.Slate,Color3.fromRGB(46,49,60),true)
 	local ring=U.Part(streak,"Ring",Vector3.new(72,.6,72),CFrame.new(-365,2,330),Enum.Material.Neon,PALETTE.Neon,true);ring.Shape=Enum.PartType.Cylinder;ring.Transparency=.55;ring.CanTouch=false;ring.CanQuery=false
 	local start=U.Part(streak,"StartPoint",Vector3.new(5,4,5),CFrame.new(-365,5,330),Enum.Material.Neon,PALETTE.Neon,false,false)
-	local prompt=Instance.new("ProximityPrompt");prompt.ActionText="Start Streak";prompt.ObjectText="BATTLE STREAK";prompt.HoldDuration=.6;prompt.MaxActivationDistance=12;prompt.Parent=start
 	for angle=0,315,45 do
 		local a=math.rad(angle);local pos=Vector3.new(-365+math.cos(a)*42,5,330+math.sin(a)*28)
 		U.Part(streak,"ArenaPillar",Vector3.new(3,10,3),CFrame.new(pos),Enum.Material.Metal,PALETTE.DarkMetal,true)

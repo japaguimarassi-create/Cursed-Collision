@@ -6,14 +6,21 @@
       "$properties": {
         "StreamingEnabled": true,
         "StreamingMinRadius": 64,
-        "StreamingTargetRadius": 1024
+        "StreamingTargetRadius": 1024,
+        "StreamOutBehavior": "Opportunistic"
       }
     },
-    "ReplicatedStorage": {"$path": "src/CollisionBattlestar/ReplicatedStorage"},
-    "ServerScriptService": {"$path": "src/CollisionBattlestar/ServerScriptService"},
+    "ReplicatedStorage": {
+      "$path": "src/CollisionBattlestar/ReplicatedStorage"
+    },
+    "ServerScriptService": {
+      "$path": "src/CollisionBattlestar/ServerScriptService"
+    },
     "StarterPlayer": {
       "$className": "StarterPlayer",
-      "StarterPlayerScripts": {"$path": "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts"}
+      "StarterPlayerScripts": {
+        "$path": "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts"
+      }
     }
   }
 }
