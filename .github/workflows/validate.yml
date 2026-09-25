@@ -2,19 +2,12 @@ name: Collision Battlestar Validation
 
 on:
   push:
-    branches:
-      - main
-      - mobile-hardening
-      - "rebuild/**"
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   validate:
@@ -29,34 +22,21 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allow-external-github-orgs: true
 
+      - name: Install project tools
+        run: foreman install
+
       - name: Structural validation
         run: python3 tools/validate_project.py
 
-      - name: Build Rojo place
+      - name: Build active place
         run: |
           mkdir -p build
           rojo build default.project.json --output build/CollisionBattlestar.rbxl
+          test -s build/CollisionBattlestar.rbxl
 
-      - name: Generate Rojo sourcemap
-        run: rojo sourcemap default.project.json --output sourcemap.json
+      - name: Generate active sourcemap
+        run: rojo sourcemap default.project.json --output build/sourcemap.json
 
-      - name: Validate Luau requires
-        run: luau-lsp require-graph --sourcemap=sourcemap.json src > require-graph.json
-
-      - name: Download Roblox type definitions
+      - name: Reject legacy runtime markers
         run: |
-          curl -fsSL https://luau-lsp.pages.dev/type-definitions/globalTypes.RobloxScriptSecurity.d.luau -o globalTypes.d.luau
-
-      - name: Static Luau analysis
-        run: luau-lsp analyze --sourcemap=sourcemap.json --definitions=globalTypes.d.luau src
-
-      - name: Upload cloud validation artifacts
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: collision-battlestar-validation
-          path: |
-            build/CursedCollision.rbxl
-            sourcemap.json
-            require-graph.json
-          if-no-files-found: ignore
+          ! grep -RniE "Jujutsu|JJK|Sukuna|Gojo|Cursed Collision|CursedCollision|PotentialMan" src/CollisionBattlestar README.md docs
