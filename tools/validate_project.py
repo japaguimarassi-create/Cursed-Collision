@@ -22,6 +22,7 @@ REQUIRED=[
 "ServerScriptService/Services/MovementService.lua",
 "ServerScriptService/Services/NPCService.lua",
 "ServerScriptService/Services/AchievementService.lua",
+"ServerScriptService/Services/BattleStreakService.lua",
 "ServerScriptService/Services/DestructionService.lua",
 "ServerScriptService/World/WorldBuilder.server.lua",
 "ServerScriptService/Bootstrap.server.lua",
@@ -76,6 +77,10 @@ for token in ("Stable","Unstable","Distorted","Invaded","Collapsed","Recovering"
 
 world_builder=(SRC/"ServerScriptService/World/WorldBuilder.server.lua").read_text()
 for token in ("GroundWest","GroundEast","GroundNorth","GroundSouth","MetroFloor","SkybridgeWest","SkybridgeNorth","ShatterPark","CanalWater","RiftCore","BossArena"):    if token not in world_builder:        fail("map contract missing: "+token)
+battle=(SRC/"ServerScriptService/Services/BattleStreakService.lua").read_text()
+for token in ("BattleStreak","spawnWave","makeWave","SetBattleStreakBest","BATTLE STREAK"):
+    if token.lower() not in battle.lower():
+        fail("Battle Streak contract missing: "+token)
 event=(SRC/"ServerScriptService/Services/EventService.lua").read_text()
 for token in ("RealityBreak","CollisionChain","Warning","Escalation","Climax","Resolved"):
     if token.lower() not in event.lower():
