@@ -23,6 +23,7 @@ REQUIRED=[
 "ServerScriptService/Services/NPCService.lua",
 "ServerScriptService/Services/AchievementService.lua",
 "ServerScriptService/Services/BattleStreakService.lua",
+"ServerScriptService/Services/WorldPresentationService.lua",
 "ServerScriptService/Services/DestructionService.lua",
 "ServerScriptService/World/WorldBuilder.server.lua",
 "ServerScriptService/Bootstrap.server.lua",
@@ -77,6 +78,14 @@ for token in ("Stable","Unstable","Distorted","Invaded","Collapsed","Recovering"
         fail("Collision State missing: "+token)
 
 world_builder=(SRC/"ServerScriptService/World/WorldBuilder.server.lua").read_text()
+for token in ("AsterRoofLadder","VantaRoofLadder","ObservationRoofLadder","BattleStreakArena"):
+    if token not in world_builder:
+        fail("map verticality contract missing: "+token)
+
+for token in ("CollisionBattlestarWorld","NeonHeights","IndustrialVerge","ShatterPark","CanalMarket","ArchiveQuarter","OldMetro","RiftCrater"):
+    if token not in world_builder:
+        fail("district contract missing: "+token)
+
 for token in ("GroundWest","GroundEast","GroundNorth","GroundSouth","MetroFloor","SkybridgeWest","SkybridgeNorth","ShatterPark","CanalWater","RiftCore","BossArena"):
     if token not in world_builder:
         fail("map contract missing: "+token)
