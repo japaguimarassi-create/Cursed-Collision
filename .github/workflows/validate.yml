@@ -24,6 +24,14 @@ jobs:
       - name: Structural validation
         run: python3 tools/validate_project.py
 
+
+      - name: Compile every active Luau file
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            luau-compile --only-parse "$file" >/dev/null
+          done < <(find src/CollisionBattlestar -type f -name '*.lua' -print0)
+
       - name: Build active place
         run: |
           mkdir -p build
