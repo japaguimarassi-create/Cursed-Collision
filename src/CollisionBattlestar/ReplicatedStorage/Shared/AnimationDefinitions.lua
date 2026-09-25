@@ -2,7 +2,7 @@
 local A={}
 export type Definition={Id:string,Looped:boolean,Priority:Enum.AnimationPriority,Speed:number}
 
-A.Tracks={[string]:Definition}={
+local Tracks:{[string]:Definition}={
 	Light1={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1},
 	Light2={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1.02},
 	Light3={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1.04},
@@ -26,5 +26,7 @@ function A.GetId(name:string):string?
 	if not definition or definition.Id=="" then return nil end
 	return definition.Id
 end
+
+A.Tracks=Tracks
 
 return A
