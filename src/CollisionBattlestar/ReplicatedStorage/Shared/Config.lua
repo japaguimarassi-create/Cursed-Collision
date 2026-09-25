@@ -1,7 +1,7 @@
 --!strict
 local C={}
 C.GameName="Collision Battlestar";C.SchemaVersion=1
-C.Region={Name="Fracture District",Size=500,Spawn=Vector3.new(0,5,35),EventAnchor=Vector3.new(0,6,-35)}
+C.Region={Name="Fracture District",Size=960,Spawn=Vector3.new(0,5,60),EventAnchor=Vector3.new(0,6,-286)}
 C.Movement={WalkSpeed=16,SprintSpeed=23}
 C.Combat={BaseWalkSpeed=16,MaxRequestRate=18,MomentumMax=100,InstabilityMax=100,ParryWindow=.22,BlockMultiplier=.20,Actions={
 Light={Startup=.10,Recovery=.22,Cooldown=.16,Damage=9,Range=8,Width=6,Height=6,Knockback=22,MomentumGain=7},
