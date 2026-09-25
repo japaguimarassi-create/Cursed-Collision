@@ -1,8 +1,8 @@
 --!strict
 local Players=game:GetService("Players");local CollectionService=game:GetService("CollectionService");local C=require(game.ReplicatedStorage.Shared.Config);local U=require(game.ReplicatedStorage.Shared.Util)
 local S={};S.Defeated=Instance.new("BindableEvent");local folder:Folder?;local active:{[Model]=boolean}={};local attackAt:{[Model]=number}={}
-local function make(kind:string,pos:Vector3,boss:boolean):Model
-	local d=C.Enemies[kind];local m=Instance.new("Model");m.Name=kind;m:SetAttribute("Archetype",kind);m:SetAttribute("LastHitUserId",0);m:SetAttribute("IsBoss",boss);m:SetAttribute("Phase",1)
+local function make(kind:string,pos:Vector3,boss:boolean,ownerUserId:number?):Model
+	local d=C.Enemies[kind];local m=Instance.new("Model");m.Name=kind;m:SetAttribute("Archetype",kind);m:SetAttribute("LastHitUserId",0);m:SetAttribute("IsBoss",boss);m:SetAttribute("Phase",1);m:SetAttribute("BattleStreakOwnerUserId",ownerUserId or 0)
 	local root=U.Part(m,"HumanoidRootPart",Vector3.new(2.5,3,2.5),CFrame.new(pos),Enum.Material.Metal,d.Color,false);root.Transparency=1;root.CanCollide=false
 	local core=U.Part(m,"Core",boss and Vector3.new(7,8,7)or Vector3.new(3.5,4,3.5),CFrame.new(pos+Vector3.new(0,2,0)),Enum.Material.Neon,d.Color,false)
 	local head=U.Part(m,"Head",Vector3.new(2.2,2.2,2.2),CFrame.new(pos+Vector3.new(0,5,0)),Enum.Material.Neon,Color3.new(1,1,1),false);head.Shape=Enum.PartType.Ball;head.CanCollide=false
@@ -17,7 +17,12 @@ function S.Init()
 	task.spawn(function()while task.wait(.25)do for m in pairs(active)do
 		local h=m:FindFirstChildOfClass("Humanoid");local root=m.PrimaryPart;local kind=m:GetAttribute("Archetype");local d=kind and C.Enemies[kind]
 		if not m.Parent or not h or not root or not d then active[m]=nil;continue end;if h.Health<=0 then continue end
-		local player=U.NearestPlayer(Players:GetPlayers(),root.Position,80)
+		local targetPlayers=Players:GetPlayers()
+		if (m:GetAttribute("BattleStreakOwnerUserId") or 0)>0 then
+			local owner=m:GetAttribute("BattleStreakOwnerUserId") or 0
+			for i,candidate in ipairs(targetPlayers) do if candidate.UserId~=owner then targetPlayers[i]=nil end end
+		end
+		local player=U.NearestPlayer(targetPlayers,root.Position,80)
 		if player and player.Character then local tr=U.Root(player.Character);local th=U.Hum(player.Character);if tr and th and th.Health>0 then
 			local delta=tr.Position-root.Position;local flat=Vector3.new(delta.X,0,delta.Z);local phase=(m:GetAttribute("IsBoss")and h.Health/h.MaxHealth<=.5)and 2 or 1;m:SetAttribute("Phase",phase);local speed=d.Speed*(phase==2 and 1.2 or 1)
 			if flat.Magnitude>d.Range then if flat.Magnitude>.1 then m:PivotTo(CFrame.lookAt(root.Position+flat.Unit*math.min(speed*.25,flat.Magnitude),Vector3.new(tr.Position.X,root.Position.Y,tr.Position.Z)))end
@@ -25,8 +30,8 @@ function S.Init()
 		end end
 	end end end)
 end
-function S.Spawn(kind:string,pos:Vector3):Model?if not folder or not C.Enemies[kind]then return nil end;return make(kind,pos,false)end
-function S.SpawnMiniBoss(pos:Vector3):Model?if not folder then return nil end;return make("MiniBoss",pos,true)end
-function S.SpawnBoss(pos:Vector3):Model?if not folder then return nil end;return make("Boss",pos,true)end
+function S.Spawn(kind:string,pos:Vector3,ownerUserId:number?):Model?if not folder or not C.Enemies[kind]then return nil end;return make(kind,pos,false,ownerUserId)end
+function S.SpawnMiniBoss(pos:Vector3,ownerUserId:number?):Model?if not folder then return nil end;return make("MiniBoss",pos,true,ownerUserId)end
+function S.SpawnBoss(pos:Vector3,ownerUserId:number?):Model?if not folder then return nil end;return make("Boss",pos,true,ownerUserId)end
 function S.CountAlive():number local n=0;for _ in pairs(active)do n+=1 end;return n end
 return S
