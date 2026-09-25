@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Roblox toolchain
-        uses: Roblox/setup-foreman@v3
+        uses: paradoxum-games/setup-rokit@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           allow-external-github-orgs: true
