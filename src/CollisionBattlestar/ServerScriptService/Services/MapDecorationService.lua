@@ -4,7 +4,7 @@ local U=require(R.Shared.Util)
 local Catalog=require(R.Shared.MapAssetCatalog)
 
 local S={}
-local function prop(parent:Instance,name:string,pos:Vector3,size:Vector3,color:Color3,material:Enum.Material):BasePart
+local function prop(parent:Instance,name:string,pos:Vector3,size:Vector3,color:Color3,material:Enum.Material):Part
 	local p=U.Part(parent,name,size,CFrame.new(pos),material,color,true)
 	p.CanTouch=false
 	p.CanQuery=false
