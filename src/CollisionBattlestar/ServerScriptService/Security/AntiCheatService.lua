@@ -1,6 +1,6 @@
 --!strict
 local Players=game:GetService("Players")
-local C=require(game.ReplicatedStorage.CBShared.Config)
+local C=require(game.ReplicatedStorage.Shared.Config)
 local D=require(game.ReplicatedStorage.CBShared.CombatDefinitions)
 local S={};local windows:{[Player]:{t:number,n:number}}={}
 function S.Init()Players.PlayerRemoving:Connect(function(p)windows[p]=nil end)end
