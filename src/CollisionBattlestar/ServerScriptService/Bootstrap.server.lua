@@ -1,5 +1,5 @@
 --!strict
-local R=game:GetService("ReplicatedStorage")
+local R=game:GetService("ReplicatedStorage");workspace.StreamingEnabled=true;workspace.StreamingMinRadius=64;workspace.StreamingTargetRadius=768
 local remotes=R:FindFirstChild("CollisionRemotes")or Instance.new("Folder");remotes.Name="CollisionRemotes";remotes.Parent=R
 for _,name in {"CombatRequest","Feedback","WorldState"}do if not remotes:FindFirstChild(name)then local r=Instance.new("RemoteEvent");r.Name=name;r.Parent=remotes end end
 local Players=game:GetService("Players")
