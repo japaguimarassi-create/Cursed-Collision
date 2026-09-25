@@ -123,7 +123,7 @@ task.spawn(function()
 		mapBanner.Text=ready and"FRACTURE DISTRICT • ONLINE"or"FRACTURE DISTRICT • LOADING"
 		mapBanner.TextColor3=ready and Color3.fromRGB(145,225,255)or Color3.fromRGB(255,205,115)
 		if ready and not announced then announced=true;notify("FRACTURE DISTRICT • ONLINE",1.4)end
-		state.Text=("FRACTURE DISTRICT • %s • %s"):format(string.upper(tostring(workspace:GetAttribute("CollisionState")or"Stable")),tostring(p:GetAttribute("CombatStyle")or"Blade"))
+		state.Text=("v%s • Roblox %d • %s • %s • %s"):format(tostring(workspace:GetAttribute("CollisionBattlestarBuildVersion")or"?"),tonumber(workspace:GetAttribute("CollisionBattlestarPlaceVersion"))or 0,string.upper(tostring(workspace:GetAttribute("CollisionState")or"Stable")),tostring(p:GetAttribute("CombatStyle")or"Blade"),workspace:GetAttribute("CollisionBattlestarMapReady")==true and"MAP READY"or"MAP LOADING")
 		local q=p:GetAttribute("QuestProgress")or 0;local qt=p:GetAttribute("QuestTarget")or 6;quest.Text=p:GetAttribute("QuestCompleted")and"FIRST RESPONSE • COMPLETE"or("FIRST RESPONSE • %d / %d"):format(q,qt)
 		local best=p:GetAttribute("BattleStreakBest")or 0;if not p:GetAttribute("BattleStreakActive")then streak.Text=("BATTLE STREAK • BEST %d"):format(best)end
 		local ls=p:FindFirstChild("leaderstats");local cr=ls and ls:FindFirstChild("Credits");credits.Text=cr and cr:IsA("IntValue")and("%d CR"):format(cr.Value)or"0 CR"
