@@ -1,4 +1,4 @@
-name: Roblox Connection Check
+name: Collision Battlestar Roblox Connection Check
 
 on:
   workflow_dispatch:
