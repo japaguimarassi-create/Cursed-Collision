@@ -78,9 +78,12 @@ for token in ("Stable","Unstable","Distorted","Invaded","Collapsed","Recovering"
         fail("Collision State missing: "+token)
 
 world_builder=(SRC/"ServerScriptService/World/WorldBuilder.server.lua").read_text()
-for token in ("AsterRoofLadder","VantaRoofLadder","ObservationRoofLadder","BattleStreakArena"):
+for token in ("AsterRoofLadder","VantaRoofLadder","ObservationRoofLadder"):
     if token not in world_builder:
         fail("map verticality contract missing: "+token)
+battle=(SRC/"ServerScriptService/Services/BattleStreakService.lua").read_text()
+if "BattleStreakArena" not in battle:
+    fail("Battle Streak arena integration missing")
 
 for token in ("CollisionBattlestarWorld","NeonHeights","IndustrialVerge","ShatterPark","CanalMarket","ArchiveQuarter","OldMetro","RiftCrater"):
     if token not in world_builder:
