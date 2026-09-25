@@ -1,117 +1,22 @@
 --!strict
-
-local Config = {
-    Combat = {
-        M1 = {
-            Cooldown = 0.20,
-            ComboReset = 0.92,
-            MaxCombo = 4,
-            Damage = {5, 5, 7, 10},
-            Range = 6.8,
-            Width = 5.2,
-            Height = 5.8,
-            Stun = {0.20, 0.22, 0.25, 0.42},
-            Knockback = {8, 9, 11, 48},
-            Lift = {1.5, 1.5, 2.0, 8},
-            FinalRagdoll = 0.38
-        },
-        Dash = {
-            Cooldown = 0.78,
-            Duration = 0.16,
-            Invulnerable = 0.115,
-            ForwardSpeed = 78,
-            BackSpeed = 66,
-            SideSpeed = 72
-        },
-        Block = {
-            WalkSpeed = 8,
-            DamageMultiplier = 0.10
-        },
-        Special = {
-            Cooldown = 4.0
-        },
-        Skill = {
-            MinCooldown = 0.25,
-            MaxCooldown = 10.0
-        },
-        Hitstop = 0.045,
-        Marker = {
-            EarlyTolerance = 0.08,
-            LateTolerance = 0.18
-        },
-        PerfectBlock = {
-            Window = 0.16,
-            Stun = 0.32,
-            GuardBreakStun = 0.68
-        },
-        MarkerTiming = {
-            EarlyGrace = 0.10,
-            NetworkGrace = 0.40
-        },
-        Heavy = {
-            GuardBreak = true,
-            Stun = 0.75
-        },
-        HitReaction = {
-            Light = 0.18,
-            Heavy = 0.42,
-            Launch = 0.55,
-            Slam = 0.62,
-            Finisher = 0.85
-        }
-    },
-    Movement = {
-        WalkSpeed = 16,
-        JumpPower = 50,
-        SprintSpeed = 23,
-        AirControl = 0.72,
-        Acceleration = 90,
-        Deceleration = 110
-    },
-    GameFeel = {
-        HitStop = 0.045,
-        HitShake = 0.28,
-        HeavyShake = 0.55,
-        FovKick = 3.5,
-        HeavyFovKick = 6,
-        DamagePopupLifetime = 0.75
-    },
-    Camera = {
-        DefaultFov = 70,
-        SprintFov = 74,
-        DashFov = 78,
-        UltimateFov = 80,
-        ShakeMaxDistance = 90
-    },
-    PerfectCombo = {
-        StepWindow = 1.15
-    },
-    Clash = {
-        DecisionWindow = 1.8,
-        Moves = {
-            [1] = "Crush",
-            [2] = "Counter",
-            [3] = "Feint",
-            [4] = "Break"
-        },
-        Beats = {
-            [1] = 2,
-            [2] = 3,
-            [3] = 4,
-            [4] = 1
-        },
-        PressurePerSpecial = 12,
-        PressureToConvertNeutral = 20,
-        RecoilStun = 0.2,
-        OpeningStun = 1.05,
-        TimeoutReset = 0.15
-    },
-    AntiCheat = {
-        Window = 1,
-        MaxActions = 18,
-        MaxPayloadLength = 40,
-        SuspiciousStrikes = 8
-    }
-}
-
+local Config={}
+Config.GameName="Collision Battlestar"
+Config.SchemaVersion=1
+Config.Region={Name="Fracture District",Size=500,Spawn=Vector3.new(0,5,35),EventAnchor=Vector3.new(0,6,-35)}
+Config.Combat={BaseWalkSpeed=16,MaxRequestRate=18,MomentumMax=100,InstabilityMax=100,ParryWindow=.22,BlockMultiplier=.20,Actions={
+Light={Startup=.10,Recovery=.22,Cooldown=.16,Damage=9,Range=8,Width=6,Height=6,Knockback=22,MomentumGain=7},
+Heavy={Startup=.34,Recovery=.42,Cooldown=1.2,Damage=24,Range=10,Width=8,Height=7,Knockback=55,MomentumGain=12,GuardBreak=true},
+Special={Startup=.28,Recovery=.60,Cooldown=6,Damage=38,Range=16,Width=16,Height=12,Knockback=70,MomentumGain=18},
+Dash={Cooldown=1.1,Distance=26,Duration=.16,MomentumGain=5},
+Overdrive={Cooldown=18,MinimumMomentum=35,InstabilityPerAction=7,InstabilityDrain=12,Power=1.35}}}
+Config.Styles={Blade={Light=1,Heavy=1.1,Special=1.2,Range=1.05},Martial={Light=.92,Heavy=.95,Special=1.08,Range=.92}}
+Config.Enemies={
+Riftling={Health=70,Speed=10,Damage=8,Range=5,Cooldown=1.4,Reward=8,Color=Color3.fromRGB(145,85,255)},
+Warden={Health=130,Speed=6,Damage=12,Range=6,Cooldown=2,Reward=14,Color=Color3.fromRGB(85,125,255)},
+Caster={Health=85,Speed=8,Damage=14,Range=24,Cooldown=2.4,Reward=16,Color=Color3.fromRGB(255,115,220)},
+Hunter={Health=100,Speed=13,Damage=10,Range=7,Cooldown=1.1,Reward=18,Color=Color3.fromRGB(255,165,70)},
+MiniBoss={Health=550,Speed=8,Damage=20,Range=10,Cooldown=1.5,Reward=90,Color=Color3.fromRGB(255,75,85)},
+Boss={Health=1400,Speed=9,Damage=27,Range=12,Cooldown=1.3,Reward=250,Color=Color3.fromRGB(255,205,80)}}
+Config.Data={StoreName="CollisionBattlestar_Player_v1",AutosaveSeconds=120,SessionTimeoutSeconds=180,MaxRetries=5}
+Config.Events={FirstRealityBreakDelay=65,RealityBreakCooldown=150,ChainKillThreshold=12}
 return Config
