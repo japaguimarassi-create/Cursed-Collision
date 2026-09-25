@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: true
           fetch-depth: 1
@@ -132,17 +132,15 @@ jobs:
 
       - name: Install Roblox toolchain
         if: ${{ steps.request.outputs.publish == 'true' }}
-        uses: Roblox/setup-foreman@v3
+        uses: paradoxum-games/setup-rokit@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allow-external-github-orgs: true
+          cache: true
 
       - name: Install Roblox tools
         if: ${{ steps.request.outputs.publish == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
-          foreman install
           rojo --version
 
       - name: Validate project
@@ -162,9 +160,9 @@ jobs:
 
           rojo build default.project.json --output build/CollisionBattlestar.rbxl
 
-          test -s build/CursedCollision.rbxl
+          test -s build/CollisionBattlestar.rbxl
 
-          size="$(stat -c '%s' build/CursedCollision.rbxl)"
+          size="$(stat -c '%s' build/CollisionBattlestar.rbxl)"
           echo "Build size: ${size} bytes"
 
           if (( size < 1024 )); then
@@ -194,7 +192,7 @@ jobs:
           echo "Place: ${PLACE_ID}"
 
           http_code="$(
-            curl               --silent               --show-error               --location               --request POST               --url "${endpoint}"               --header "x-api-key: ${ROBLOX_API_KEY}"               --header "Content-Type: application/octet-stream"               --data-binary "@build/CursedCollision.rbxl"               --output build/publish-response.json               --write-out "%{http_code}"
+            curl               --silent               --show-error               --location               --request POST               --url "${endpoint}"               --header "x-api-key: ${ROBLOX_API_KEY}"               --header "Content-Type: application/octet-stream"               --data-binary "@build/CollisionBattlestar.rbxl"               --output build/publish-response.json               --write-out "%{http_code}"
           )"
 
           echo "Roblox HTTP status: ${http_code}"
@@ -252,8 +250,8 @@ jobs:
         if: ${{ always() && steps.request.outputs.publish == 'true' }}
         uses: actions/upload-artifact@v6
         with:
-          name: cursed-collision-roblox-publish
+          name: collision-battlestar-roblox-publish
           path: |
-            build/CursedCollision.rbxl
+            build/CollisionBattlestar.rbxl
             build/publish-response.json
           if-no-files-found: warn
