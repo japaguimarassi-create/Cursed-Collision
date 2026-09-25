@@ -436,6 +436,18 @@ function S.Init()
 		Vector3.new(-55,2,-345),Vector3.new(55,2,-345),Vector3.new(-55,2,-280),Vector3.new(55,2,-280)
 	})do destructibleProp(gameplay,"ArenaCover",pos,Vector3.new(8,5,3),PALETTE.Metal)end
 
+	local streak=Instance.new("Folder");streak.Name="BattleStreakArena";streak.Parent=workspace
+	local streakFloor=U.Part(streak,"Floor",Vector3.new(120,2,90),CFrame.new(-365,1,330),Enum.Material.Slate,Color3.fromRGB(46,49,60),true)
+	local ring=U.Part(streak,"Ring",Vector3.new(72,.6,72),CFrame.new(-365,2,330),Enum.Material.Neon,PALETTE.Neon,true);ring.Shape=Enum.PartType.Cylinder;ring.Transparency=.55;ring.CanTouch=false;ring.CanQuery=false
+	local start=U.Part(streak,"StartPoint",Vector3.new(5,4,5),CFrame.new(-365,5,330),Enum.Material.Neon,PALETTE.Neon,false,false)
+	local prompt=Instance.new("ProximityPrompt");prompt.ActionText="Start Streak";prompt.ObjectText="BATTLE STREAK";prompt.HoldDuration=.6;prompt.MaxActivationDistance=12;prompt.Parent=start
+	for angle=0,315,45 do
+		local a=math.rad(angle);local pos=Vector3.new(-365+math.cos(a)*42,5,330+math.sin(a)*28)
+		U.Part(streak,"ArenaPillar",Vector3.new(3,10,3),CFrame.new(pos),Enum.Material.Metal,PALETTE.DarkMetal,true)
+		local glow=U.Part(streak,"ArenaGlow",Vector3.new(.7,8,.7),CFrame.new(pos+Vector3.new(0,0,1.7)),Enum.Material.Neon,PALETTE.Neon,false);glow.CanTouch=false;glow.CanQuery=false
+	end
+	U.Part(streak,"Gate",Vector3.new(42,18,3),CFrame.new(-365,9,375),Enum.Material.Metal,PALETTE.DarkMetal,true)
+
 	spawns={
 		Vector3.new(-68,4,60),Vector3.new(68,4,60),Vector3.new(-68,4,-60),Vector3.new(68,4,-60),
 		Vector3.new(-190,4,40),Vector3.new(190,4,40),Vector3.new(-190,4,-180),Vector3.new(190,4,-180),
