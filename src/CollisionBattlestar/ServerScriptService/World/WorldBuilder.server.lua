@@ -18,6 +18,7 @@ function S.Init()
 	local rb=Instance.new("ProximityPrompt");rb.ActionText="Trigger Resonance";rb.ObjectText="Reality Break";rb.HoldDuration=1.2;rb.MaxActivationDistance=12;rb.Parent=center;rb.Triggered:Connect(function()require(game.ServerScriptService.Services.EventService).StartRealityBreak("ManualAnchor")end)
 	spawns={Vector3.new(-70,4,55),Vector3.new(70,4,55),Vector3.new(-70,4,-30),Vector3.new(70,4,-30),Vector3.new(-150,4,10),Vector3.new(150,4,10),Vector3.new(-145,4,-165),Vector3.new(145,4,-165)}
 	local arena=U.Part(landmarks,"BossArena",Vector3.new(150,2,100),CFrame.new(bossArena),Enum.Material.Slate,Color3.fromRGB(43,45,52),true);arena.Transparency=.2
+	for i,pos in ipairs({Vector3.new(-30,1,12),Vector3.new(30,1,12),Vector3.new(-45,1,-18),Vector3.new(45,1,-18)}) do local barrier=U.Part(landmarks,"CombatBarrier"..i,Vector3.new(6,3,1.5),CFrame.new(pos),Enum.Material.Metal,Color3.fromRGB(90,95,105),true);CollectionService:AddTag(barrier,"CombatDestructible") end
 	local spawn=Instance.new("SpawnLocation");spawn.Name="CollisionSpawn";spawn.Size=Vector3.new(8,1,8);spawn.Position=C.Region.Spawn;spawn.Anchored=true;spawn.Neutral=true;spawn.Parent=world
 end
 function S.GetSpawnPoints():{Vector3}return spawns end
