@@ -10,15 +10,15 @@ local function norm(d:any):any
 	d.Level=math.max(1,math.floor(tonumber(d.Level)or 1));d.XP=math.max(0,math.floor(tonumber(d.XP)or 0));d.Exploration=math.max(0,math.floor(tonumber(d.Exploration)or 0));d.Coins=math.max(0,math.floor(tonumber(d.Coins)or 0));d.Quest.Progress=U.Clamp(tonumber(d.Quest.Progress)or 0,0,math.max(1,tonumber(d.Quest.Target)or 6));d.Quest.Target=math.max(1,tonumber(d.Quest.Target)or 6);d.Quest.Completed=d.Quest.Completed==true;d.SchemaVersion=C.SchemaVersion;return d
 end
 local function key(p:Player)return"Player_"..p.UserId end
-local function load(p:Player):any
+local function load(p:Player):(any?,string?)
 	for attempt=1,C.Data.MaxRetries do
 		local ok,res=pcall(function()return store:UpdateAsync(key(p),function(cur)local d=norm(cur);local ts=tonumber(d.SessionTimestamp)or 0;if d.SessionId and d.SessionId~=game.JobId and os.time()-ts<C.Data.SessionTimeoutSeconds then return nil end;d.SessionId=game.JobId;d.SessionTimestamp=os.time();return d end)end)
-		if ok and res then return norm(res)end;task.wait(math.min(2^(attempt-1),8)+math.random())
+		if ok and res then return norm(res),"OK"end;task.wait(math.min(2^(attempt-1),8)+math.random())
 	end
-	return defaults()
+	return nil,"LOAD_FAILED"
 end
 local function save(p:Player):boolean
-	local d=profiles[p];if not d then return true end;local snap=norm(table.clone(d));snap.SessionId=nil;snap.SessionTimestamp=nil
+	local d=profiles[p];if not d then return true end;local snap=norm(table.clone(d));snap.SessionId=game.JobId;snap.SessionTimestamp=os.time()
 	for attempt=1,C.Data.MaxRetries do
 		local ok=pcall(function()store:UpdateAsync(key(p),function(cur)if cur and cur.SessionId and cur.SessionId~=game.JobId then return cur end;return snap end)end)
 		if ok then return true end;task.wait(math.min(2^(attempt-1),8)+math.random())
@@ -31,11 +31,16 @@ local function bindAttributes(p:Player,d:any)
 end
 function S.Init()
 	Players.PlayerAdded:Connect(function(p)
-		local d=load(p);profiles[p]=d;local ls=Instance.new("Folder");ls.Name="leaderstats";ls.Parent=p;local c=Instance.new("IntValue");c.Name="Credits";c.Value=d.Coins;c.Parent=ls;bindAttributes(p,d)
+		local d,status=load(p)
+		if not d then p:Kick(status=="LOCKED" and "Profile is active in another server." or "Profile data could not be loaded safely.");return end
+		profiles[p]=d;local ls=Instance.new("Folder");ls.Name="leaderstats";ls.Parent=p;local c=Instance.new("IntValue");c.Name="Credits";c.Value=d.Coins;c.Parent=ls;bindAttributes(p,d)
 	end)
-	Players.PlayerRemoving:Connect(function(p)save(p);profiles[p]=nil end)
-	game:BindToClose(function()for _,p in Players:GetPlayers()do save(p)end end)
+	Players.PlayerRemoving:Connect(function(p)save(p);task.wait(.15);S.Release(p);profiles[p]=nil end)
+	game:BindToClose(function()for _,p in Players:GetPlayers()do save(p);S.Release(p)end end)
 	task.spawn(function()while task.wait(C.Data.AutosaveSeconds)do for _,p in Players:GetPlayers()do save(p)end end end)
+end
+function S.Release(p:Player)
+	pcall(function()store:UpdateAsync(key(p),function(cur)if cur and cur.SessionId==game.JobId then cur.SessionId=nil;cur.SessionTimestamp=nil end;return cur end)end)
 end
 function S.Get(p:Player):any?return profiles[p]end
 function S.AddCoins(p:Player,n:number)local d=profiles[p];if not d then return end;n=math.floor(n);if n<=0 then return end;d.Coins+=n;local ls=p:FindFirstChild("leaderstats");local c=ls and ls:FindFirstChild("Credits");if c and c:IsA("IntValue")then c.Value=d.Coins end end
