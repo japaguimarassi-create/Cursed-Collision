@@ -126,14 +126,11 @@ local function tower(parent:Instance,name:string,base:Vector3,width:number,depth
 		local strip=part(parent,name.."_Band_"..tostring(math.floor(y)),Vector3.new(width+.7,.55,depth+.7),CFrame.new(base+Vector3.new(0,y,0)),Enum.Material.Neon,accent,false,false)
 		strip.CanTouch=false
 	end
-	for side=-1,1,2 do
-		for z=0,math.max(0,math.floor(depth/11)-1) do
-			local pz=-depth/2+5+z*10
-			local window=part(parent,name.."_FrontWindow_"..side.."_"..z,Vector3.new(width*.68,.9,1.2),CFrame.new(base+Vector3.new(0,8+side*0+z*0,pz*0)),Enum.Material.Glass,accent,false,false)
-			window.Transparency=.08
-			window.CFrame=CFrame.new(base+Vector3.new(0,8+z*8,-depth/2-.7))
-			break
-		end
+	for y=8,height-8,8 do
+		local front=part(parent,name.."_FrontWindow_"..tostring(y),Vector3.new(width*.68,.9,.6),CFrame.new(base+Vector3.new(0,y,-depth/2-.7)),Enum.Material.Glass,accent,false,false)
+		front.Transparency=.08
+		local side=part(parent,name.."_SideWindow_"..tostring(y),Vector3.new(.6,.9,depth*.68),CFrame.new(base+Vector3.new(width/2+.7,y,0)),Enum.Material.Glass,accent,false,false)
+		side.Transparency=.10
 	end
 	local crown=part(parent,name.."_Crown",Vector3.new(width*.65,3,depth*.65),CFrame.new(base+Vector3.new(0,height+2,0)),Enum.Material.Neon,accent,false,false)
 	tag(body,"EnvironmentStatic")
@@ -336,8 +333,25 @@ local function roads(parent:Instance)
 end
 
 local function ground(parent:Instance)
-	part(parent,"GroundWest",Vector3.new(455,2,960),CFrame.new(-252.5,-1,0),Enum.Material.Concrete,Color3.fromRGB(69,74,83),true,true)
-	part(parent,"GroundEast",Vector3.new(455,2,960),CFrame.new(252.5,-1,0),Enum.Material.Concrete,Color3.fromRGB(69,74,83),true,true)
+	local holeCenter=Vector3.new(-120,-1,-70)
+	local holeW=110
+	local holeD=70
+	local minX=-480
+	local maxX=480
+	local minZ=-480
+	local maxZ=480
+	local leftEdge=holeCenter.X-holeW/2
+	local rightEdge=holeCenter.X+holeW/2
+	local bottomEdge=holeCenter.Z-holeD/2
+	local topEdge=holeCenter.Z+holeD/2
+	local leftW=leftEdge-minX
+	local rightW=maxX-rightEdge
+	local topD=maxZ-topEdge
+	local bottomD=bottomEdge-minZ
+	part(parent,"GroundWest",Vector3.new(leftW,2,960),CFrame.new(minX+leftW/2,-1,0),Enum.Material.Concrete,Color3.fromRGB(69,74,83),true,true)
+	part(parent,"GroundEast",Vector3.new(rightW,2,960),CFrame.new(rightEdge+rightW/2,-1,0),Enum.Material.Concrete,Color3.fromRGB(69,74,83),true,true)
+	part(parent,"GroundNorth",Vector3.new(holeW,2,topD),CFrame.new(holeCenter.X,-1,topEdge+topD/2),Enum.Material.Concrete,Color3.fromRGB(69,74,83),true,true)
+	part(parent,"GroundSouth",Vector3.new(holeW,2,bottomD),CFrame.new(holeCenter.X,-1,minZ+bottomD/2),Enum.Material.Concrete,Color3.fromRGB(69,74,83),true,true)
 end
 
 function S.Init()
