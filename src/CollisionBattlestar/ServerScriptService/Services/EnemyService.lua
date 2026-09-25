@@ -4,6 +4,7 @@ local CollectionService=game:GetService("CollectionService")
 local C=require(game.ReplicatedStorage.Shared.Config)
 local U=require(game.ReplicatedStorage.Shared.Util)
 local Animation=require(script.Parent.AnimationService)
+local Destruction=require(script.Parent.DestructionService)
 
 local S={}
 S.Defeated=Instance.new("BindableEvent")
@@ -30,7 +31,7 @@ local function joint(parent:Instance,name:string,a:BasePart,b:BasePart,c0:CFrame
 	motor.Parent=parent
 end
 
-local function buildRig(model:Model,pos:Vector3,color:Color3,boss:boolean)
+local function buildRig(model:Model,pos:Vector3,color:Color3,boss:boolean):(BasePart,BasePart)
 	local scale=boss and 1.45 or 1
 	local root=U.Part(model,"HumanoidRootPart",Vector3.new(2.5,2.5,2.5),CFrame.new(pos),Enum.Material.Metal,false)
 	root.Transparency=1
@@ -64,7 +65,7 @@ local function buildRig(model:Model,pos:Vector3,color:Color3,boss:boolean)
 	coreWeld.Part0=torso
 	coreWeld.Part1=core
 	coreWeld.Parent=torso
-	return root
+	return root,core
 end
 
 local function make(kind:string,pos:Vector3,boss:boolean,ownerUserId:number?):Model
@@ -77,9 +78,7 @@ local function make(kind:string,pos:Vector3,boss:boolean,ownerUserId:number?):Mo
 	m:SetAttribute("Phase",1)
 	m:SetAttribute("BattleStreakOwnerUserId",ownerUserId or 0)
 
-	local root=buildRig(m,pos,d.Color,boss)
-	local core=m:FindFirstChild("Core")
-	if not core or not core:IsA("BasePart")then return m end
+	local root,core=buildRig(m,pos,d.Color,boss)
 	local h=Instance.new("Humanoid")
 	h.MaxHealth=d.Health
 	h.Health=d.Health
@@ -89,6 +88,7 @@ local function make(kind:string,pos:Vector3,boss:boolean,ownerUserId:number?):Mo
 	m.PrimaryPart=root
 	CollectionService:AddTag(m,"CBSEnemy")
 	m.Parent=folder
+	root:SetNetworkOwner(nil)
 	active[m]=true
 	Animation.Register(m)
 
@@ -156,6 +156,18 @@ function S.Init()
 				if now-(attackAt[m]or 0)<d.Cooldown then continue end
 				attackAt[m]=now
 				Animation.Play(m,m:GetAttribute("IsBoss")and"BossAttack"or"BotAttack",.04,phase==2 and 1.12 or 1)
+				if d.Range<=10 then
+					local attackCF=root.CFrame*CFrame.new(0,2,-d.Range*.5)
+					local breakSize=Vector3.new(d.Range*1.25,5,d.Range)
+					local broken=Destruction.BreakInBox(attackCF,breakSize,phase==2 and 2 or 1)
+					if broken>0 then
+						game.ReplicatedStorage.CollisionRemotes.Feedback:FireClient(player,"BreakFX",{
+							Position=attackCF.Position,
+							Size=breakSize,
+							Strength=phase==2 and 2 or 1,
+						})
+					end
+				end
 
 				local parry=tonumber(player:GetAttribute("ParryUntil"))or 0
 				local wave=tonumber(m:GetAttribute("BattleStreakWave"))or 0
