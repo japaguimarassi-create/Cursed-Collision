@@ -2,12 +2,12 @@
 local Players=game:GetService("Players");local DSS=game:GetService("DataStoreService")
 local C=require(game.ReplicatedStorage.Shared.Config);local U=require(game.ReplicatedStorage.Shared.Util)
 local S={};local profiles:{[Player]:any}={};local store=DSS:GetDataStore(C.Data.StoreName)
-local function defaults()return{SchemaVersion=C.SchemaVersion,Coins=0,Level=1,XP=0,Inventory={StarterBlade=1},Mastery={Blade=1,Martial=1},Exploration=0,Reputation={FractureDistrict=0},Achievements={},Quest={Id=nil,Progress=0,Target=6,Completed=false},SessionId=nil,SessionTimestamp=nil}end
+local function defaults()return{SchemaVersion=C.SchemaVersion,Coins=0,Level=1,XP=0,BattleStreakBest=0,Inventory={StarterBlade=1},Mastery={Blade=1,Martial=1},Exploration=0,Reputation={FractureDistrict=0},Achievements={},Quest={Id=nil,Progress=0,Target=6,Completed=false},SessionId=nil,SessionTimestamp=nil}end
 local function norm(d:any):any
 	local b=defaults();if typeof(d)~="table"then return b end
 	for k,v in b do if d[k]==nil or typeof(d[k])~=typeof(v)then d[k]=v end end
 	if typeof(d.Inventory)~="table"then d.Inventory=b.Inventory end;if typeof(d.Mastery)~="table"then d.Mastery=b.Mastery end;if typeof(d.Reputation)~="table"then d.Reputation=b.Reputation end;if typeof(d.Achievements)~="table"then d.Achievements={}end;if typeof(d.Quest)~="table"then d.Quest=b.Quest end
-	d.Level=math.max(1,math.floor(tonumber(d.Level)or 1));d.XP=math.max(0,math.floor(tonumber(d.XP)or 0));d.Exploration=math.max(0,math.floor(tonumber(d.Exploration)or 0));d.Coins=math.max(0,math.floor(tonumber(d.Coins)or 0));d.Quest.Progress=U.Clamp(tonumber(d.Quest.Progress)or 0,0,math.max(1,tonumber(d.Quest.Target)or 6));d.Quest.Target=math.max(1,tonumber(d.Quest.Target)or 6);d.Quest.Completed=d.Quest.Completed==true;d.SchemaVersion=C.SchemaVersion;return d
+	d.Level=math.max(1,math.floor(tonumber(d.Level)or 1));d.XP=math.max(0,math.floor(tonumber(d.XP)or 0));d.Exploration=math.max(0,math.floor(tonumber(d.Exploration)or 0));d.BattleStreakBest=math.max(0,math.floor(tonumber(d.BattleStreakBest)or 0));d.Coins=math.max(0,math.floor(tonumber(d.Coins)or 0));d.Quest.Progress=U.Clamp(tonumber(d.Quest.Progress)or 0,0,math.max(1,tonumber(d.Quest.Target)or 6));d.Quest.Target=math.max(1,tonumber(d.Quest.Target)or 6);d.Quest.Completed=d.Quest.Completed==true;d.SchemaVersion=C.SchemaVersion;return d
 end
 local function key(p:Player)return"Player_"..p.UserId end
 local function load(p:Player):(any?,string?)
@@ -26,7 +26,7 @@ local function save(p:Player):boolean
 	return false
 end
 local function bindAttributes(p:Player,d:any)
-	p:SetAttribute("QuestId",d.Quest.Id or "");p:SetAttribute("QuestProgress",d.Quest.Progress);p:SetAttribute("QuestTarget",d.Quest.Target);p:SetAttribute("QuestCompleted",d.Quest.Completed);p:SetAttribute("Exploration",d.Exploration);p:SetAttribute("Level",d.Level);p:SetAttribute("XP",d.XP)
+	p:SetAttribute("QuestId",d.Quest.Id or "");p:SetAttribute("QuestProgress",d.Quest.Progress);p:SetAttribute("QuestTarget",d.Quest.Target);p:SetAttribute("QuestCompleted",d.Quest.Completed);p:SetAttribute("Exploration",d.Exploration);p:SetAttribute("Level",d.Level);p:SetAttribute("XP",d.XP);p:SetAttribute("BattleStreakBest",d.BattleStreakBest)
 	for itemId,count in pairs(d.Inventory)do if typeof(count)=="number"then p:SetAttribute("Inventory_"..itemId,math.max(0,count))end end
 end
 function S.Init()
@@ -44,6 +44,7 @@ function S.Release(p:Player)
 end
 function S.Get(p:Player):any?return profiles[p]end
 function S.AddCoins(p:Player,n:number)local d=profiles[p];if not d then return end;n=math.floor(n);if n<=0 then return end;d.Coins+=n;local ls=p:FindFirstChild("leaderstats");local c=ls and ls:FindFirstChild("Credits");if c and c:IsA("IntValue")then c.Value=d.Coins end end
+function S.SetBattleStreakBest(p:Player,wave:number)local d=profiles[p];if not d then return end;wave=math.max(0,math.floor(wave));if wave>d.BattleStreakBest then d.BattleStreakBest=wave;p:SetAttribute("BattleStreakBest",wave)end end
 function S.AddXP(p:Player,n:number)local d=profiles[p];if not d then return end;d.XP=math.max(0,d.XP+math.floor(n));while d.XP>=d.Level*100 do d.XP-=d.Level*100;d.Level+=1 end;p:SetAttribute("Level",d.Level);p:SetAttribute("XP",d.XP)end
 function S.AddExploration(p:Player,n:number)local d=profiles[p];if not d then return end;d.Exploration=math.max(0,d.Exploration+math.floor(n));p:SetAttribute("Exploration",d.Exploration)end
 function S.AddMastery(p:Player,style:string,n:number)local d=profiles[p];if not d or not d.Mastery[style]then return end;d.Mastery[style]+=math.max(0,math.floor(n))end
