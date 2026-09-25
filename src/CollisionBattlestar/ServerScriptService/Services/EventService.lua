@@ -1,7 +1,7 @@
 --!strict
 local Players=game:GetService("Players");local R=game:GetService("ReplicatedStorage");local TweenService=game:GetService("TweenService")
 local C=require(R.Shared.Config);local Events=require(R.Shared.EventDefinitions);local World=require(script.Parent.WorldStateService)
-local S={Active=false,Last=-math.huge,KillChain=0,History={}};local enemies;local builder
+local S={Active=false,Last=-math.huge,KillChain=0,History={}};S.Started=Instance.new("BindableEvent");local enemies;local builder
 local function send(kind:string,payload:any?)R.CollisionRemotes.WorldState:FireAllClients(kind,payload)end
 function S.Init(enemyModule,builderModule)
 	enemies=enemyModule;builder=builderModule
@@ -14,7 +14,7 @@ function S.Init(enemyModule,builderModule)
 end
 function S.StartRealityBreak(reason:string):boolean
 	if S.Active or os.clock()-S.Last<C.Events.RealityBreakCooldown then return false end
-	S.Active=true;S.Last=os.clock();table.insert(S.History,reason);if #S.History>6 then table.remove(S.History,1)end;World.RegisterEvent("RealityBreak:"..reason);send("Warning",{Duration=7,Reason=reason})
+	S.Active=true;S.Last=os.clock();table.insert(S.History,reason);S.Started:Fire(reason);if #S.History>6 then table.remove(S.History,1)end;World.RegisterEvent("RealityBreak:"..reason);send("Warning",{Duration=7,Reason=reason})
 	local atmosphere=game.Lighting:FindFirstChildOfClass("Atmosphere")or Instance.new("Atmosphere");atmosphere.Parent=game.Lighting;local d,h=atmosphere.Density,atmosphere.Haze
 	TweenService:Create(atmosphere,TweenInfo.new(4),{Density=.55,Haze=2.8}):Play()
 	task.wait(7);send("Begin",{Reason=reason});local anchor=workspace:FindFirstChild("RealityBreakCenter");local pos=anchor and anchor:IsA("BasePart")and anchor.Position or C.Region.EventAnchor
