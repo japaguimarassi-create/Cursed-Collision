@@ -176,6 +176,12 @@ local function destructibleProp(parent:Instance,name:string,pos:Vector3,size:Vec
 	return p
 end
 
+
+local function roofLadder(parent:Instance,name:string,pos:Vector3,height:number)
+	local ladder=Instance.new("TrussPart");ladder.Name=name;ladder.Size=Vector3.new(2,height,2);ladder.CFrame=CFrame.new(pos+Vector3.new(0,height/2,0));ladder.Material=Enum.Material.Metal;ladder.Color=PALETTE.Metal;ladder.Anchored=true;ladder.Parent=parent
+	return ladder
+end
+
 local function stair(parent:Instance,name:string,start:Vector3,steps:number,width:number,height:number,forward:Vector3)
 	local dir=forward.Magnitude>.1 and forward.Unit or Vector3.new(0,0,1)
 	for i=1,steps do
@@ -197,7 +203,7 @@ end
 local function canal(parent:Instance)
 	local water=part(parent,"CanalWater",Vector3.new(250,.6,30),CFrame.new(250,.2,300),Enum.Material.Glass,PALETTE.Canal,false,false)
 	water.Transparency=.28
-	local glow=neonStrip(parent,"CanalGlow",Vector3.new(250,.5,300),Vector3.new(230,.2,2),0,PALETTE.Neon)
+	local glow=neonStrip(parent,"CanalGlow",Vector3.new(250,.5,300),Vector3.new(230,.2,2),0,PALETTE.Neon);CollectionService:AddTag(glow,"CollisionResponsive")
 	glow.Transparency=.2
 	for x=130,370,20 do
 		part(parent,"CanalWall",Vector3.new(1,4,34),CFrame.new(x,1.5,282),Enum.Material.Concrete,PALETTE.Sidewalk,true,true)
@@ -225,7 +231,7 @@ local function centralPlaza(parent:Instance)
 	ring.Transparency=.65
 	local core=part(parent,"NexusCore",Vector3.new(14,14,14),CFrame.new(0,8,-20),Enum.Material.Neon,PALETTE.Neon,false,false)
 	core.Shape=Enum.PartType.Ball
-	table.insert(breakParts,core)
+	table.insert(breakParts,core);CollectionService:AddTag(core,"CollisionResponsive")
 	for angle=0,315,45 do
 		local rad=math.rad(angle)
 		local pos=Vector3.new(math.cos(rad)*46,2, -20+math.sin(rad)*34)
@@ -257,7 +263,7 @@ local function riftZone(parent:Instance)
 			tag(rock,"RiftProp")
 		end
 	end
-	local core=part(parent,"RiftCore",Vector3.new(16,4,16),CFrame.new(0,3,-385),Enum.Material.Neon,PALETTE.Rift,false,false);core.Shape=Enum.PartType.Cylinder;core.Transparency=.15
+	local core=part(parent,"RiftCore",Vector3.new(16,4,16),CFrame.new(0,3,-385),Enum.Material.Neon,PALETTE.Rift,false,false);core.Shape=Enum.PartType.Cylinder;core.Transparency=.15;CollectionService:AddTag(core,"CollisionResponsive")
 	table.insert(breakParts,core)
 	for angle=0,315,45 do
 		local rad=math.rad(angle)
@@ -367,6 +373,9 @@ function S.Init()
 	centralPlaza(landmarks)
 	highrise(environment)
 	park(environment)
+	roofLadder(environment,"AsterRoofLadder",Vector3.new(-345,0,-94),102)
+	roofLadder(environment,"VantaRoofLadder",Vector3.new(-275,0,-94),74)
+	roofLadder(environment,"ObservationRoofLadder",Vector3.new(255,0,-299),88)
 	industrial(environment)
 	market(environment)
 	northCampus(environment)
