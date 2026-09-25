@@ -146,7 +146,7 @@ for match in re.finditer(r"TargetPrice=(\d+)",passes):
     price=int(match.group(1))
     if price<20 or price>60:
         fail("game pass target price outside 20-60: "+str(price))
-configured_ids=[int(x) for x in re.findall(r"Id=(\d+),TargetPrice=\d+,Category="+"[^"]+"+"[^\n]*?Enabled=(?:true|false)",passes)]
+configured_ids=[int(x) for x in re.findall(r"Id=(\d+),TargetPrice=\d+,Category=\"[^\"]+\",Actions=\{[^}]*\},Enabled=(?:true|false)",passes)]
 if len([x for x in configured_ids if x>0]) != len(set(x for x in configured_ids if x>0)):
     fail("duplicate configured game pass IDs detected")
 pass_service=(SRC/"ServerScriptService/Services/GamePassService.lua").read_text()
