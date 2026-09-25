@@ -2,11 +2,11 @@
   "name": "CollisionBattlestar",
   "tree": {
     "$className": "DataModel",
-    "ReplicatedStorage": {"$path": "src/ReplicatedStorage"},
-    "ServerScriptService": {"$path": "src/ServerScriptService"},
+    "ReplicatedStorage": {"$path": "src/CollisionBattlestar/ReplicatedStorage"},
+    "ServerScriptService": {"$path": "src/CollisionBattlestar/ServerScriptService"},
     "StarterPlayer": {
       "$className": "StarterPlayer",
-      "StarterPlayerScripts": {"$path": "src/StarterPlayer/StarterPlayerScripts"}
+      "StarterPlayerScripts": {"$path": "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts"}
     }
   }
 }
