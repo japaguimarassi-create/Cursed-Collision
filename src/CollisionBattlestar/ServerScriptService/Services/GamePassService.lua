@@ -18,7 +18,7 @@ end
 
 local function check(player:Player,passKey:string):boolean
 	local definition=Definitions.Passes[passKey]
-	if not definition or definition.Id<=0 then
+	if not definition or not definition.Enabled or definition.Id<=0 then
 		setState(player,passKey,false)
 		return false
 	end
@@ -47,7 +47,7 @@ function S.Init(requestRemote:RemoteEvent)
 	requestRemote.OnServerEvent:Connect(function(player:Player,passKey:any)
 		if typeof(passKey)~="string" then return end
 		local definition=Definitions.Passes[passKey]
-		if not definition or definition.Id<=0 then return end
+		if not definition or not definition.Enabled or definition.Id<=0 then return end
 		if S.HasPass(player,passKey) then return end
 		local success=pcall(function()
 			MarketplaceService:PromptGamePassPurchase(player,definition.Id)
