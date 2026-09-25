@@ -78,12 +78,14 @@ local function make(kind:string,pos:Vector3,boss:boolean,ownerUserId:number?):Mo
 	m:SetAttribute("BattleStreakOwnerUserId",ownerUserId or 0)
 
 	local root=buildRig(m,pos,d.Color,boss)
+	local core=m:FindFirstChild("Core")
+	if not core or not core:IsA("BasePart")then return m end
 	local h=Instance.new("Humanoid")
 	h.MaxHealth=d.Health
 	h.Health=d.Health
 	h.DisplayDistanceType=Enum.HumanoidDisplayDistanceType.None
 	h.Parent=m
-	U.Nameplate(m:FindFirstChild("Core")::BasePart,kind,d.Color)
+	U.Nameplate(core,kind,d.Color)
 	m.PrimaryPart=root
 	CollectionService:AddTag(m,"CBSEnemy")
 	m.Parent=folder
