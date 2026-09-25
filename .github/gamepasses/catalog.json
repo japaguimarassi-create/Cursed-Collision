@@ -1,0 +1,169 @@
+{
+  "universeId": "5290480963",
+  "minPrice": 20,
+  "maxPrice": 60,
+  "passes": [
+    {
+      "key": "VIPBattlestar",
+      "name": "VIP Battlestar",
+      "description": "Permanent VIP cosmetics, tag and private-server extras.",
+      "price": 59
+    },
+    {
+      "key": "KillEffects",
+      "name": "Kill Effects",
+      "description": "Permanent elimination effect collection.",
+      "price": 49
+    },
+    {
+      "key": "KillSounds",
+      "name": "Kill Sounds",
+      "description": "Permanent elimination sound collection.",
+      "price": 39
+    },
+    {
+      "key": "AuraCollection",
+      "name": "Aura Collection",
+      "description": "Permanent aura cosmetics.",
+      "price": 49
+    },
+    {
+      "key": "EmoteMaster",
+      "name": "Emote Master",
+      "description": "Permanent premium emote access.",
+      "price": 35
+    },
+    {
+      "key": "FinisherCollection",
+      "name": "Finisher Collection",
+      "description": "Permanent cosmetic finisher collection.",
+      "price": 59
+    },
+    {
+      "key": "NameplatePlus",
+      "name": "Nameplate+",
+      "description": "Permanent premium nameplates and titles.",
+      "price": 25
+    },
+    {
+      "key": "SpawnEffects",
+      "name": "Spawn Effects",
+      "description": "Permanent premium spawn effects.",
+      "price": 29
+    },
+    {
+      "key": "DomainCollection",
+      "name": "Domain Collection",
+      "description": "Permanent domain activation cosmetics.",
+      "price": 59
+    },
+    {
+      "key": "AwakeningVault",
+      "name": "Awakening Vault",
+      "description": "Permanent awakening skin collection.",
+      "price": 60
+    },
+    {
+      "key": "RiftExplorer",
+      "name": "Rift Explorer",
+      "description": "Permanent access to premium exploration content.",
+      "price": 45
+    },
+    {
+      "key": "BattleArchitect",
+      "name": "Battle Architect",
+      "description": "Permanent private-server configuration tools.",
+      "price": 55
+    },
+    {
+      "key": "InventoryPlus",
+      "name": "Inventory+",
+      "description": "Permanent extra cosmetic inventory capacity.",
+      "price": 25
+    },
+    {
+      "key": "QuestExpansion",
+      "name": "Quest Expansion",
+      "description": "Permanent extra quest slots.",
+      "price": 20
+    },
+    {
+      "key": "CreditBooster",
+      "name": "Credit Booster",
+      "description": "Permanent small credit earning boost.",
+      "price": 30
+    },
+    {
+      "key": "Founder",
+      "name": "Founder",
+      "description": "Permanent founder cosmetics and title.",
+      "price": 60
+    },
+    {
+      "key": "PremiumCombatHUD",
+      "name": "Premium Combat HUD",
+      "description": "Permanent premium HUD presentation.",
+      "price": 29
+    },
+    {
+      "key": "RealityAura",
+      "name": "Reality Aura",
+      "description": "Permanent Reality-themed aura collection.",
+      "price": 45
+    },
+    {
+      "key": "VictoryPosePack",
+      "name": "Victory Pose Pack",
+      "description": "Permanent victory pose collection.",
+      "price": 25
+    },
+    {
+      "key": "BattleStreakBanner",
+      "name": "Battle Streak Banner",
+      "description": "Permanent Battle Streak profile banner.",
+      "price": 35
+    },
+    {
+      "key": "ProfileShowcase",
+      "name": "Profile Showcase",
+      "description": "Permanent expanded cosmetic profile showcase.",
+      "price": 40
+    },
+    {
+      "key": "LobbyAnimations",
+      "name": "Lobby Animations",
+      "description": "Permanent premium lobby animation collection.",
+      "price": 30
+    },
+    {
+      "key": "SpectatorFX",
+      "name": "Spectator FX",
+      "description": "Permanent spectator visual effect collection.",
+      "price": 30
+    },
+    {
+      "key": "CinematicIntros",
+      "name": "Cinematic Intros",
+      "description": "Permanent cinematic spawn/introduction collection.",
+      "price": 55
+    },
+    {
+      "key": "CharacterPosePack",
+      "name": "Character Pose Pack",
+      "description": "Permanent character pose collection.",
+      "price": 20
+    },
+    {
+      "key": "DamageNumbersPlus",
+      "name": "Damage Numbers+",
+      "description": "Permanent premium damage-number presentation.",
+      "price": 24
+    },
+    {
+      "key": "PremiumCrosshair",
+      "name": "Premium Crosshair",
+      "description": "Permanent premium crosshair cosmetics.",
+      "price": 22
+    }
+  ]
+}
