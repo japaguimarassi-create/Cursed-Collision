@@ -6,9 +6,6 @@ local player=Players.LocalPlayer
 local remotes=R:WaitForChild("CollisionRemotes")
 local request=remotes:WaitForChild("GamePassRequest")::RemoteEvent
 
-local function prompt(passKey:string)
-	request:FireServer(passKey)
-end
 
 remotes.Feedback.OnClientEvent:Connect(function(kind:string,value:any)
 	if kind=="PassUnlocked" then
@@ -22,4 +19,3 @@ remotes.Feedback.OnClientEvent:Connect(function(kind:string,value:any)
 	end
 end)
 
-_G.CollisionBattlestarPromptPass=prompt
