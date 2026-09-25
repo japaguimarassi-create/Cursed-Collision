@@ -2,7 +2,7 @@
 local A={}
 export type Definition={Id:string,Looped:boolean,Priority:Enum.AnimationPriority,Speed:number}
 
-A.Tracks:{[string]:Definition}={
+A.Tracks={[string]:Definition}={
 	Light1={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1},
 	Light2={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1.02},
 	Light3={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1.04},
