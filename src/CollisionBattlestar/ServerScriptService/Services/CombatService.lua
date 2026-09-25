@@ -39,6 +39,6 @@ local function request(p:Player,action:string)
 end
 function S.Init()
 	Anti.Init();R.CollisionRemotes.CombatRequest.OnServerEvent:Connect(request);Players.PlayerRemoving:Connect(function(p)states[p]=nil end)
-	Players.PlayerAdded:Connect(function(p)local s=state(p);sync(p,s);p.CharacterAdded:Connect(function(c)local h=c:WaitForChild("Humanoid");h.WalkSpeed=C.Combat.BaseWalkSpeed end);task.spawn(function()while p.Parent do task.wait(.25);local x=states[p];if not x then break end;if x.Overdrive then x.Instability=U.Clamp(x.Instability-C.Combat.Actions.Overdrive.InstabilityDrain*.25,0,100);if x.Instability<=0 then x.Overdrive=false end else x.Momentum=U.Clamp(x.Momentum-.8,0,100)end;sync(p,x)end end)end)
+	Players.PlayerAdded:Connect(function(p)local s=state(p);sync(p,s);p.CharacterAdded:Connect(function(c)local h=c:WaitForChild("Humanoid");s.Busy=0;s.LastLight=0;s.Combo=0;s.LastDash=0;s.LastSpecial=0;s.LastOverdrive=0;s.IsBlocking=false;s.ParryUntil=0;s.Momentum=0;s.Instability=0;s.Overdrive=false;sync(p,s);h.WalkSpeed=C.Combat.BaseWalkSpeed end);task.spawn(function()while p.Parent do task.wait(.25);local x=states[p];if not x then break end;if x.Overdrive then x.Instability=U.Clamp(x.Instability-C.Combat.Actions.Overdrive.InstabilityDrain*.25,0,100);if x.Instability<=0 then x.Overdrive=false end else x.Momentum=U.Clamp(x.Momentum-.8,0,100)end;sync(p,x)end end)end)
 end
 return S
