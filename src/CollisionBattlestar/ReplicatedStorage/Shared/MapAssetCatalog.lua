@@ -8,7 +8,7 @@ A.References={
 	{Id=70028753,Name="Traffic Cone",Use="construction clutter",Budget="326 tris",ContainsScripts=false},
 	{Id=839465687,Name="Billboard",Use="billboards",Budget="2.1k tris",ContainsScripts=false},
 	{Id=18210310901,Name="Billboard Set v1",Use="signage study",Budget="4.2k tris / 68 items",ContainsScripts=false},
-	{Id=8959051,Name="Car Mesh example",Use="vehicle silhouette study",Budget="manual inspection required",ContainsScripts=true},
+	{Id=11573553721,Name="Car Mesh",Use="vehicle silhouette study",Budget="manual inspection required",ContainsScripts=true},
 	{Id=87547058560755,Name="BUS stop",Use="bus stop detail",Budget="660 tris",ContainsScripts=false},
 	{Id=8690810714,Name="Bus Stop",Use="bus stop study",Budget="2.3k tris / 1 MeshPart",ContainsScripts=false},
 	{Id=42942436,Name="Dumpster Free",Use="alley clutter",Budget="82 tris",ContainsScripts=false},
