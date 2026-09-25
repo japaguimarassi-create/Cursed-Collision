@@ -69,9 +69,13 @@ function S.StopActions(model:Model,fadeTime:number?)
 	if not bucket then return end
 	for name,loaded in pairs(bucket)do
 		local definition=Animation.Get(name)
-		if definition and definition.Priority>=Enum.AnimationPriority.Action and loaded.IsPlaying then
-			loaded:Stop(fadeTime or .08)
-		end
+		local actionPriority=definition and (
+			definition.Priority==Enum.AnimationPriority.Action or
+			definition.Priority==Enum.AnimationPriority.Action2 or
+			definition.Priority==Enum.AnimationPriority.Action3 or
+			definition.Priority==Enum.AnimationPriority.Action4
+		)
+		if actionPriority and loaded.IsPlaying then loaded:Stop(fadeTime or .08)end
 	end
 end
 
