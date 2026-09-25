@@ -1,0 +1,233 @@
+name: Collision Battlestar Game Pass Provisioner
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/gamepasses/request.json"
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Create or synchronize the configured game passes"
+        required: true
+        type: boolean
+        default: false
+      universe_id:
+        description: "Roblox Universe ID"
+        required: true
+        type: string
+        default: "5290480963"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collision-battlestar-gamepass-provisioner
+  cancel-in-progress: false
+
+jobs:
+  provision:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[collision-battlestar:auto-reset]')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Resolve request
+        id: request
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          CONFIRM: ${{ inputs.confirm }}
+          INPUT_UNIVERSE_ID: ${{ inputs.universe_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          expected_universe="5290480963"
+          if os.environ.get("EVENT_NAME")=="push":
+              path=Path(".github/gamepasses/request.json")
+              if not path.is_file():
+                  print("No game pass request found.")
+                  Path(os.environ["GITHUB_OUTPUT"]).write_text("provision=false\n",encoding="utf-8")
+                  sys.exit(0)
+              data=json.loads(path.read_text(encoding="utf-8"))
+              if data.get("create") is not True:
+                  print("Game pass request is not armed.")
+                  Path(os.environ["GITHUB_OUTPUT"]).write_text("provision=false\n",encoding="utf-8")
+                  sys.exit(0)
+              universe=str(data.get("universe_id",""))
+          else:
+              if os.environ.get("CONFIRM","").lower()!="true":
+                  print("Manual provisioning was not confirmed.")
+                  Path(os.environ["GITHUB_OUTPUT"]).write_text("provision=false\n",encoding="utf-8")
+                  sys.exit(0)
+              universe=os.environ.get("INPUT_UNIVERSE_ID","")
+          if universe!=expected_universe:
+              raise SystemExit(f"Unexpected Universe ID: {universe}")
+          Path(os.environ["GITHUB_OUTPUT"]).write_text(f"provision=true\nuniverse_id={universe}\n",encoding="utf-8")
+          PY
+
+      - name: Provision game passes
+        if: ${{ steps.request.outputs.provision == 'true' }}
+        shell: bash
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          UNIVERSE_ID: ${{ steps.request.outputs.universe_id }}
+        run: |
+          set -euo pipefail
+          test -n "${ROBLOX_API_KEY}"
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          universe=os.environ["UNIVERSE_ID"]
+          api_key=os.environ["ROBLOX_API_KEY"]
+          catalog=json.loads(Path(".github/gamepasses/catalog.json").read_text(encoding="utf-8"))
+
+          minimum=int(catalog["minPrice"])
+          maximum=int(catalog["maxPrice"])
+          passes=catalog["passes"]
+
+          for item in passes:
+              price=int(item["price"])
+              if price < minimum or price > maximum:
+                  raise SystemExit(f"Price outside configured band: {item['key']}={price}")
+
+          def request_list(page_token=None):
+              url=f"https://apis.roblox.com/game-passes/v1/universes/{universe}/game-passes/creator?pageSize=100"
+              if page_token:
+                  url += "&pageToken=" + page_token
+              p=subprocess.run(
+                  ["curl","--silent","--show-error","--location","--request","GET","--url",url,"--header",f"x-api-key: {api_key}"],
+                  capture_output=True,text=True,check=False)
+              if p.returncode:
+                  raise SystemExit(p.stderr)
+              try:
+                  body=json.loads(p.stdout)
+              except json.JSONDecodeError:
+                  raise SystemExit("Roblox returned a non-JSON response while listing game passes.")
+              return body
+
+          existing={}
+          token=None
+          while True:
+              body=request_list(token)
+              for gp in body.get("gamePasses",[]):
+                  name=gp.get("name")
+                  gp_id=gp.get("gamePassId")
+                  if isinstance(name,str) and isinstance(gp_id,int):
+                      existing[name]=gp_id
+              token=body.get("nextPageToken")
+              if not token:
+                  break
+
+          created=[]
+          for item in passes:
+              name=item["name"]
+              if name in existing:
+                  print(f"EXISTS {item['key']} -> {existing[name]}")
+                  continue
+              cmd=[
+                  "curl","--silent","--show-error","--location","--request","POST",
+                  "--url",f"https://apis.roblox.com/game-passes/v1/universes/{universe}/game-passes",
+                  "--header",f"x-api-key: {api_key}",
+                  "--form",f"name={name}",
+                  "--form",f"description={item['description']}",
+                  "--form","isForSale=true",
+                  "--form",f"price={item['price']}",
+                  "--form","isRegionalPricingEnabled=false"
+              ]
+              p=subprocess.run(cmd,capture_output=True,text=True,check=False)
+              if p.returncode:
+                  raise SystemExit(p.stderr)
+              if not p.stdout.strip():
+                  raise SystemExit(f"Empty Roblox response while creating {name}")
+              try:
+                  body=json.loads(p.stdout)
+              except json.JSONDecodeError:
+                  print(p.stdout)
+                  raise SystemExit(f"Roblox returned non-JSON while creating {name}")
+              gp_id=body.get("gamePassId")
+              if not isinstance(gp_id,int):
+                  print(p.stdout)
+                  raise SystemExit(f"Roblox did not return a valid gamePassId for {name}")
+              existing[name]=gp_id
+              created.append((item["key"],gp_id))
+              print(f"CREATED {item['key']} -> {gp_id}")
+
+          lua_path=Path("src/CollisionBattlestar/ReplicatedStorage/Shared/GamePassDefinitions.lua")
+          text=lua_path.read_text(encoding="utf-8")
+          for item in passes:
+              gp_id=existing.get(item["name"])
+              if not isinstance(gp_id,int):
+                  raise SystemExit(f"Missing game pass ID for {item['key']}")
+              key=item["key"]
+              old=f"{key}={{Id=0,TargetPrice={item['price']},"
+              new=f"{key}={{Id={gp_id},TargetPrice={item['price']},"
+              if old in text:
+                  text=text.replace(old,new,1)
+                  text=text.replace("},Enabled=false},", "},Enabled=true},", 1)
+          lua_path.write_text(text,encoding="utf-8")
+
+          print(f"Created {len(created)} new game passes.")
+          print(f"Catalog contains {len(passes)} configured game passes.")
+          PY
+
+      - name: Validate provisioned IDs
+        if: ${{ steps.request.outputs.provision == 'true' }}
+        shell: bash
+        run: python3 tools/validate_project.py
+
+      - name: Commit synchronized pass IDs
+        if: ${{ steps.request.outputs.provision == 'true' && success() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/CollisionBattlestar/ReplicatedStorage/Shared/GamePassDefinitions.lua
+          git diff --cached --quiet && exit 0
+          git commit -m "[collision-battlestar:auto-reset] synchronize Roblox game pass IDs"
+          git push
+
+      - name: Reset provisioning request
+        if: ${{ github.event_name == 'push' && steps.request.outputs.provision == 'true' && success() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path(".github/gamepasses/request.json")
+          data=json.loads(path.read_text(encoding="utf-8"))
+          data["create"]=False
+          data["status"]="consumed"
+          path.write_text(json.dumps(data,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/gamepasses/request.json
+          git diff --cached --quiet || git commit -m "[collision-battlestar:auto-reset] consume game pass request"
+          git push
+
+      - name: Upload provisioning report
+        if: ${{ always() && steps.request.outputs.provision == 'true' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: collision-battlestar-gamepass-provision
+          path: |
+            src/CollisionBattlestar/ReplicatedStorage/Shared/GamePassDefinitions.lua
+            .github/gamepasses/catalog.json

@@ -13,6 +13,9 @@ REQUIRED=[
 "ReplicatedStorage/Shared/EventDefinitions.lua",
 "ReplicatedStorage/Shared/AnimationDefinitions.lua",
 "ReplicatedStorage/Shared/VFXDefinitions.lua",
+"ReplicatedStorage/Shared/GamePassDefinitions.lua",
+"ServerScriptService/Services/GamePassService.lua",
+"StarterPlayer/StarterPlayerScripts/Client/GamePassController.client.lua",
 "ServerScriptService/Security/AntiCheatService.lua",
 "ServerScriptService/Services/PlayerDataService.lua",
 "ServerScriptService/Services/WorldStateService.lua",
@@ -135,6 +138,21 @@ movement=(SRC/"ServerScriptService/Services/MovementService.lua").read_text()
 if "SprintStart" not in movement or "SprintEnd" not in movement:
     fail("movement sprint actions missing")
 
+passes=(SRC/"ReplicatedStorage/Shared/GamePassDefinitions.lua").read_text()
+for token in ("Passes","ActionRequirements","MinPrice","MaxPrice"):
+    if token not in passes:
+        fail("game pass definitions missing: "+token)
+for match in re.finditer(r"TargetPrice=(\d+)",passes):
+    price=int(match.group(1))
+    if price<20 or price>60:
+        fail("game pass target price outside 20-60: "+str(price))
+configured_ids=[int(x) for x in re.findall(r"Id=(\d+),TargetPrice=\d+,Category="+"[^"]+"+"[^\n]*?Enabled=(?:true|false)",passes)]
+if len([x for x in configured_ids if x>0]) != len(set(x for x in configured_ids if x>0)):
+    fail("duplicate configured game pass IDs detected")
+pass_service=(SRC/"ServerScriptService/Services/GamePassService.lua").read_text()
+for token in ("UserOwnsGamePassAsync","PromptGamePassPurchase","PromptGamePassPurchaseFinished","RequireAction","HasAction"):
+    if token not in pass_service:
+        fail("game pass service contract missing: "+token)
 ui=(SRC/"StarterPlayer/StarterPlayerScripts/Client/UIController.client.lua").read_text()
 for token in ("Momentum","Instability","REALITY BREAK","TouchEnabled"):
     if token not in ui:
@@ -144,3 +162,4 @@ print("PASS: Collision Battlestar active manifest")
 print(f"PASS: {len(REQUIRED)} active runtime files")
 print("PASS: legacy franchise/runtime markers absent from active tree")
 print("PASS: combat, movement, persistence, world-state, event, UI contracts present")
+print("PASS: game pass ownership, purchase prompting, capability gating and 20-60 target price contract present")
