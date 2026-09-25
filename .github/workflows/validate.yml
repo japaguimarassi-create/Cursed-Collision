@@ -32,7 +32,6 @@ jobs:
           curl -fsSL "https://github.com/luau-lang/luau/releases/download/0.740/luau-ubuntu.zip" -o .ci/luau/luau.zip
           unzip -q -o .ci/luau/luau.zip -d .ci/luau/bin
           chmod +x .ci/luau/bin/luau-compile
-          .ci/luau/bin/luau-compile --version
           while IFS= read -r -d '' file; do
             .ci/luau/bin/luau-compile --only-parse "$file" >/dev/null
           done < <(find src/CollisionBattlestar -type f -name '*.lua' -print0)
