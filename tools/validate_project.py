@@ -60,7 +60,7 @@ for p in SRC.rglob("*.lua"):
             fail(f"legacy marker in active source: {p} -> {marker}")
 
 config=(SRC/"ReplicatedStorage/Shared/Config.lua").read_text()
-for token in ("MomentumMax","InstabilityMax","Reality","Fracture","Blade","Martial"):
+for token in ("MomentumMax","InstabilityMax","Reality","Fracture","Blade","Martial","Size=960","EventAnchor=Vector3.new(0,6,-286)"):
     if token not in config:
         fail("configuration contract missing: "+token)
 
@@ -74,6 +74,8 @@ for token in ("Stable","Unstable","Distorted","Invaded","Collapsed","Recovering"
     if f'"{token}"' not in world:
         fail("Collision State missing: "+token)
 
+world_builder=(SRC/"ServerScriptService/World/WorldBuilder.server.lua").read_text()
+for token in ("GroundWest","GroundEast","GroundNorth","GroundSouth","MetroFloor","SkybridgeWest","SkybridgeNorth","ShatterPark","CanalWater","RiftCore","BossArena"):    if token not in world_builder:        fail("map contract missing: "+token)
 event=(SRC/"ServerScriptService/Services/EventService.lua").read_text()
 for token in ("RealityBreak","CollisionChain","Warning","Escalation","Climax","Resolved"):
     if token.lower() not in event.lower():
