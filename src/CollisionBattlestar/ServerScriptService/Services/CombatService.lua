@@ -1,5 +1,6 @@
 --!strict
 local Players=game:GetService("Players");local R=game:GetService("ReplicatedStorage");local C=require(R.Shared.Config);local D=require(R.Shared.CombatDefinitions);local U=require(R.Shared.Util);local Anti=require(script.Parent.Parent.Security.AntiCheatService)
+local Destruction=require(script.Parent.DestructionService)
 local S={};local states:{[Player]:any}={}
 local function state(p:Player)local s=states[p];if s then return s end;s={Busy=0,LastLight=0,Combo=0,LastDash=0,LastSpecial=0,LastOverdrive=0,IsBlocking=false,ParryUntil=0,Momentum=0,Instability=0,Overdrive=false,Style="Blade"};states[p]=s;return s end
 local function sync(p:Player,s:any)p:SetAttribute("Momentum",math.floor(s.Momentum));p:SetAttribute("Instability",math.floor(s.Instability));p:SetAttribute("Overdrive",s.Overdrive);p:SetAttribute("IsBlocking",s.IsBlocking);p:SetAttribute("ParryUntil",s.ParryUntil);p:SetAttribute("CombatStyle",s.Style)end
@@ -20,6 +21,7 @@ local function performHit(p:Player,s:any,name:string,d:any,scale:number?)
 			fb(p,"Hit",{Position=targetRoot.Position,Action=name,Damage=math.floor(damage)});if targetPlayer then fb(targetPlayer,"HitTaken",{Position=targetRoot.Position,Damage=math.floor(damage)})end
 		end
 	end end
+	if name=="Heavy"or name=="Special" then Destruction.BreakInBox(cf,Vector3.new(d.Width*style.Range,d.Height,range),name=="Special"and 2 or 1) end
 	if s.Overdrive and s.Instability>=100 then s.Overdrive=false;s.Busy=os.clock()+.8;s.Momentum=U.Clamp(s.Momentum-25,0,100);fb(p,"OverdriveCollapse")end;sync(p,s)
 end
 local function request(p:Player,action:string)
