@@ -9,8 +9,8 @@ local Destruction=require(script.Parent.DestructionService)
 local S={}
 S.Defeated=Instance.new("BindableEvent")
 local folder:Folder?
-local active:{[Model]=boolean}={}
-local attackAt:{[Model]=number}={}
+local active:{[Model]:boolean}={}
+local attackAt:{[Model]:number}={}
 
 local function limb(parent:Model,name:string,size:Vector3,pos:Vector3,color:Color3):Part
 	local p=U.Part(parent,name,size,CFrame.new(pos),Enum.Material.Neon,color,false)
