@@ -254,4 +254,5 @@ jobs:
           path: |
             build/CollisionBattlestar.rbxl
             build/publish-response.json
+            build/build-sha256.txt
           if-no-files-found: warn
