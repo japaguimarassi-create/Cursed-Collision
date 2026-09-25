@@ -54,11 +54,12 @@ if tree.get("ReplicatedStorage",{}).get("$path")!="src/CollisionBattlestar/Repli
 if tree.get("ServerScriptService",{}).get("$path")!="src/CollisionBattlestar/ServerScriptService":
     fail("manifest ServerScriptService does not point at active CollisionBattlestar tree")
 
-for p in SRC.rglob("*.lua"):
-    text=p.read_text(encoding="utf-8")
-    for marker in ("Jujutsu","Sukuna","Gojo","Megumi","Cursed Collision","CursedCollision","PotentialMan"):
-        if marker.lower() in text.lower():
-            fail(f"legacy marker in active source: {p} -> {marker}")
+for p in SRC.rglob("*"):
+    if p.is_file():
+        text=p.read_text(encoding="utf-8", errors="ignore")
+        for marker in ("Jujutsu","Sukuna","Gojo","Megumi","Cursed Collision","CursedCollision","PotentialMan"):
+            if marker.lower() in text.lower():
+                fail(f"legacy marker in active source: {p} -> {marker}")
 
 config=(SRC/"ReplicatedStorage/Shared/Config.lua").read_text()
 for token in ("MomentumMax","InstabilityMax","Reality","Fracture","Blade","Martial","Size=960","EventAnchor=Vector3.new(0,6,-286)"):
