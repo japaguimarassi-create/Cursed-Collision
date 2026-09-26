@@ -659,7 +659,7 @@ task.spawn(startInternalBoot)
 
 bind(UserInputService:GetPropertyChangedSignal("PreferredInput"),platformRefresh)
 bind(UserInputService.InputBegan,function(input,gpe)
-  if gpe then return end
+  if gpe or not bootDone then return end
   if input.UserInputType==Enum.UserInputType.MouseButton1 then
     combat:FireServer("Light")
   elseif input.KeyCode==Enum.KeyCode.Q then
@@ -676,7 +676,7 @@ bind(UserInputService.InputBegan,function(input,gpe)
 end)
 
 bind(UserInputService.InputEnded,function(input,gpe)
-  if gpe then return end
+  if gpe or not bootDone then return end
   if input.KeyCode==Enum.KeyCode.F then combat:FireServer("BlockEnd")
   elseif input.KeyCode==Enum.KeyCode.LeftShift then movement:FireServer("Sprint",false) end
 end)
