@@ -86,6 +86,13 @@ function M:RefreshHUD()
  if efill and efill:IsA("Frame") then efill.Size=UDim2.fromScale(energy/100,1) end
  if ev then ev.Text="CE "..math.floor(energy) end
  local over=math.clamp(tonumber(player:GetAttribute("Overdrive")) or 0,0,100)
+ local clash=find(gui,"ClashPanel")
+ if clash and clash:IsA("GuiObject") then
+  local active=(tonumber(player:GetAttribute("DomainClash")) or 0)>0
+  clash.Visible=active
+  local score=lbl(clash,"Score")
+  if score then score.Text=tostring(player:GetAttribute("ClashScore") or 0).."  •  CLASH" end
+ end
  local af=find(panel,"Awakening");local afill=af and find(af,"Fill");local av=lbl(af,"Value")
  if afill and afill:IsA("Frame") then afill.Size=UDim2.fromScale(over/100,1) end
  if av then av.Text=(player:GetAttribute("AwakeningActive")==true and "AWAKENING ACTIVE" or "AWAKENING "..math.floor(over).."%") end
@@ -231,6 +238,16 @@ function M:Bind(guiArg:ScreenGui,remotesArg)
   if b and b:IsA("GuiButton") then bind(b.Activated,function() utility:FireServer("SetCharacter",id);show("FighterPanel",false) end) end
  end
 
+ local clashPanel=find(gui,"ClashPanel")
+ if clashPanel then
+  for i=1,4 do
+   local b=find(clashPanel,"Clash"..i)
+   if b and b:IsA("GuiButton") then
+    bind(b.Activated,function() combat:FireServer("Clash"..tostring(i)) end)
+   end
+  end
+ end
+
  local quest=find(gui,"QuestPanel")
  for _,kind in ipairs({"Daily","Weekly","Lifetime"}) do
   local row=find(quest,kind);local b=find(row,"Claim")
@@ -248,7 +265,7 @@ function M:Bind(guiArg:ScreenGui,remotesArg)
   task.defer(function() self:RefreshHUD() end)
  end)
 
- for _,attribute in ipairs({"Energy","MaxEnergy","Overdrive","Level","EquippedCharacter","EquippedTitle","CurrentMapNode","Combo","Blocking","AwakeningActive","NextLight","NextDash","NextSpecial","NextDomain","Credits","KOs","Streak","DailyKOs","WeeklyKOs","LifetimeKOs"}) do
+ for _,attribute in ipairs({"Energy","MaxEnergy","Overdrive","Level","EquippedCharacter","EquippedTitle","CurrentMapNode","Combo","Blocking","AwakeningActive","NextLight","NextDash","NextSpecial","NextDomain","DomainClash","ClashScore","Credits","KOs","Streak","DailyKOs","WeeklyKOs","LifetimeKOs"}) do
   bind(player:GetAttributeChangedSignal(attribute),function() self:RefreshHUD();self:RenderMissions();self:RefreshProfile() end)
  end
 
