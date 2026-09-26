@@ -123,8 +123,33 @@ function Controller:Init()
         end)
     end
 
+    local function mountOptional()
+        local shopRemote = ReplicatedStorage:WaitForChild("Remotes", 15):WaitForChild("Shop", 15)
+        if shopRemote and shopRemote:IsA("RemoteEvent") and not gui:FindFirstChild("ShopButton") then
+            safeMount("ShopRetry", function()
+                Shop.Mount(root, Config, player, shopRemote :: RemoteEvent, stateRemote)
+            end)
+        end
+        if player:GetAttribute("IsOwner") == true and not gui:FindFirstChild("AdminMenuButton") then
+            safeMount("AdminRetry", function()
+                Admin.Mount(root, Config, player, adminRemote)
+            end)
+        end
+    end
+
     safeMount("Admin", function()
         Admin.Mount(root, Config, player, adminRemote)
+    end)
+
+    task.spawn(function()
+        for _ = 1, 12 do
+            task.wait(1)
+            if gui.Parent then
+                mountOptional()
+            else
+                break
+            end
+        end
     end)
 
     if not status or not actions or not feedback then
