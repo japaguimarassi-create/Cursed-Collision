@@ -23,7 +23,7 @@ local function ensureBootGui()
     label.Name = "Status"
     label.AnchorPoint = Vector2.new(0.5, 0.5)
     label.Position = UDim2.fromScale(0.5, 0.5)
-    label.Size = UDim2.fromOffset(260, 44)
+    label.Size = UDim2.fromOffset(300, 44)
     label.BackgroundTransparency = 0.15
     label.BackgroundColor3 = Color3.fromRGB(12, 14, 20)
     label.Text = "COLLISION BATTLESTAR  •  LOADING"
@@ -41,18 +41,29 @@ end
 
 local bootGui = ensureBootGui()
 
+local function setBootStatus(value: string)
+    local status = bootGui:FindFirstChild("Status")
+    if status and status:IsA("TextLabel") then
+        status.Text = value
+    end
+end
+
 task.spawn(function()
-    local UIController = require(root:WaitForChild("UIController"))
     local loaded = false
 
-    for _ = 1, 5 do
+    for attempt = 1, 8 do
+        setBootStatus(("COLLISION BATTLESTAR  •  HUD %d/8"):format(attempt))
+
         local ok = pcall(function()
+            local UIController = require(root:WaitForChild("UIController"))
             UIController:Init()
         end)
+
         if ok then
             loaded = true
             break
         end
+
         task.wait(1)
     end
 
@@ -61,28 +72,21 @@ task.spawn(function()
             bootGui:Destroy()
         end
     else
-        local status = bootGui:FindFirstChild("Status")
-        if status and status:IsA("TextLabel") then
-            status.Text = "HUD ERROR  •  REJOIN TO RETRY"
-        end
+        setBootStatus("HUD OFFLINE  •  REJOIN TO RETRY")
     end
 end)
 
 task.spawn(function()
-    local ok, InputController = pcall(function()
-        return require(root:WaitForChild("InputController"))
-    end)
-    if not ok then
-        return
-    end
-
-    for _ = 1, 3 do
-        local initialized = pcall(function()
+    for attempt = 1, 5 do
+        local ok = pcall(function()
+            local InputController = require(root:WaitForChild("InputController"))
             InputController:Init()
         end)
-        if initialized then
+
+        if ok then
             return
         end
+
         task.wait(1)
     end
 end)
