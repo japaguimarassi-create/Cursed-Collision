@@ -5,13 +5,16 @@ local Lighting = game:GetService("Lighting")
 
 local Service = {}
 
-local function part(parent: Instance, name: string, size: Vector3, cframe: CFrame, material: Enum.Material, color: Color3): BasePart
+local function part(parent: Instance, name: string, size: Vector3, cframe: CFrame, material: Enum.Material, color: Color3, transparency: number?, canCollide: boolean?): BasePart
     local p = Instance.new("Part")
     p.Name = name
     p.Size = size
     p.CFrame = cframe
     p.Anchored = true
     p.CanTouch = false
+    p.CanQuery = true
+    p.CanCollide = canCollide ~= false
+    p.Transparency = transparency or 0
     p.Material = material
     p.Color = color
     p.TopSurface = Enum.SurfaceType.Smooth
@@ -23,124 +26,193 @@ end
 local function model(parent: Instance, name: string): Model
     local m = Instance.new("Model")
     m.Name = name
+    m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
     m.Parent = parent
     return m
 end
 
-local function building(parent: Instance, rng: Random, origin: Vector3, index: number)
-    local width = rng:NextInteger(34, 56)
-    local depth = rng:NextInteger(34, 56)
-    local height = rng:NextInteger(28, 96)
+local function neon(parent: Instance, name: string, size: Vector3, cframe: CFrame, color: Color3)
+    return part(parent, name, size, cframe, Enum.Material.Neon, color, 0, false)
+end
 
-    local m = model(parent, ("Building_%02d"):format(index))
-    local base = part(
+local function building(parent: Instance, rng: Random, origin: Vector3, index: number, district: string)
+    local width = rng:NextInteger(42, 68)
+    local depth = rng:NextInteger(42, 68)
+    local height = rng:NextInteger(34, 104)
+
+    local m = model(parent, district .. "_Building_" .. ("%02d"):format(index))
+    local bodyColor = Color3.fromRGB(
+        rng:NextInteger(44, 74),
+        rng:NextInteger(48, 78),
+        rng:NextInteger(58, 90)
+    )
+
+    part(
         m,
         "Body",
         Vector3.new(width, height, depth),
         CFrame.new(origin + Vector3.new(0, height / 2, 0)),
         Enum.Material.Concrete,
-        Color3.fromRGB(rng:NextInteger(48, 78), rng:NextInteger(50, 82), rng:NextInteger(58, 92))
+        bodyColor
+    )
+
+    part(
+        m,
+        "Base",
+        Vector3.new(width + 2, 4, depth + 2),
+        CFrame.new(origin + Vector3.new(0, 2, 0)),
+        Enum.Material.Slate,
+        Color3.fromRGB(24, 27, 34)
     )
 
     part(
         m,
         "Roof",
-        Vector3.new(width + 2, 2, depth + 2),
-        CFrame.new(origin + Vector3.new(0, height + 1, 0)),
+        Vector3.new(width + 3, 3, depth + 3),
+        CFrame.new(origin + Vector3.new(0, height + 1.5, 0)),
         Enum.Material.Metal,
-        Color3.fromRGB(20, 24, 32)
+        Color3.fromRGB(18, 22, 30)
     )
 
-    local door = part(
+    local roofUnit = part(
         m,
-        "Door",
-        Vector3.new(math.min(8, width * 0.25), math.min(12, height * 0.25), 0.4),
-        CFrame.new(origin + Vector3.new(0, math.min(8, height * 0.25), -(depth / 2 + 0.2))),
+        "RoofUnit",
+        Vector3.new(math.min(18, width * 0.35), 5, math.min(12, depth * 0.25)),
+        CFrame.new(origin + Vector3.new(rng:NextInteger(-8, 8), height + 5, rng:NextInteger(-8, 8))),
         Enum.Material.Metal,
-        Color3.fromRGB(30, 34, 42)
+        Color3.fromRGB(33, 37, 46)
     )
+    CollectionService:AddTag(roofUnit, "WorldStructure")
 
-    local windowRows = math.max(1, math.floor(height / 18))
-    local windowCols = math.max(1, math.floor(width / 13))
+    local windowColor = if district == "Industrial" then Color3.fromRGB(112, 126, 116) else Color3.fromRGB(96, 115, 148)
+    local rows = math.max(2, math.floor(height / 20))
+    local columns = math.max(2, math.floor(width / 18))
 
-    for row = 1, windowRows do
-        for col = 1, windowCols do
-            local x = -width / 2 + col * (width / (windowCols + 1))
-            local y = 10 + row * 14
-            if y < height - 4 then
-                part(
+    for row = 1, math.min(rows, 4) do
+        for col = 1, math.min(columns, 4) do
+            local x = -width / 2 + col * (width / (math.min(columns, 4) + 1))
+            local y = 9 + row * 16
+            if y < height - 5 then
+                neon(
                     m,
-                    "Window",
-                    Vector3.new(4, 5, 0.25),
-                    CFrame.new(origin + Vector3.new(x, y, -(depth / 2 + 0.14))),
-                    Enum.Material.Glass,
-                    Color3.fromRGB(90, 105, 130)
+                    "WindowFront",
+                    Vector3.new(5, 3.5, 0.22),
+                    CFrame.new(origin + Vector3.new(x, y, -(depth / 2 + 0.13))),
+                    windowColor
+                )
+                neon(
+                    m,
+                    "WindowBack",
+                    Vector3.new(5, 3.5, 0.22),
+                    CFrame.new(origin + Vector3.new(x, y, depth / 2 + 0.13)),
+                    windowColor
                 )
             end
         end
     end
 
-    CollectionService:AddTag(base, "WorldStructure")
-end
-
-local function tower(parent: Instance, origin: Vector3, height: number)
-    local m = model(parent, "Tower")
+    local doorWidth = math.min(9, width * 0.22)
     part(
         m,
-        "Core",
-        Vector3.new(22, height, 22),
-        CFrame.new(origin + Vector3.new(0, height / 2, 0)),
-        Enum.Material.Brick,
-        Color3.fromRGB(34, 38, 48)
+        "Door",
+        Vector3.new(doorWidth, 14, 0.5),
+        CFrame.new(origin + Vector3.new(0, 7, -(depth / 2 + 0.25))),
+        Enum.Material.Metal,
+        Color3.fromRGB(30, 34, 42)
     )
 
-    for y = 12, height - 6, 12 do
-        part(
-            m,
-            "Ring",
-            Vector3.new(28, 2, 28),
-            CFrame.new(origin + Vector3.new(0, y, 0)),
-            Enum.Material.Metal,
-            Color3.fromRGB(58, 65, 78)
+    CollectionService:AddTag(m:FindFirstChild("Body") :: BasePart, "WorldStructure")
+end
+
+local function road(parent: Instance, axis: "X" | "Z", coordinate: number, width: number, size: number)
+    local isX = axis == "X"
+    local roadPart = part(
+        parent,
+        "Road_" .. axis,
+        if isX then Vector3.new(size, 0.3, width) else Vector3.new(width, 0.3, size),
+        CFrame.new(if isX then 0 else coordinate, 0.2, if isX then coordinate else 0),
+        Enum.Material.Asphalt,
+        Color3.fromRGB(38, 41, 48)
+    )
+    roadPart.CanQuery = false
+    for offset = -size / 2 + 14, size / 2 - 14, 28 do
+        neon(
+            parent,
+            "Lane",
+            if isX then Vector3.new(16, 0.08, 0.35) else Vector3.new(0.35, 0.08, 16),
+            CFrame.new(if isX then offset else coordinate, 0.42, if isX then coordinate else offset),
+            Color3.fromRGB(118, 124, 132)
         )
     end
 end
 
-local function cover(parent: Instance, origin: Vector3, size: Vector3, rotation: number)
-    local m = model(parent, "Cover")
-    part(
+local function sidewalk(parent: Instance, axis: "X" | "Z", coordinate: number, roadWidth: number, sidewalkWidth: number, size: number)
+    local isX = axis == "X"
+    local sideA = if isX then Vector3.new(size, 0.5, sidewalkWidth) else Vector3.new(sidewalkWidth, 0.5, size)
+    local offsetA = roadWidth / 2 + sidewalkWidth / 2
+    for _, direction in ipairs({-1, 1}) do
+        local pos = if isX
+            then Vector3.new(0, 0.45, coordinate + direction * offsetA)
+            else Vector3.new(coordinate + direction * offsetA, 0.45, 0)
+        part(parent, "Sidewalk", sideA, CFrame.new(pos), Enum.Material.Concrete, Color3.fromRGB(94, 97, 104))
+    end
+end
+
+local function barrier(parent: Instance, origin: Vector3, rotation: number)
+    local m = model(parent, "Barrier")
+    local base = part(m, "Base", Vector3.new(10, 1.8, 3), CFrame.new(origin), Enum.Material.Concrete, Color3.fromRGB(55, 59, 67))
+    base.CFrame *= CFrame.Angles(0, math.rad(rotation), 0)
+    for x = -3, 3, 3 do
+        local post = part(m, "Post", Vector3.new(0.8, 4, 0.8), CFrame.new(origin + Vector3.new(x, 2.5, 0)) * CFrame.Angles(0, math.rad(rotation), 0), Enum.Material.Metal, Color3.fromRGB(40, 44, 52))
+    end
+end
+
+local function crate(parent: Instance, origin: Vector3, scale: number, rotation: number)
+    local m = model(parent, "CrateStack")
+    local a = part(m, "A", Vector3.new(6, 6, 6) * scale, CFrame.new(origin) * CFrame.Angles(0, math.rad(rotation), 0), Enum.Material.WoodPlanks, Color3.fromRGB(113, 92, 65))
+    part(m, "B", Vector3.new(5, 5, 5) * scale, a.CFrame * CFrame.new(2.7 * scale, 5.2 * scale, 0), Enum.Material.WoodPlanks, Color3.fromRGB(88, 72, 52))
+end
+
+local function streetMarker(parent: Instance, origin: Vector3, text: string)
+    local m = model(parent, "DistrictMarker")
+    part(m, "Post", Vector3.new(1.2, 12, 1.2), CFrame.new(origin + Vector3.new(0, 6, 0)), Enum.Material.Metal, Color3.fromRGB(38, 42, 50))
+    local plate = part(m, "Plate", Vector3.new(11, 3.5, 0.35), CFrame.new(origin + Vector3.new(0, 10, 0)), Enum.Material.Metal, Color3.fromRGB(22, 26, 34))
+    local surface = Instance.new("SurfaceGui")
+    surface.Face = Enum.NormalId.Front
+    surface.AlwaysOnTop = true
+    surface.LightInfluence = 0
+    surface.Parent = plate
+
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.fromScale(1, 1)
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(235, 239, 245)
+    label.Font = Enum.Font.GothamBold
+    label.TextScaled = true
+    label.Parent = surface
+end
+
+local function arenaCover(parent: Instance, origin: Vector3, size: Vector3, rotation: number)
+    local m = model(parent, "ArenaCover")
+    local wall = part(
         m,
         "Wall",
         size,
         CFrame.new(origin) * CFrame.Angles(0, math.rad(rotation), 0),
         Enum.Material.Concrete,
-        Color3.fromRGB(72, 76, 84)
+        Color3.fromRGB(68, 72, 82)
     )
-end
+    CollectionService:AddTag(wall, "ArenaCover")
 
-local function container(parent: Instance, origin: Vector3, rotation: number)
-    local m = model(parent, "Container")
-    part(
+    local trim = neon(
         m,
-        "Body",
-        Vector3.new(18, 8, 42),
-        CFrame.new(origin) * CFrame.Angles(0, math.rad(rotation), 0),
-        Enum.Material.Metal,
-        Color3.fromRGB(54, 66, 78)
+        "Trim",
+        Vector3.new(size.X, 0.25, 0.25),
+        wall.CFrame * CFrame.new(0, size.Y / 2 - 0.2, -size.Z / 2 - 0.15),
+        Color3.fromRGB(112, 118, 132)
     )
-end
-
-local function ramp(parent: Instance, origin: Vector3, length: number, width: number, height: number, rotation: number)
-    local m = model(parent, "Ramp")
-    local cframe = CFrame.new(origin) * CFrame.Angles(math.rad(-math.deg(math.atan2(height, length))), math.rad(rotation), 0)
-    part(
-        m,
-        "Surface",
-        Vector3.new(width, 2, length),
-        cframe,
-        Enum.Material.Concrete,
-        Color3.fromRGB(82, 86, 96)
-    )
+    trim.CFrame = wall.CFrame * CFrame.new(0, size.Y / 2 - 0.2, -size.Z / 2 - 0.15)
 end
 
 local function spawnPoint(parent: Instance, name: string, position: Vector3)
@@ -150,9 +222,28 @@ local function spawnPoint(parent: Instance, name: string, position: Vector3)
     p.Position = position
     p.Anchored = true
     p.CanCollide = false
+    p.CanTouch = false
     p.CanQuery = false
     p.Transparency = 1
     p.Parent = parent
+end
+
+local function addEnemySpawnRing(parent: Instance)
+    local radii = {52, 78, 104}
+    local index = 0
+
+    for _, radius in ipairs(radii) do
+        local count = if radius == 104 then 12 else 8
+        for i = 1, count do
+            index += 1
+            local angle = (i / count) * math.pi * 2 + math.rad(index * 7)
+            spawnPoint(
+                parent,
+                ("EnemySpawn_%02d"):format(index),
+                Vector3.new(math.cos(angle) * radius, 4, math.sin(angle) * radius)
+            )
+        end
+    end
 end
 
 function Service:Init(config)
@@ -161,16 +252,30 @@ function Service:Init(config)
         old:Destroy()
     end
 
-    local oldSpawns = workspace:FindFirstChild("TagSpawns")
-    if oldSpawns then
-        oldSpawns:Destroy()
+    for _, name in ipairs({"TagSpawns", "ArenaEnemySpawns"}) do
+        local oldFolder = workspace:FindFirstChild(name)
+        if oldFolder then
+            oldFolder:Destroy()
+        end
     end
 
-    Lighting.Brightness = 2
-    Lighting.ClockTime = 17.4
-    Lighting.EnvironmentDiffuseScale = 0.55
-    Lighting.EnvironmentSpecularScale = 0.75
+    Lighting.Brightness = 2.2
+    Lighting.ClockTime = 17.7
+    Lighting.EnvironmentDiffuseScale = 0.6
+    Lighting.EnvironmentSpecularScale = 0.7
     Lighting.GlobalShadows = true
+
+    local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
+    if not atmosphere then
+        atmosphere = Instance.new("Atmosphere")
+        atmosphere.Parent = Lighting
+    end
+    atmosphere.Density = 0.28
+    atmosphere.Offset = 0.08
+    atmosphere.Haze = 1.2
+    atmosphere.Glare = 0.12
+    atmosphere.Color = Color3.fromRGB(196, 204, 220)
+    atmosphere.Decay = Color3.fromRGB(90, 98, 116)
 
     local world = Instance.new("Folder")
     world.Name = "GeneratedWorld"
@@ -178,91 +283,142 @@ function Service:Init(config)
 
     local rng = Random.new(config.World.Seed)
     local size = config.World.Size
-    local step = config.World.BlockSize
-    local road = config.World.RoadWidth
+    local roadWidth = config.World.RoadWidth
+    local sidewalkWidth = 6
 
-    part(world, "Ground", Vector3.new(size, 2, size), CFrame.new(0, -1, 0), Enum.Material.Asphalt, Color3.fromRGB(32, 34, 40))
+    part(world, "Ground", Vector3.new(size, 2, size), CFrame.new(0, -1, 0), Enum.Material.Asphalt, Color3.fromRGB(26, 29, 35))
 
     local roads = Instance.new("Folder")
     roads.Name = "Roads"
     roads.Parent = world
+    for coordinate = -480, 480, 96 do
+        road(roads, "X", coordinate, roadWidth, size)
+        sidewalk(roads, "X", coordinate, roadWidth, sidewalkWidth, size)
+        road(roads, "Z", coordinate, roadWidth, size)
+        sidewalk(roads, "Z", coordinate, roadWidth, sidewalkWidth, size)
+    end
 
-    for coordinate = -420, 420, step do
-        part(roads, "RoadX", Vector3.new(road, 0.3, size), CFrame.new(coordinate, 0.2, 0), Enum.Material.Slate, Color3.fromRGB(46, 48, 55))
-        part(roads, "RoadZ", Vector3.new(size, 0.3, road), CFrame.new(0, 0.2, coordinate), Enum.Material.Slate, Color3.fromRGB(46, 48, 55))
+    local arena = model(world, "CombatArena")
+    part(arena, "ArenaFloor", Vector3.new(228, 4, 228), CFrame.new(0, 1, 0), Enum.Material.Concrete, Color3.fromRGB(46, 50, 59))
+    part(arena, "ArenaCore", Vector3.new(128, 3, 128), CFrame.new(0, 4.5, 0), Enum.Material.Metal, Color3.fromRGB(31, 36, 45))
+    neon(arena, "CoreLine", Vector3.new(118, 0.3, 4), CFrame.new(0, 6.1, 0), Color3.fromRGB(88, 104, 128))
+    neon(arena, "CoreLine2", Vector3.new(4, 0.3, 118), CFrame.new(0, 6.12, 0), Color3.fromRGB(88, 104, 128))
+
+    for _, edge in ipairs({
+        {Vector3.new(0, 10, -114), Vector3.new(228, 20, 4)},
+        {Vector3.new(0, 10, 114), Vector3.new(228, 20, 4)},
+        {Vector3.new(-114, 10, 0), Vector3.new(4, 20, 228)},
+        {Vector3.new(114, 10, 0), Vector3.new(4, 20, 228)},
+    }) do
+        part(arena, "ArenaWall", edge[2], CFrame.new(edge[1]), Enum.Material.Concrete, Color3.fromRGB(35, 39, 47))
+    end
+
+    for i = 1, 12 do
+        local angle = math.rad(i * 30)
+        local radius = 72
+        arenaCover(
+            arena,
+            Vector3.new(math.cos(angle) * radius, 7, math.sin(angle) * radius),
+            Vector3.new(18, 14, 6 + (i % 3) * 2),
+            i * 13
+        )
+    end
+
+    for i = 1, 8 do
+        local angle = math.rad(i * 45 + 22.5)
+        local radius = 94
+        local position = Vector3.new(math.cos(angle) * radius, 6, math.sin(angle) * radius)
+        local m = model(arena, "ArenaPillar")
+        part(m, "Pillar", Vector3.new(8, 12 + (i % 2) * 4, 8), CFrame.new(position), Enum.Material.Brick, Color3.fromRGB(61, 66, 76))
+        neon(m, "Signal", Vector3.new(8.5, 0.5, 8.5), CFrame.new(position + Vector3.new(0, 6 + (i % 2) * 2, 0)), Color3.fromRGB(100, 116, 142))
     end
 
     local structures = Instance.new("Folder")
-    structures.Name = "Structures"
+    structures.Name = "Districts"
     structures.Parent = world
 
     local buildingIndex = 0
-    for x = -4, 4, 2 do
-        for z = -4, 4, 2 do
-            if x ~= 0 or z ~= 0 then
+    local districts = {
+        {Name = "North", z = -330, x = 0},
+        {Name = "South", z = 330, x = 0},
+        {Name = "East", z = 0, x = 330},
+        {Name = "West", z = 0, x = -330},
+    }
+
+    for _, district in ipairs(districts) do
+        for localX = -1, 1 do
+            for localZ = -1, 1 do
                 buildingIndex += 1
                 local origin = Vector3.new(
-                    x * step + rng:NextInteger(-9, 9),
+                    district.x + localX * 112 + rng:NextInteger(-18, 18),
                     0,
-                    z * step + rng:NextInteger(-9, 9)
+                    district.z + localZ * 112 + rng:NextInteger(-18, 18)
                 )
-                building(structures, rng, origin, buildingIndex)
+                building(structures, rng, origin, buildingIndex, if district.Name == "South" then "Industrial" else district.Name)
             end
         end
     end
 
-    tower(structures, Vector3.new(-455, 0, -455), 120)
-    tower(structures, Vector3.new(455, 0, -455), 104)
-    tower(structures, Vector3.new(-455, 0, 455), 88)
-    tower(structures, Vector3.new(455, 0, 455), 136)
+    local detail = Instance.new("Folder")
+    detail.Name = "StreetDetail"
+    detail.Parent = world
 
-    for index = 1, 18 do
-        local angle = math.rad(index * 20)
-        local radius = 160 + (index % 3) * 35
-        local pos = Vector3.new(math.cos(angle) * radius, 3, math.sin(angle) * radius)
-        cover(structures, pos, Vector3.new(8, 6 + (index % 3) * 2, 22), index * 17)
+    for i = 1, 24 do
+        local x = rng:NextInteger(-520, 520)
+        local z = rng:NextInteger(-520, 520)
+        if math.abs(x) > 150 and math.abs(z) > 150 then
+            barrier(detail, Vector3.new(x, 1, z), rng:NextInteger(0, 3) * 45)
+        end
     end
 
-    for index = 0, 7 do
-        container(structures, Vector3.new(-290 + index * 82, 4, 260 + (index % 2) * 24), if index % 2 == 0 then 0 else 90)
+    for i = 1, 20 do
+        local x = rng:NextInteger(-520, 520)
+        local z = rng:NextInteger(-520, 520)
+        if math.abs(x) > 160 and math.abs(z) > 160 then
+            crate(detail, Vector3.new(x, 3, z), rng:NextInteger(8, 12) / 10, rng:NextInteger(0, 3) * 90)
+        end
     end
 
-    for index = 0, 7 do
-        ramp(structures, Vector3.new(-250 + index * 72, 1, -270), 28, 18, 10 + (index % 3) * 3, if index % 2 == 0 then 0 else 180)
-    end
+    streetMarker(detail, Vector3.new(-170, 0, -505), "NORTH BLOCK")
+    streetMarker(detail, Vector3.new(170, 0, 505), "SOUTH YARD")
+    streetMarker(detail, Vector3.new(-505, 0, 170), "WEST MARKET")
+    streetMarker(detail, Vector3.new(505, 0, -170), "EAST DISTRICT")
 
-    local center = model(structures, "CentralPlaza")
-    part(center, "Platform", Vector3.new(100, 4, 100), CFrame.new(0, 2, 0), Enum.Material.Concrete, Color3.fromRGB(50, 54, 64))
-    for angle = 0, 315, 45 do
-        local radians = math.rad(angle)
-        local position = Vector3.new(math.cos(radians) * 54, 8, math.sin(radians) * 54)
-        part(center, "Pillar", Vector3.new(8, 16, 8), CFrame.new(position), Enum.Material.Marble, Color3.fromRGB(82, 86, 98))
+    local overpass = model(structures, "Overpass")
+    part(overpass, "Deck", Vector3.new(360, 7, 22), CFrame.new(0, 28, 450), Enum.Material.Metal, Color3.fromRGB(47, 52, 61))
+    for x = -150, 150, 50 do
+        part(overpass, "Pylon", Vector3.new(7, 56, 7), CFrame.new(x, 0, 450), Enum.Material.Metal, Color3.fromRGB(35, 40, 48))
     end
+    neon(overpass, "Edge", Vector3.new(340, 0.35, 0.35), CFrame.new(0, 31.6, 437), Color3.fromRGB(92, 104, 124))
 
-    local bridge = model(structures, "Bridge")
-    part(bridge, "Deck", Vector3.new(250, 6, 18), CFrame.new(0, 16, 320), Enum.Material.Metal, Color3.fromRGB(56, 62, 72))
-    for x = -100, 100, 50 do
-        part(bridge, "Support", Vector3.new(6, 32, 6), CFrame.new(x, 0, 320), Enum.Material.Metal, Color3.fromRGB(42, 48, 58))
+    local ramps = model(structures, "ArenaApproaches")
+    for _, data in ipairs({
+        {Vector3.new(0, 1, -168), 34},
+        {Vector3.new(0, 1, 168), 214},
+        {Vector3.new(-168, 1, 0), 304},
+        {Vector3.new(168, 1, 0), 124},
+    }) do
+        local r = part(ramps, "Approach", Vector3.new(44, 2, 34), CFrame.new(data[1]) * CFrame.Angles(0, math.rad(data[2]), 0), Enum.Material.Concrete, Color3.fromRGB(75, 78, 86))
+        r.CanQuery = true
     end
 
     local spawns = Instance.new("Folder")
     spawns.Name = "TagSpawns"
     spawns.Parent = workspace
 
-    local spawnPositions = {
-        Vector3.new(-36, 2, -36),
-        Vector3.new(36, 2, -36),
-        Vector3.new(-36, 2, 36),
-        Vector3.new(36, 2, 36),
-        Vector3.new(-160, 2, 0),
-        Vector3.new(160, 2, 0),
-        Vector3.new(0, 2, -160),
-        Vector3.new(0, 2, 160),
-    }
-
-    for index, position in ipairs(spawnPositions) do
+    for index, position in ipairs({
+        Vector3.new(-42, 8, -42),
+        Vector3.new(42, 8, -42),
+        Vector3.new(-42, 8, 42),
+        Vector3.new(42, 8, 42),
+    }) do
         spawnPoint(spawns, ("Spawn_%02d"):format(index), position)
     end
+
+    local enemySpawns = Instance.new("Folder")
+    enemySpawns.Name = "ArenaEnemySpawns"
+    enemySpawns.Parent = workspace
+    addEnemySpawnRing(enemySpawns)
 
     local mainSpawn = workspace:FindFirstChild("MainSpawn")
     if mainSpawn then
@@ -272,10 +428,11 @@ function Service:Init(config)
     local start = Instance.new("SpawnLocation")
     start.Name = "MainSpawn"
     start.Size = Vector3.new(18, 1, 18)
-    start.Position = Vector3.new(0, 3, 0)
+    start.Position = Vector3.new(0, 8, 0)
     start.Anchored = true
     start.Neutral = true
     start.Transparency = 1
+    start.CanTouch = false
     start.CanQuery = false
     start.Parent = workspace
 end
