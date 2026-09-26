@@ -24,7 +24,7 @@ local function refreshPass(player: Player, pass)
         return MarketplaceService:UserOwnsGamePassAsync(player.UserId, pass.Id)
     end)
 
-    setPassAttribute(player, "Pass_" .. pass.Key, success and owned == true)
+    setPassAttribute(player, pass.Key, success and owned == true)
 end
 
 local function promptPass(player: Player, key: string)
