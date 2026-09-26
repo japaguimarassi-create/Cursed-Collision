@@ -34,12 +34,10 @@ game:waves({
     MaxAliveEnemies = 28,
 })
 
-game:enemies({
-    Tier1 = {Health = 60, Speed = 11, Damage = 7, AttackRange = 5, AttackCooldown = 1.1, Reward = 10},
-    Tier2 = {Health = 110, Speed = 12, Damage = 10, AttackRange = 5.5, AttackCooldown = 1.0, Reward = 16},
-    Tier3 = {Health = 180, Speed = 13, Damage = 14, AttackRange = 6, AttackCooldown = 0.9, Reward = 24},
-    Elite = {HealthMultiplier = 3.25, SpeedMultiplier = 1.08, DamageMultiplier = 1.8, RewardMultiplier = 4},
-})
+game:enemy("Tier1", {Health = 60, Speed = 11, Damage = 7, AttackRange = 5, AttackCooldown = 1.1, Reward = 10})
+game:enemy("Tier2", {Health = 110, Speed = 12, Damage = 10, AttackRange = 5.5, AttackCooldown = 1.0, Reward = 16})
+game:enemy("Tier3", {Health = 180, Speed = 13, Damage = 14, AttackRange = 6, AttackCooldown = 0.9, Reward = 24})
+game:enemy("Elite", {HealthMultiplier = 3.25, SpeedMultiplier = 1.08, DamageMultiplier = 1.8, RewardMultiplier = 4})
 
 game:ai("Enemy", {
     ThinkInterval = 0.1,
