@@ -26,15 +26,17 @@ local function closestPlayer(position: Vector3): Player?
     local bestDistance = math.huge
 
     for _, player in ipairs(Players:GetPlayers()) do
-        local character = player.Character
-        local root = character and character:FindFirstChild("HumanoidRootPart")
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if player:GetAttribute("Zone") ~= "PvP" then
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 
-        if root and root:IsA("BasePart") and humanoid and humanoid.Health > 0 then
-            local distance = (root.Position - position).Magnitude
-            if distance < bestDistance then
-                bestDistance = distance
-                best = player
+            if root and root:IsA("BasePart") and humanoid and humanoid.Health > 0 then
+                local distance = (root.Position - position).Magnitude
+                if distance < bestDistance then
+                    bestDistance = distance
+                    best = player
+                end
             end
         end
     end
@@ -62,8 +64,8 @@ end
 
 local function createEnemy(position: Vector3, tier: number, elite: boolean): Model
     local baseConfig = if tier >= 3 then Config.Enemies.Tier3 elseif tier == 2 then Config.Enemies.Tier2 else Config.Enemies.Tier1
-
     local multiplier = if elite then Config.Enemies.Elite else nil
+
     local health = baseConfig.Health * (multiplier and multiplier.HealthMultiplier or 1)
     local speed = baseConfig.Speed * (multiplier and multiplier.SpeedMultiplier or 1)
     local damage = baseConfig.Damage * (multiplier and multiplier.DamageMultiplier or 1)
@@ -79,8 +81,6 @@ local function createEnemy(position: Vector3, tier: number, elite: boolean): Mod
         Vector3.new(2.6, 3.2, 1.8),
         if elite then Config.UI.Danger else Color3.fromRGB(80, 105 + tier * 20, 125)
     )
-    root.Transparency = 0
-    root.CanCollide = true
     root.CFrame = CFrame.new(position)
 
     local torso = makePart(model, "Torso", Vector3.new(3, 3.4, 1.8), root.Color)
@@ -132,6 +132,7 @@ local function createEnemy(position: Vector3, tier: number, elite: boolean): Mod
         highlight.FillTransparency = 0.35
         highlight.OutlineColor = Color3.fromRGB(255, 235, 235)
         highlight.OutlineTransparency = 0
+        highlight.DepthMode = Enum.HighlightDepthMode.Occluded
         highlight.Adornee = model
         highlight.Parent = model
 
@@ -169,23 +170,26 @@ local function createEnemy(position: Vector3, tier: number, elite: boolean): Mod
 
     humanoid.Died:Connect(function()
         enemies[model] = nil
+
         local attackerId = humanoid:GetAttribute("LastAttackerUserId")
         local rewardAmount = tonumber(model:GetAttribute("Reward")) or 0
 
         if type(attackerId) == "number" then
             local attacker = Players:GetPlayerByUserId(attackerId)
-            if attacker then
-                local multiplierPass = attacker:GetAttribute("Pass_EliteBonus") == true and elite
-                local vipPass = attacker:GetAttribute("Pass_VIP") == true
+            if attacker and attacker:GetAttribute("Zone") ~= "PvP" then
                 local finalReward = rewardAmount
-                if multiplierPass then
+
+                if elite and attacker:GetAttribute("Pass_EliteBonus") == true then
                     finalReward *= 2
                 end
-                if vipPass then
+
+                if attacker:GetAttribute("Pass_VIP") == true then
                     finalReward *= 1.1
                 end
-                DataService:AddCredits(attacker, math.floor(finalReward))
-                stateEvent:FireClient(attacker, "Reward", math.floor(finalReward), elite)
+
+                finalReward = math.floor(finalReward)
+                DataService:AddCredits(attacker, finalReward)
+                stateEvent:FireClient(attacker, "Reward", finalReward, elite)
             end
         end
 
@@ -222,6 +226,10 @@ local function attackPlayer(model: Model, runtime, target: Player)
 end
 
 local function chase(model: Model, runtime, target: Player)
+    if target:GetAttribute("Zone") == "PvP" then
+        return
+    end
+
     local root = model.PrimaryPart
     local character = target.Character
     if not root or not character then

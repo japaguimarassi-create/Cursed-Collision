@@ -36,10 +36,7 @@ local function ownedDefinitions(player: Player)
     for index, definition in ipairs(Config.Shop.Companions) do
         local amount = profile.Companions[definition.Key] or 0
         if amount > 0 or (definition.Key == "Scout" and player:GetAttribute("Pass_StarterCompanion") == true) then
-            table.insert(result, {
-                index = index,
-                definition = definition,
-            })
+            table.insert(result, {index = index, definition = definition})
         end
     end
 
@@ -93,7 +90,6 @@ local function createCompanion(player: Player, definition)
     model:SetAttribute("Damage", definition.Damage)
 
     CollectionService:AddTag(model, "CompanionNPC")
-
     body:SetNetworkOwner(nil)
 
     humanoid.Died:Connect(function()
@@ -116,6 +112,10 @@ local function refresh(player: Player)
     end
 
     active[player] = {}
+
+    if player:GetAttribute("Zone") == "PvP" then
+        return
+    end
 
     local owned = ownedDefinitions(player)
     local slots = if player:GetAttribute("Pass_SecondCompanion") == true then 2 else 1
@@ -155,7 +155,7 @@ end
 
 local function think(player: Player, state: ActiveCompanion)
     local model = state.Model
-    if not model.Parent or not model.PrimaryPart then
+    if not model.Parent or not model.PrimaryPart or player:GetAttribute("Zone") == "PvP" then
         return
     end
 
@@ -175,7 +175,6 @@ local function think(player: Player, state: ActiveCompanion)
     end
 
     local enemy = nearestEnemy(model.PrimaryPart.Position, definition.AttackRange + 20)
-
     if enemy and enemy.PrimaryPart then
         local distance = (enemy.PrimaryPart.Position - model.PrimaryPart.Position).Magnitude
 
@@ -240,8 +239,8 @@ function Service:Init(config, dataService)
             end
         end)
 
-        for _, key in ipairs({"Pass_SecondCompanion", "Pass_StarterCompanion"}) do
-            player:GetAttributeChangedSignal(key):Connect(function()
+        for _, attribute in ipairs({"Pass_SecondCompanion", "Pass_StarterCompanion", "Zone"}) do
+            player:GetAttributeChangedSignal(attribute):Connect(function()
                 refresh(player)
             end)
         end

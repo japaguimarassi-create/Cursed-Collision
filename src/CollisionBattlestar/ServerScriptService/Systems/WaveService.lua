@@ -39,39 +39,35 @@ local function tierForWave(currentWave: number): number
 end
 
 local function spawnWave(currentWave: number)
-    local baseCount = Config.Waves.FirstWaveEnemies + (currentWave - 1) * Config.Waves.EnemyGrowth
-    local count = math.min(baseCount, Config.Waves.MaxAliveEnemies)
+    local count = math.min(
+        Config.Waves.FirstWaveEnemies + (currentWave - 1) * Config.Waves.EnemyGrowth,
+        Config.Waves.MaxAliveEnemies
+    )
     local tier = tierForWave(currentWave)
 
     for index = 1, count do
-        local position = spawnPositions[((index - 1) % #spawnPositions) + 1]
+        local point = spawnPositions[((index - 1) % #spawnPositions) + 1]
         local jitter = Vector3.new(
             spawnRng:NextInteger(-12, 12),
             0,
             spawnRng:NextInteger(-12, 12)
         )
-
-        local elite = Config.Waves.EliteEveryWave and index == count
-        EnemyService:Spawn(position + jitter, tier, elite)
+        EnemyService:Spawn(point + jitter, tier, Config.Waves.EliteEveryWave and index == count)
     end
 
     broadcast("WaveStart", currentWave, count, tier)
 end
 
-local function calculateWaveBonus(currentWave: number): number
+local function waveReward(currentWave: number): number
     local reward = Config.Waves.CompletionReward + currentWave * 6
+
     if currentWave >= 20 then
         reward += 120
     elseif currentWave >= 10 then
         reward += 60
     end
 
-    local bonus = reward
-    if Players:GetAttribute("WaveMasterMultiplier") == true then
-        bonus *= 1.25
-    end
-
-    return math.floor(bonus)
+    return math.floor(reward)
 end
 
 function Service:Init(config, enemyService, dataService)
@@ -95,6 +91,7 @@ function Service:Init(config, enemyService, dataService)
             end
 
             active = false
+
             for remaining = Config.Waves.Intermission, 1, -1 do
                 broadcast("WaveIntermission", remaining)
                 task.wait(1)
@@ -109,19 +106,19 @@ function Service:Init(config, enemyService, dataService)
                 broadcast("WaveState", wave, alive)
 
                 if alive <= 0 then
-                    local reward = calculateWaveBonus(wave)
+                    local baseReward = waveReward(wave)
 
                     for _, player in ipairs(Players:GetPlayers()) do
-                        if player:GetAttribute("DataReady") == true then
-                            local multiplier = if player:GetAttribute("Pass_WaveMaster") == true then 1.25 else 1
-                            local finalReward = math.floor(reward * multiplier)
+                        if player:GetAttribute("DataReady") == true and player:GetAttribute("Zone") ~= "PvP" then
+                            local multiplier = if player:GetAttribute("Pass_ExtraWaveReward") == true then 1.25 else 1
+                            local finalReward = math.floor(baseReward * multiplier)
                             DataService:AddCredits(player, finalReward)
                             State:FireClient(player, "WaveReward", finalReward, wave)
                         end
                     end
 
                     active = false
-                    broadcast("WaveClear", wave, reward)
+                    broadcast("WaveClear", wave, baseReward)
                     task.wait(2)
                 else
                     task.wait(0.45)

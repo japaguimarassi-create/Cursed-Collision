@@ -8,6 +8,7 @@ local player = Players.LocalPlayer
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local State = remotes:WaitForChild("State") :: RemoteEvent
+local Travel = remotes:WaitForChild("Travel") :: RemoteEvent
 
 local Controller = {}
 
@@ -16,6 +17,7 @@ local enemyLabel: TextLabel
 local moneyLabel: TextLabel
 local levelLabel: TextLabel
 local rewardLabel: TextLabel
+local travelButton: TextButton
 
 local function rounded(parent: Instance, radius: number)
     local c = Instance.new("UICorner")
@@ -31,7 +33,7 @@ local function stroke(parent: Instance)
     s.Parent = parent
 end
 
-local function makeText(parent: Instance, value: string, size: number)
+local function text(parent: Instance, value: string, size: number)
     local t = Instance.new("TextLabel")
     t.BackgroundTransparency = 1
     t.Text = value
@@ -60,36 +62,60 @@ function Controller:Init()
     local gui = Instance.new("ScreenGui")
     gui.Name = "PvEHUD"
     gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = false
     gui.Parent = player:WaitForChild("PlayerGui")
 
     local top = panel(gui, UDim2.fromOffset(330, 96), UDim2.fromScale(0.5, 0.035))
     top.AnchorPoint = Vector2.new(0.5, 0)
 
-    waveLabel = makeText(top, "WAVE 0", 24)
+    waveLabel = text(top, "WAVE 0", 24)
     waveLabel.Size = UDim2.new(0.5, 0, 0, 44)
     waveLabel.Position = UDim2.fromOffset(8, 3)
 
-    enemyLabel = makeText(top, "INIMIGOS 0", 12)
+    enemyLabel = text(top, "INIMIGOS 0", 12)
     enemyLabel.Size = UDim2.new(0.5, -8, 0, 44)
     enemyLabel.Position = UDim2.new(0.5, 0, 0, 3)
     enemyLabel.TextColor3 = Config.UI.Muted
 
-    moneyLabel = makeText(top, "0 C", 14)
+    moneyLabel = text(top, "0 C", 14)
     moneyLabel.Size = UDim2.new(0.5, -8, 0, 34)
     moneyLabel.Position = UDim2.fromScale(0, 0.53)
     moneyLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    levelLabel = makeText(top, "D 0   DEF 0   SPD 0", 11)
+    levelLabel = text(top, "D 0   DEF 0   SPD 0", 11)
     levelLabel.Size = UDim2.new(0.5, -8, 0, 34)
     levelLabel.Position = UDim2.fromScale(0.5, 0.53)
     levelLabel.TextColor3 = Config.UI.Muted
 
     local rewardPanel = panel(gui, UDim2.fromOffset(300, 54), UDim2.fromScale(0.5, 0.87))
     rewardPanel.AnchorPoint = Vector2.new(0.5, 0.5)
-    rewardLabel = makeText(rewardPanel, "Derrote inimigos para ganhar créditos.", 12)
+    rewardLabel = text(rewardPanel, "Derrote inimigos para ganhar créditos.", 12)
     rewardLabel.Size = UDim2.fromScale(1, 1)
     rewardLabel.Font = Enum.Font.GothamMedium
     rewardLabel.TextColor3 = Config.UI.Muted
+
+    travelButton = Instance.new("TextButton")
+    travelButton.Name = "BattlegroundsButton"
+    travelButton.Size = UDim2.fromOffset(152, 46)
+    travelButton.Position = UDim2.fromScale(0.03, 0.82)
+    travelButton.BackgroundColor3 = Config.UI.Surface
+    travelButton.BackgroundTransparency = 0.06
+    travelButton.Text = "BATTLEGROUNDS"
+    travelButton.TextColor3 = Config.UI.Text
+    travelButton.Font = Enum.Font.GothamBold
+    travelButton.TextSize = 12
+    travelButton.AutoButtonColor = true
+    travelButton.Parent = gui
+    rounded(travelButton, 13)
+    stroke(travelButton)
+
+    local zoneLabel = text(gui, "PVE", 10)
+    zoneLabel.Name = "Zone"
+    zoneLabel.Size = UDim2.fromOffset(120, 26)
+    zoneLabel.Position = UDim2.fromScale(0.03, 0.78)
+    zoneLabel.TextXAlignment = Enum.TextXAlignment.Left
+    zoneLabel.TextColor3 = Config.UI.Muted
+    zoneLabel.Parent = gui
 
     local function refresh()
         local credits = player:GetAttribute("Credits") or 0
@@ -105,7 +131,24 @@ function Controller:Init()
     end
     refresh()
 
-    State.OnClientEvent:Connect(function(kind: string, a, b, c)
+    local function setZone(zone: string)
+        zoneLabel.Text = zone == "PvP" and "PVP BATTLEGROUNDS" or "PVE"
+        travelButton.Text = zone == "PvP" and "RETURN TO PVE" or "BATTLEGROUNDS"
+        travelButton.TextColor3 = zone == "PvP" and Config.UI.Danger or Config.UI.Text
+    end
+
+    travelButton.Activated:Connect(function()
+        local zone = player:GetAttribute("Zone") or "PvE"
+        Travel:FireServer(zone == "PvP" and "PvE" or "PvP")
+    end)
+
+    setZone(player:GetAttribute("Zone") or "PvE")
+
+    player:GetAttributeChangedSignal("Zone"):Connect(function()
+        setZone(player:GetAttribute("Zone") or "PvE")
+    end)
+
+    State.OnClientEvent:Connect(function(kind: string, a, b)
         if kind == "WaveIntermission" then
             waveLabel.Text = "PRÓXIMA WAVE"
             enemyLabel.Text = ("%ds"):format(tonumber(a) or 0)
@@ -142,6 +185,11 @@ function Controller:Init()
                     rewardLabel.TextColor3 = Config.UI.Muted
                 end
             end)
+        elseif kind == "Zone" then
+            setZone(tostring(a))
+        elseif kind == "PvpHit" then
+            rewardLabel.Text = ("-%d HP"):format(tonumber(a) or 0)
+            rewardLabel.TextColor3 = Config.UI.Warning
         elseif kind == "Attack" then
             TweenService:Create(rewardLabel, TweenInfo.new(0.08), {TextTransparency = 0.15}):Play()
         end

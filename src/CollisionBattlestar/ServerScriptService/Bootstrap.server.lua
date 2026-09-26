@@ -12,7 +12,7 @@ if not remotes then
     remotes.Parent = ReplicatedStorage
 end
 
-for _, name in ipairs({"Action", "State", "FX"}) do
+for _, name in ipairs({"Action", "State", "FX", "Travel"}) do
     if not remotes:FindFirstChild(name) then
         local remote = Instance.new("RemoteEvent")
         remote.Name = name
@@ -30,10 +30,14 @@ local CompanionService = require(Systems:WaitForChild("CompanionService"))
 local MonetizationService = require(Systems:WaitForChild("MonetizationService"))
 local WorldService = require(Systems:WaitForChild("WorldService"))
 local ShopService = require(Systems:WaitForChild("ShopService"))
+local ZoneService = require(Systems:WaitForChild("ZoneService"))
+local TravelService = require(Systems:WaitForChild("TravelService"))
 
 WorldService:Init(Config)
+ZoneService:Init(Config)
 DataService:Init(Config)
 MonetizationService:Init(Config)
+TravelService:Init(Config, ZoneService)
 EnemyService:Init(Config, DataService, remotes:WaitForChild("State"))
 CombatService:Init(Config, DataService)
 WaveService:Init(Config, EnemyService, DataService)
@@ -44,21 +48,17 @@ local function configureCharacter(player: Player, character: Model)
     local humanoid = character:WaitForChild("Humanoid") :: Humanoid
     local stats = DataService:GetCombatStats(player)
 
-    if stats then
-        humanoid.WalkSpeed = stats.WalkSpeed
-    else
-        humanoid.WalkSpeed = 18
-    end
-
+    humanoid.WalkSpeed = stats and stats.WalkSpeed or 18
     humanoid.JumpPower = 52
 end
 
 Players.PlayerAdded:Connect(function(player)
     task.spawn(function()
-        local success = DataService:Load(player)
-        if not success then
+        if not DataService:Load(player) then
             return
         end
+
+        player:SetAttribute("Zone", player:GetAttribute("Zone") or "PvE")
 
         player.CharacterAdded:Connect(function(character)
             configureCharacter(player, character)
@@ -73,6 +73,8 @@ end)
 for _, player in ipairs(Players:GetPlayers()) do
     task.spawn(function()
         if DataService:Load(player) then
+            player:SetAttribute("Zone", player:GetAttribute("Zone") or "PvE")
+
             player.CharacterAdded:Connect(function(character)
                 configureCharacter(player, character)
             end)

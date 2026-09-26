@@ -21,6 +21,8 @@ required = [
     "src/CollisionBattlestar/ServerScriptService/Systems/ShopService.lua",
     "src/CollisionBattlestar/ServerScriptService/Systems/MonetizationService.lua",
     "src/CollisionBattlestar/ServerScriptService/Systems/WorldService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/ZoneService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/TravelService.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/InputController.client.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/UIController.client.lua",
@@ -39,6 +41,7 @@ if manifest["tree"]["Workspace"]["$properties"].get("StreamingEnabled") is not T
     raise SystemExit("StreamingEnabled is disabled")
 
 lua_files = list((ROOT / "src").rglob("*.lua"))
+
 for path in lua_files:
     source = path.read_text(encoding="utf-8")
     if any(marker in source for marker in ("<<<<<<<", "=======", ">>>>>>>")):
@@ -46,4 +49,15 @@ for path in lua_files:
     if "loadstring(" in source:
         raise SystemExit("Dynamic code loading found in " + str(path))
 
-print("Validated PvE rebuild with {} Luau files.".format(len(lua_files)))
+legacy = {
+    "TagService.lua",
+    "HUDLayout.lua",
+    "roblox_connection.sh",
+    "validate_no_ai.py",
+}
+
+for path in ROOT.rglob("*"):
+    if path.is_file() and path.name in legacy:
+        raise SystemExit("Legacy runtime artifact remains: " + path.name)
+
+print("Validated {} Luau files and the PvE/PvP zone boundary.".format(len(lua_files)))

@@ -30,26 +30,41 @@ local function getCharacter(player: Player)
     return nil
 end
 
-local function nearestEnemy(character: Model, center: CFrame, size: Vector3): Model?
+local function nearestModel(character: Model, center: CFrame, size: Vector3, predicate): Model?
     local params = OverlapParams.new()
     params.ExcludeInstances = {character}
     params.MaxParts = 80
 
-    local candidate: Model?
+    local candidate
     local distance = math.huge
 
     for _, part in ipairs(workspace:GetPartBoundsInBox(center, size, params)) do
         local model = part:FindFirstAncestorOfClass("Model")
-        if model and model:GetAttribute("Enemy") == true and model.PrimaryPart then
-            local d = (model.PrimaryPart.Position - center.Position).Magnitude
-            if d < distance then
-                distance = d
+        if model and model ~= character and model.PrimaryPart and predicate(model) then
+            local currentDistance = (model.PrimaryPart.Position - center.Position).Magnitude
+            if currentDistance < distance then
+                distance = currentDistance
                 candidate = model
             end
         end
     end
 
     return candidate
+end
+
+local function enemyTarget(character: Model, center: CFrame, size: Vector3)
+    return nearestModel(character, center, size, function(model)
+        return model:GetAttribute("Enemy") == true
+    end)
+end
+
+local function playerTarget(attacker: Player, character: Model, center: CFrame, size: Vector3)
+    return nearestModel(character, center, size, function(model)
+        local targetPlayer = Players:GetPlayerFromCharacter(model)
+        return targetPlayer ~= nil
+            and targetPlayer ~= attacker
+            and targetPlayer:GetAttribute("Zone") == "PvP"
+    end)
 end
 
 local function attack(player: Player)
@@ -59,24 +74,27 @@ local function attack(player: Player)
     end
 
     local character, _, root = getCharacter(player)
-    if not character then
-        return
-    end
-
-    if player:GetAttribute("DataReady") ~= true then
+    if not character or player:GetAttribute("DataReady") ~= true then
         return
     end
 
     lastAttack[player] = current
 
     local center = root.CFrame * CFrame.new(0, 0, -Config.Combat.M1.Range / 2)
-    local enemy = nearestEnemy(character, center, Config.Combat.M1.BoxSize)
-    if not enemy then
-        FX:FireAllClients("Swing", center.Position)
+    local target
+
+    if player:GetAttribute("Zone") == "PvP" then
+        target = playerTarget(player, character, center, Config.Combat.M1.BoxSize)
+    else
+        target = enemyTarget(character, center, Config.Combat.M1.BoxSize)
+    end
+
+    if not target then
+        FX:FireAllClients("Swing", center.Position, 1)
         return
     end
 
-    local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+    local humanoid = target:FindFirstChildOfClass("Humanoid")
     if not humanoid or humanoid.Health <= 0 then
         return
     end
@@ -87,12 +105,25 @@ local function attack(player: Player)
     end
 
     local damage = Config.Combat.M1.BaseDamage * stats.Damage
-    humanoid:SetAttribute("LastAttackerUserId", player.UserId)
-    humanoid:SetAttribute("LastAttackerAt", workspace:GetServerTimeNow())
-    humanoid:TakeDamage(damage)
 
-    FX:FireAllClients("Hit", enemy:GetPivot().Position, damage)
-    State:FireClient(player, "Attack", damage)
+    if player:GetAttribute("Zone") == "PvP" then
+        local targetPlayer = Players:GetPlayerFromCharacter(target)
+        if targetPlayer and targetPlayer:GetAttribute("Zone") == "PvP" then
+            humanoid:SetAttribute("LastAttackerUserId", player.UserId)
+            humanoid:SetAttribute("LastAttackerAt", workspace:GetServerTimeNow())
+            humanoid:TakeDamage(damage)
+
+            State:FireClient(player, "PvpHit", damage)
+            FX:FireAllClients("Hit", target:GetPivot().Position, damage)
+        end
+    else
+        humanoid:SetAttribute("LastAttackerUserId", player.UserId)
+        humanoid:SetAttribute("LastAttackerAt", workspace:GetServerTimeNow())
+        humanoid:TakeDamage(damage)
+
+        FX:FireAllClients("Hit", target:GetPivot().Position, damage)
+        State:FireClient(player, "Attack", damage)
+    end
 end
 
 local function dash(player: Player)
@@ -101,7 +132,7 @@ local function dash(player: Player)
         return
     end
 
-    local character, humanoid, root = getCharacter(player)
+    local character, _, root = getCharacter(player)
     if not character then
         return
     end
