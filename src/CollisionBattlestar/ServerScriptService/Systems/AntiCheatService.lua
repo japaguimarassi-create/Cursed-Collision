@@ -222,6 +222,7 @@ local function monitorMovement(player: Player)
     movement[player] = {Position = root.Position, Time = now}
 
     if not previous or now - previous.Time < 0.45 then return end
+    if now - (player:GetAttribute("ServerTeleportAt") or 0) < 2 then return end
 
     local distance = (root.Position - previous.Position).Magnitude
     local elapsed = now - previous.Time
