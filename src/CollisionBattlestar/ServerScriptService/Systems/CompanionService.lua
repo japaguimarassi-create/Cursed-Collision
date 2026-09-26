@@ -306,9 +306,11 @@ local function think(player:Player,state:ActiveCompanion)
                 if not model.Parent or not enemy.Parent or not enemy.PrimaryPart then return end
                 local liveHumanoid=enemy:FindFirstChildOfClass("Humanoid")
                 if liveHumanoid and liveHumanoid.Health>0 and (enemy.PrimaryPart.Position-modelRoot.Position).Magnitude<=definition.AttackRange+1 and hasLineOfSight(state,enemy) then
+                    local stats = DataService:GetCombatStats(player)
+                    local multiplier = stats and stats.DamageMultiplier or 1
                     liveHumanoid:SetAttribute("LastAttackerUserId",player.UserId)
                     liveHumanoid:SetAttribute("LastAttackerAt",workspace:GetServerTimeNow())
-                    liveHumanoid:TakeDamage(definition.Damage)
+                    liveHumanoid:TakeDamage(definition.Damage * multiplier)
                 end
             end)
             return
