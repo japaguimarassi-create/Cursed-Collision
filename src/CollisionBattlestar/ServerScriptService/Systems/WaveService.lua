@@ -128,6 +128,16 @@ function Service:Init(config, enemyService, dataService)
     end)
 end
 
+function Service:AdminNextWave()
+    if active then
+        EnemyService:Clear()
+        active = false
+    end
+    wave += 1
+    active = true
+    spawnWave(wave)
+end
+
 function Service:GetWave(): number
     return wave
 end
