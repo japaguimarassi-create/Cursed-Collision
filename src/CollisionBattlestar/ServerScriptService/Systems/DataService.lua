@@ -306,6 +306,75 @@ function Service:GrantDeveloperProduct(player: Player, product, purchaseId: stri
     return true
 end
 
+function Service:AdminSetCredits(player: Player, amount: number): boolean
+    local profile = profiles[player]
+    if not profile then
+        return false
+    end
+    profile.Credits = math.clamp(math.floor(amount), 0, 1000000000)
+    publish(player, profile)
+    return true
+end
+
+function Service:AdminSetLevel(player: Player, keyName: string, level: number): boolean
+    local profile = profiles[player]
+    if not profile then
+        return false
+    end
+    local value = math.max(0, math.floor(level))
+    if keyName == "Damage" then
+        profile.DamageLevel = math.min(value, 25)
+    elseif keyName == "Defense" then
+        profile.DefenseLevel = math.min(value, 25)
+    elseif keyName == "Speed" then
+        profile.SpeedLevel = math.min(value, 12)
+    else
+        return false
+    end
+    publish(player, profile)
+    return true
+end
+
+function Service:AdminSetMultiplier(player: Player, keyName: string, value: number): boolean
+    local profile = profiles[player]
+    if not profile then
+        return false
+    end
+    value = math.clamp(math.floor(value), 1, 100)
+    if keyName == "Money" then
+        profile.MoneyMultiplier = value
+    elseif keyName == "Damage" then
+        profile.DamageMultiplier = value
+    elseif keyName == "Speed" then
+        profile.SpeedMultiplier = value
+    else
+        return false
+    end
+    publish(player, profile)
+    return true
+end
+
+function Service:GrantSkin(player: Player, skinKey: string): boolean
+    local profile = profiles[player]
+    if not profile or type(skinKey) ~= "string" then
+        return false
+    end
+    profile.OwnedSkins[skinKey] = true
+    publish(player, profile)
+    return true
+end
+
+function Service:GrantCompanion(player: Player, companionKey: string, amount: number?): boolean
+    local profile = profiles[player]
+    if not profile or type(companionKey) ~= "string" then
+        return false
+    end
+    local current = profile.Companions[companionKey] or 0
+    profile.Companions[companionKey] = math.clamp(current + math.max(1, math.floor(amount or 1)), 0, 2)
+    publish(player, profile)
+    return true
+end
+
 function Service:Save(player: Player)
     local profile = profiles[player]
     if not profile or not loaded[player] then
