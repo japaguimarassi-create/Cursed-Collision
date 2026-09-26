@@ -3,6 +3,7 @@ local TweenService=game:GetService("TweenService")
 local Debris=game:GetService("Debris")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local C=require(ReplicatedStorage.Shared.Config)
+local Anim=require(script.Parent.CombatAnimationController)
 
 local M={}
 local fxCount=0
@@ -45,17 +46,37 @@ local function damageText(position:Vector3,damage:number)
 end
 
 function M:Init(remotes)
+ Anim:Init()
  local fx=remotes:WaitForChild("CombatFX") :: UnreliableRemoteEvent
  fx.OnClientEvent:Connect(function(kind:string,position:Vector3,extra:any)
   local c=color(extra,C.UI.Accent)
-  if kind=="Hit" then burst(position,c);if typeof(extra)=="table" and typeof(extra.damage)=="number" then damageText(position,extra.damage) end
-  elseif kind=="Swing" then ring(position,c,typeof(extra)=="table" and extra.combo==4)
-  elseif kind=="Guard" then ring(position,C.UI.Accent,false)
-  elseif kind=="Parry" then burst(position,C.UI.Accent2);ring(position,C.UI.Accent2,true)
-  elseif kind=="Dash" then ring(position,c,false)
-  elseif kind=="Special" then burst(position,c);ring(position,c,true)
-  elseif kind=="Awaken" then burst(position,c);ring(position,c,true);ring(position,c,true)
-  elseif kind=="Domain" then ring(position,c,true)
+  local userId=typeof(extra)=="table" and tonumber(extra.userId) or nil
+  if kind=="Hit" then
+   burst(position,c)
+   if typeof(extra)=="table" and typeof(extra.damage)=="number" then damageText(position,extra.damage) end
+   local victim=typeof(extra)=="table" and extra.victimModel
+   if victim and typeof(victim)=="Instance" and victim:IsA("Model") then Anim:Play(victim,"Hit",nil,"Right") end
+  elseif kind=="Swing" then
+   ring(position,c,typeof(extra)=="table" and extra.combo==4)
+   if userId then Anim:PlayByUserId(userId,"Swing",typeof(extra.combo)=="number" and extra.combo or 1,typeof(extra)=="table" and extra.variant or nil) end
+  elseif kind=="Guard" then
+   ring(position,C.UI.Accent,false)
+   if userId then Anim:PlayByUserId(userId,"Guard") end
+  elseif kind=="Parry" then
+   burst(position,C.UI.Accent2);ring(position,C.UI.Accent2,true)
+   if userId then Anim:PlayByUserId(userId,"Parry") end
+  elseif kind=="Dash" then
+   ring(position,c,false)
+   if userId then Anim:PlayByUserId(userId,"Dash") end
+  elseif kind=="Special" then
+   burst(position,c);ring(position,c,true)
+   if userId then Anim:PlayByUserId(userId,"Special") end
+  elseif kind=="Awaken" then
+   burst(position,c);ring(position,c,true);ring(position,c,true)
+   if userId then Anim:PlayByUserId(userId,"Awaken") end
+  elseif kind=="Domain" then
+   ring(position,c,true)
+   if userId then Anim:PlayByUserId(userId,"Domain") end
   elseif kind=="Ping" then ring(position,C.UI.Gold,false)
   end
  end)
