@@ -621,6 +621,16 @@ function M:Bind(guiArg:ScreenGui,remotesArg)
   end
  end
 
+ local code=find(find(gui,"ShopPanel"),"Code")
+ local input=code and find(code,"Input")
+ local redeem=code and find(code,"Redeem")
+ if input and redeem and input:IsA("TextBox") and redeem:IsA("GuiButton") then
+  bind(redeem.Activated,function()
+   utility:FireServer("RedeemCode",input.Text)
+   input.Text=""
+  end)
+ end
+
  local tabs=find(find(gui,"ShopPanel"),"Tabs")
  for _,name in ipairs({"TabFeatured","TabRobux"}) do
   local b=tabs and find(tabs,name)
