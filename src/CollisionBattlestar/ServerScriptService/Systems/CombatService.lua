@@ -58,6 +58,7 @@ local function mirror(player:Player,s:State)
  player:SetAttribute("NextSpecial",s.nextSpecial)
  player:SetAttribute("NextDomain",s.nextDomain)
  player:SetAttribute("DomainClash",s.clashId or 0)
+ player:SetAttribute("ClashScore",s.clashScore)
 end
 
 local function characterParts(player:Player):(Model?,Humanoid?,BasePart?)
@@ -342,14 +343,19 @@ local function destroyDomain(id:number)
  if d.part.Parent then d.part:Destroy() end
  domains[id]=nil
  if d.owner.Parent then
-  local s=state(d.owner);if s.clashId==id then s.clashId=nil;s.clashScore=0;mirror(d.owner,s) end
+  local s=state(d.owner);if s.clashId==id then s.clashId=nil;s.clashScore=0;s.clashMoveNext=0;mirror(d.owner,s) end
  end
 end
 
 local function endClash(clashId:number,p1:Player,p2:Player,d1:number,d2:number)
- local s1=state(p1);local s2=state(p2)
+ local s1=state(p1)
+ local s2=state(p2)
+ local score1=s1.clashScore
+ local score2=s2.clashScore
+ s1.clashId=nil;s2.clashId=nil;s1.clashScore=0;s2.clashScore=0;s1.clashMoveNext=0;s2.clashMoveNext=0
+ mirror(p1,s1);mirror(p2,s2)
  local winner:Player?
- if s1.clashScore>s2.clashScore then winner=p1 elseif s2.clashScore>s1.clashScore then winner=p2 end
+ if score1>score2 then winner=p1 elseif score2>score1 then winner=p2 end
  if not winner then
   destroyDomain(d1);destroyDomain(d2)
   send(p1,"Message","DOMAIN CLASH  •  DRAW")
@@ -362,11 +368,25 @@ local function endClash(clashId:number,p1:Player,p2:Player,d1:number,d2:number)
  destroyDomain(loserDomain)
  local wd=domains[winnerDomain]
  if wd then wd.expires=now()+Config.Combat.Domain.Duration end
- local ws=state(winner);local ls=state(loser)
- ws.clashId=nil;ls.clashId=nil;ws.clashScore=0;ls.clashScore=0
- mirror(winner,ws);mirror(loser,ls)
- send(winner,"Message","DOMAIN CLASH  •  YOUR DOMAIN PREVAILS")
+ send(winner,"Message","DOMAIN CLASH  •  DOMAIN PREVAILS")
  send(loser,"Message","DOMAIN CLASH  •  DOMAIN LOST")
+end
+
+local function clashMove(player:Player,index:number)
+ local s=state(player)
+ local t=now()
+ if not s.clashId or t<s.clashMoveNext then return end
+ if index<1 or index>4 then return end
+ s.clashMoveNext=t+Config.Combat.Domain.ClashWindow/4
+ s.clashScore+=1
+ player:SetAttribute("LastClashMove",index)
+ mirror(player,s)
+ local character=player.Character
+ local root=character and character:FindFirstChild("HumanoidRootPart")
+ if root and root:IsA("BasePart") then
+  send(player,"ClashMove",{Index=index,Score=s.clashScore,Position=root.Position})
+  fx("Clash",root.Position,{index=index,score=s.clashScore,color=fighterFor(player).Color})
+ end
 end
 
 local function createDomain(player:Player)
@@ -392,7 +412,7 @@ local function createDomain(player:Player)
   if other~=id and ds.owner~=player and ds.part.Parent and now()-ds.expires+Config.Combat.Domain.Duration<=Config.Combat.Domain.ClashWindow then
    local distance=(ds.part.Position-sphere.Position).Magnitude
    if distance<=Config.Combat.Domain.Radius*1.8 then
-    state(ds.owner).clashId=id;state(ds.owner).clashScore=0;state(player).clashId=id
+    state(ds.owner).clashId=id;state(ds.owner).clashScore=0;state(ds.owner).clashMoveNext=0;state(player).clashId=id
     mirror(ds.owner,state(ds.owner));mirror(player,state(player))
     task.delay(Config.Combat.Domain.ClashDuration,function()
      if domains[id] or domains[other] then endClash(id,player,ds.owner,id,other) end
@@ -421,9 +441,21 @@ function M:Handle(player:Player,action:string)
  elseif action=="Dash" then dash(player)
  elseif action=="Special" then special(player)
  elseif action=="BlockStart" then
-  if now()>=s.stunUntil then s.blocking=true;s.blockStarted=now();mirror(player,s) end
+  if now()>=s.stunUntil and not s.clashId then
+   s.blocking=true;s.blockStarted=now()
+   local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+   if humanoid then humanoid.WalkSpeed=Config.Movement.BlockWalkSpeed end
+   mirror(player,s)
+  end
  elseif action=="BlockEnd" then
-  s.blocking=false;mirror(player,s)
+  s.blocking=false
+  local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+  if humanoid then humanoid.WalkSpeed=Config.Movement.WalkSpeed end
+  mirror(player,s)
+ elseif action=="Clash1" then clashMove(player,1)
+ elseif action=="Clash2" then clashMove(player,2)
+ elseif action=="Clash3" then clashMove(player,3)
+ elseif action=="Clash4" then clashMove(player,4)
  elseif action=="Awaken" then awaken(player)
  elseif action=="Domain" then
   if now()>=s.nextDomain and not s.awakening and not s.clashId and (tonumber(player:GetAttribute("Energy")) or 0)>=Config.Combat.Domain.Cost then createDomain(player) end
@@ -450,6 +482,7 @@ function M:Init(dataService,feedback:RemoteEvent,fxRemote:UnreliableRemoteEvent)
    player:SetAttribute("Energy",Config.Resources.MaxEnergy);mirror(player,s)
   end)
   player:SetAttribute("Energy",Config.Resources.MaxEnergy)
+  s.clashMoveNext=0
   mirror(player,s)
  end)
  Players.PlayerRemoving:Connect(function(player)
