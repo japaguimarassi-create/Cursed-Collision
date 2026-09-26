@@ -4,7 +4,7 @@ local DataStoreService=game:GetService("DataStoreService")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local Config=require(ReplicatedStorage.Shared.Config)
 
-type Profile={Credits:number,KOs:number,XP:number,Level:number,Owned:{[string]:boolean},EquippedCharacter:string,EquippedTitle:string,DailyKOs:number,WeeklyKOs:number,LifetimeKOs:number,DailyKey:string,WeeklyKey:string,Codes:{[string]:boolean}}
+type Profile={Credits:number,KOs:number,XP:number,Level:number,Owned:{[string]:boolean},EquippedCharacter:string,EquippedTitle:string,EquippedItem:string,DailyKOs:number,WeeklyKOs:number,LifetimeKOs:number,DailyKey:string,WeeklyKey:string,Codes:{[string]:boolean}}
 
 local M={}
 local store=DataStoreService:GetDataStore("CollisionBattlestar_Profile_v4")
@@ -38,7 +38,7 @@ local function weekKey():string
 end
 
 local function fresh():Profile
- return {Credits=0,KOs=0,XP=0,Level=1,Owned={},EquippedCharacter="Yuji",EquippedTitle="RIVAL",DailyKOs=0,WeeklyKOs=0,LifetimeKOs=0,DailyKey=dateKey(0),WeeklyKey=weekKey(),Codes={}}
+ return {Credits=0,KOs=0,XP=0,Level=1,Owned={},EquippedCharacter="Yuji",EquippedTitle="RIVAL",EquippedItem="",DailyKOs=0,WeeklyKOs=0,LifetimeKOs=0,DailyKey=dateKey(0),WeeklyKey=weekKey(),Codes={}}
 end
 
 local function normalize(data:any):Profile
@@ -53,6 +53,7 @@ local function normalize(data:any):Profile
  end
  if typeof(data.EquippedCharacter)=="string" then p.EquippedCharacter=data.EquippedCharacter end
  if typeof(data.EquippedTitle)=="string" then p.EquippedTitle=data.EquippedTitle end
+ if typeof(data.EquippedItem)=="string" then p.EquippedItem=data.EquippedItem end
  p.DailyKOs=math.max(0,math.floor(tonumber(data.DailyKOs) or 0))
  p.WeeklyKOs=math.max(0,math.floor(tonumber(data.WeeklyKOs) or 0))
  p.LifetimeKOs=math.max(p.KOs,math.floor(tonumber(data.LifetimeKOs) or 0))
@@ -80,6 +81,7 @@ local function mirror(player:Player,p:Profile)
  player:SetAttribute("Level",p.Level)
  player:SetAttribute("EquippedCharacter",p.EquippedCharacter)
  player:SetAttribute("EquippedTitle",p.EquippedTitle)
+ player:SetAttribute("EquippedItem",p.EquippedItem)
  player:SetAttribute("DailyKOs",p.DailyKOs)
  player:SetAttribute("WeeklyKOs",p.WeeklyKOs)
  player:SetAttribute("LifetimeKOs",p.LifetimeKOs)
@@ -106,7 +108,7 @@ function M:Save(player:Player):boolean
  if not p or busy[player] then return false end
  busy[player]=true
  refreshWindows(p)
- local payload={Credits=p.Credits,KOs=p.KOs,XP=p.XP,Level=p.Level,Owned=p.Owned,EquippedCharacter=p.EquippedCharacter,EquippedTitle=p.EquippedTitle,DailyKOs=p.DailyKOs,WeeklyKOs=p.WeeklyKOs,LifetimeKOs=p.LifetimeKOs,DailyKey=p.DailyKey,WeeklyKey=p.WeeklyKey,Codes=p.Codes}
+ local payload={Credits=p.Credits,KOs=p.KOs,XP=p.XP,Level=p.Level,Owned=p.Owned,EquippedCharacter=p.EquippedCharacter,EquippedTitle=p.EquippedTitle,EquippedItem=p.EquippedItem,DailyKOs=p.DailyKOs,WeeklyKOs=p.WeeklyKOs,LifetimeKOs=p.LifetimeKOs,DailyKey=p.DailyKey,WeeklyKey=p.WeeklyKey,Codes=p.Codes}
  local success=false
  for attempt=1,3 do
   local ok=pcall(function() store:UpdateAsync(key(player),function() return payload end) end)
@@ -169,6 +171,12 @@ function M:SetTitle(player:Player,title:string)
  local p=cache[player]
  if not p then return end
  p.EquippedTitle=title
+ mirror(player,p)
+end
+function M:SetItem(player:Player,itemId:string)
+ local p=cache[player]
+ if not p then return end
+ p.EquippedItem=itemId
  mirror(player,p)
 end
 
