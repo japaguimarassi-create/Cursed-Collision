@@ -10,9 +10,12 @@ REQUIRED=[
     "ReplicatedStorage/Shared/Config.lua",
     "ReplicatedStorage/Shared/MapDefinitions.lua",
     "ReplicatedStorage/Shared/StoreCatalog.lua",
+    "ReplicatedStorage/Shared/QAContract.lua",
     "ReplicatedStorage/Shared/UI/HUDLayout.lua",
     "ServerScriptService/Bootstrap.server.lua",
+    "ServerScriptService/QAService.server.lua",
     "StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua",
+    "StarterPlayer/StarterPlayerScripts/Client/QARunner.client.lua",
 ]
 
 def fail(message):
@@ -81,7 +84,7 @@ for token in (
         fail("client contract missing: "+token)
 
 config=read("ReplicatedStorage/Shared/Config.lua")
-for token in ("Light","Dash","Block","Special","RequestRate","ParryWindow","EnergyRegen","MaxFX"):
+for token in ("Light","Dash","Block","Special","RequestRate","ParryWindow","EnergyRegen","MaxFX","Special"):
     if token not in config:
         fail("config contract missing: "+token)
 
@@ -99,3 +102,13 @@ print("PASS: Collision Battlestar clean rebuild")
 print("PASS: exactly one server runtime and one client runtime")
 print("PASS: functional combat, map travel, economy, shop and HUD contracts")
 print("PASS: no legacy runtime files remain")
+
+qaServer=read("ServerScriptService/QAService.server.lua")
+for token in ("QAReport","QAControl","CBS_QA_BOT","GITHUB_QA_TOKEN","CollisionQALatest","repository_dispatch"):
+    if token not in qaServer:
+        fail("QA server contract missing: "+token)
+
+qaClient=read("StarterPlayer/StarterPlayerScripts/Client/QARunner.client.lua")
+for token in ("COLLISION QA BOT","HUD exists","HUD enabled","QA bot spawn","M1 reaches QA bot","Block state toggles","TakeScreenshotCaptureAsync","QAReport"):
+    if token not in qaClient:
+        fail("QA client contract missing: "+token)
