@@ -15,7 +15,7 @@ function Economy.Mount(root, config, player)
 
     local function refresh()
         credits.Text = ("%d C"):format(player:GetAttribute("Credits") or 0)
-        stats.Text = "DMG %d  •  DEF %d  •  SPD %d":format(
+        stats.Text = ("DMG %d  •  DEF %d  •  SPD %d"):format(
             player:GetAttribute("DamageLevel") or 0,
             player:GetAttribute("DefenseLevel") or 0,
             player:GetAttribute("SpeedLevel") or 0
