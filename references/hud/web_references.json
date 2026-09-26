@@ -24,12 +24,6 @@
       "image_url": "https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/5X/c/e/7/2/ce72306c16feaef9b2c18f871b5b6867539d4fa1.jpeg",
       "source_url": "https://devforum.roblox.com/t/game-framerate-locks-to-90fps/3296470",
       "notes": "Grid-based emote/store presentation, readable item cards and pricing hierarchy."
-    },
-    {
-      "id": "roblox_shop_ui",
-      "image_url": "https://kwstudio.org/wp-content/uploads/2025/12/customizable-shop-ui-roblox.png",
-      "source_url": "https://kwstudio.org/b/customizable-shop-ui",
-      "notes": "Modern Roblox shop card language and compact purchase controls. URL is retained as a research reference; availability may change."
     }
   ]
 }
