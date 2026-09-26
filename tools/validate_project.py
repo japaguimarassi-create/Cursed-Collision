@@ -102,7 +102,7 @@ for token in ("Vanguard","Impact","18576726303","18576729183","18576731629","251
         fail("animation profile missing: "+token)
 
 controller=read("StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua")
-for token in ("Animator","LoadAnimation","PreloadAsync","Enum.AnimationPriority","AdjustWeight","AdjustSpeed","AnimationRuntimeReady"):
+for token in ("Animator","LoadAnimation","PreloadAsync","clip.Priority","AdjustWeight","AdjustSpeed","AnimationRuntimeReady"):
     if token not in controller:
         fail("animation runtime contract missing: "+token)
 
