@@ -6,7 +6,7 @@ local Data=require(script.Parent.PlayerDataService)
 local Service={}
 local enemyService
 local sessions:{[Player]:any}={}
-local arenaCenter=Vector3.new(-365,4,330)
+local arenaCenter:Vector3?
 local offsets={Vector3.new(-28,0,-18),Vector3.new(0,0,-24),Vector3.new(28,0,-18),Vector3.new(-28,0,18),Vector3.new(0,0,24),Vector3.new(28,0,18)}
 local firstWaves={
 	[1]={"Riftling","Riftling","Warden"},
@@ -34,11 +34,24 @@ local function spawnEnemy(kind:string,pos:Vector3,ownerUserId:number?):Model?
 	end
 	return enemyService.Spawn(kind,pos,ownerUserId)
 end
+local function getArenaCenter():Vector3
+	if arenaCenter then return arenaCenter end
+	local folder=workspace:FindFirstChild("BattleStreakArena")
+	local floor=folder and folder:FindFirstChild("Floor")
+	if floor and floor:IsA("BasePart")then
+		arenaCenter=floor.Position
+		return arenaCenter
+	end
+	local fallback=Vector3.new(720,4,34)
+	arenaCenter=fallback
+	return fallback
+end
 local function spawnWave(p:Player)
 	local s=sessions[p];if not s then return end
+	local center=getArenaCenter()
 	s.Kinds=makeWave(s.Wave);s.Alive=0
 	for i,kind in ipairs(s.Kinds)do
-		local m=spawnEnemy(kind,arenaCenter+offsets[((i-1)%#offsets)+1]+Vector3.new(0,3,0),p.UserId)
+		local m=spawnEnemy(kind,center+offsets[((i-1)%#offsets)+1]+Vector3.new(0,3,0),p.UserId)
 		if m then s.Spawned[m]=true;s.Alive+=1;m:SetAttribute("BattleStreakWave",s.Wave)end
 	end
 	notify(p,"BattleStreakWave",{Wave=s.Wave,Best=(Data.Get(p)and Data.Get(p).BattleStreakBest)or 0})
