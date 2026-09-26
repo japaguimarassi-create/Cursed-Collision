@@ -32,4 +32,11 @@ function U.IsAlive(model:Model?):boolean
 	local humanoid=U.Humanoid(model)
 	return humanoid~=nil and humanoid.Health>0
 end
+function U.SafeUnit(vector:Vector3,fallback:Vector3):Vector3
+	return vector.Magnitude>0.001 and vector.Unit or fallback
+end
+function U.Round(value:number,decimals:number):number
+	local scale=10^decimals
+	return math.floor(value*scale+.5)/scale
+end
 return U
