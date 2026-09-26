@@ -10,6 +10,7 @@ local DataService
 local State: RemoteEvent
 local Action: RemoteEvent
 local FX: RemoteEvent
+local AntiCheat
 
 local lastAttack: {[Player]: number} = {}
 local lastDash: {[Player]: number} = {}
@@ -163,9 +164,10 @@ local function dash(player: Player)
     State:FireClient(player, "Dash", Config.Combat.Dash.Cooldown)
 end
 
-function Service:Init(config, dataService)
+function Service:Init(config, dataService, antiCheat)
     Config = config
     DataService = dataService
+    AntiCheat = antiCheat
 
     local remotes = ReplicatedStorage:WaitForChild("Remotes")
     Action = remotes:WaitForChild("Action") :: RemoteEvent
@@ -173,6 +175,7 @@ function Service:Init(config, dataService)
     FX = remotes:WaitForChild("FX") :: RemoteEvent
 
     Action.OnServerEvent:Connect(function(player, action: string)
+        if not AntiCheat:ValidateAction(player, action) then return end
         if action == "M1" then
             attack(player)
         elseif action == "Dash" then
