@@ -21,7 +21,7 @@ local function canTravel(player:Player):boolean
 	local now=os.clock()
 	if (cooldown[player]or 0)>now then return false end
 	if player:GetAttribute("MapTraveling")==true then return false end
-	if player:GetAttribute("Blocking")==true or player:GetAttribute("CombatStunned")==true or player:GetAttribute("Ragdolled")==true then return false end
+	if player:GetAttribute("IsBlocking")==true or player:GetAttribute("CombatStunned")==true or player:GetAttribute("Ragdolled")==true then return false end
 	local lastCombat=tonumber(player:GetAttribute("LastCombatAt"))or 0
 	if lastCombat>0 and now-lastCombat<COMBAT_LOCK then return false end
 	return true

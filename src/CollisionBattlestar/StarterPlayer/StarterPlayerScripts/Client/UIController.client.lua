@@ -26,12 +26,20 @@ local alert=Instance.new("TextLabel");alert.AnchorPoint=Vector2.new(.5,.5);alert
 local menuButton:TextButton?=nil
 local menuPanel:Frame?=nil
 local shopPanel:Frame?=nil
+local notifySerial=0
 
 local function notify(message:string,duration:number?)
-	alert.Text=message;alert.Visible=true;alert.TextTransparency=0
+	notifySerial+=1
+	local serial=notifySerial
+	alert.Text=message
+	alert.Visible=true
+	alert.TextTransparency=0
 	task.delay(duration or 2.3,function()
-		if not alert.Parent then return end
-		local tw=TweenService:Create(alert,TweenInfo.new(.3),{TextTransparency=1});tw:Play();tw.Completed:Wait();alert.Visible=false
+		if serial~=notifySerial or not alert.Parent then return end
+		local tw=TweenService:Create(alert,TweenInfo.new(.3),{TextTransparency=1})
+		tw:Play()
+		tw.Completed:Wait()
+		if serial==notifySerial and alert.Parent then alert.Visible=false end
 	end)
 end
 
@@ -120,9 +128,9 @@ task.spawn(function()
 		hp.Size=UDim2.fromScale(math.clamp(health/max,0,1),1);mom.Size=UDim2.fromScale(math.clamp(m/100,0,1),1);inst.Size=UDim2.fromScale(math.clamp(i/100,0,1),1)
 		hpt.Text=("HP %d / %d"):format(math.floor(health),math.floor(max));momt.Text=("MOMENTUM %d"):format(math.floor(m));instt.Text=("INSTABILITY %d"):format(math.floor(i))
 		local ready=workspace:GetAttribute("CollisionBattlestarMapReady")==true
-		mapBanner.Text=ready and"FRACTURE DISTRICT • ONLINE"or"FRACTURE DISTRICT • LOADING"
+		mapBanner.Text=ready and"BATTLE LINE • ONLINE"or"BATTLE LINE • LOADING"
 		mapBanner.TextColor3=ready and Color3.fromRGB(145,225,255)or Color3.fromRGB(255,205,115)
-		if ready and not announced then announced=true;notify("FRACTURE DISTRICT • ONLINE",1.4)end
+		if ready and not announced then announced=true;notify("BATTLE LINE • ONLINE",1.4)end
 		state.Text=("v%s • Roblox %d • %s • %s • %s"):format(tostring(workspace:GetAttribute("CollisionBattlestarBuildVersion")or"?"),tonumber(workspace:GetAttribute("CollisionBattlestarPlaceVersion"))or 0,string.upper(tostring(workspace:GetAttribute("CollisionState")or"Stable")),tostring(p:GetAttribute("CombatStyle")or"Blade"),workspace:GetAttribute("CollisionBattlestarMapReady")==true and"MAP READY"or"MAP LOADING")
 		local q=p:GetAttribute("QuestProgress")or 0;local qt=p:GetAttribute("QuestTarget")or 6;quest.Text=p:GetAttribute("QuestCompleted")and"FIRST RESPONSE • COMPLETE"or("FIRST RESPONSE • %d / %d"):format(q,qt)
 		local best=p:GetAttribute("BattleStreakBest")or 0;if not p:GetAttribute("BattleStreakActive")then streak.Text=("BATTLE STREAK • BEST %d"):format(best)end

@@ -5,7 +5,7 @@ local function restore(part:BasePart)
 	if not part.Parent then return end
 	part.Transparency=part:GetAttribute("OriginalTransparency")or 0
 part.CanCollide=part:GetAttribute("OriginalCanCollide")~=false
-part.CanQuery=part:GetAttribute("OriginalCanQuery")~=false
+	part.CanQuery=part:GetAttribute("OriginalCanQuery")~=false
 part:SetAttribute("Broken",false)
 end
 function S.BreakInBox(cf:CFrame,size:Vector3,strength:number):number
@@ -26,7 +26,7 @@ function S.BreakInBox(cf:CFrame,size:Vector3,strength:number):number
 			part.CanCollide=false
 			part.CanQuery=false
 			part.Transparency=.65
-			local duration=strength>=2 and 8 or 5
+			local duration=math.max(0.25,tonumber(part:GetAttribute("RestoreSeconds"))or(strength>=2 and 8 or 5))
 			task.delay(duration,function()restore(part)end)
 		end
 	end

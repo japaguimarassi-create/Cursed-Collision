@@ -2,6 +2,7 @@
 local Players=game:GetService("Players")
 local R=game:GetService("ReplicatedStorage")
 local UIS=game:GetService("UserInputService")
+local GuiService=game:GetService("GuiService")
 local player=Players.LocalPlayer
 local Routes=require(R.Shared.MapRouteDefinitions)
 local remotes=R:WaitForChild("CollisionRemotes")
@@ -12,6 +13,7 @@ local gui=Instance.new("ScreenGui")
 gui.Name="BattleLineMap"
 gui.ResetOnSpawn=false
 gui.DisplayOrder=60
+gui.ScreenInsets=Enum.ScreenInsets.CoreUISafeInsets
 gui.Parent=player:WaitForChild("PlayerGui")
 
 local open=Instance.new("TextButton")
@@ -25,6 +27,7 @@ open.TextSize=14
 open.Text="MAP"
 open.AutoButtonColor=false
 open.Selectable=true
+GuiService.GuiNavigationEnabled=true
 open.Parent=gui
 
 local oc=Instance.new("UICorner");oc.CornerRadius=UDim.new(0,10);oc.Parent=open
@@ -130,6 +133,10 @@ if UIS.KeyboardEnabled then
 		if gpe then return end
 		if input.KeyCode==Enum.KeyCode.M then panel.Visible=not panel.Visible;refresh()end
 	end)
+end
+
+if UIS.GamepadEnabled then
+	GuiService.SelectedObject=open
 end
 
 feedback.OnClientEvent:Connect(function(kind,value)

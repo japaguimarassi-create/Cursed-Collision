@@ -1,210 +1,204 @@
-# Cursed Collision — Research Ledger
+# Collision Battlestar — Research Ledger
 
-Research date: 2026-09-23
+Research date: 2026-09-26
 
-## Official Roblox / Luau references
+## Repository and architecture
 
-### Animation markers
-SOURCE: Roblox Creator Hub
-URL: https://create.roblox.com/docs/reference/engine/classes/AnimationTrack
-TYPE: Official
-TOPIC: AnimationTrack / markers / priority
-OBSERVATION: AnimationTrack exposes Priority and marker-related runtime behavior.
-TECHNICAL LESSON: Combat timing should be attached to authored animation markers; server gameplay must still validate the request.
-IMPLEMENTATION IDEA: Client CombatHandler listens to GetMarkerReachedSignal("Hit") and requests the hit; server validates attack identity and timing window.
-LEGAL/LICENSE NOTE: API documentation is technical guidance, not copied game code.
-CONFIDENCE: High
+- The Rojo manifest is the single runtime source of truth and maps only `src/CollisionBattlestar/*`.
+- The active tree is franchise-free and contains no character, technique, or brand terms owned by third parties.
+- The legacy source tree is removed from the repository in this production pass so it cannot be accidentally added to the manifest.
+- Server authority remains the rule for combat, rewards, persistence, destruction, and travel validation.
 
-### Input abstraction
-SOURCE: Roblox Creator Hub
-URL: https://create.roblox.com/docs/reference/engine/classes/UserInputService
-TYPE: Official
-TOPIC: PreferredInput / cross-platform input
-OBSERVATION: PreferredInput identifies the input type Roblox considers primary and updates as the player's recent input changes.
-TECHNICAL LESSON: Input routing should not hard-code a single device and should adapt dynamically.
-IMPLEMENTATION IDEA: InputManager owns keyboard, gamepad and mouse bindings; HUD updates hints from PreferredInput.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
-
-### Contextual actions
-SOURCE: Roblox Creator Hub
-URL: https://create.roblox.com/docs/reference/engine/classes/ContextActionService
-TYPE: Official
-TOPIC: ContextActionService / touch / gamepad
-OBSERVATION: ContextActionService supports contextual input bindings and optional touch buttons; Roblox notes that custom ImageButton/TextButton interfaces provide more customization.
-TECHNICAL LESSON: Use one action abstraction and keep a custom combat HUD for precise layout and accessibility.
-IMPLEMENTATION IDEA: InputManager binds actions while HUDController owns presentation.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
+## Roblox technical sources
 
 ### Client-server security
-SOURCE: Roblox Creator Hub
+SOURCE: Roblox Creator Hub — Client-server boundary
 URL: https://create.roblox.com/docs/scripting/security/client-server-boundary
 TYPE: Official
-TOPIC: RemoteEvent validation
-OBSERVATION: Client-sent data must be validated before affecting game state.
-TECHNICAL LESSON: Animation markers are presentation/timing signals; damage, cooldown and target selection remain server authority.
-IMPLEMENTATION IDEA: M1Hit/SkillHit remotes carry only an opaque attack ID; the server owns hitboxes and damage.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
+OBSERVATION: Client data must be validated before it affects server-owned game state.
+IMPLEMENTATION: CombatRequest, GamePassRequest and MapTravelRequest are validated on the server.
 
-### Remote communication
-SOURCE: Roblox Creator Hub
+### Remote events
+SOURCE: Roblox Creator Hub — Remote events and callbacks
 URL: https://create.roblox.com/docs/scripting/events/remote
 TYPE: Official
-TOPIC: RemoteEvent architecture
-OBSERVATION: RemoteEvents are asynchronous one-way communication; UnreliableRemoteEvents are intended for continuously changing non-critical data.
-TECHNICAL LESSON: Keep authoritative combat on reliable RemoteEvents and cosmetic presentation client-side.
-IMPLEMENTATION IDEA: CombatAction is used for gameplay requests; CombatFX is used for replicated presentation signals.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
-
-### Safe mobile UI
-SOURCE: Roblox Creator Hub
-URL: https://create.roblox.com/docs/pt-br/ui/on-screen-containers
-TYPE: Official
-TOPIC: ScreenGui / ScreenInsets
-OBSERVATION: CoreUISafeInsets keeps interactive UI away from topbar controls and device cutouts.
-TECHNICAL LESSON: Interactive combat controls should use safe insets instead of assuming a fixed screen.
-IMPLEMENTATION IDEA: HUDController sets ScreenInsets = CoreUISafeInsets and uses proportional layout plus minimum sizes.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
-
-### UI sizing
-SOURCE: Roblox Creator Hub
-URL: https://create.roblox.com/docs/ui/size-modifiers
-TYPE: Official
-TOPIC: UISizeConstraint
-OBSERVATION: UISizeConstraint provides minimum and maximum bounds across screen sizes.
-TECHNICAL LESSON: Mobile and wide-screen layouts need constraints in addition to scale-based sizing.
-IMPLEMENTATION IDEA: Action buttons and identity panels receive explicit minimum/maximum dimensions.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
-
-### Performance
-SOURCE: Roblox Creator Hub
-URL: https://create.roblox.com/docs/performance-optimization
-TYPE: Official
-TOPIC: profiling / memory / frame time
-OBSERVATION: Roblox recommends measuring frame rate, memory, server heartbeat and load time, then iterating based on measured bottlenecks.
-TECHNICAL LESSON: Avoid premature micro-optimization; profile actual hot paths.
-IMPLEMENTATION IDEA: Keep UI refresh throttled, cache animations, and reserve per-frame work for presentation that truly requires it.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
+OBSERVATION: RemoteEvents are asynchronous one-way communication; critical gameplay remains on reliable remotes.
+IMPLEMENTATION: Combat and travel use RemoteEvents; visual effects remain client presentation.
 
 ### Streaming
-SOURCE: Roblox Creator Hub
+SOURCE: Roblox Creator Hub — Instance streaming
 URL: https://create.roblox.com/docs/workspace/streaming
 TYPE: Official
-TOPIC: Instance streaming
-OBSERVATION: Instance streaming dynamically loads/unloads 3D content and can improve join time, memory and performance.
-TECHNICAL LESSON: A large city should be built with streaming in mind rather than assuming the full map is always resident.
-IMPLEMENTATION IDEA: Keep combat-critical instances close to players and separate cosmetic/distant content.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
+OBSERVATION: Instance streaming dynamically loads/unloads 3D content to reduce memory and load pressure.
+IMPLEMENTATION: Battle Line uses StreamingEnabled with a bounded target radius.
 
-### Preloading
-SOURCE: Roblox Creator Hub
-URL: https://create.roblox.com/docs/reference/engine/classes/ContentProvider
+SOURCE: Roblox Creator Hub — Player:RequestStreamAroundAsync
+URL: https://create.roblox.com/docs/reference/engine/classes/Player
 TYPE: Official
-TOPIC: ContentProvider / PreloadAsync
-OBSERVATION: PreloadAsync is useful for essential assets; Roblox warns against preloading the entire Workspace.
-TECHNICAL LESSON: Selective animation/UI preloading is preferred over bulk preloading.
-IMPLEMENTATION IDEA: Animation cache only instantiates configured assets and future preloading should target spawn/menu assets.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
+OBSERVATION: The server can request that a region around a destination be streamed before moving a character.
+IMPLEMENTATION: MapTravelService requests the destination region before PivotTo.
 
-### Synchronized client/server time
-SOURCE: Roblox Creator Hub
-URL: https://create.roblox.com/docs/reference/engine/classes/Workspace/ModelStreamingBehavior
+### Pivot and movement
+SOURCE: Roblox Creator Hub — PVInstance
+URL: https://create.roblox.com/docs/reference/engine/classes/PVInstance
 TYPE: Official
-TOPIC: Workspace:GetServerTimeNow
-OBSERVATION: Roblox exposes GetServerTimeNow() as a smoothed estimate of server Unix time for synchronized experiences.
-TECHNICAL LESSON: Replicated cooldown presentation should not compare server os.clock() values to client os.clock().
-IMPLEMENTATION IDEA: CooldownService stores server-time timestamps in replicated attributes; gameplay validation remains server-side.
-LEGAL/LICENSE NOTE: Technical API reference.
-CONFIDENCE: High
+OBSERVATION: PivotTo moves a model as a unit.
+IMPLEMENTATION: Fast travel uses Character:PivotTo after stream preparation.
 
-## JJS behavioral and visual references
+### Attributes
+SOURCE: Roblox Creator Hub — Attributes
+URL: https://create.roblox.com/docs/pt-br/scripting/attributes
+TYPE: Official
+OBSERVATION: Attributes replicate and are useful for synchronized lightweight state.
+IMPLEMENTATION: Momentum, Instability, map node, world state and asset status use attributes.
 
-### Core control layout
-SOURCE: Roblox experience page
-URL: https://www.roblox.com/games/9391468976/Jujutsu-Shenanigans
-TYPE: Gameplay / product
-TOPIC: Core battleground controls
-OBSERVATION: The current experience description lists M1, 1–4 skills, Q dash, F block, R special, W+W sprint and G awaken.
-TECHNICAL LESSON: The control vocabulary maps naturally to a compact battleground HUD.
-IMPLEMENTATION IDEA: Cursed Collision keeps the same broad action categories but uses its own layout, labels and mappings.
-LEGAL/LICENSE NOTE: Used only as behavioral reference; no assets or code copied.
-CONFIDENCE: High
-
-### Mobile action hierarchy
-SOURCE: Pro Game Guides
-URL: https://progameguides.com/roblox/all-controls-in-jujutsu-shenanigans-roblox/
-TYPE: Gameplay guide
-TOPIC: Mobile controls
-OBSERVATION: The guide describes dedicated mobile controls for block, basic melee, jump, dash, special, four skills, awakening and movement.
-TECHNICAL LESSON: Combat controls must remain reachable without relying on a keyboard.
-IMPLEMENTATION IDEA: Cursed Collision uses large touch targets and preserves the four-skill bottom bar with a separate action cluster.
-LEGAL/LICENSE NOTE: Visual/behavioral reference only.
-CONFIDENCE: Medium
-
-### Current JJS control guide
-SOURCE: Jujutsu Shenanigans Wiki community guide
-URL: https://jujutsushenaniganswiki.wiki/pt-br/combat/controls/
-TYPE: Community
-TOPIC: PC/mobile/console controls
-OBSERVATION: The guide was updated 2026-09-16 and documents platform-specific control layouts and contextual states.
-TECHNICAL LESSON: Device-aware input hints are useful because control roles can remain constant even when bindings differ.
-IMPLEMENTATION IDEA: HUDController changes key hints according to PreferredInput.
-LEGAL/LICENSE NOTE: Community reference.
-CONFIDENCE: Medium
-
-## Visual reference index
-
-The current image-query pass returned representative references rather than the requested 2000-image corpus. The available tool does not expose a bulk 2000-record export in one operation, so this ledger records the verified sample and keeps it separate from technical evidence.
-
-- A/HUD + skills: https://image.thenerdstash.com/2024/04/Jujutsu-Shenanigans-Special-Ability.jpg
-- B/Mobile HUD: https://i.axod.net/pcbq6L2SwIcDbfCMZld_NbXlsZMolPKtwgTtCfj_aWFsxio7Ip0PFCle51hz556JhBHoCH8BvNEtacXqLOGXAlcD58doPnKP1IXXVSLs6IMoE0qJBvQhBU-lxNJdKj1CrEOCNGShPih1nzwO2NcZkxre0-OsWA.jpeg
-- C/City + combat presentation: https://progameguides.com/wp-content/uploads/2024/11/featured-jujutsu-shenanigans-all-secret-moves.jpg
-- D/Awakening presentation: https://staticg.sportskeeda.com/editor/2025/02/06549-17398621394275-1920.jpg
-- E/VFX combat presentation: https://staticg.sportskeeda.com/editor/2025/02/3d000-17398639787244-1920.jpg
-- F/UI/menu/emote wheel pattern reference: https://cdn-offer-photos.zeusx.com/b9d5d102-e73c-43b4-85d0-25fb56f8868a.jpg
-
-Visual notes: use these as composition/readability references only. They are not implementation assets for Cursed Collision.
-
-### Implementation checkpoint — 2026-09-23
-SOURCE: Cursed Collision implementation branch
-TYPE: Internal engineering checkpoint
-OBSERVATION: Combat M1/skills/Special now use server-owned marker windows; client animation markers only request resolution.
-TECHNICAL LESSON: The client never directly applies damage; CombatMarkerService validates token, timing window and travel origin before the server callback executes.
-HUD LESSON: ScreenInsets, responsive scaling, touch sizing and gamepad selection are centralized in the modular HUD layer.
-EMOTE LESSON: Emotes stop on movement, damage, stun, ragdoll and combat-state attributes and use cached tracks when an asset ID is configured.
-STATUS: Implemented; CI/static validation required; live Roblox device testing remains outstanding.
-
-### Fresh platform/UI research — 2026-09-23
-SOURCE: Roblox Creator Hub — Create HUD meters
-URL: https://create.roblox.com/docs/tutorials/use-case-tutorials/ui/create-hud-meters
-OBSERVATION: Roblox recommends safe-area handling with ScreenInsets for device cutouts and the Roblox top bar; Device Emulator is the documented route for multi-device UI validation.
-IMPLEMENTATION: Cursed Collision uses ScreenInsets/CoreUISafeInsets plus responsive short-axis scaling and minimum touch button constraints.
-
-SOURCE: Roblox Creator Hub — Console development guidelines
-URL: https://create.roblox.com/docs/production/publishing/console-guidelines
-OBSERVATION: TV-safe areas, scalable UI and controller navigation are required considerations for console UI.
-IMPLEMENTATION: Cursed Collision enables GuiNavigationEnabled and SelectedObject for gamepad focus and keeps key controls inside the responsive HUD composition.
-
+### Animation
 SOURCE: Roblox Creator Hub — AnimationTrack
 URL: https://create.roblox.com/docs/reference/engine/classes/AnimationTrack
-OBSERVATION: AnimationTrack exposes Priority and GetMarkerReachedSignal.
-IMPLEMENTATION: CombatHandler listens for the exact Hit marker; server CombatMarkerService validates the attack before hitbox/damage execution.
+TYPE: Official
+OBSERVATION: AnimationTrack supports Play, AdjustWeight, Priority and marker signals.
+IMPLEMENTATION: AnimationClient uses cached tracks with cross-fade and keeps the existing Motor6D procedural fallback.
 
-SOURCE: Jujutsu Shenanigans official Roblox page
-URL: https://www.roblox.com/games/9391468976/Jujutsu-Shenanigans
-OBSERVATION: The public description documents a compact battleground input model centered on M1, 1–4 skills, dash, block, special, sprint and awaken.
-IMPLEMENTATION: Cursed Collision mirrors the interaction hierarchy while using original code/assets and its own character/moveset data.
+SOURCE: Roblox Creator Hub — Create character animations
+URL: https://create.roblox.com/docs/tutorials/use-case-tutorials/animation/create-an-animation
+TYPE: Official
+OBSERVATION: Publishing an animation creates the asset ID that scripts can reference.
+IMPLEMENTATION: No unknown animation IDs are hard-coded. The 12 slots remain on fallback until a direct public ID is independently verified.
 
-SOURCE: Jujutsu Shenanigans visual references (third-party screenshots)
-URL: https://thenerdstash.com/how-to-use-special-abilities-in-roblox-jujutsu-shenanigans/
-URL: https://www.sportskeeda.com/roblox-news/jujutsu-shenanigans-guide
-OBSERVATION: Screenshots show a restrained lower-center four-skill rail and a separate action/control hierarchy around the combat view.
-IMPLEMENTATION: Cursed Collision uses a four-skill rail, central power meter, top identity/status, and right-side mobile action cluster.
+### Rig
+SOURCE: Roblox Creator Hub — Rig Generator
+URL: https://create.roblox.com/docs/studio/rig-builder
+TYPE: Official
+OBSERVATION: Roblox supports R6 and R15 rigs; the selected rig changes available joints and motion.
+IMPLEMENTATION: The active project does not pin a rig type in source configuration. AnimationClient records Humanoid.RigType at runtime and uses joint-name fallback logic.
+
+### Audio
+SOURCE: Roblox Creator Hub — Audio assets
+URL: https://create.roblox.com/docs/audio/assets
+TYPE: Official
+OBSERVATION: The Creator Store contains free-to-use audio; imported audio needs permission and passes moderation.
+IMPLEMENTATION: Sound 9075325599 is used because its Creator Store listing is explicitly marked free to use. No unverified SoundIds are added.
+
+SOURCE: Roblox Creator Hub — Sound
+URL: https://create.roblox.com/docs/sound
+TYPE: Official
+OBSERVATION: Sound objects use unique asset IDs and become positional when parented to a 3D object.
+IMPLEMENTATION: Combat impact audio is emitted from a temporary invisible 3D source at the reported hit position.
+
+### UI
+SOURCE: Roblox Creator Hub — UI and UX design
+URL: https://create.roblox.com/docs/production/game-design/ui-ux-design
+TYPE: Official
+OBSERVATION: Visual hierarchy, consistent states and player feedback improve clarity.
+IMPLEMENTATION: Collision Battlestar HUD uses consistent state labels, bounded panels and direct feedback.
+
+## Map and asset research
+
+### Verified free Roblox Creator Store props
+
+1. Bench — asset 400850371
+SOURCE: https://create.roblox.com/store/asset/400850371/Bench
+LICENSE/RIGHTS: Listing explicitly says it is a free bench model.
+SIZE: 228 triangles / 456 vertices.
+RUNTIME USE: low-cost seating in Neon Strip and Skyline.
+
+2. Dumpster -Free- — asset 42942436
+SOURCE: https://create.roblox.com/store/asset/42942436
+LICENSE/RIGHTS: Free designation in the published listing title.
+SIZE: 82 triangles / 164 vertices.
+RUNTIME USE: alley clutter in Iron Market and Riftworks.
+
+3. Bus Stop [FREE!] — asset 4987899016
+SOURCE: https://create.roblox.com/store/asset/4987899016/Bus-Stop-FREE
+LICENSE/RIGHTS: Explicit FREE designation in the published listing.
+SIZE: 1,432 triangles / 2,372 vertices / 2 decals.
+RUNTIME USE: one hero transport stop in Origin Plaza.
+
+4. Bus Stop Sign [FREE] — asset 8673868211
+SOURCE: https://create.roblox.com/store/asset/8673868211/Bus-Stop-Sign-FREE
+LICENSE/RIGHTS: Explicit FREE designation.
+SIZE: 14 triangles / 28 vertices / 1 decal.
+RUNTIME USE: route signage near Collision Core.
+
+5. Bus Stop Pole — asset 18143058886
+SOURCE: https://create.roblox.com/store/asset/18143058886/Bus-Stop-Pole
+LICENSE/RIGHTS: Listing description explicitly says it is free.
+SIZE: 648 triangles / 826 vertices / 2 decals.
+RUNTIME USE: route signage near Collision Core.
+
+6. [FREE] Car Showcase — asset 5157346970
+SOURCE: https://create.roblox.com/store/asset/5157346970/FREE-Car-Showcase
+LICENSE/RIGHTS: Explicit FREE designation in the listing title.
+SIZE: 2,120 triangles / 3,550 vertices / 4 decals.
+RUNTIME USE: two sparse hero parked-car props at map endpoints.
+
+7. Free R6 battleground animations (v7) — model asset 16663903306
+SOURCE: https://create.roblox.com/store/asset/16663903306/Free-R6-battleground-animations-v7
+LICENSE/RIGHTS: Listing states it is open source, permits use in battleground games and monetization, and prohibits selling the animations themselves.
+SIZE: 1,066 triangles / 727 vertices.
+CONTENT: 4-hit basic combo, downslam, uppercuts, walk/run and front/back/side dashes.
+LIMITATION: The public listing exposes the source model ID, not the individual contained animation asset IDs. The project therefore does not copy unknown numeric IDs into AnimationDefinitions.
+
+### Free animation source outside Roblox
+
+SOURCE: Adobe Mixamo FAQ
+URL: https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html
+LICENSE/RIGHTS: Adobe states Mixamo characters and animations can be used royalty-free in personal, commercial and non-profit projects, subject to its restrictions on redistributing raw assets.
+RUNTIME USE: valid source for future authored/imported clips after the owner publishes the resulting Roblox animations.
+LIMITATION: Mixamo does not provide Roblox AnimationIds directly.
+
+### CC0 asset libraries
+
+SOURCE: Kenney — City Kit (Commercial)
+URL: https://kenney.nl/assets/city-kit-commercial
+LICENSE: Creative Commons CC0
+SIZE: 50 files.
+USE: source material for custom imported urban props and modular building decisions.
+
+SOURCE: Kenney — City Kit (Suburban)
+URL: https://kenney.nl/assets/city-kit-suburban
+LICENSE: Creative Commons CC0
+SIZE: 40 files.
+USE: secondary city detail reference/source.
+
+SOURCE: Kenney — City Kit (Roads)
+URL: https://kenney.nl/assets/city-kit-roads
+LICENSE: Creative Commons CC0
+SIZE: 90 files.
+USE: road/signage source material.
+
+SOURCE: Kenney — City Kit (Industrial)
+URL: https://kenney.nl/assets/city-kit-industrial
+LICENSE: Creative Commons CC0
+SIZE: 40 files.
+USE: industrial/Riftworks source material.
+
+SOURCE: Kenney — Impact Sounds
+URL: https://kenney.nl/assets/impact-sounds
+LICENSE: Creative Commons CC0
+SIZE: 130 files.
+USE: source for future imported impact audio.
+
+SOURCE: Kenney — Interface Sounds
+URL: https://kenney.nl/assets/interface-sounds
+LICENSE: Creative Commons CC0
+SIZE: 100 files.
+USE: source for future UI audio.
+
+## Production findings recorded during the 2026-09-26 audit
+
+- Fast travel checked a non-existent `Blocking` attribute while combat uses `IsBlocking`; this was corrected.
+- Battle Streak waves used stale coordinates unrelated to the rebuilt Apex Yard; wave spawning now derives its center from the runtime BattleStreakArena.
+- Movement only bound PlayerAdded and could miss players when initialized after them; current players are now bound too.
+- Light combo state did not overwrite LastAction, so a dash could incorrectly influence several later light attacks; this was corrected.
+- UI notification tasks could hide newer notifications; a serial guard now prevents that race.
+- WorldStateService and WorldPresentationService both wrote Lighting.ClockTime; WorldStateService no longer owns presentation lighting.
+- DestructionService exposed RestoreSeconds attributes but ignored them; restore duration now honors the attribute.
+- AudioController was metadata-only; it now has a real positional sound path using a verified free asset.
+- MapDecorationService previously ignored MapAssetCatalog and MapAssetLoader; it now asynchronously loads a small verified-prop set while preserving procedural fallback.
+- Reality Break now produces bounded local environment color response through tagged responsive parts and a shared effect budget.
+- The active runtime does not contain the old external animation/VFX controller modules referenced by the legacy tree; their proprietary content is not reintroduced. The active AnimationClient/VFXController were extended instead.
+
+## Validation and live-test limits
+
+Static validation can prove source structure, syntax, references, contracts and Rojo packaging. It cannot prove visual quality, collision feel, stream pop-in, audio loudness or sustained mobile frame time without a live Roblox client/device test.
