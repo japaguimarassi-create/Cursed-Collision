@@ -7,5 +7,6 @@ B.Map="BattleLine_Urban_V5"
 B.Combat="server-authoritative-data-driven-v4"
 B.HUD="minimal-mobile-console-v4"
 B.Roster=24
-B.Emotes=150
+B.HUD="modern-roblox-hud-v5"
+B.Emotes=0
 return B
