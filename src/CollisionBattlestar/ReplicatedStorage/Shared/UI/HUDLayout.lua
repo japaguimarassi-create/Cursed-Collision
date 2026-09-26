@@ -86,7 +86,7 @@ function M.Build():ScreenGui
 
  local utility=frame(gui,"Utility",UDim2.fromOffset(350,42),UDim2.new(1,-364,0,14),C.UI.Panel,.05,12)
  outline(utility,C.UI.Muted,.72)
- for i,item in ipairs({{"ShopButton","MARKET"},{"MapButton,"MAP"},{"FighterButton","FIGHTERS"},{"MenuButton","MENU"}}) do
+ for i,item in ipairs({{"ShopButton","MARKET"},{"MapButton","MAP"},{"FighterButton","FIGHTERS"},{"MenuButton","MENU"}}) do
   local w=i==4 and 64 or 88
   local b=button(utility,item[1],item[2],UDim2.fromOffset(w,34),UDim2.fromOffset(5+(i-1)*(i==4 and 71 or 91),4))
   b.TextSize=9
