@@ -3,27 +3,39 @@ local R=game:GetService("ReplicatedStorage")
 local TweenService=game:GetService("TweenService")
 local Debris=game:GetService("Debris")
 local Players=game:GetService("Players")
+local CollectionService=game:GetService("CollectionService")
 local V=require(R.Shared.VFXDefinitions)
 
 local feedback=R:WaitForChild("CollisionRemotes"):WaitForChild("Feedback")
+local worldState=R:WaitForChild("CollisionRemotes"):WaitForChild("WorldState")
 local player=Players.LocalPlayer
 local active=0
 
-local function anchor(pos:Vector3):Part?
-	if active>=V.Limits.MaxEffects then return nil end
+local function acquire():boolean
+	if active>=V.Limits.MaxEffects then return false end
 	active+=1
+	return true
+end
+
+local function release(delayTime:number)
+	task.delay(delayTime,function()active=math.max(0,active-1)end)
+end
+
+local function anchor(pos:Vector3):Part?
+	if not acquire()then return nil end
 	local p=Instance.new("Part")
 	p.Name="CBS_FX"
 	p.Anchored=true
 	p.CanCollide=false
 	p.CanTouch=false
 	p.CanQuery=false
+	p.CastShadow=false
 	p.Transparency=1
 	p.Size=Vector3.one
 	p.CFrame=CFrame.new(pos)
 	p.Parent=workspace
-	Debris:AddItem(p,1)
-	task.delay(1,function()active=math.max(0,active-1)end)
+	Debris:AddItem(p,1.1)
+	release(1.1)
 	return p
 end
 
@@ -48,47 +60,22 @@ local function burst(pos:Vector3,color:Color3,size:number,lifetime:number)
 	emitter.Color=ColorSequence.new(color)
 	emitter.Parent=p
 	emitter:Emit(math.clamp(math.floor(8+size*8),8,24))
-
-	local flash=Instance.new("Part")
-	flash.Name="CBS_Flash"
-	flash.Anchored=true
-	flash.CanCollide=false
-	flash.CanTouch=false
-	flash.CanQuery=false
-	flash.Material=Enum.Material.Neon
-	flash.Color=color
-	flash.Shape=Enum.PartType.Ball
-	flash.Size=Vector3.new(size,size,size)
-	flash.CFrame=CFrame.new(pos)
-	flash.Parent=workspace
-
-	local tween=TweenService:Create(flash,TweenInfo.new(lifetime,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{
-		Size=Vector3.new(size*3.5,size*3.5,size*3.5),
-		Transparency=1,
-	})
-	tween:Play()
-	Debris:AddItem(flash,lifetime+.05)
 end
 
 local function shockwave(pos:Vector3,color:Color3,size:number)
-	local p=Instance.new("Part")
-	p.Name="CBS_Shockwave"
-	p.Anchored=true
-	p.CanCollide=false
-	p.CanTouch=false
-	p.CanQuery=false
+	local p=anchor(pos)
+	if not p then return end
+	p.Transparency=0.12
 	p.Material=Enum.Material.Neon
 	p.Color=color
 	p.Shape=Enum.PartType.Cylinder
 	p.Size=Vector3.new(.25,size,size)
 	p.CFrame=CFrame.new(pos)*CFrame.Angles(0,0,math.rad(90))
-	p.Parent=workspace
-	local tween=TweenService:Create(p,TweenInfo.new(.32,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{
+	local tween=TweenService:Create(p,TweenInfo.new(V.ImpactWaves.Default,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),{
 		Size=Vector3.new(.25,size*4,size*4),
 		Transparency=1,
 	})
 	tween:Play()
-	Debris:AddItem(p,.4)
 end
 
 local function beamSlash(pos:Vector3,color:Color3,scale:number)
@@ -103,8 +90,8 @@ local function beamSlash(pos:Vector3,color:Color3,scale:number)
 	local beam=Instance.new("Beam")
 	beam.Attachment0=a0
 	beam.Attachment1=a1
-	beam.Width0=.75
-	beam.Width1=.05
+	beam.Width0=V.Trails.BladeWidth
+	beam.Width1=.04
 	beam.CurveSize0=scale*.45
 	beam.CurveSize1=-scale*.45
 	beam.FaceCamera=true
@@ -116,7 +103,7 @@ local function beamSlash(pos:Vector3,color:Color3,scale:number)
 		NumberSequenceKeypoint.new(1,1),
 	})
 	beam.Parent=p
-	task.delay(.12,function()
+	task.delay(V.Trails.SlashFade,function()
 		if beam.Parent then beam.Enabled=false end
 	end)
 end
@@ -125,6 +112,37 @@ local function rootPosition():Vector3?
 	local c=player.Character
 	local root=c and c:FindFirstChild("HumanoidRootPart")
 	return root and root:IsA("BasePart") and root.Position or nil
+end
+
+local function realityPulse(strength:number)
+	if not acquire()then return end
+	local responsive=CollectionService:GetTagged("CollisionResponsive")
+	local changed={}
+	for _,item in ipairs(responsive)do
+		if item:IsA("BasePart")then
+			table.insert(changed,{part=item,color=item.Color})
+			TweenService:Create(item,TweenInfo.new(.16,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Color=V.Palette.Reality}):Play()
+		end
+	end
+	local color=Instance.new("ColorCorrectionEffect")
+	color.Name="CBS_RealityBreak"
+	color.Brightness=.04*strength
+	color.Contrast=.10*strength
+	color.Saturation=.18*strength
+	color.Parent=game:GetService("Lighting")
+	TweenService:Create(color,TweenInfo.new(V.Limits.RealityLifetime,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{
+		Brightness=0,Contrast=0,Saturation=0
+	}):Play()
+	Debris:AddItem(color,V.Limits.RealityLifetime+.08)
+	task.delay(.28,function()
+		for _,entry in ipairs(changed)do
+			local part=entry.part
+			if part and part.Parent then
+				TweenService:Create(part,TweenInfo.new(.25,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Color=entry.color}):Play()
+			end
+		end
+	end)
+	release(.35)
 end
 
 feedback.OnClientEvent:Connect(function(key:string,value:any)
@@ -164,5 +182,13 @@ feedback.OnClientEvent:Connect(function(key:string,value:any)
 	elseif key=="GuardBreak"then
 		local pos=rootPosition()
 		if pos then beamSlash(pos,V.Palette.Heavy,2.8)end
+	end
+end)
+
+worldState.OnClientEvent:Connect(function(key:string,value:any)
+	if key=="Warning"or key=="Begin"or key=="Escalation"or key=="Climax"then
+		realityPulse(key=="Warning"and 1.35 or key=="Climax"and 1.8 or 1)
+	elseif key=="End"then
+		realityPulse(.55)
 	end
 end)
