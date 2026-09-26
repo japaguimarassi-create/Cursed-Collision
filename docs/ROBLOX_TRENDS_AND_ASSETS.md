@@ -1,38 +1,38 @@
 # Collision Battlestar — Roblox trend and asset research
 
-Updated September 2026.
+Updated 2026-09-26
 
-Current official Roblox material highlights several patterns relevant to Collision Battlestar: competitive arena play, co-op/survival with randomized encounters, higher visual fidelity, contextual audio/weather, hero mastery, and large-world freedom. Roblox also says discovery now looks beyond the first week and incorporates longer-term retention and social engagement.
+## Current design response
 
-Current examples reinforce this:
-- RIVALS: compact competitive rounds, contracts, win streaks, cross-platform support.
-- The Strongest Battlegrounds: compact combat vocabulary with ultimate, block, dash and run, cross-platform.
-- Blox Fruits: open exploration, enemies, bosses and hidden secrets.
-- 99 Nights in the Forest: discovery and unpredictable survival framing.
+Collision Battlestar combines a continuous urban combat map with repeatable wave combat. The current foundation emphasizes:
+- one-place Battle Line traversal;
+- fast combat loop with M1, Heavy, Block, Parry, Dash, Special and Overdrive;
+- Momentum / Instability as a reusable combat resource model;
+- Battle Streak as a repeatable wave activity;
+- Reality Break as a timed world-state event;
+- responsive touch, keyboard and gamepad input;
+- low-cost city geometry with streaming.
 
-Collision Battlestar response:
-- Battle Streak creates a fast repeatable combat loop inside the larger world.
-- Wave composition changes difficulty without relying only on giant HP pools.
-- Collision State / Reality Break provide controlled unpredictability.
-- Fracture District preserves exploration, vertical traversal and secrets.
-- Mobile/PC/console input stays first-class.
+## Creator Store policy
 
-Creator Store:
-The Creator Store contains millions of assets. Use it for licensed/allowed components, not as a copied whole-map source.
+Roblox's Creator Store provides free-to-use assets as well as paid assets. Every runtime asset selected for Collision Battlestar must have an explicit usable-rights signal or come from a clearly documented permissive source.
 
-Notable research examples:
-- Modular Building Kit - Modern City (@Roblox): published technical size is ~796k triangles / 3,025 MeshParts. Useful as a modular-design reference, but too heavy to import wholesale into a mobile-first district.
-- Roblox City Building: ~10k triangles.
-- Cyberpunk Shop Building: ~3k triangles.
-- Sci-Fi Antena / Console / Spaceship: ~3.5k triangles but contains a script, so any imported code must be inspected.
+Selected free runtime props:
+- Bench 400850371 — 228 tris
+- Dumpster 42942436 — 82 tris
+- Bus Stop 4987899016 — 1,432 tris
+- Bus Stop Sign 8673868211 — 14 tris
+- Bus Stop Pole 18143058886 — 648 tris
+- Car Showcase 5157346970 — 2,120 tris
 
-Production asset rules:
-- Verify usage rights.
-- Inspect scripts and dependencies.
-- Remove unnecessary scripts.
-- Prefer simple collision.
-- Keep hero landmarks detailed but sparse.
-- Keep repeated street props low cost.
-- Use modular building shells.
-- Use low-cost skyline/background geometry.
-- Never use franchise models simply because they are publicly visible.
+High-density city kits remain source material rather than automatic runtime imports. A city kit can be technically free while still being too dense for repeated use on a mobile-first map.
+
+## Asset-loading rule
+
+The default map is generated procedurally. MapAssetLoader adds a small optional hero-prop pass after the default geometry exists. This avoids making gameplay depend on third-party loading availability.
+
+## Visual language
+
+Keep the city's combat spaces open enough for readable hit reactions. Use a small number of tall landmarks for orientation and keep route signage consistent with the Battle Line node names.
+
+External franchise references are not runtime dependencies and are excluded from the active project content.
