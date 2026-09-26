@@ -72,6 +72,9 @@ local function spawnWave(currentWave: number)
         EnemyService:Spawn(point + jitter, tier, Config.Waves.EliteEveryWave and index == count)
     end
 
+    workspace:SetAttribute("CollisionWave", currentWave)
+    workspace:SetAttribute("CollisionEnemies", count)
+    workspace:SetAttribute("CollisionWaveActive", true)
     broadcast("WaveStart", currentWave, count, tier)
 end
 
@@ -103,6 +106,9 @@ function Service:Init(config, enemyService, dataService)
                 active = false
                 EnemyService:Clear()
                 wave = 0
+                workspace:SetAttribute("CollisionWave", 0)
+                workspace:SetAttribute("CollisionEnemies", 0)
+                workspace:SetAttribute("CollisionWaveActive", false)
                 task.wait(2)
                 continue
             end
@@ -120,6 +126,9 @@ function Service:Init(config, enemyService, dataService)
 
             while active do
                 local alive = EnemyService:Count()
+                workspace:SetAttribute("CollisionEnemies", alive)
+                workspace:SetAttribute("CollisionWave", wave)
+                workspace:SetAttribute("CollisionWaveActive", true)
                 broadcast("WaveState", wave, alive)
 
                 if alive <= 0 then
@@ -135,6 +144,9 @@ function Service:Init(config, enemyService, dataService)
                     end
 
                     active = false
+                    workspace:SetAttribute("CollisionEnemies", 0)
+                    workspace:SetAttribute("CollisionWave", wave)
+                    workspace:SetAttribute("CollisionWaveActive", false)
                     broadcast("WaveClear", wave, baseReward)
                     task.wait(2)
                 else
