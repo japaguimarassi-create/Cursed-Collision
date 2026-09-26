@@ -6,7 +6,7 @@ Updated 2026-09-26
 
 Collision Battlestar combines a continuous urban combat map with repeatable wave combat. The current foundation emphasizes:
 - one-place Battle Line traversal;
-- fast combat loop with M1, Heavy, Block, Parry, Dash, Special and Overdrive;
+- fast combat loop with M1, Dash, Block and Special, with Parry and Overdrive handled as combat states;
 - Momentum / Instability as a reusable combat resource model;
 - Battle Streak as a repeatable wave activity;
 - Reality Break as a timed world-state event;
