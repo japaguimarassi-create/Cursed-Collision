@@ -33,6 +33,8 @@ function M:EquipItem(player:Player,itemId:string,feedback:RemoteEvent)
  if not p or not item or not p.Owned[itemId] then return end
  if item.Kind=="Title" then
   DataService:SetTitle(player,item.Name)
+ else
+  DataService:SetItem(player,itemId)
  end
  feedback:FireClient(player,"Message","EQUIPPED  •  "..item.Name)
  self:ShopState(player,feedback)
