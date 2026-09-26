@@ -13,6 +13,7 @@ REQUIRED=[
 "ReplicatedStorage/Shared/MapDefinitions.lua",
 "ReplicatedStorage/Shared/HUDTheme.lua",
 "ReplicatedStorage/Shared/HUDRecovery.lua",
+"ReplicatedStorage/Shared/UI/HUDLayout.lua",
 "ReplicatedStorage/Shared/AnimationProfiles.lua",
 "ServerScriptService/Bootstrap.server.lua",
 "ServerScriptService/World/WorldBuilder.lua",
@@ -21,11 +22,11 @@ REQUIRED=[
 "ServerScriptService/Services/CombatService.lua",
 "ServerScriptService/Services/MovementService.lua",
 "ServerScriptService/Services/MapTravelService.lua",
-"StarterPlayer/StarterPlayerScripts/Client/MainController.client.lua",
+"StarterPlayer/StarterPlayerScripts/Client/HUDRuntime.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/VFXController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CameraController.client.lua",
-"StarterPlayer/StarterPlayerScripts/Client/PlatformHUDController.client.lua",
+
 "StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua",
 ]
 FORBIDDEN=("jujutsu","jjk","sukuna","gojo","megumi","cursed collision","cursedcollision","potentialman","heavy")
@@ -89,10 +90,10 @@ for token in ("BattleLine_Urban_v2","Origin","Metro","Core","Iron","Apex"):
     if token not in routes:
         fail("route definition missing: "+token)
 
-ui=read("StarterPlayer/StarterPlayerScripts/Client/MainController.client.lua")
-for token in ("CollisionHUD","OVERDRIVE","BATTLE LINE","MAP","Definitions.Slots","RIFT FIGHTER"):
+ui=read("StarterPlayer/StarterPlayerScripts/Client/HUDRuntime.client.lua")
+for token in ("HUDLayout","HUDRuntimeReady","PreferredInput","MobileActions","ControllerHints","HealthBackground","EnergyBackground","UltBackground","Hotbar"):
     if token not in ui:
-        fail("HUD contract missing: "+token)
+        fail("HUD runtime contract missing: "+token)
 
 defs=read("ReplicatedStorage/Shared/CombatDefinitions.lua")
 for token in ("Light","Dash","Block","Special","MouseButton1","LeftShift"):
@@ -115,10 +116,10 @@ print("PASS: real AnimationTrack loading with safe fallback")
 print("PASS: two deterministic animation sets")
 print("PASS: priority-based action blending")
 print("PASS: preloading and permission failure fallback")
-platform=read("StarterPlayer/StarterPlayerScripts/Client/PlatformHUDController.client.lua")
-for token in ("PreferredInput","GetImageForKeyCode","TouchTapIcon","GamepadPrompt","ScreenInsets","DeviceSafeInsets","GuiNavigationEnabled"):
+platform=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
+for token in ("TouchTapIcon","MobileActions","ControllerHints","ScreenInsets","DeviceSafeInsets"):
     if token not in platform:
-        fail("platform HUD contract missing: "+token)
+        fail("platform HUD layout contract missing: "+token)
 
 boot=read("ServerScriptService/Bootstrap.server.lua")
 for token in ("BootRequest","BootFeedback","CollisionBattlestarReady","WorldRepair","verifyRuntime","ensure"):
@@ -132,7 +133,7 @@ for token in ("CollisionBootScreen","mapReady","hudReady","characterReady","boot
 
 print("PASS: legacy fusion and removed combat marker scan clean")
 hud=read("ReplicatedStorage/Shared/HUDRecovery.lua")
-for token in ("CollisionHUD","ManagedByFallback","CombatRequest","MapTravelRequest","IsReady","Build"):
+for token in ("CollisionHUD","IsReady","Build","HUDRecoveryReady","HUDLayout"):
     if token not in hud:
         fail("HUD recovery contract missing: "+token)
 
@@ -144,3 +145,13 @@ for token in ("HUDRecovery","forceHudRecovery","hudReady","CollisionBootScreen")
 print("PASS: fault-tolerant server and client startup recovery")
 print("PASS: direct HUD reconstruction fallback")
 print("PASS: platform-specific mobile and console image HUD")
+
+layout=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
+for token in ("StatusFrame","HealthBackground","EnergyBackground","UltBackground","Hotbar","MobileActions","MapPanel","UtilityBar","HUDLayoutReady"):
+    if token not in layout:
+        fail("HUD layout contract missing: "+token)
+
+runtime=read("StarterPlayer/StarterPlayerScripts/Client/HUDRuntime.client.lua")
+for token in ("combat:FireServer","movement:FireServer","travel:FireServer","HUDRuntimeReady","PreferredInput","GuiNavigationEnabled"):
+    if token not in runtime:
+        fail("HUD runtime contract missing: "+token)
