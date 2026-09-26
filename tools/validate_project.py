@@ -94,7 +94,7 @@ for token in ("CollisionHUD","LoadingScreen","PlayerPanel","Health","Energy","Aw
         fail("HUD contract missing: "+token)
 
 ui=read("StarterPlayer/StarterPlayerScripts/Client/UIController.lua")
-for token in ("ShopState","BuyItem","EquipItem","SetCharacter","RedeemCode","ClaimMission","MobileActions","Clash1","Clash2","Clash3","Clash4"):
+for token in ("ShopState","BuyItem","EquipItem","SetCharacter","RedeemCode","ClaimMission","MobileActions","ClashPanel","Clash"):
     if token not in ui:
         fail("UI contract missing: "+token)
 
