@@ -41,8 +41,9 @@ local function nearestModel(character: Model, center: CFrame, size: Vector3, pre
 
     for _, part in ipairs(workspace:GetPartBoundsInBox(center, size, params)) do
         local model = part:FindFirstAncestorOfClass("Model")
-        if model and model ~= character and model.PrimaryPart and predicate(model) then
-            local currentDistance = (model.PrimaryPart.Position - center.Position).Magnitude
+        if model and model ~= character and predicate(model) then
+            local pivot = model:GetPivot()
+            local currentDistance = (pivot.Position - center.Position).Magnitude
             if currentDistance < distance then
                 distance = currentDistance
                 candidate = model
@@ -160,7 +161,9 @@ local function dash(player: Player)
     end
 
     root.AssemblyLinearVelocity = Vector3.zero
+    player:SetAttribute("ServerTeleportAt", os.clock())
     character:PivotTo(CFrame.new(destination, destination + root.CFrame.LookVector))
+    root.AssemblyLinearVelocity = root.CFrame.LookVector * math.min(72, distance * 4)
     State:FireClient(player, "Dash", Config.Combat.Dash.Cooldown)
 end
 
