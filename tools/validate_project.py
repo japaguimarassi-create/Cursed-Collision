@@ -32,7 +32,7 @@ if workspace.get("StreamingEnabled") is not True:
 
 source_root = ROOT / "src"
 lua_files = list(source_root.rglob("*.lua"))
-if len(lua_files) != 5:
+if len(lua_files) != 6:
     raise SystemExit("Unexpected Luau file count: {}".format(len(lua_files)))
 
 for path in lua_files:
