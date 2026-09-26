@@ -2,7 +2,6 @@
 local Players=game:GetService("Players")
 local ContentProvider=game:GetService("ContentProvider")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
-local UserInputService=game:GetService("UserInputService")
 local TweenService=game:GetService("TweenService")
 
 local player=Players.LocalPlayer
@@ -145,71 +144,6 @@ local function locomotion(state:Enum.HumanoidStateType?)
 	end)
 end
 
-local function bindCombatInput()
-	if inputBound then return end
-	inputBound=true
-	UserInputService.InputBegan:Connect(function(input,gpe)
-		if gpe then return end
-		if input.UserInputType==Enum.UserInputType.MouseButton1 then
-			local combo=math.clamp(tonumber(player:GetAttribute("Combo"))or 1,1,4)
-			local key="M1_"..combo
-			if not play(key,"Attack",combo==4 and .94 or nil,.02) then
-				if not play("M1_1","Attack",1,.02) then fallbackPose("attack",combo) end
-			end
-		elseif input.KeyCode==Enum.KeyCode.Q then
-			if not play("Dash","Movement",1.6,.02) then fallbackPose("dash") end
-		elseif input.KeyCode==Enum.KeyCode.R then
-			if not play("Special","Special",.9,.03) then fallbackPose("attack",4) end
-		end
-	end)
-end
-
-local function bindGui()
-	for _,connection in ipairs(guiConnections) do connection:Disconnect() end
-	table.clear(guiConnections)
-	local gui=playerGui:FindFirstChild("CollisionHUD")
-	if not gui then return end
-	local hotbar=gui:FindFirstChild("Hotbar")
-	if hotbar then
-		for _,name in ipairs({"Light","Dash","Special"}) do
-			local button=hotbar:FindFirstChild(name)
-			if button and button:IsA("GuiButton") then
-				table.insert(guiConnections,button.Activated:Connect(function()
-					if name=="Light" then
-						local combo=math.clamp(tonumber(player:GetAttribute("Combo"))or 1,1,4)
-						if not play("M1_"..combo,"Attack",1,.02) then
-							if not play("M1_1","Attack",1,.02) then fallbackPose("attack",combo) end
-						end
-					elseif name=="Dash" then
-						if not play("Dash","Movement",1.6,.02) then fallbackPose("dash") end
-					else
-						if not play("Special","Special",.9,.03) then fallbackPose("attack",4) end
-					end
-				end))
-			end
-		end
-	end
-	local mobile=gui:FindFirstChild("MobileActions")
-	if mobile then
-		for _,name in ipairs({"MobileM1","MobileDash","MobileSpecial"}) do
-			local button=mobile:FindFirstChild(name)
-			if button and button:IsA("GuiButton") then
-				table.insert(guiConnections,button.Activated:Connect(function()
-					local action=name=="MobileM1" and "Light" or name=="MobileDash" and "Dash" or "Special"
-					if action=="Light" then
-						local combo=math.clamp(tonumber(player:GetAttribute("Combo"))or 1,1,4)
-						if not play("M1_"..combo,"Attack",1,.02) then fallbackPose("attack",combo) end
-					elseif action=="Dash" then
-						if not play("Dash","Movement",1.6,.02) then fallbackPose("dash") end
-					else
-						if not play("Special","Special",.9,.03) then fallbackPose("attack",4) end
-					end
-				end))
-			end
-		end
-	end
-end
-
 local function bind(newCharacter:Model)
 	character=newCharacter
 	humanoid=nil
@@ -231,8 +165,6 @@ local function bind(newCharacter:Model)
 	humanoid.StateChanged:Connect(function(_,state) locomotion(state) end)
 	humanoid.Died:Connect(function() for _,track in pairs(tracks) do track:Stop(.05) end end)
 	task.defer(function() locomotion() end)
-	bindCombatInput()
-	bindGui()
 end
 
 feedback.OnClientEvent:Connect(function(kind:string,value:any)
