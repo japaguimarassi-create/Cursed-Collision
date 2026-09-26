@@ -15,6 +15,8 @@ local function make(className:string,parent:Instance,name:string):Instance
 	return object
 end
 
+local setPlatform:(()->())=function() end
+
 local boot=make("ScreenGui",playerGui,"CollisionBootScreen") :: ScreenGui
 boot.ResetOnSpawn=false
 boot.IgnoreGuiInset=false
@@ -642,8 +644,6 @@ local function createHUD():ScreenGui?
 	player:SetAttribute("HUDRuntimeReady",true)
 	return gui
 end
-
-local setPlatform:(()->()) = function() end
 
 local function hudReady():boolean
 	local gui=playerGui:FindFirstChild("CollisionHUD")
