@@ -1,7 +1,7 @@
 {
-  "publish": false,
+  "publish": true,
   "universe_id": "5290480963",
   "place_id": "15338267657",
-  "request_id": "collision-battlestar-hud-v3-2026-09-26",
-  "status": "consumed"
+  "request_id": "collision-battlestar-boot-final-2026-09-26",
+  "status": "armed"
 }
