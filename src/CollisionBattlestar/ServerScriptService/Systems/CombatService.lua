@@ -165,11 +165,11 @@ local function applyHit(attacker:Player,victimHumanoid:Humanoid,damage:number,kn
     vs.perfectReady=true
     send(victim,"Parry",{Position=victimRoot.Position})
     send(attacker,"Parried",{Position=attackerRoot.Position})
-    fx("Parry",victimRoot.Position,nil)
+    fx("Parry",victimRoot.Position,{userId=victim.UserId})
    else
     send(victim,"Guard",{Position=victimRoot.Position})
     send(attacker,"Guarded",{Position=victimRoot.Position})
-    fx("Guard",victimRoot.Position,nil)
+    fx("Guard",victimRoot.Position,{userId=victim.UserId})
    end
    return false
   end
@@ -194,7 +194,7 @@ local function applyHit(attacker:Player,victimHumanoid:Humanoid,damage:number,kn
   end
  end
  send(attacker,"Hit",{Position=victimRoot.Position,Damage=damage,Finisher=finisher})
- fx("Hit",victimRoot.Position,{damage=damage,finisher=finisher})
+ fx("Hit",victimRoot.Position,{damage=damage,finisher=finisher,userId=attacker.UserId,victimUserId=victim and victim.UserId or 0,victimModel=victimModel})
  damageDestructibles(victimRoot.Position,finisher and 8 or 5,damage)
  if before>0 and after<=0 and victim then
   DataService:AddKO(attacker)
@@ -237,7 +237,7 @@ local function light(player:Player)
  player:SetAttribute("LastM1Variant",variant)
  hitList(player,getHumanoids(player,cf,Config.Combat.Light.Hitbox),damage,knock,false,finisher)
  send(player,"Swing",{Position=cf.Position,Combo=index,Variant=variant})
- fx("Swing",cf.Position,{combo=index,color=fighterFor(player).Color})
+ fx("Swing",cf.Position,{combo=index,variant=variant,color=fighterFor(player).Color,userId=player.UserId})
  mirror(player,s)
 end
 
@@ -256,7 +256,7 @@ local function dash(player:Player)
  s.dashUntil=t+Config.Combat.Dash.Duration
  root.AssemblyLinearVelocity=direction*speed+Vector3.new(0,root.AssemblyLinearVelocity.Y,0)
  send(player,"Dash",{Position=root.Position})
- fx("Dash",root.Position,{color=fighterFor(player).Color})
+ fx("Dash",root.Position,{color=fighterFor(player).Color,userId=player.UserId})
  mirror(player,s)
 end
 
@@ -314,7 +314,7 @@ local function special(player:Player)
   hitList(player,hits,damage, fighter.Knockback,false,charged)
  end
  send(player,"Special",{Position=root.Position,Charged=charged,Name=fighter.Special,Color=fighter.Color})
- fx("Special",root.Position,{color=fighter.Color,charged=charged})
+ fx("Special",root.Position,{color=fighter.Color,charged=charged,userId=player.UserId})
  mirror(player,s)
 end
 
@@ -329,7 +329,7 @@ local function awaken(player:Player)
  local _,humanoid=characterParts(player)
  if humanoid then humanoid.Health=math.min(humanoid.MaxHealth,humanoid.Health+12) end
  send(player,"Awaken",{Name=fighterFor(player).Awakening})
- fx("Awaken",(player.Character and player.Character:GetPivot().Position) or Vector3.zero,{color=fighterFor(player).Color})
+ fx("Awaken",(player.Character and player.Character:GetPivot().Position) or Vector3.zero,{color=fighterFor(player).Color,userId=player.UserId})
  mirror(player,s)
 end
 
@@ -402,7 +402,7 @@ local function createDomain(player:Player)
  local s=state(player);s.nextDomain=now()+Config.Combat.Domain.Cooldown;s.clashId=id;s.clashScore=0
  player:SetAttribute("Energy",0)
  mirror(player,s)
- fx("Domain",root.Position,{color=fighter.Color})
+ fx("Domain",root.Position,{color=fighter.Color,userId=player.UserId})
  send(player,"Domain",{Name=fighter.Domain})
  for other,ds in pairs(domains) do
   if other~=id and ds.owner~=player and ds.part.Parent and now()-ds.expires+Config.Combat.Domain.Duration<=Config.Combat.Domain.ClashWindow then
