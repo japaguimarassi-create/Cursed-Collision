@@ -22,7 +22,7 @@ REQUIRED=[
 "ServerScriptService/Services/CombatService.lua",
 "ServerScriptService/Services/MovementService.lua",
 "ServerScriptService/Services/MapTravelService.lua",
-"StarterPlayer/StarterPlayerScripts/Client/HUDRuntime.client.lua",
+
 "StarterPlayer/StarterPlayerScripts/Client/VFXController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CameraController.client.lua",
@@ -90,8 +90,8 @@ for token in ("BattleLine_Urban_v2","Origin","Metro","Core","Iron","Apex"):
     if token not in routes:
         fail("route definition missing: "+token)
 
-ui=read("StarterPlayer/StarterPlayerScripts/Client/HUDRuntime.client.lua")
-for token in ("HUDLayout","HUDRuntimeReady","PreferredInput","MobileActions","ControllerHints","HealthBackground","EnergyBackground","UltBackground","Hotbar"):
+ui=read("ReplicatedStorage/Shared/HUDRecovery.lua")
+for token in ("HUDLayout","HUDRuntimeReady","PreferredInput","MobileActions","HealthBackground","EnergyBackground","UltBackground","Hotbar"):
     if token not in ui:
         fail("HUD runtime contract missing: "+token)
 
@@ -138,7 +138,7 @@ for token in ("CollisionHUD","IsReady","Build","HUDRecoveryReady","HUDLayout"):
         fail("HUD recovery contract missing: "+token)
 
 loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
-for token in ("HUDRecovery","forceHudRecovery","hudReady","CollisionBootScreen"):
+for token in ("HUDRecovery","forceHudRecovery","hudReady","CollisionBootScreen","HUDRecoveryError"):
     if token not in loading:
         fail("loading recovery contract missing: "+token)
 
