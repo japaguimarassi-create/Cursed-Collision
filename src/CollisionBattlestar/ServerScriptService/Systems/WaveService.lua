@@ -138,8 +138,8 @@ function Service:Init(config, enemyService, dataService)
                         if player:GetAttribute("DataReady") == true and player:GetAttribute("Zone") ~= "PvP" then
                             local multiplier = if player:GetAttribute("Pass_ExtraWaveReward") == true then 1.25 else 1
                             local finalReward = math.floor(baseReward * multiplier)
-                            DataService:AddCredits(player, finalReward)
-                            State:FireClient(player, "WaveReward", finalReward, wave)
+                            local _, granted = DataService:AddCredits(player, finalReward)
+                            State:FireClient(player, "WaveReward", granted, wave)
                         end
                     end
 
