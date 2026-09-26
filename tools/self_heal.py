@@ -22,6 +22,10 @@ ORIGINALS=WORK/"originals"
 REPO_BACKUP=ROOT/"qa"/"autofix"/"backups"/f"{RUN_ID}.json"
 RESULT=WORK/"result.json"
 MAX_ATTEMPTS=3
+
+class RepairAttemptError(Exception):
+    pass
+
 GEMINI_MODEL=os.environ.get("GEMINI_MODEL","gemini-3.8-flash")
 ALLOWED_SUFFIXES={".lua"}
 ALLOWED_PATHS={"default.project.json"}
@@ -49,9 +53,9 @@ def run(cmd: list[str], timeout: int=180) -> tuple[int,str]:
 def safe_path(raw: str) -> Path:
     path=Path(raw)
     if path.is_absolute() or ".." in path.parts:
-        fail("AI returned an unsafe path: "+raw)
+        raise RepairAttemptError("AI returned an unsafe path: "+raw)
     if raw not in ALLOWED_PATHS and (path.suffix not in ALLOWED_SUFFIXES or not raw.startswith("src/CollisionBattlestar/")):
-        fail("AI returned a disallowed path: "+raw)
+        raise RepairAttemptError("AI returned a disallowed path: "+raw)
     return ROOT/path
 
 def load_report() -> dict[str,Any]:
@@ -152,7 +156,7 @@ def validate() -> tuple[bool,str]:
 def ai_request(prompt: str) -> dict[str,Any]:
     key=os.environ.get("GEMINI_API_KEY")
     if not key:
-        fail("GEMINI_API_KEY is missing")
+        raise RepairAttemptError("GEMINI_API_KEY is missing")
     body=json.dumps({
         "contents":[{"parts":[{"text":prompt}]}],
         "generationConfig":{"temperature":0.15,"maxOutputTokens":18000},
@@ -167,15 +171,15 @@ def ai_request(prompt: str) -> dict[str,Any]:
         with urllib.request.urlopen(req,timeout=180) as response:
             payload=json.load(response)
     except urllib.error.HTTPError as e:
-        fail("Gemini HTTP error: "+str(e)+"\n"+e.read().decode("utf-8","replace"))
+        raise RepairAttemptError("Gemini HTTP error: "+str(e)+"\n"+e.read().decode("utf-8","replace"))
     text=payload["candidates"][0]["content"]["parts"][0]["text"]
     match=re.search(r"\{[\s\S]*\}",text)
     if not match:
-        fail("Gemini did not return JSON")
+        raise RepairAttemptError("Gemini did not return JSON")
     try:
         result=json.loads(match.group(0))
     except json.JSONDecodeError as e:
-        fail("Gemini JSON parse failed: "+str(e))
+        raise RepairAttemptError("Gemini JSON parse failed: "+str(e))
     return result
 
 def build_prompt(report: dict[str,Any],paths: list[str],previous_error: str,attempt: int) -> str:
@@ -217,17 +221,17 @@ RELEVANT SOURCE:
 
 def apply_edits(edits: Any):
     if not isinstance(edits,list) or not edits:
-        fail("AI returned no edits")
+        raise RepairAttemptError("AI returned no edits")
     if len(edits)>4:
-        fail("AI returned too many edits")
+        raise RepairAttemptError("AI returned too many edits")
     touched=[]
     for edit in edits:
         if not isinstance(edit,dict):
-            fail("Malformed edit")
+            raise RepairAttemptError("Malformed edit")
         path=str(edit.get("path",""))
         content=edit.get("content")
         if not path or not isinstance(content,str):
-            fail("Malformed AI edit for "+path)
+            raise RepairAttemptError("Malformed AI edit for "+path)
         p=safe_path(path)
         p.parent.mkdir(parents=True,exist_ok=True)
         p.write_text(content,encoding="utf-8")
@@ -261,8 +265,6 @@ def main()->int:
             patch=ai_request(prompt)
             diagnosis=str(patch.get("diagnosis",""))
             touched=apply_edits(patch.get("edits"))
-        except SystemExit:
-            raise
         except Exception as e:
             previous_error="PATCH GENERATION ERROR\n"+repr(e)
             attempts.append({"attempt":attempt,"status":"generation_failed","error":previous_error})
