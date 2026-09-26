@@ -54,6 +54,7 @@ required=[
 "ServerScriptService/Systems/WorldService.lua",
 "ServerScriptService/Systems/EconomyService.lua",
 "ServerScriptService/Systems/CombatService.lua",
+"ServerScriptService/Systems/HitboxService.lua",
 "ServerScriptService/Systems/QAService.lua",
 "StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/UIController.lua",
@@ -70,7 +71,7 @@ for token in ("CollisionRemotes","CombatRequest","MovementRequest","UtilityReque
         fail("bootstrap contract missing: "+token)
 
 combat=read("ServerScriptService/Systems/CombatService.lua")
-for token in ("RequestRate","RequestBurst","GetPartBoundsInBox","GetPartBoundsInRadius","Light","Dash","BlockStart","BlockEnd","Special","Awaken","Domain","Clash1","Clash2","Clash3","Clash4","ParryWindow","CBS_Destructible"):
+for token in ("RequestRate","RequestBurst","HitboxService","Light","Dash","BlockStart","BlockEnd","Special","Awaken","Domain","Clash1","Clash2","Clash3","Clash4","ParryWindow","CBS_Destructible","HitStunUntil","clashMoveNext","Reset"):
     if token not in combat:
         fail("combat contract missing: "+token)
 
@@ -119,6 +120,11 @@ qa=read("ReplicatedStorage/Shared/QAContract.lua")
 for token in ("Clash1","Clash2","Clash3","Clash4","ClashPanel"):
     if token not in qa:
         fail("QA contract missing: "+token)
+
+hitbox=read("ServerScriptService/Systems/HitboxService.lua")
+for token in ("GetPartBoundsInBox","GetPartBoundsInRadius","OverlapParams","HumanoidRootPart","FilterDescendantsInstances"):
+    if token not in hitbox:
+        fail("hitbox contract missing: "+token)
 
 build=read("ReplicatedStorage/Shared/BuildInfo.lua")
 for token in ('B.Version="4.0.0"','B.Roster=24','B.Emotes=150','BattleLine_Urban_V5'):
