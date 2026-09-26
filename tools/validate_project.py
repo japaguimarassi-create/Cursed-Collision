@@ -143,7 +143,7 @@ for token in ("CollisionHUD","IsReady","Build","HUDRuntimeReady","HUDLayout"):
         fail("HUD recovery contract missing: "+token)
 
 loading=read("StarterPlayer/StarterPlayerScripts/Client/HUDBootstrap.client.lua")
-for token in ("HUDBootstrap","HUDRecovery","HUDRuntimeReady"):
+for token in ("HUDRecovery","Build"):
     if token not in loading:
         fail("HUD bootstrap contract missing: "+token)
 
