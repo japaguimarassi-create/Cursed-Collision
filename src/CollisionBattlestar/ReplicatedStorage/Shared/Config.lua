@@ -21,6 +21,7 @@ C.Combat={
 }
 C.Progression={KOReward=5,KOXP=40,HitXP=1,LevelBase=350,LevelStep=175}
 C.Map={Width=1320,Depth=760,RoadWidth=58,SidewalkWidth=10,BlockGap=18,BuildingChance=.86}
+C.Performance={OptionalHeroProps=false,FXLimit=8,DamageTextLimit=6,LowMemoryMode=true}
 C.UI={
 	Accent=Color3.fromRGB(94,205,255),
 	Accent2=Color3.fromRGB(176,112,255),
