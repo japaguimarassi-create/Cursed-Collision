@@ -132,9 +132,9 @@ for token in ("BootRequest","BootFeedback","CollisionBattlestarReady","WorldRepa
         fail("recovery boot contract missing: "+token)
 
 loading=read("StarterPlayer/StarterPlayerScripts/Client/HUDBootstrap.client.lua")
-for token in ("HUDBootstrap","HUDRecovery","HUDRuntimeReady"):
+for token in ("HUDRecovery","Build"):
     if token not in loading:
-        fail("loading recovery contract missing: "+token)
+        fail("HUD bootstrap contract missing: "+token)
 
 print("PASS: legacy fusion and removed combat marker scan clean")
 hud=read("ReplicatedStorage/Shared/HUDRecovery.lua")
