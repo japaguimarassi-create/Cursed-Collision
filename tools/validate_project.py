@@ -17,6 +17,7 @@ required = [
     "src/CollisionBattlestar/ReplicatedStorage/Shared/GameDSL.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/GameProgram.lua",
     "src/CollisionBattlestar/ServerScriptService/Systems/AntiCheatService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/AdminService.lua",
     "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua",
     "src/CollisionBattlestar/ServerScriptService/Systems/DataService.lua",
     "src/CollisionBattlestar/ServerScriptService/Systems/EnemyService.lua",
