@@ -28,6 +28,7 @@ local function teleport(player: Player, zone: string)
     end
 
     player:SetAttribute("Zone", zone)
+    player:SetAttribute("ServerTeleportAt", os.clock())
 
     character:PivotTo(CFrame.new(position))
     State:FireClient(player, "Zone", zone)
@@ -48,6 +49,7 @@ function Service:Init(config, zoneService)
                 if character.Parent and player:GetAttribute("DataReady") == true then
                     local zone = player:GetAttribute("Zone") or "PvE"
                     if zone == "PvP" then
+                        player:SetAttribute("ServerTeleportAt", os.clock())
                         character:PivotTo(CFrame.new(ZoneService:GetPvPSpawn()))
                     end
                     State:FireClient(player, "Zone", zone)
