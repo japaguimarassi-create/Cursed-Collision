@@ -10,6 +10,7 @@ if player.UserId~=game.CreatorId then return end
 local remotes=ReplicatedStorage:WaitForChild("CollisionRemotes")
 local control=remotes:WaitForChild("QAControl")
 local reportEvent=remotes:WaitForChild("QAReport")
+local combat=remotes:WaitForChild("CombatRequest")
 local guiParent=player:WaitForChild("PlayerGui")
 
 local function exists(path:string):Instance?
@@ -147,12 +148,12 @@ local function run()
 
 	local character=player.Character
 	local root=character and character:FindFirstChild("HumanoidRootPart")
+	local originalPivot=character and character:GetPivot()
 	local dummy=workspace:FindFirstChild("CBS_QA_BOT")
 	local dummyHumanoid=dummy and dummy:FindFirstChildOfClass("Humanoid")
 	if root and dummy and dummyHumanoid then
 		root.CFrame=dummy:GetPivot()*CFrame.new(0,0,8)
 		local before=dummyHumanoid.Health
-		local light=find and nil
 		combat:FireServer("Light")
 		local hit=waitFor(function() return dummyHumanoid.Health<before end,1.5)
 		check("M1 reaches QA bot",hit,"damage detected")
@@ -168,7 +169,8 @@ local function run()
 		okBlock=blocking and player:GetAttribute("Blocking")~=true
 		check("Block state toggles",okBlock,"attribute toggled")
 		combat:FireServer("Special")
-		check("Special request accepted",true,"request sent")
+		check("Special request sent",true,"request sent")
+		if character and originalPivot and character.Parent then character:PivotTo(originalPivot) end
 	end
 
 	for _,name in ipairs({"ShopPanel","MapPanel","QuestPanel","ProfilePanel"}) do
