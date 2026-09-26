@@ -33,7 +33,14 @@ local ShopService = require(Systems:WaitForChild("ShopService"))
 local ZoneService = require(Systems:WaitForChild("ZoneService"))
 local TravelService = require(Systems:WaitForChild("TravelService"))
 
+local OWNER_USERNAME = "CreeperGMT1"
 local OWNER_USER_ID = 0
+local okOwner, resolvedOwnerId = pcall(function()
+    return Players:GetUserIdFromNameAsync(OWNER_USERNAME)
+end)
+if okOwner and typeof(resolvedOwnerId) == "number" then
+    OWNER_USER_ID = resolvedOwnerId
+end
 local AdminRemote = Instance.new("RemoteEvent")
 AdminRemote.Name = "AdminAction"
 AdminRemote.Parent = remotes
