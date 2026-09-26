@@ -7,6 +7,7 @@ local Service={}
 local Config
 local DataService
 local stateEvent
+local AI
 local enemies:{[Model]:any}={}
 local rng=Random.new(260926)
 local skins={
@@ -41,7 +42,7 @@ local function chooseTarget(model:Model,runtime)
     local root=model.PrimaryPart
     if not root then return nil end
     local currentRoot=runtime.Target and targetRoot(runtime.Target)
-    if currentRoot and (currentRoot.Position-root.Position).Magnitude<115 then return runtime.Target end
+    if currentRoot and (currentRoot.Position-root.Position).Magnitude<AI.RetargetDistance then return runtime.Target end
     local best:Player?=nil
     local bestScore=math.huge
     local humanoid=model:FindFirstChildOfClass("Humanoid")
@@ -50,10 +51,10 @@ local function chooseTarget(model:Model,runtime)
         local pRoot=targetRoot(player)
         if pRoot then
             local distance=(pRoot.Position-root.Position).Magnitude
-            local score=distance+crowdLoad(player)*9
-            if type(attackerId)=="number" and player.UserId==attackerId then score-=42 end
+            local score=distance+crowdLoad(player)*AI.CrowdPenalty
+            if type(attackerId)=="number" and player.UserId==attackerId then score-=AI.KillerBias end
             local pHum=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if pHum and pHum.MaxHealth>0 and pHum.Health/pHum.MaxHealth<0.35 then score-=7 end
+            if pHum and pHum.MaxHealth>0 and pHum.Health/pHum.MaxHealth<0.35 then score-=AI.LowHealthBias end
             if score<bestScore then bestScore=score; best=player end
         end
     end
@@ -68,7 +69,7 @@ local function separation(model:Model)
         if other~=model and other:IsA("Model") and other.PrimaryPart then
             local delta=root.Position-other.PrimaryPart.Position
             local distance=delta.Magnitude
-            if distance>0 and distance<8 then result+=delta.Unit*(8-distance)/8 end
+            if distance>0 and distance<AI.SeparationRadius then result+=delta.Unit*(AI.SeparationRadius-distance)/AI.SeparationRadius end
         end
     end
     return result
@@ -121,8 +122,16 @@ local function createEnemy(position:Vector3,tier:number,elite:boolean):Model?
     if elite or tier>=3 then
         local h=Instance.new("Highlight"); h.Name="ThreatMarker"; h.FillColor=skin.Accent; h.FillTransparency=if elite then 0.48 else 0.72; h.OutlineColor=Color3.fromRGB(255,235,235); h.OutlineTransparency=if elite then 0 else 0.45; h.DepthMode=Enum.HighlightDepthMode.Occluded; h.Adornee=model; h.Parent=model
     end
+    skins.Urban.Hair=Config.NPCAssets.Hair.MessyBlack
+    skins.Street.Hair=Config.NPCAssets.Hair.SpikyBlack
+    skins.Rider.Hair=Config.NPCAssets.Hair.ShortBlack
+    skins.Neo.Hair=Config.NPCAssets.Hair.AnimeBlack
+    skins.Monster.Hair=Config.NPCAssets.Hair.MessyBlack
+    skins.Monster.Horns=Config.NPCAssets.Monster.BlackLongHorns
+    skins.Elite.Hair=Config.NPCAssets.Hair.AnimeBlack
+    skins.Elite.Horns=Config.NPCAssets.Monster.RedStripedHorns
     local animationState=AnimationService.Setup(humanoid,Config)
-    local runtime={Tier=tier,Elite=elite,LastAttack=0,ThinkAt=0,Target=nil,Path=nil,Waypoints=nil,NextWaypoint=2,PathBlocked=nil,LastPosition=root.Position,StuckAt=now(),StrafeSign=if rng:NextNumber()<0.5 then -1 else 1,DodgeAt=now()+rng:NextNumber(1.5,3.5),Attacking=false,Animation=animationState}
+    local runtime={Tier=tier,Elite=elite,LastAttack=0,ThinkAt=0,Target=nil,Path=nil,Waypoints=nil,NextWaypoint=2,PathBlocked=nil,LastPosition=root.Position,StuckAt=now(),StrafeSign=if rng:NextNumber()<0.5 then -1 else 1,DodgeAt=now()+rng:NextNumber(AI.EliteDodgeMin,AI.EliteDodgeMax),Attacking=false,Animation=animationState}
     enemies[model]=runtime
     humanoid.StateChanged:Connect(function(_,newState) if runtime.Animation then runtime.Animation:SetLocomotion(root.AssemblyLinearVelocity.Magnitude,newState) end end)
     humanoid.Died:Connect(function()
@@ -151,7 +160,7 @@ local function repath(model:Model,runtime,target:Player)
     local root=model.PrimaryPart; local tRoot=targetRoot(target)
     if not root or not tRoot then return false end
     if runtime.PathBlocked then runtime.PathBlocked:Disconnect(); runtime.PathBlocked=nil end
-    local path=PathfindingService:CreatePath({AgentRadius=2,AgentHeight=5,AgentCanJump=true,WaypointSpacing=3.5})
+    local path=PathfindingService:CreatePath({AgentRadius=AI.AgentRadius,AgentHeight=AI.AgentHeight,AgentCanJump=true,WaypointSpacing=AI.WaypointSpacing})
     local ok=pcall(function() path:ComputeAsync(root.Position,tRoot.Position) end)
     if not ok or path.Status~=Enum.PathStatus.Success then runtime.Path=nil; runtime.Waypoints=nil; return false end
     runtime.Path=path; runtime.Waypoints=path:GetWaypoints(); runtime.NextWaypoint=2
@@ -166,7 +175,7 @@ local function chase(model:Model,runtime,target:Player)
     runtime.Animation:SetLocomotion(Vector3.new(root.AssemblyLinearVelocity.X,0,root.AssemblyLinearVelocity.Z).Magnitude,humanoid:GetState())
     if distance<=attackRange and not runtime.Attacking and now()-runtime.LastAttack>=(if runtime.Elite then 0.78 elseif runtime.Tier>=3 then 0.92 else 1.08) then
         runtime.Attacking=true; runtime.Animation:Play("Attack",0.05,if runtime.Elite then 1.18 else 1)
-        task.delay(0.16,function()
+        task.delay(AI.AttackWindup,function()
             if not model.Parent or humanoid.Health<=0 then runtime.Attacking=false; return end
             if targetRoot(target) and (targetRoot(target).Position-root.Position).Magnitude<=attackRange+0.8 and hasLineOfSight(model,target) then attackPlayer(model,runtime,target) end
             runtime.Attacking=false
@@ -174,12 +183,12 @@ local function chase(model:Model,runtime,target:Player)
     end
     if runtime.Attacking then humanoid:MoveTo(root.Position); return end
     local sep=separation(model); local toTarget=Vector3.new(tRoot.Position.X-root.Position.X,0,tRoot.Position.Z-root.Position.Z); local flat=toTarget.Magnitude>0 and toTarget.Unit or Vector3.new(0,0,1); local right=Vector3.new(-flat.Z,0,flat.X)*runtime.StrafeSign
-    if runtime.Elite and distance>7 and distance<15 and now()>=runtime.DodgeAt then runtime.DodgeAt=now()+rng:NextNumber(3,5); humanoid:MoveTo(root.Position+right*8+sep*3); return end
-    if distance<=34 and hasLineOfSight(model,target) then
+    if runtime.Elite and distance>AI.EliteDodgeMin and distance<AI.EliteDodgeMax and now()>=runtime.DodgeAt then runtime.DodgeAt=now()+rng:NextNumber(AI.EliteDodgeCooldownMin,AI.EliteDodgeCooldownMax); humanoid:MoveTo(root.Position+right*8+sep*3); return end
+    if distance<=AI.DirectChaseDistance and hasLineOfSight(model,target) then
         local desired=tRoot.Position-flat*(attackRange*0.78)+right*(runtime.Tier==1 and 1.0 or 2.3)+sep*4
         humanoid:MoveTo(desired); return
     end
-    if now()>=runtime.ThinkAt or not runtime.Waypoints then runtime.ThinkAt=now()+0.72; repath(model,runtime,target) end
+    if now()>=runtime.ThinkAt or not runtime.Waypoints then runtime.ThinkAt=now()+AI.RepathInterval; repath(model,runtime,target) end
     local points=runtime.Waypoints
     if points and #points>=2 then
         local wp=points[math.min(runtime.NextWaypoint,#points)]
@@ -192,7 +201,7 @@ local function chase(model:Model,runtime,target:Player)
     humanoid:MoveTo(tRoot.Position+sep*3)
 end
 function Service:Init(config,dataService,stateRemote)
-    Config=config; DataService=dataService; stateEvent=stateRemote
+    Config=config; DataService=dataService; stateEvent=stateRemote; AI=config.AI.Enemy
     task.spawn(function()
         while true do
             local t=now()
@@ -201,7 +210,7 @@ function Service:Init(config,dataService,stateRemote)
                     local root=model.PrimaryPart
                     if (root.Position-runtime.LastPosition).Magnitude<0.65 then
                         if runtime.StuckAt==0 then runtime.StuckAt=t end
-                        if t-runtime.StuckAt>1.35 then
+                        if t-runtime.StuckAt>AI.StuckTimeout then
                             local humanoid=model:FindFirstChildOfClass("Humanoid")
                             if humanoid then humanoid.Jump=true; runtime.ThinkAt=0; runtime.StuckAt=t+0.25; runtime.StrafeSign*=-1 end
                         end
@@ -212,7 +221,7 @@ function Service:Init(config,dataService,stateRemote)
                     if target then chase(model,runtime,target) else local humanoid=model:FindFirstChildOfClass("Humanoid"); if humanoid then humanoid:MoveTo(root.Position); runtime.Animation:SetLocomotion(0,humanoid:GetState()) end end
                 else enemies[model]=nil end
             end
-            task.wait(0.1)
+            task.wait(AI.ThinkInterval)
         end
     end)
 end
