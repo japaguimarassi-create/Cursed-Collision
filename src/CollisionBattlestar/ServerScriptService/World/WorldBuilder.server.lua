@@ -70,6 +70,7 @@ function S.Init()
 		route=route,
 		regionVolumes=regionVolumes,
 		spawns={},
+		breakParts={},
 		bossArena=bossArena,
 		eventAnchor=eventAnchor,
 		Config=C
