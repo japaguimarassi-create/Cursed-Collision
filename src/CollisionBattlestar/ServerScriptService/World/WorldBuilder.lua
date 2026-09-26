@@ -131,7 +131,7 @@ local function streetCluster(parent:Instance,baseX:number,index:number,node:any)
 		sidewalk(parent,"Sidewalk_"..index.."_"..z,Vector3.new(230,1.5,18),Vector3.new(baseX,1.1,z))
 	end
 	for x=-86,86,86 do
-		road(parent,"CrossRoad_"..index.."_"..x,Vector3.new(38,1.1,230),Vector3.new(baseX+x,0,z))
+		road(parent,"CrossRoad_"..index.."_"..x,Vector3.new(38,1.1,230),Vector3.new(baseX+x,0,0))
 	end
 	for x=-95,95,95 do
 		lamp(parent,Vector3.new(baseX+x,0,22),index*20+math.abs(x))
