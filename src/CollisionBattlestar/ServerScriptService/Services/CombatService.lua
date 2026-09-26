@@ -7,6 +7,7 @@ local U=require(R.Shared.Util)
 local Anti=require(script.Parent.Parent.Security.AntiCheatService)
 local Destruction=require(script.Parent.DestructionService)
 local Hitbox=require(script.Parent.HitboxService)
+local Hybrid=require(R.Shared.HybridCombatRules)
 
 local S={}
 local states:{[Player]:any}={}
@@ -80,7 +81,16 @@ local function performHit(p:Player,s:any,name:string,d:any,scale:number?)
 
 		local push=targetRoot.Position-root.Position
 		if push.Magnitude>.1 then
-			targetRoot.AssemblyLinearVelocity=push.Unit*d.Knockback+Vector3.new(0,8,0)
+			local vertical=8
+			if Hybrid.IsAirborne(hum)then
+				vertical=s.Combo>=4 and -34 or 20
+			end
+			targetRoot.AssemblyLinearVelocity=push.Unit*d.Knockback+Vector3.new(0,vertical,0)
+			if Hybrid.Features.WallImpact and Hybrid.IsNearWall(targetRoot.Position,push.Unit,5,model)then
+				targetHum:TakeDamage(math.max(2,d.Damage*.18))
+				Destruction.BreakInBox(targetRoot.CFrame,Vector3.new(10,10,10),1)
+				fb(p,"WallImpact",{Position=targetRoot.Position,Action=name})
+			end
 		end
 
 		s.Momentum=U.Clamp(s.Momentum+d.MomentumGain,0,C.Combat.MomentumMax)
@@ -114,11 +124,16 @@ local function request(p:Player,action:string)
 	if not Anti.Allow(p)or not Anti.Validate(action)then return end
 	local s=state(p)
 	local now=os.clock()
+	local previousAction=s.LastAction
+	if action~="SprintStart"and action~="SprintEnd"then
+		p:SetAttribute("LastCombatAt",now)
+	end
 	local hum=U.Hum(p.Character)
 	local root=U.Root(p.Character)
 	if not hum or not root or hum.Health<=0 then return end
 
 	if action=="BlockStart"then
+		s.LastAction=action
 		s.IsBlocking=true
 		s.ParryUntil=now+C.Combat.ParryWindow
 		sync(p,s)
@@ -127,6 +142,7 @@ local function request(p:Player,action:string)
 	end
 
 	if action=="BlockEnd"then
+		s.LastAction=action
 		s.IsBlocking=false
 		s.ParryUntil=0
 		sync(p,s)
@@ -135,6 +151,7 @@ local function request(p:Player,action:string)
 	end
 
 	if action=="StyleToggle"then
+		s.LastAction=action
 		s.Style=s.Style=="Blade"and"Martial"or"Blade"
 		sync(p,s)
 		fb(p,"Style",s.Style)
@@ -145,6 +162,7 @@ local function request(p:Player,action:string)
 	if now<s.Busy or s.IsBlocking then return end
 
 	if action=="Parry"then
+		s.LastAction=action
 		s.ParryUntil=now+C.Combat.ParryWindow
 		s.Busy=now+.32
 		s.Momentum=U.Clamp(s.Momentum+3,0,C.Combat.MomentumMax)
@@ -155,6 +173,7 @@ local function request(p:Player,action:string)
 
 	if action=="Dash"then
 		if now-s.LastDash<C.Combat.Actions.Dash.Cooldown then return end
+		s.LastAction=action
 		s.LastDash=now
 		s.Busy=now+C.Combat.Actions.Dash.Duration
 		local dir=hum.MoveDirection
@@ -167,6 +186,7 @@ local function request(p:Player,action:string)
 	end
 
 	if action=="Overdrive"then
+		s.LastAction=action
 		if s.Overdrive or now-s.LastOverdrive<C.Combat.Actions.Overdrive.Cooldown then return end
 		if s.Momentum<C.Combat.Actions.Overdrive.MinimumMomentum then
 			fb(p,"OverdriveDenied","Momentum too low")
@@ -184,7 +204,8 @@ local function request(p:Player,action:string)
 	if not d then return end
 
 	if action=="Light"then
-		if now-s.LastLight>.85 then s.Combo=0 end
+		if now-s.LastLight>Hybrid.ComboReset then s.Combo=0 end
+		if previousAction=="Dash"then s.Busy=math.min(s.Busy,now+d.Startup*.55)end
 		s.Combo=math.clamp(s.Combo+1,1,4)
 		s.LastLight=now
 		s.Busy=now+d.Startup+d.Recovery
@@ -195,6 +216,7 @@ local function request(p:Player,action:string)
 			if states[p]==s then performHit(p,s,action,d,mult)end
 		end)
 	elseif action=="Heavy"then
+		s.LastAction=action
 		s.Combo=0
 		s.Busy=now+d.Startup+d.Recovery
 		fb(p,"Swing",{Combo=0,Action="Heavy"})
@@ -202,6 +224,7 @@ local function request(p:Player,action:string)
 			if states[p]==s then performHit(p,s,action,d)end
 		end)
 	elseif action=="Special"then
+		s.LastAction=action
 		if now-s.LastSpecial<d.Cooldown then return end
 		s.LastSpecial=now
 		s.Busy=now+d.Startup+d.Recovery
