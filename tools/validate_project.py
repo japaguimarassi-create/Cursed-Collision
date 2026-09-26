@@ -117,7 +117,7 @@ for token in ("MomentumMax","InstabilityMax","Blade","Martial","Size=1680","Even
         fail("configuration contract missing: "+token)
 
 combat=read("ServerScriptService/Services/CombatService.lua")
-for token in ("Hitbox.Query","TakeDamage","Parry","Overdrive","IsBlocking","StyleToggle"):
+for token in ("Hitbox.Query","TakeDamage","Parry","Overdrive","IsBlocking","StyleToggle","CharacterToken"):
     if token not in combat:
         fail("combat contract missing: "+token)
 
