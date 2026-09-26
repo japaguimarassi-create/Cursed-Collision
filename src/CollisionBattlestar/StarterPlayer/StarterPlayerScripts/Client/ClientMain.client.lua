@@ -19,8 +19,35 @@ local utility=remotes:WaitForChild("UtilityRequest")
 local travel=remotes:WaitForChild("MapTravelRequest")
 local feedback=remotes:WaitForChild("Feedback")
 
-local gui=HUD.Build()
-gui.Parent=guiParent
+local gui
+local buildOk,buildResult=pcall(HUD.Build)
+if buildOk and buildResult and buildResult:IsA("ScreenGui") then
+  gui=buildResult
+  gui.Enabled=true
+  gui.ScreenInsets=Enum.ScreenInsets.CoreUISafeInsets
+  gui.Parent=guiParent
+else
+  gui=Instance.new("ScreenGui")
+  gui.Name="CollisionHUD"
+  gui.ResetOnSpawn=false
+  gui.DisplayOrder=1000
+  gui.ScreenInsets=Enum.ScreenInsets.CoreUISafeInsets
+  gui.Parent=guiParent
+  local emergency=Instance.new("TextLabel")
+  emergency.Size=UDim2.fromScale(.92,.18)
+  emergency.Position=UDim2.fromScale(.04,.41)
+  emergency.BackgroundColor3=C.UI.Panel
+  emergency.TextColor3=C.UI.Danger
+  emergency.TextScaled=true
+  emergency.Font=Enum.Font.GothamBlack
+  emergency.Text="COLLISION BATTLESTAR\nHUD BOOT ERROR"
+  emergency.Parent=gui
+  local s=Instance.new("UIStroke")
+  s.Color=C.UI.Danger
+  s.Thickness=2
+  s.Parent=emergency
+  player:SetAttribute("HUDRuntimeError",tostring(buildResult))
+end
 
 local connections:{RBXScriptConnection}={}
 local owned:{[string]:boolean}={}
@@ -409,11 +436,22 @@ local function spawnDamage(position:Vector3,damage:number)
 end
 
 local function platformRefresh()
-  local touch=UserInputService.PreferredInput==Enum.PreferredInput.Touch
-  local gamepad=UserInputService.PreferredInput==Enum.PreferredInput.Gamepad
+  local preferred=UserInputService.PreferredInput
+  local touch=UserInputService.TouchEnabled and (preferred==Enum.PreferredInput.Touch or not UserInputService.KeyboardEnabled)
+  local gamepad=UserInputService.GamepadEnabled and preferred==Enum.PreferredInput.Gamepad
   show(gui,"Hotbar",not touch)
   show(gui,"MobileActions",touch)
   show(gui,"ControllerHints",gamepad)
+  local mobile=find(gui,"MobileActions")
+  local shop=find(gui,"ShopPanel")
+  if touch and mobile and mobile:IsA("Frame") then
+    local v=workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(720,1280)
+    mobile.Position=UDim2.new(1,-8,.58,0)
+    mobile.Size=UDim2.fromOffset(math.clamp(math.floor(v.X*.27),168,205),math.clamp(math.floor(v.Y*.32),225,290))
+  end
+  if shop and shop:IsA("Frame") then
+    shop.Size=touch and UDim2.fromScale(.94,.78) or UDim2.fromScale(.70,.76)
+  end
 end
 
 bindUI()
