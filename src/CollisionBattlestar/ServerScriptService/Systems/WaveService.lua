@@ -167,6 +167,21 @@ function Service:AdminNextWave()
     spawnWave(wave)
 end
 
+function Service:AdminRestartWave()
+    EnemyService:Clear()
+    active = false
+    spawnWave(math.max(1, wave))
+    active = true
+end
+
+function Service:AdminSetWave(value: number)
+    EnemyService:Clear()
+    active = false
+    wave = math.max(1, math.floor(value))
+    spawnWave(wave)
+    active = true
+end
+
 function Service:GetWave(): number
     return wave
 end
