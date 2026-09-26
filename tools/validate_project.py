@@ -104,7 +104,7 @@ for token in ("Light","Dash","Block","Special","MouseButton1","LeftShift"):
         fail("combat input definition missing: "+token)
 
 animations=read("ReplicatedStorage/Shared/AnimationProfiles.lua")
-for token in ("Vanguard","Impact","18576726303","18576729183","18576731629","2515090838","17866759652"):
+for token in ("Vanguard","Impact","18576729183","18576731629","2515090838","17866759652","522635514","522638767"):
     if token not in animations:
         fail("animation profile missing: "+token)
 
@@ -171,7 +171,7 @@ for token in ("SYSTEM MENU","RESPAWN","COMBAT SETTINGS","CONTROLS","getPingPosit
         fail("utility client contract missing: "+token)
 
 animations=read("ReplicatedStorage/Shared/AnimationProfiles.lua")
-for token in ("Idle","Walk","Jump","Fall","M1_1","M1_4","Special","Dash","HitTaken","522635514","522638767"):
+for token in ("Idle","Walk","Jump","Fall","M1_1","M1_4","Special","Dash","HitTaken","522635514","522638767","2515090838"):
     if token not in animations:
         fail("animation profile missing: "+token)
 
