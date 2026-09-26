@@ -2,9 +2,7 @@
 local A={}
 export type AssetReference={Id:number,Name:string,Use:string,Budget:string,License:string,ContainsScripts:boolean}
 
-A.References:{
-	AssetReference
-}={
+local References:{AssetReference}={
 	{Id=400850371,Name="Bench",Use="park seating",Budget="228 tris",License="Creator Store: explicitly free in description",ContainsScripts=false},
 	{Id=42942436,Name="Dumpster -Free-",Use="alley clutter",Budget="82 tris",License="Creator Store: explicitly free in title",ContainsScripts=false},
 	{Id=4987899016,Name="Bus Stop [FREE!]",Use="transport stop",Budget="1,432 tris / 2 decals",License="Creator Store: explicitly FREE",ContainsScripts=false},
@@ -14,6 +12,7 @@ A.References:{
 	{Id=72984214938380,Name="City Props Pack Street Building Car RP",Use="future research only",Budget="not accepted into runtime without license/asset inspection",License="Creator Store listing includes Free tag; runtime not selected",ContainsScripts=false},
 	{Id=16663903306,Name="Free R6 battleground animations (v7)",Use="animation source pack",Budget="1,066 tris / 727 vertices",License="Creator Store: open source; explicitly permits battleground use/monetization",ContainsScripts=false},
 }
+A.References=References
 
 function A.GetByUse(use:string):{AssetReference}
 	local out:{AssetReference}={}
