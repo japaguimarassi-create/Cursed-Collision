@@ -60,7 +60,18 @@ local function characterReady(player:Player,character:Model)
  if humanoid and humanoid:IsA("Humanoid") then
   humanoid.WalkSpeed=Config.Movement.WalkSpeed
   humanoid.JumpPower=Config.Movement.JumpPower
+  humanoid.Died:Connect(function()
+   CombatService:Reset(player)
+   DataService:ResetStreak(player)
+   player:SetAttribute("Respawning",true)
+   task.delay(2.5,function()
+    if player.Parent then
+     player:LoadCharacter()
+    end
+   end)
+  end)
  end
+ player:SetAttribute("Respawning",false)
  if player.Parent then gameState:FireClient(player,"Ready","server/runtime") end
 end
 
