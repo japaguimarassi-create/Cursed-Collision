@@ -35,18 +35,19 @@ jobs:
       - name: Install Gemini SDK
         run: pip install -U google-genai
 
-      - name: Verify references
+      - name: Download researched HUD image references
         run: |
-          test -d references/hud
-          find references/hud -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) | head -n 4
-          test "$(find references/hud -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) | wc -l)" -gt 0
+          python tools/hud_web_reference_loader.py \
+            --manifest references/hud/web_references.json \
+            --output build/hud-web-references
+          test "$(find build/hud-web-references -type f | wc -l)" -ge 4
 
       - name: Generate 100, score, select 10 and synthesize final
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python tools/hud_ai_generator.py \
-            --references references/hud \
+            --references build/hud-web-references \
             --output build/hud-ai \
             --count ${{ inputs.count }} \
             --top ${{ inputs.top }} \
