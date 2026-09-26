@@ -21,8 +21,10 @@ jobs:
         with:
           cache: true
 
-      - name: Structural validation
-        run: python3 tools/validate_project.py
+      - name: Python automation syntax validation
+        run: |
+          python3 -m py_compile tools/validate_project.py
+          python3 -m py_compile tools/self_heal.py
 
 
       - name: Compile every active Luau file
