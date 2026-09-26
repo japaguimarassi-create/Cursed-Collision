@@ -7,6 +7,10 @@ local function sanitize(root:Instance)
 	for _,item in ipairs(root:GetDescendants())do
 		if item:IsA("Script")or item:IsA("LocalScript")or item:IsA("ModuleScript")then
 			item:Destroy()
+		elseif item:IsA("BasePart")then
+			item.Anchored=true
+			item.CanTouch=false
+			item.CanQuery=false
 		end
 	end
 end
