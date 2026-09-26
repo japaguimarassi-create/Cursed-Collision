@@ -4,6 +4,7 @@ local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local Config=require(ReplicatedStorage.Shared.Config)
 local U=require(ReplicatedStorage.Shared.Util)
 local PlayerService=require(script.Parent.PlayerService)
+local DestructionService=require(script.Parent.DestructionService)
 local S={}
 local remotes=ReplicatedStorage:WaitForChild("CollisionRemotes")
 local request=remotes:WaitForChild("CombatRequest")
@@ -131,6 +132,7 @@ local function light(player:Player)
 	local cframe=root.CFrame*CFrame.new(0,0,-offset)
 	local knockback=combo==4 and action.Knockback*2.2 or action.Knockback
 	local damage=Config.Combat.ComboDamage[combo]
+	DestructionService.TryDamage(player,cframe.Position,math.max(4.5,action.Size.Z*.52),damage)
 	for _,humanoid in ipairs(targetsBox(player,cframe,action.Size)) do hit(player,humanoid,damage,knockback,combo==4) end
 	feedback:FireClient(player,"Swing",{Combo=combo,Position=root.Position})
 end
@@ -145,6 +147,7 @@ local function special(player:Player)
 	local overdrive=tonumber(player:GetAttribute("Overdrive"))or 0
 	local charged=overdrive>=100
 	local damage=Config.Combat.Actions.Special.Damage+(charged and Config.Combat.Actions.Special.OverdriveBonus or 0)
+	DestructionService.TryDamage(player,root.Position,Config.Combat.Actions.Special.Radius,damage)
 	local hitCount=0
 	for _,humanoid in ipairs(targetsRadius(player,root.Position,Config.Combat.Actions.Special.Radius)) do
 		hit(player,humanoid,damage,Config.Combat.Actions.Special.Knockback,charged)
