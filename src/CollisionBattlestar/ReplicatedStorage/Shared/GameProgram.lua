@@ -1,6 +1,7 @@
 --!strict
 local DSL = require(script.Parent:WaitForChild("GameDSL"))
 local GamePassIds = require(script.Parent:WaitForChild("GamePassIds"))
+local DeveloperProductIds = require(script.Parent:WaitForChild("DeveloperProductIds"))
 
 local game = DSL.game("Collision Battlestar")
 
@@ -92,13 +93,13 @@ game:shop({
         {Key = "Titan", DisplayName = "Titan", Cost = 7000, Damage = 120, Health = 650, Speed = 10, AttackRange = 9, AttackCooldown = 0.65},
     },
     DeveloperProducts = {
-        {Key = "Credits1000", Name = "1,000 Credits", Description = "Créditos para a loja e upgrades.", Id = 0, Price = 9, Kind = "Credits", Amount = 1000},
-        {Key = "Credits6000", Name = "6,000 Credits", Description = "Pacote de créditos.", Id = 0, Price = 39, Kind = "Credits", Amount = 6000},
-        {Key = "Credits25000", Name = "25,000 Credits", Description = "Pacote grande de créditos.", Id = 0, Price = 149, Kind = "Credits", Amount = 25000},
-        {Key = "Credits100000", Name = "100,000 Credits", Description = "Pacote máximo de créditos.", Id = 0, Price = 399, Kind = "Credits", Amount = 100000},
-        {Key = "MoneyStack", Name = "Money Multiplier", Description = "Soma +1x ao multiplicador de Credits.", Id = 0, Price = 49, Kind = "MoneyMultiplier"},
-        {Key = "DamageStack", Name = "Damage Multiplier", Description = "Soma +1x ao multiplicador de dano.", Id = 0, Price = 59, Kind = "DamageMultiplier"},
-        {Key = "SpeedStack", Name = "Speed Multiplier", Description = "Soma +1x ao multiplicador de velocidade.", Id = 0, Price = 69, Kind = "SpeedMultiplier"},
+        {Key = "Credits1000", Name = "1,000 Credits", Description = "Créditos para a loja e upgrades.", Id = DeveloperProductIds.Credits1000, Price = 9, Kind = "Credits", Amount = 1000},
+        {Key = "Credits6000", Name = "6,000 Credits", Description = "Pacote de créditos.", Id = DeveloperProductIds.Credits6000, Price = 39, Kind = "Credits", Amount = 6000},
+        {Key = "Credits25000", Name = "25,000 Credits", Description = "Pacote grande de créditos.", Id = DeveloperProductIds.Credits25000, Price = 149, Kind = "Credits", Amount = 25000},
+        {Key = "Credits100000", Name = "100,000 Credits", Description = "Pacote máximo de créditos.", Id = DeveloperProductIds.Credits100000, Price = 399, Kind = "Credits", Amount = 100000},
+        {Key = "MoneyStack", Name = "Money Multiplier", Description = "Soma +1x ao multiplicador de Credits.", Id = DeveloperProductIds.MoneyStack, Price = 49, Kind = "MoneyMultiplier"},
+        {Key = "DamageStack", Name = "Damage Multiplier", Description = "Soma +1x ao multiplicador de dano.", Id = DeveloperProductIds.DamageStack, Price = 59, Kind = "DamageMultiplier"},
+        {Key = "SpeedStack", Name = "Speed Multiplier", Description = "Soma +1x ao multiplicador de velocidade.", Id = DeveloperProductIds.SpeedStack, Price = 69, Kind = "SpeedMultiplier"},
     },
 })
 
