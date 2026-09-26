@@ -90,7 +90,7 @@ for token in ("GetAsync","UpdateAsync","BindToClose","180","CollisionBattlestar_
         fail("data contract missing: "+token)
 
 hud=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
-for token in ("CollisionHUD","LoadingScreen","PlayerCard","Objective","TopRight","Signal","MissionChip","ActionBar","PowerActions","MobileActions","QuickDock","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","ScoreboardPanel","SettingsPanel","Notice","ClashPanel","CoreUISafeInsets"):
+for token in ("CollisionHUD","LoadingScreen","PlayerCard","Objective","TopRight","Signal","MissionChip","CombatFeed","ActionBar","PowerActions","MobileActions","QuickDock","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","ScoreboardPanel","SettingsPanel","Notice","ClashPanel","CoreUISafeInsets"):
     if token not in hud:
         fail("HUD contract missing: "+token)
 
