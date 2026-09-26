@@ -6,7 +6,7 @@ local remotes=R:FindFirstChild("CollisionRemotes")or Instance.new("Folder")
 remotes.Name="CollisionRemotes"
 remotes.Parent=R
 
-for _,name in {"CombatRequest","Feedback","WorldState","GamePassRequest"}do
+for _,name in {"CombatRequest","Feedback","WorldState","GamePassRequest","MapTravelRequest","MapTravelFeedback"}do
 	if not remotes:FindFirstChild(name)then
 		local r=Instance.new("RemoteEvent")
 		r.Name=name
@@ -29,6 +29,7 @@ local Achievement=require(script.Parent.Services.AchievementService)
 local BattleStreak=require(script.Parent.Services.BattleStreakService)
 local WorldPresentation=require(script.Parent.Services.WorldPresentationService)
 local GamePass=require(script.Parent.Services.GamePassService)
+local MapTravel=require(script.Parent.Services.MapTravelService)
 
 local function safeInit(name:string,callback:()->())
 	local ok,err=pcall(callback)
@@ -40,6 +41,7 @@ local function safeInit(name:string,callback:()->())
 end
 
 WB.Init()
+safeInit("MapTravel",MapTravel.Init)
 safeInit("MapDecoration",MapDecoration.Init)
 safeInit("Data",Data.Init)
 safeInit("WorldState",World.Init)
