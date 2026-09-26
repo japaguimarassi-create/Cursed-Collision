@@ -135,11 +135,11 @@ local function road(parent: Instance, axis: "X" | "Z", coordinate: number, width
         Color3.fromRGB(38, 41, 48)
     )
     roadPart.CanQuery = false
-    for offset = -size / 2 + 14, size / 2 - 14, 28 do
+    for offset = -size / 2 + 28, size / 2 - 28, 84 do
         neon(
             parent,
             "Lane",
-            if isX then Vector3.new(16, 0.08, 0.35) else Vector3.new(0.35, 0.08, 16),
+            if isX then Vector3.new(44, 0.08, 0.35) else Vector3.new(0.35, 0.08, 44),
             CFrame.new(if isX then offset else coordinate, 0.42, if isX then coordinate else offset),
             Color3.fromRGB(118, 124, 132)
         )
@@ -240,7 +240,7 @@ local function addEnemySpawnRing(parent: Instance)
             spawnPoint(
                 parent,
                 ("EnemySpawn_%02d"):format(index),
-                Vector3.new(math.cos(angle) * radius, 4, math.sin(angle) * radius)
+                Vector3.new(math.cos(angle) * radius, 9, math.sin(angle) * radius)
             )
         end
     end
