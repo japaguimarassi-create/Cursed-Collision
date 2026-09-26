@@ -2,14 +2,13 @@
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local TweenService=game:GetService("TweenService")
-local RunService=game:GetService("RunService")
 
 local player=Players.LocalPlayer
-local playerScripts=player:WaitForChild("PlayerScripts")
 local playerGui=player:WaitForChild("PlayerGui")
 local remotes=ReplicatedStorage:WaitForChild("CollisionRemotes")
 local bootRequest=remotes:WaitForChild("BootRequest")
 local bootFeedback=remotes:WaitForChild("BootFeedback")
+local HUDRecovery=require(ReplicatedStorage.Shared.HUDRecovery)
 
 local screen=Instance.new("ScreenGui")
 screen.Name="CollisionBootScreen"
@@ -48,11 +47,11 @@ card.Parent=backdrop
 local cardCorner=Instance.new("UICorner")
 cardCorner.CornerRadius=UDim.new(0,20)
 cardCorner.Parent=card
-local stroke=Instance.new("UIStroke")
-stroke.Color=Color3.fromRGB(69,84,106)
-stroke.Transparency=.35
-stroke.Thickness=1
-stroke.Parent=card
+local cardStroke=Instance.new("UIStroke")
+cardStroke.Color=Color3.fromRGB(69,84,106)
+cardStroke.Transparency=.35
+cardStroke.Thickness=1
+cardStroke.Parent=card
 
 local title=Instance.new("TextLabel")
 title.BackgroundTransparency=1
@@ -142,16 +141,7 @@ local function mapReady():boolean
 end
 
 local function hudReady():boolean
-	local gui=playerGui:FindFirstChild("CollisionHUD")
-	if not gui or not gui:IsA("ScreenGui") then return false end
-	if not gui:FindFirstChild("Identity") then return false end
-	if not gui:FindFirstChild("ActionBar") then return false end
-	if not gui:FindFirstChild("OverdriveMeter") then return false end
-	local action=gui:FindFirstChild("ActionBar")
-	for _,name in ipairs({"Light","Dash","Block","Special"}) do
-		if not action or not action:FindFirstChild(name) then return false end
-	end
-	return true
+	return HUDRecovery.IsReady()
 end
 
 local function coreReady():boolean
@@ -165,33 +155,15 @@ local function characterReady():boolean
 	return humanoid~=nil and root~=nil and humanoid.Health>0
 end
 
-local function restartLocalScript(name:string)
-	local existing=playerScripts:FindFirstChild(name)
-	local template=playerScripts:FindFirstChild(name)
-	if template and template:IsA("LocalScript") then
-		local clone=template:Clone()
-		clone.Name=name.."_Recovery"
-		clone.Disabled=false
-		clone.Parent=playerScripts
-		return true
-	end
-	return false
-end
-
-local function recover()
-	status.Text="Falha detectada. Forçando correção e recarregamento..."
-	stage.Text="RECOVERY"
-	bar.BackgroundColor3=Color3.fromRGB(255,120,120)
-	pcall(function() bootRequest:FireServer("Recover") end)
-	for _,name in ipairs({"MainController.client","PlatformHUDController.client","AnimationController.client","VFXController.client","CameraController.client"}) do
-		restartLocalScript(name)
-	end
-	task.wait(1)
+local function forceHudRecovery():boolean
+	local result=HUDRecovery.Build()
+	return result~=nil and HUDRecovery.IsReady()
 end
 
 bootFeedback.OnClientEvent:Connect(function(kind:string,value:any)
 	if kind=="Retry" then
-		status.Text="Servidor encontrou uma falha. Recriando componentes..."
+		stage.Text="RECOVERY"
+		status.Text="Servidor encontrou uma falha. Recriando os componentes..."
 	elseif kind=="Ready" then
 		status.Text="Servidor pronto. Finalizando verificações locais..."
 	elseif kind=="Checking" then
@@ -199,9 +171,13 @@ bootFeedback.OnClientEvent:Connect(function(kind:string,value:any)
 	end
 end)
 
+task.defer(function()
+	pcall(function() bootRequest:FireServer("Initial") end)
+end)
+
 local start=os.clock()
-local lastRecovery=0
-local recoveryCount=0
+local lastServerRepair=0
+local lastHudRepair=0
 local completed=false
 
 while screen.Parent and not completed do
@@ -216,19 +192,29 @@ while screen.Parent and not completed do
 	for _,ok in ipairs(checks) do if ok then done+=1 end end
 	setProgress(done,#checks)
 
-	if checks[1]==false then
+	if not checks[1] then
 		stage.Text="CORE"
-		status.Text="Aguardando os sistemas básicos do servidor..."
-	elseif checks[2]==false then
+		status.Text="Aguardando os sistemas básicos..."
+	elseif not checks[2] then
 		stage.Text="BOOT"
 		status.Text=tostring(workspace:GetAttribute("CollisionBattlestarBootStage") or "starting").."..."
-	elseif checks[3]==false then
+		if os.clock()-lastServerRepair>2 then
+			lastServerRepair=os.clock()
+			pcall(function() bootRequest:FireServer("Repair") end)
+		end
+	elseif not checks[3] then
 		stage.Text="MAP"
-		status.Text="Construindo e verificando o mapa urbano..."
-	elseif checks[4]==false then
+		status.Text="Verificando e reconstruindo o mapa urbano..."
+	elseif not checks[4] then
 		stage.Text="HUD"
-		status.Text="Carregando interface de combate..."
-	elseif checks[5]==false then
+		status.Text="Reconstruindo a interface de combate..."
+		if os.clock()-lastHudRepair>.8 then
+			lastHudRepair=os.clock()
+			if forceHudRecovery() then
+				status.Text="Interface recuperada. Verificando..."
+			end
+		end
+	elseif not checks[5] then
 		stage.Text="PLAYER"
 		status.Text="Preparando o personagem..."
 	else
@@ -238,15 +224,13 @@ while screen.Parent and not completed do
 		break
 	end
 
-	local elapsed=os.clock()-start
-	if elapsed>7 and done<5 and os.clock()-lastRecovery>4 and recoveryCount<5 then
-		lastRecovery=os.clock()
-		recoveryCount+=1
-		recover()
-	elseif elapsed>32 and done<5 then
-		status.Text="Recuperação contínua em andamento..."
-		pcall(function() bootRequest:FireServer("Recover") end)
+	if os.clock()-start>30 and not completed then
+		stage.Text="RECOVERY"
+		status.Text="Recuperação automática contínua..."
+		pcall(function() bootRequest:FireServer("Recovery") end)
+		for _=1,2 do forceHudRecovery() end
 	end
+
 	task.wait(.2)
 end
 

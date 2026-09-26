@@ -30,3 +30,6 @@ MapDecorationService creates procedural details first. Approved public Creator S
 ## Performance
 
 The code avoids per-frame gameplay remotes. Persistent presentation loops are small, and short-lived VFX are capped by MaxEffects.
+
+
+HUD recovery v2 includes direct reconstruction when the runtime HUD controller does not materialize.

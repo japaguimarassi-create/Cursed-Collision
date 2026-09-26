@@ -12,6 +12,7 @@ REQUIRED=[
 "ReplicatedStorage/Shared/CombatDefinitions.lua",
 "ReplicatedStorage/Shared/MapDefinitions.lua",
 "ReplicatedStorage/Shared/HUDTheme.lua",
+"ReplicatedStorage/Shared/HUDRecovery.lua",
 "ReplicatedStorage/Shared/AnimationProfiles.lua",
 "ServerScriptService/Bootstrap.server.lua",
 "ServerScriptService/World/WorldBuilder.lua",
@@ -125,10 +126,21 @@ for token in ("BootRequest","BootFeedback","CollisionBattlestarReady","WorldRepa
         fail("recovery boot contract missing: "+token)
 
 loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
-for token in ("CollisionBootScreen","mapReady","hudReady","characterReady","bootRequest:FireServer","restartLocalScript","Recovery"):
+for token in ("CollisionBootScreen","mapReady","hudReady","characterReady","bootRequest:FireServer","forceHudRecovery","HUDRecovery","Recovery"):
     if token not in loading:
         fail("loading recovery contract missing: "+token)
 
 print("PASS: legacy fusion and removed combat marker scan clean")
+hud=read("ReplicatedStorage/Shared/HUDRecovery.lua")
+for token in ("CollisionHUD","ManagedByFallback","CombatRequest","MapTravelRequest","IsReady","Build"):
+    if token not in hud:
+        fail("HUD recovery contract missing: "+token)
+
+loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
+for token in ("HUDRecovery","forceHudRecovery","hudReady","CollisionBootScreen"):
+    if token not in loading:
+        fail("loading recovery contract missing: "+token)
+
 print("PASS: fault-tolerant server and client startup recovery")
+print("PASS: direct HUD reconstruction fallback")
 print("PASS: platform-specific mobile and console image HUD")
