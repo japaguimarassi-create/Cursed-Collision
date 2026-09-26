@@ -296,6 +296,36 @@ local function lighting()
 	Lighting.EnvironmentSpecularScale=.58
 	Lighting.Ambient=Color3.fromRGB(52,58,73)
 	Lighting.OutdoorAmbient=Color3.fromRGB(66,72,88)
+	local atmosphere=Lighting:FindFirstChild("CBSAtmosphere")
+	if not atmosphere then
+		atmosphere=Instance.new("Atmosphere")
+		atmosphere.Name="CBSAtmosphere"
+		atmosphere.Parent=Lighting
+	end
+	atmosphere.Density=.28
+	atmosphere.Offset=.08
+	atmosphere.Color=Color3.fromRGB(122,139,170)
+	atmosphere.Decay=Color3.fromRGB(46,56,76)
+	atmosphere.Glare=.05
+	atmosphere.Haze=1.2
+	local bloom=Lighting:FindFirstChild("CSBBloom")
+	if not bloom then
+		bloom=Instance.new("BloomEffect")
+		bloom.Name="CSBBloom"
+		bloom.Parent=Lighting
+	end
+	bloom.Intensity=.24
+	bloom.Size=32
+	bloom.Threshold=.82
+	local color=Lighting:FindFirstChild("CBSColor")
+	if not color then
+		color=Instance.new("ColorCorrectionEffect")
+		color.Name="CBSColor"
+		color.Parent=Lighting
+	end
+	color.Brightness=-.02
+	color.Contrast=.10
+	color.Saturation=-.04
 end
 
 local function build():Folder
