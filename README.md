@@ -40,6 +40,10 @@ No copyrighted franchise characters, techniques or copied proprietary runtime as
 
 External animation IDs are treated as optional runtime candidates, not as guaranteed permissions. Any animation that cannot be loaded by Roblox in the experience automatically falls back to the procedural system.
 
+## Production scope
+
+The shipped runtime contains no AI gameplay system and no AI-dependent build step. All game logic, validation and progression are deterministic and source-controlled.
+
 ## Build pipeline
 
 The project uses a Rojo source-of-truth manifest, GitHub Actions validation and a manual Roblox publication workflow. Static validation and Roblox acceptance do not replace live device testing for visual quality, combat feel, animation compatibility, streaming behavior or sustained mobile frame rate.
