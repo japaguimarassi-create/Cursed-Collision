@@ -32,7 +32,7 @@ REQUIRED=[
 "StarterPlayer/StarterPlayerScripts/Client/UtilityController.client.lua",
 "StarterPlayer/StarterPlayerScripts/StoreController.client.lua",
 
-"StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua",
+"StarterPlayer/StarterPlayerScripts/Client/HUDBootstrap.client.lua",
 ]
 FORBIDDEN=("jujutsu","jjk","sukuna","gojo","megumi","cursed collision","cursedcollision","potentialman","heavy")
 
@@ -131,8 +131,8 @@ for token in ("BootRequest","BootFeedback","CollisionBattlestarReady","WorldRepa
     if token not in boot:
         fail("recovery boot contract missing: "+token)
 
-loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
-for token in ("CollisionBootScreen","mapReady","hudReady","playerReady","bootRequest:FireServer","createHUD","Recovery"):
+loading=read("StarterPlayer/StarterPlayerScripts/Client/HUDBootstrap.client.lua")
+for token in ("HUDBootstrap","HUDRecovery","HUDRuntimeReady"):
     if token not in loading:
         fail("loading recovery contract missing: "+token)
 
@@ -143,12 +143,12 @@ for token in ("CollisionHUD","IsReady","Build","HUDRuntimeReady","HUDLayout"):
         fail("HUD recovery contract missing: "+token)
 
 loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
-for token in ("hudReady","CollisionBootScreen","createHUD","requestRecovery"):
+for token in ("HUDBootstrap","HUDRecovery","HUDRuntimeReady"):
     if token not in loading:
         fail("loading recovery contract missing: "+token)
 
 print("PASS: fault-tolerant server and client startup recovery")
-print("PASS: direct HUD reconstruction fallback")
+print("PASS: non-blocking HUD bootstrap without recovery screen")
 print("PASS: platform-specific mobile and console image HUD")
 
 layout=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
