@@ -5,7 +5,7 @@ local P={}
 P.Sets={
 	Vanguard={
 		Name="Vanguard",
-		Source="Publicly posted battleground combo clips; runtime permission is still validated by Roblox asset loading.",
+		Source="Publicly posted battleground combo clips; runtime permission is validated at runtime and unavailable clips fall back automatically.",
 		Clips={
 			M1_1={Id="rbxassetid://18576726303",Speed=1.05,Priority=Enum.AnimationPriority.Action2},
 			M1_2={Id="rbxassetid://18576729183",Speed=1.04,Priority=Enum.AnimationPriority.Action2},
