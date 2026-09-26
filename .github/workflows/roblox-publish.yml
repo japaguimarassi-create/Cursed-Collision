@@ -1,6 +1,9 @@
 name: Collision Battlestar Roblox Publisher
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       confirm:
@@ -18,7 +21,7 @@ concurrency:
 
 jobs:
   publish:
-    if: ${{ inputs.confirm == true }}
+    if: ${{ github.event_name == 'push' || inputs.confirm == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
