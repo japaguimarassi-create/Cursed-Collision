@@ -209,6 +209,8 @@ local function applyHit(attacker:Player,victimHumanoid:Humanoid,damage:number,kn
  end
  if attackerRoot then
   local vertical=finisher and 18 or 7
+  local variant=tostring(attacker:GetAttribute("LastM1Variant") or "Neutral")
+  if finisher and variant=="Uppercut" then vertical=58 elseif finisher and variant=="Downslam" then vertical=-54 end
   victimRoot.AssemblyLinearVelocity=attackerRoot.CFrame.LookVector*knockback+Vector3.new(0,vertical,0)
   if finisher and victim then
    local stateHumanoid=victimHumanoid
@@ -258,6 +260,7 @@ local function light(player:Player)
  local knock=Config.Combat.Light.Knockback[index]
  if variant=="Uppercut" then knock=knock+10 elseif variant=="Downslam" then knock=math.max(10,knock-6) end
  hitList(player,getHumanoids(player,cf,Config.Combat.Light.Hitbox),damage,knock,false,finisher)
+ player:SetAttribute("LastM1Variant",variant)
  send(player,"Swing",{Position=cf.Position,Combo=index,Variant=variant})
  fx("Swing",cf.Position,{combo=index,color=fighterFor(player).Color})
  mirror(player,s)
@@ -453,6 +456,7 @@ local function createDomain(player:Player)
 end
 
 function M:Handle(player:Player,action:string)
+ if player:GetAttribute("DataReady")~=true then return end
  local s=state(player)
  if not consumeRequest(s) then return end
  if action=="Light" then light(player)
@@ -481,7 +485,7 @@ function M:Handle(player:Player,action:string)
 end
 
 function M:Movement(player:Player,sprint:boolean)
- if typeof(sprint)~="boolean" then return end
+ if typeof(sprint)~="boolean" or player:GetAttribute("DataReady")~=true then return end
  local s=state(player)
  if s.stunUntil>now() then return end
  local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -499,6 +503,7 @@ function M:Init(dataService,feedback:RemoteEvent,fxRemote:UnreliableRemoteEvent)
    s.blocking=false;s.stunUntil=0;s.dashUntil=0;s.combo=0;s.awakening=false;s.awakeningUntil=0;s.overdrive=0;s.perfectReady=false;s.clashId=nil;s.clashScore=0
    player:SetAttribute("Energy",Config.Resources.MaxEnergy);mirror(player,s)
   end)
+  player:SetAttribute("MaxEnergy",Config.Resources.MaxEnergy)
   player:SetAttribute("Energy",Config.Resources.MaxEnergy)
   s.clashMoveNext=0
   mirror(player,s)
