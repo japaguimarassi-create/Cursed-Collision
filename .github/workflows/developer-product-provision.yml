@@ -1,0 +1,114 @@
+name: Collision Battlestar Developer Product Provisioner
+
+on:
+  push:
+    paths:
+      - "developer-products/manifest.json"
+      - ".github/developer-products/provision.json"
+      - ".github/workflows/developer-product-provision.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collision-battlestar-developer-products
+  cancel-in-progress: false
+
+jobs:
+  provision:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[provision-products]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Provision developer products
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          UNIVERSE_ID: "5290480963"
+        run: |
+          set -euo pipefail
+          test -n "${ROBLOX_API_KEY}"
+          python3 - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+
+          request_path = Path(".github/developer-products/provision.json")
+          request = json.loads(request_path.read_text())
+          if request.get("create") is not True:
+              raise SystemExit("Provision request is not armed.")
+
+          key = os.environ["ROBLOX_API_KEY"]
+          universe = os.environ["UNIVERSE_ID"]
+          manifest_path = Path("developer-products/manifest.json")
+          manifest = json.loads(manifest_path.read_text())
+
+          auth = ["-H", "x-api-key: " + key]
+          list_url = f"https://apis.roblox.com/developer-products/v2/universes/{universe}/developer-products/creator?limit=100"
+          existing = json.loads(subprocess.check_output(["curl", "-fsS", *auth, list_url], text=True))
+
+          by_name = {}
+          for item in existing.get("developerProducts", []):
+              name = item.get("displayName") or item.get("name")
+              product_id = item.get("productId") or item.get("developerProductId")
+              if name and isinstance(product_id, int):
+                  by_name[str(name)] = product_id
+
+          for item in manifest["products"]:
+              name = str(item["name"])
+              current_id = int(item.get("id", 0) or 0)
+              if current_id > 0:
+                  continue
+
+              existing_id = by_name.get(name)
+              if existing_id:
+                  item["id"] = existing_id
+                  continue
+
+              create_url = f"https://apis.roblox.com/developer-products/v2/universes/{universe}/developer-products"
+              body = json.dumps({
+                  "name": name,
+                  "description": str(item.get("description", "")),
+                  "isForSale": True,
+                  "price": int(item["price"])
+              })
+
+              created = json.loads(subprocess.check_output([
+                  "curl", "-fsS", "--request", "POST",
+                  "-H", "x-api-key: " + key,
+                  "-H", "Content-Type: application/json",
+                  "--data", body,
+                  create_url
+              ], text=True))
+
+              product_id = created.get("productId") or created.get("developerProductId")
+              if not isinstance(product_id, int) or product_id <= 0:
+                  raise SystemExit(f"Invalid product ID for {name}: {created}")
+
+              item["id"] = product_id
+              by_name[name] = product_id
+
+          manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+
+          lines = ["--!strict", "", "return {"]
+          for item in manifest["products"]:
+              lines.append(f'    {item["key"]} = {int(item["id"])},')
+          lines.append("}")
+          Path("src/CollisionBattlestar/ReplicatedStorage/Shared/DeveloperProductIds.lua").write_text("\n".join(lines) + "\n")
+
+          request["create"] = False
+          request["status"] = "consumed"
+          request_path.write_text(json.dumps(request, indent=2) + "\n")
+          PY
+
+      - name: Commit generated IDs
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add developer-products/manifest.json src/CollisionBattlestar/ReplicatedStorage/Shared/DeveloperProductIds.lua .github/developer-products/provision.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: create developer product ids"
+          git push
