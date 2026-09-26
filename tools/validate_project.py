@@ -15,6 +15,8 @@ REQUIRED=[
 "ReplicatedStorage/Shared/VFXDefinitions.lua",
 "ReplicatedStorage/Shared/GamePassDefinitions.lua",
 "ReplicatedStorage/Shared/BuildInfo.lua",
+"ReplicatedStorage/Shared/MapRouteDefinitions.lua",
+"ReplicatedStorage/Shared/HybridCombatRules.lua",
 "ServerScriptService/Services/GamePassService.lua",
 "StarterPlayer/StarterPlayerScripts/Client/GamePassController.client.lua",
 "ServerScriptService/Security/AntiCheatService.lua",
@@ -35,6 +37,7 @@ REQUIRED=[
 "ServerScriptService/Services/AnimationService.lua",
 "ServerScriptService/Services/MapAssetLoader.lua",
 "ServerScriptService/Services/MapDecorationService.lua",
+"ServerScriptService/Services/MapTravelService.lua",
 "ServerScriptService/World/WorldBuilder.server.lua",
 "ServerScriptService/Bootstrap.server.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CombatController.client.lua",
@@ -46,6 +49,7 @@ REQUIRED=[
 "StarterPlayer/StarterPlayerScripts/Client/ProgressMenuController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/AudioController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/Bootstrap.client.lua",
+"StarterPlayer/StarterPlayerScripts/Client/MapRouteController.client.lua",
 ]
 
 def fail(message):
@@ -108,7 +112,7 @@ for token in ('B.Version=','B.BuildTag=','B.Project="Collision Battlestar"'):
         fail("BuildInfo contract missing: "+token)
 
 config=read("ReplicatedStorage/Shared/Config.lua")
-for token in ("MomentumMax","InstabilityMax","Reality","Fracture","Blade","Martial","Size=960","EventAnchor=Vector3.new(0,6,-286)"):
+for token in ("MomentumMax","InstabilityMax","Reality","Fracture","Blade","Martial","Size=1680","EventAnchor=Vector3.new(0,6,0)"):
     if token not in config:
         fail("configuration contract missing: "+token)
 
@@ -143,17 +147,38 @@ for token in ("Stable","Unstable","Distorted","Invaded","Collapsed","Recovering"
         fail("Collision State missing: "+token)
 
 map_builder=read("ServerScriptService/World/WorldBuilder.server.lua")
-map_files=list((SRC/"ServerScriptService/World/Map").glob("*.lua"))
-if len(map_files)<3:
-    fail("map must be split across at least 3 modules under ServerScriptService/World/Map")
+map_root=SRC/"ServerScriptService/World/Map"
+map_files=list(map_root.glob("*.lua"))
+if len(map_files)<4:
+    fail("map must be split across at least 4 modules under ServerScriptService/World/Map")
 if len(map_builder.splitlines())>220:
     fail("WorldBuilder.server.lua is too large; keep geometry in map modules")
-if map_builder.find("T.Init(")==-1 or map_builder.find("local Districts=require")<map_builder.find("T.Init("):
+if map_builder.find("T.Init(")==-1 or map_builder.find("local Zones=require")<map_builder.find("T.Init("):
     fail("WorldBuilder must initialize MapContext before loading map modules")
 map_text="\n".join(p.read_text(encoding="utf-8",errors="ignore") for p in map_files+[SRC/"ServerScriptService/World/WorldBuilder.server.lua"])
-for token in ("AsterRoofLadder","VantaRoofLadder","ObservationRoofLadder","GroundWest","GroundEast","GroundNorth","GroundSouth","MetroFloor","SkybridgeWest","SkybridgeNorth","ShatterPark","CanalWater","RiftCore","BossArena","CollisionBattlestarWorld","NeonHeights","IndustrialVerge","ShatterPark","CanalMarket","ArchiveQuarter","OldMetro","RiftCrater"):
+for token in ("BattleLine_v1","Origin","Neon","Iron","Core","Sky","Rift","Apex","MainSpine","SkyRoute","UndergroundFloor","ApexArena","RiftCore","CollisionBattlestarWorld"):
     if token not in map_text:
-        fail("map contract missing: "+token)
+        fail("Battle Line map contract missing: "+token)
+
+routes=read("ReplicatedStorage/Shared/MapRouteDefinitions.lua")
+for token in ("Nodes","Order","Origin","Core","Apex","battleline_v1"):
+    if token not in routes:
+        fail("Battle Route definition missing: "+token)
+if "MapTravelRequest" not in bootstrap or "MapTravelFeedback" not in bootstrap:
+    fail("map travel remote contract missing")
+travel=read("ServerScriptService/Services/MapTravelService.lua")
+for token in ("RequestStreamAroundAsync","PivotTo","MapTravelRequest","MapTravelFeedback","CollisionState"):
+    if token not in travel:
+        fail("map travel service contract missing: "+token)
+map_ui=read("StarterPlayer/StarterPlayerScripts/Client/MapRouteController.client.lua")
+for token in ("BATTLE ROUTE","FAST TRAVEL","MapTravelRequest","MapTravelFeedback","ScrollingFrame"):
+    if token not in map_ui:
+        fail("Battle Route HUD contract missing: "+token)
+
+hybrid=read("ReplicatedStorage/Shared/HybridCombatRules.lua")
+for token in ("DashCancel","AirLauncher","SlamFinish","WallImpact","Parry","Ragdoll"):
+    if token not in hybrid:
+        fail("hybrid combat contract missing: "+token)
 
 battle=read("ServerScriptService/Services/BattleStreakService.lua")
 for token in ("BattleStreak","spawnWave","makeWave","SetBattleStreakBest","BATTLE STREAK","SpawnBoss","SpawnMiniBoss"):
