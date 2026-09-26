@@ -1,10 +1,9 @@
 --!strict
 local B={}
 B.Project="Collision Battlestar"
-B.Version="2.3.0"
-B.BuildTag="urban-combat-evolution-2026-09-26"
-B.Map="BattleLine_Urban_v3"
-B.Combat="server-authoritative-v2"
-B.HUD="battleline-hud-v2"
-B.Animation="track-blend-v2"
+B.Version="3.0.0"
+B.BuildTag="rebuild-2026-09-26"
+B.Map="BattleLine_Urban_v4"
+B.Combat="server-authoritative-single-runtime"
+B.HUD="battle-market-mobile-v3"
 return B
