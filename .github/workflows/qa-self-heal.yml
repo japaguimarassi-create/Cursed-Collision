@@ -1,0 +1,111 @@
+name: Collision Battlestar Self-Healing QA
+
+on:
+  repository_dispatch:
+    types: [collision-battlestar-qa]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collision-battlestar-self-heal
+  cancel-in-progress: false
+
+jobs:
+  heal:
+    runs-on: ubuntu-latest
+    env:
+      QA_REPORT: ${{ toJson(github.event.client_payload.report) }}
+      QA_RUN_ID: ${{ github.run_id }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Save runtime evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "qa/autofix/runs/$QA_RUN_ID"
+          printf '%s' "$QA_REPORT" > "qa/autofix/runs/$QA_RUN_ID/runtime_report.json"
+          git rev-parse HEAD > "qa/autofix/runs/$QA_RUN_ID/base_commit.txt"
+
+      - name: Decide whether healing is required
+        id: gate
+        run: |
+          python3 - <<'PY'
+          import json, os
+          report=json.loads(os.environ["QA_REPORT"])
+          status=str(report.get("status","")).upper()
+          print("status="+status)
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as f:
+              f.write("heal="+("true" if status=="FAIL" else "false")+"\n")
+          PY
+
+      - name: Run rollback-safe AI repair
+        if: steps.gate.outputs.heal == 'true'
+        run: |
+          set +e
+          python3 tools/self_heal.py
+          code=$?
+          set -e
+          mkdir -p "qa/autofix/runs/$QA_RUN_ID"
+          cp ".ci/self-heal/$QA_RUN_ID/result.json" "qa/autofix/runs/$QA_RUN_ID/result.json"
+          printf '%s\n' "$code" > "qa/autofix/runs/$QA_RUN_ID/exit_code.txt"
+
+      - name: Record PASS without modifying source
+        if: steps.gate.outputs.heal != 'true'
+        run: |
+          mkdir -p "qa/autofix/runs/$QA_RUN_ID"
+          printf '%s\n' '{"status":"NO_REPAIR_NEEDED"}' > "qa/autofix/runs/$QA_RUN_ID/result.json"
+          printf '%s\n' '0' > "qa/autofix/runs/$QA_RUN_ID/exit_code.txt"
+
+      - name: Arm publication only after a validated repair
+        id: publish
+        if: steps.gate.outputs.heal == 'true'
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, os
+          result=json.loads(pathlib.Path(f"qa/autofix/runs/{os.environ['QA_RUN_ID']}/result.json").read_text())
+          success=result.get("status")=="SUCCESS"
+          path=pathlib.Path(".github/publish/request.json")
+          data=json.loads(path.read_text())
+          if success:
+              data["publish"]=True
+              data["status"]="armed"
+              data["request_id"]="self-heal-"+os.environ["QA_RUN_ID"]
+              data["armed_at"]=__import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
+              path.write_text(json.dumps(data,indent=2)+"\n")
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as f:
+              f.write("success="+("true" if success else "false")+"\n")
+          PY
+
+      - name: Save patch diff
+        if: always()
+        run: |
+          set +e
+          git diff --binary > "qa/autofix/runs/$QA_RUN_ID/final.patch"
+          git status --short > "qa/autofix/runs/$QA_RUN_ID/final_status.txt"
+          set -e
+
+      - name: Commit validated repair or rollback report
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "qa/autofix/runs/$QA_RUN_ID" qa/autofix/backups .github/publish/request.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          if [[ "${{ steps.gate.outputs.heal }}" == "true" && "${{ steps.publish.outputs.success || 'false' }}" == "true" ]]; then
+            git add src/CollisionBattlestar
+            git commit -m "self-heal: apply validated Collision Battlestar repair"
+          else
+            git commit -m "qa: record Collision Battlestar self-heal rollback"
+          fi
+          git push
+
+      - name: Fail the workflow when all repair attempts rolled back
+        if: steps.gate.outputs.heal == 'true' && steps.publish.outputs.success != 'true'
+        run: exit 1
