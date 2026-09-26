@@ -81,6 +81,7 @@ end
 
 Players.PlayerAdded:Connect(function(player)
     task.spawn(function()
+        player:SetAttribute("IsOwner", player.UserId == OWNER_USER_ID)
         if not DataService:Load(player) then
             return
         end
@@ -99,6 +100,7 @@ end)
 
 for _, player in ipairs(Players:GetPlayers()) do
     task.spawn(function()
+        player:SetAttribute("IsOwner", player.UserId == OWNER_USER_ID)
         if DataService:Load(player) then
             player:SetAttribute("Zone", player:GetAttribute("Zone") or "PvE")
 
