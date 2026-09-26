@@ -32,6 +32,7 @@ local WorldService = require(Systems:WaitForChild("WorldService"))
 local ShopService = require(Systems:WaitForChild("ShopService"))
 local ZoneService = require(Systems:WaitForChild("ZoneService"))
 local TravelService = require(Systems:WaitForChild("TravelService"))
+local AntiCheatService = require(Systems:WaitForChild("AntiCheatService"))
 
 local OWNER_USERNAME = "CreeperGMT1"
 local OWNER_USER_ID = 0
@@ -45,6 +46,7 @@ local AdminRemote = Instance.new("RemoteEvent")
 AdminRemote.Name = "AdminAction"
 AdminRemote.Parent = remotes
 
+AntiCheatService:Init(Config)
 WorldService:Init(Config)
 ZoneService:Init(Config)
 DataService:Init(Config)
@@ -68,7 +70,7 @@ AdminRemote.OnServerEvent:Connect(function(player, action)
     end
 end)
 EnemyService:Init(Config, DataService, remotes:WaitForChild("State"))
-CombatService:Init(Config, DataService)
+CombatService:Init(Config, DataService, AntiCheatService)
 WaveService:Init(Config, EnemyService, DataService)
 CompanionService:Init(Config, DataService)
 ShopService:Init(Config, DataService, MonetizationService)
