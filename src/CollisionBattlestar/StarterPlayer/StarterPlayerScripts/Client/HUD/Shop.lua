@@ -103,10 +103,10 @@ function Shop.Mount(root, config, player: Player, remote: RemoteEvent, stateRemo
     balanceText.Position = UDim2.fromOffset(7,0)
     balanceText.ZIndex = 204
 
-    local close = makeButton(window,"Close","×",UDim2.fromOffset(36,36),config.UI.Surface3)
-    close.Position = UDim2.new(1,-50,0,15)
-    close.TextSize = 18
-    close.ZIndex = 204
+    local closeButton = makeButton(window,"Close","×",UDim2.fromOffset(36,36),config.UI.Surface3)
+    closeButton.Position = UDim2.new(1,-50,0,15)
+    closeButton.TextSize = 18
+    closeButton.ZIndex = 204
     balance.Position = UDim2.new(1,-194,0,15)
 
     local multiplierBar = Instance.new("Frame")
@@ -390,7 +390,7 @@ function Shop.Mount(root, config, player: Player, remote: RemoteEvent, stateRemo
     end
 
     launcher.Activated:Connect(open)
-    close.Activated:Connect(close)
+    closeButton.Activated:Connect(close)
 
     player:GetAttributeChangedSignal("Credits"):Connect(function()
         refreshHeader()
