@@ -1,0 +1,33 @@
+name: Collision Battlestar Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Roblox toolchain
+        uses: paradoxum-games/setup-rokit@v3
+        with:
+          cache: true
+      - name: Validate source tree
+        run: python3 tools/validate_project.py
+      - name: Build place
+        run: |
+          set -euo pipefail
+          rm -rf build
+          mkdir -p build
+          rojo build default.project.json --output build/CollisionBattlestar.rbxl
+          test -s build/CollisionBattlestar.rbxl
+          stat -c "%s bytes" build/CollisionBattlestar.rbxl
