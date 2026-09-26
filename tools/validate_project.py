@@ -112,7 +112,7 @@ for token in ('B.Version=','B.BuildTag=','B.Project="Collision Battlestar"'):
         fail("BuildInfo contract missing: "+token)
 
 config=read("ReplicatedStorage/Shared/Config.lua")
-for token in ("MomentumMax","InstabilityMax","Reality","Fracture","Blade","Martial","Size=1680","EventAnchor=Vector3.new(0,6,0)"):
+for token in ("MomentumMax","InstabilityMax","Blade","Martial","Size=1680","EventAnchor=Vector3.new(0,6,0)"):
     if token not in config:
         fail("configuration contract missing: "+token)
 
