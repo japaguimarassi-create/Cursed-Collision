@@ -1,0 +1,48 @@
+{
+  "universeId": "5290480963",
+  "products": [
+    {
+      "key": "Credits1000",
+      "name": "1,000 Credits",
+      "price": 9,
+      "id": 0
+    },
+    {
+      "key": "Credits6000",
+      "name": "6,000 Credits",
+      "price": 39,
+      "id": 0
+    },
+    {
+      "key": "Credits25000",
+      "name": "25,000 Credits",
+      "price": 149,
+      "id": 0
+    },
+    {
+      "key": "Credits100000",
+      "name": "100,000 Credits",
+      "price": 399,
+      "id": 0
+    },
+    {
+      "key": "MoneyStack",
+      "name": "Money Multiplier +1x",
+      "price": 49,
+      "id": 0
+    },
+    {
+      "key": "DamageStack",
+      "name": "Damage Multiplier +1x",
+      "price": 59,
+      "id": 0
+    },
+    {
+      "key": "SpeedStack",
+      "name": "Speed Multiplier +1x",
+      "price": 69,
+      "id": 0
+    }
+  ],
+  "note": "Developer Product IDs must be replaced with the real IDs created in Creator Hub before Robux products can be purchased."
+}
