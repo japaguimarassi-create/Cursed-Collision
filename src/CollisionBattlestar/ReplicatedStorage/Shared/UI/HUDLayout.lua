@@ -295,6 +295,26 @@ function M.Build():ScreenGui
   local b=pill(tabs,"Tab"..t,t:upper(),UDim2.fromOffset(186,32),UDim2.fromOffset((i-1)*196,2))
   b.TextSize=8
  end
+ local code=frame(market,"Code",UDim2.fromOffset(288,36),UDim2.new(1,-310,0,74),C.UI.PanelSoft,.01,10)
+ code.ZIndex=55
+ local input=Instance.new("TextBox")
+ input.Name="Input"
+ input.Size=UDim2.new(1,-72,1,0)
+ input.Position=UDim2.fromOffset(8,0)
+ input.BackgroundTransparency=1
+ input.ClearTextOnFocus=false
+ input.PlaceholderText="REDEEM CODE"
+ input.Text=""
+ input.TextColor3=C.UI.Text
+ input.PlaceholderColor3=C.UI.Muted
+ input.Font=Enum.Font.GothamBold
+ input.TextSize=8
+ input.TextXAlignment=Enum.TextXAlignment.Left
+ input.ZIndex=56
+ input.Parent=code
+ local redeem=pill(code,"Redeem","OK",UDim2.fromOffset(52,28),UDim2.new(1,-58,.5,-14))
+ redeem.ZIndex=57
+ redeem.TextSize=7
  local content=Instance.new("ScrollingFrame")
  content.Name="Content";content.Size=UDim2.new(1,-44,1,-124);content.Position=UDim2.fromOffset(22,116);content.BackgroundTransparency=1;content.BorderSizePixel=0;content.ScrollBarThickness=4;content.ScrollBarImageTransparency=.4;content.AutomaticCanvasSize=Enum.AutomaticSize.Y;content.CanvasSize=UDim2.new();content.Parent=market
 
