@@ -86,9 +86,9 @@ end
 local function building(parent:Instance,name:string,pos:Vector3,size:Vector3,accent:Color3,style:number,breakable:boolean)
 	box(parent,name,size,Vector3.new(pos.X,pos.Y+size.Y/2,pos.Z),Enum.Material.Concrete,Color3.fromRGB(49+style*4,54+style*4,63+style*3),true)
 	box(parent,name.."_Roof",Vector3.new(size.X+2,1.2,size.Z+2),Vector3.new(pos.X,pos.Y+size.Y+.6,pos.Z),Enum.Material.Metal,Color3.fromRGB(28,32,39),true)
-	for floor=1,math.max(2,math.floor(size.Y/12)) do
+	for floor=1,math.max(2,math.floor(size.Y/12)),2 do
 		local y=pos.Y+6+(floor-1)*11
-		local cols=math.clamp(math.floor(size.X/12),3,6)
+		local cols=3
 		for col=1,cols do
 			local x=pos.X-size.X/2+6+(col-1)*(size.X-12)/math.max(1,cols-1)
 			local wcol=rng:NextNumber()<.48 and accent or Color3.fromRGB(61,78,92)
@@ -273,6 +273,7 @@ local function roads(parent:Instance)
 	road(parent,"NorthArterial",Vector3.new(Config.Map.Width,1.2,44),Vector3.new(0,0,185))
 	road(parent,"SouthArterial",Vector3.new(Config.Map.Width,1.2,44),Vector3.new(0,0,-185))
 	for x=-520,520,130 do
+		task.wait()
 		for z=-28,28,56 do
 			sidewalk(parent,"MainSidewalk_"..x.."_"..z,Vector3.new(112,1.4,10),Vector3.new(x,1.15,z+math.sign(z)*38))
 		end
@@ -289,6 +290,8 @@ local function roads(parent:Instance)
 end
 
 local function lighting()
+	local bloom=Lighting:FindFirstChild("CSBBloom")
+	if bloom then bloom:Destroy() end
 	Lighting.ClockTime=18.35
 	Lighting.Brightness=2.0
 	Lighting.GlobalShadows=true
@@ -302,21 +305,18 @@ local function lighting()
 		atmosphere.Name="CBSAtmosphere"
 		atmosphere.Parent=Lighting
 	end
-	atmosphere.Density=.28
+	atmosphere.Density=.14
 	atmosphere.Offset=.08
 	atmosphere.Color=Color3.fromRGB(122,139,170)
 	atmosphere.Decay=Color3.fromRGB(46,56,76)
 	atmosphere.Glare=.05
-	atmosphere.Haze=1.2
+	atmosphere.Haze=.35
 	local bloom=Lighting:FindFirstChild("CSBBloom")
 	if not bloom then
 		bloom=Instance.new("BloomEffect")
 		bloom.Name="CSBBloom"
 		bloom.Parent=Lighting
 	end
-	bloom.Intensity=.24
-	bloom.Size=32
-	bloom.Threshold=.82
 	local color=Lighting:FindFirstChild("CBSColor")
 	if not color then
 		color=Instance.new("ColorCorrectionEffect")
@@ -346,11 +346,13 @@ local function build():Folder
 
 	box(map,"WorldGround",Vector3.new(Config.Map.Width,2,Config.Map.Depth),Vector3.new(0,-2,0),Enum.Material.Grass,Color3.fromRGB(40,44,46),true)
 	roads(geometry)
+	task.wait()
 
 	for index,id in ipairs(Routes.Order) do
 		local node=Routes.Nodes[id]
 		if not node then error("Missing route node: "..id) end
 		district(geometry,node,index)
+		task.wait()
 	end
 
 	for index,id in ipairs(Routes.Order) do
@@ -416,7 +418,6 @@ function S.Rebuild():boolean
 	workspace:SetAttribute("CollisionBattlestarMapError","")
 	workspace:SetAttribute("CollisionBattlestarMapReady",true)
 	workspace:SetAttribute("CollisionBattlestarMapVersion",Routes.Version)
-	AssetLoader.Init(root)
 	return true
 end
 
