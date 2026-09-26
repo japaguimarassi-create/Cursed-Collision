@@ -18,7 +18,7 @@ for base in (ROOT/".github/workflows", ROOT/"tools"):
     if not base.exists():
         continue
     for path in base.rglob("*"):
-        if not path.is_file():
+        if "__pycache__" in path.parts or not path.is_file():
             continue
         text=path.read_text(encoding="utf-8",errors="ignore").lower()
         blocked=("gemini_api_key","gemini-","openai_api_key","HUD_AI_PIPELINE","qa-ai-review")
