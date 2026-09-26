@@ -1,0 +1,29 @@
+{
+  "purpose": "External visual references for the Collision Battlestar HUD AI. Use only as interaction/layout inspiration, never as assets to copy.",
+  "references": [
+    {
+      "id": "tsb_mobile_combat",
+      "image_url": "https://m.gjcdn.net/video-poster/900/30286994-wu8varki-v4.webp",
+      "source_url": "https://gamejolt.com/c/thestrongestbattlegrounds-community-hwkten/general",
+      "notes": "Mobile battleground combat layout: bottom abilities, right-side touch controls, central combat space."
+    },
+    {
+      "id": "tsb_killstreak_hud",
+      "image_url": "https://static.wikia.nocookie.net/the-strongest-battlegrounds-rblx/images/b/b8/Killstreak_example.png/revision/latest/scale-to-width-down/1200?cb=20240524130522",
+      "source_url": "https://the-strongest-battlegrounds-rblx.fandom.com/wiki/Killstreak",
+      "notes": "Battleground HUD hierarchy, ability strip, top utility controls and open combat space."
+    },
+    {
+      "id": "roblox_mobile_combat",
+      "image_url": "https://p19-lemon8-sign-useast5.tiktokcdn-us.com/tos-useast5-v-3931-tx/ogpjCwgzIAenCuT1EdAPiDD2AtijsSfzQg9Bci~tplv-pyavlv3z7u-text-logo%3AQHZvaWRwbGF5el8%3D%3Aq75.jpeg?lk3s=c7f08e79&source=lemon8_seo&x-expires=1776470400&x-signature=NTOv8PfBajlgURlROI6Xb3HvFWU%3D",
+      "source_url": "https://www.lemon8-app.com/@cringeidkog/7461038345167258158?region=us",
+      "notes": "Mobile action-button placement and resource-bar composition."
+    },
+    {
+      "id": "roblox_emotes_menu",
+      "image_url": "https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/5X/c/e/7/2/ce72306c16feaef9b2c18f871b5b6867539d4fa1.jpeg",
+      "source_url": "https://devforum.roblox.com/t/game-framerate-locks-to-90fps/3296470",
+      "notes": "Grid-based emote/store presentation, readable item cards and pricing hierarchy."
+    }
+  ]
+}

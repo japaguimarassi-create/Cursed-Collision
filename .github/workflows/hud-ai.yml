@@ -1,0 +1,82 @@
+name: Collision Battlestar HUD AI
+
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: Number of candidate images
+        required: true
+        default: "100"
+      top:
+        description: Number of finalists
+        required: true
+        default: "10"
+      workers:
+        description: Parallel generation workers
+        required: true
+        default: "3"
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Gemini SDK
+        run: pip install -U google-genai
+
+      - name: Download researched HUD image references
+        run: |
+          python tools/hud_web_reference_loader.py \
+            --manifest references/hud/web_references.json \
+            --output build/hud-web-references
+          test "$(find build/hud-web-references -type f | wc -l)" -ge 4
+
+      - name: Generate 100, score, select 10 and synthesize final
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python tools/hud_ai_generator.py \
+            --references build/hud-web-references \
+            --output build/hud-ai \
+            --count ${{ inputs.count }} \
+            --top ${{ inputs.top }} \
+            --workers ${{ inputs.workers }}
+
+      - name: Publish selected HUD assets into the repository
+        run: |
+          mkdir -p generated/hud
+          rm -rf generated/hud/finalists
+          mkdir -p generated/hud/finalists
+          cp build/hud-ai/collision_battlestar_hud_final.png generated/hud/
+          cp build/hud-ai/selection.json generated/hud/
+          cp build/hud-ai/finalists/*.png generated/hud/finalists/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add generated/hud
+          git diff --cached --quiet || git commit -m "art: update AI-selected Collision Battlestar HUD"
+          git push
+
+      - name: Upload all 100 candidates
+        uses: actions/upload-artifact@v4
+        with:
+          name: collision-battlestar-hud-100-candidates
+          path: build/hud-ai/candidates/
+          retention-days: 14
+
+      - name: Upload selection run
+        uses: actions/upload-artifact@v4
+        with:
+          name: collision-battlestar-hud-selection
+          path: build/hud-ai/
+          retention-days: 30

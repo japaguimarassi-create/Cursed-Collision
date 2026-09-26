@@ -1,7 +1,10 @@
 --!strict
 local Players=game:GetService("Players")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local DataStoreService=game:GetService("DataStoreService")
 local Debris=game:GetService("Debris")
+local Store=DataStoreService:GetDataStore("CollisionBattlestar_Store_v1")
+local Catalog=require(ReplicatedStorage.Shared.StoreCatalog)
 
 local remotes=ReplicatedStorage:WaitForChild("CollisionRemotes")
 local request=remotes:WaitForChild("UtilityRequest")
@@ -9,6 +12,131 @@ local feedback=remotes:WaitForChild("UtilityFeedback")
 
 local S={}
 local cooldown:{[Player]:number}={}
+local profile:{[Player]:{Owned:{[string]:boolean},EquippedEmote:string,EquippedSkin:string,EquippedTitle:string,Redeemed:{[string]:boolean},Loaded:boolean,Saving:boolean}}={}
+
+local CODE_REWARDS:{[string]:number}={
+	BATTLESTAR=250,
+	BATTLELINE=150,
+	NOVA=100,
+}
+
+local function defaultProfile()
+	return {Owned={},EquippedEmote="",EquippedSkin="",EquippedTitle="",Redeemed={},Loaded=false,Saving=false}
+end
+
+local function sync(player:Player)
+	local data=profile[player]
+	if not data then return end
+	local owned={}
+	for id,has in pairs(data.Owned) do
+		if has then table.insert(owned,id) end
+	end
+	table.sort(owned)
+	feedback:FireClient(player,"ShopSync",{
+		Owned=owned,
+		EquippedEmote=data.EquippedEmote,
+		EquippedSkin=data.EquippedSkin,
+		EquippedTitle=data.EquippedTitle,
+		Loaded=data.Loaded,
+	})
+	player:SetAttribute("EquippedEmote",data.EquippedEmote)
+	player:SetAttribute("EquippedSkin",data.EquippedSkin)
+	player:SetAttribute("EquippedTitle",data.EquippedTitle)
+end
+
+local function load(player:Player)
+	if profile[player] then return end
+	local data=defaultProfile()
+	profile[player]=data
+	local ok,saved=pcall(function() return Store:GetAsync("Player_"..player.UserId) end)
+	if ok and typeof(saved)=="table" then
+		if typeof(saved.Owned)=="table" then data.Owned=saved.Owned end
+		data.EquippedEmote=typeof(saved.EquippedEmote)=="string" and saved.EquippedEmote or ""
+		data.EquippedSkin=typeof(saved.EquippedSkin)=="string" and saved.EquippedSkin or ""
+		data.EquippedTitle=typeof(saved.EquippedTitle)=="string" and saved.EquippedTitle or ""
+		if typeof(saved.Redeemed)=="table" then data.Redeemed=saved.Redeemed end
+	end
+	data.Loaded=true
+	sync(player)
+end
+
+local function save(player:Player)
+	local data=profile[player]
+	if not data or not data.Loaded or data.Saving then return end
+	data.Saving=true
+	local snapshot={
+		Owned=data.Owned,
+		EquippedEmote=data.EquippedEmote,
+		EquippedSkin=data.EquippedSkin,
+		EquippedTitle=data.EquippedTitle,
+		Redeemed=data.Redeemed,
+	}
+	pcall(function()
+		Store:UpdateAsync("Player_"..player.UserId,function() return snapshot end)
+	end)
+	data.Saving=false
+end
+
+local function buy(player:Player,id:any)
+	if typeof(id)~="string" then return end
+	local item=Catalog.Get(id)
+	local data=profile[player]
+	if not item or not data or not data.Loaded then return end
+	if data.Owned[id] then
+		feedback:FireClient(player,"ShopMessage","ALREADY OWNED")
+		return
+	end
+	local stats=player:FindFirstChild("leaderstats")
+	local credits=stats and stats:FindFirstChild("Credits")
+	if not credits or not credits:IsA("IntValue") then return end
+	if credits.Value<item.Price then
+		feedback:FireClient(player,"ShopMessage","NEED "..tostring(item.Price-credits.Value).." MORE CREDITS")
+		return
+	end
+	credits.Value-=item.Price
+	data.Owned[id]=true
+	if item.Kind=="Emote" then data.EquippedEmote=id end
+	if item.Kind=="Skin" then data.EquippedSkin=id end
+	if item.Kind=="Title" then data.EquippedTitle=id end
+	save(player)
+	sync(player)
+	feedback:FireClient(player,"ShopMessage","UNLOCKED  •  "..item.Name)
+end
+
+local function equip(player:Player,id:any)
+	if typeof(id)~="string" then return end
+	local item=Catalog.Get(id)
+	local data=profile[player]
+	if not item or not data or not data.Owned[id] then return end
+	if item.Kind=="Emote" then data.EquippedEmote=id
+	elseif item.Kind=="Skin" then data.EquippedSkin=id
+	elseif item.Kind=="Title" then data.EquippedTitle=id end
+	save(player)
+	sync(player)
+	feedback:FireClient(player,"ShopMessage","EQUIPPED  •  "..item.Name)
+end
+
+local function redeem(player:Player,code:any)
+	if typeof(code)~="string" then return end
+	local key=string.upper((code:gsub("%s+","")))
+	local reward=CODE_REWARDS[key]
+	local data=profile[player]
+	if not reward or not data or not data.Loaded then
+		feedback:FireClient(player,"ShopMessage","INVALID CODE")
+		return
+	end
+	if data.Redeemed[key] then
+		feedback:FireClient(player,"ShopMessage","CODE ALREADY USED")
+		return
+	end
+	local stats=player:FindFirstChild("leaderstats")
+	local credits=stats and stats:FindFirstChild("Credits")
+	if not credits or not credits:IsA("IntValue") then return end
+	data.Redeemed[key]=true
+	credits.Value+=reward
+	save(player)
+	feedback:FireClient(player,"ShopMessage","CODE REDEEMED  •  +"..tostring(reward).." C")
+end
 
 local function validPlayer(player:Player):boolean
 	local character=player.Character
@@ -74,17 +202,37 @@ local function ping(player:Player,position:any)
 end
 
 function S.Init()
+	Players.PlayerAdded:Connect(load)
+	for _,player in ipairs(Players:GetPlayers()) do load(player) end
+	Players.PlayerRemoving:Connect(function(player)
+		save(player)
+		profile[player]=nil
+		cooldown[player]=nil
+	end)
+	game:BindToClose(function()
+		for _,player in ipairs(Players:GetPlayers()) do save(player) end
+		task.wait(2)
+	end)
+
 	request.OnServerEvent:Connect(function(player,action,value)
 		if typeof(action)~="string" then return end
 		if action=="Respawn" then
 			respawn(player)
 		elseif action=="Ping" then
 			ping(player,value)
+		elseif action=="BuyItem" then
+			buy(player,value)
+		elseif action=="EquipItem" then
+			equip(player,value)
+		elseif action=="RedeemCode" then
+			redeem(player,value)
+		elseif action=="ShopState" then
+			load(player)
+			sync(player)
 		elseif action=="CloseMenu" then
 			feedback:FireClient(player,"MenuClosed")
 		end
 	end)
-	Players.PlayerRemoving:Connect(function(player) cooldown[player]=nil end)
 end
 
 return S
