@@ -7,7 +7,8 @@ local player=Players.LocalPlayer
 local feedback=ReplicatedStorage:WaitForChild("CollisionRemotes"):WaitForChild("Feedback")
 local Config=require(ReplicatedStorage.Shared.Config)
 local active=0
-local limit=20
+local limit=8
+local damageLimit=6
 
 local function spawnPart(position:Vector3,size:Vector3,color:Color3,shape:Enum.PartType,life:number)
 	if active>=limit then return nil end
@@ -38,7 +39,7 @@ local function ring(position:Vector3,color:Color3,big:boolean)
 end
 
 local function burst(position:Vector3,color:Color3)
-	for i=1,4 do
+	for i=1,2 do
 		local p=spawnPart(position,Vector3.new(.25,.25,.25),color,Enum.PartType.Ball,.35)
 		if p then
 			local angle=(math.pi*2)*((i-1)/4)
@@ -52,7 +53,7 @@ local function burst(position:Vector3,color:Color3)
 end
 
 local function damageText(position:Vector3,damage:number,critical:boolean)
-	if active>=limit then return end
+	if active>=damageLimit then return end
 	active+=1
 	local gui=Instance.new("BillboardGui")
 	gui.Name="Damage"
