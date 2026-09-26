@@ -15,7 +15,7 @@ local states:{[Player]:any}={}
 local function state(p:Player)
 	local s=states[p]
 	if s then return s end
-	s={Busy=0,LastLight=0,Combo=0,LastDash=0,LastSpecial=0,LastOverdrive=0,IsBlocking=false,ParryUntil=0,Momentum=0,Instability=0,Overdrive=false,Style="Blade"}
+	s={Busy=0,LastLight=0,Combo=0,LastDash=0,LastSpecial=0,LastOverdrive=0,IsBlocking=false,ParryUntil=0,Momentum=0,Instability=0,Overdrive=false,Style="Blade",LastAction=""}
 	states[p]=s
 	return s
 end
