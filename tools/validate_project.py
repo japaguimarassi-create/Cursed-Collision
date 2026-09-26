@@ -67,9 +67,13 @@ for token in ("GetPartBoundsInBox","TakeDamage","BlockStart","BlockEnd","Special
         fail("combat contract missing: "+token)
 
 world=read("ServerScriptService/World/WorldBuilder.server.lua")
-for token in ("CollisionBattlestarWorld","MapLoaded","SpawnLocation","BattleLine_Clean_v1"):
+routes=read("ReplicatedStorage/Shared/MapDefinitions.lua")
+for token in ("CollisionBattlestarWorld","MapLoaded","SpawnLocation"):
+
     if token not in world:
         fail("map contract missing: "+token)
+if "BattleLine_Clean_v1" not in routes:
+    fail("map definition version missing")
 
 ui=read("StarterPlayer/StarterPlayerScripts/Client/MainController.client.lua")
 for token in ("CollisionHUD","BATTLE LINE","MAP","ATTACK","DASH","BLOCK","SPECIAL"):
