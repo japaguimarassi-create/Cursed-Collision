@@ -145,7 +145,7 @@ local function dash(player: Player)
 
     lastDash[player] = current
 
-    local distance = Config.Combat.Dash.Distance + stats.SpeedLevel
+    local distance = (Config.Combat.Dash.Distance + stats.SpeedLevel) * stats.SpeedMultiplier
     local direction = root.CFrame.LookVector * distance
 
     local params = RaycastParams.new()
