@@ -173,12 +173,17 @@ end)
 
 task.defer(function()
 	pcall(function() bootRequest:FireServer("Initial") end)
+	if not firstHudBuildDone then
+		firstHudBuildDone=true
+		forceHudRecovery()
+	end
 end)
 
 local start=os.clock()
 local lastServerRepair=0
 local lastHudRepair=0
 local completed=false
+local firstHudBuildDone=false
 
 while screen.Parent and not completed do
 	local checks={
@@ -208,7 +213,7 @@ while screen.Parent and not completed do
 	elseif not checks[4] then
 		stage.Text="HUD"
 		status.Text="Reconstruindo a interface de combate..."
-		if os.clock()-lastHudRepair>.8 then
+		if not HUDRecovery.IsReady() and os.clock()-lastHudRepair>.35 then
 			lastHudRepair=os.clock()
 			if forceHudRecovery() then
 				status.Text="Interface recuperada. Verificando..."
