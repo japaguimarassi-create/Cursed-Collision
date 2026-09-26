@@ -178,7 +178,7 @@ for token in ("Idle","Walk","Jump","Fall","M1_1","M1_4","Special","Dash","HitTak
         fail("animation profile missing: "+token)
 
 controller=read("StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua")
-for token in ("Animator","PreloadAsync","LoadAnimation","AdjustWeight","AdjustSpeed","Running","StateChanged","CollisionHUD"):
+for token in ("Animator","PreloadAsync","LoadAnimation","AdjustWeight","AdjustSpeed","Running","StateChanged","AnimationRuntimeReady"):
     if token not in controller:
         fail("animation runtime missing: "+token)
 
