@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,12 +33,19 @@ required = [
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/InputController.client.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/UIController.client.lua",
+    "tools/cb_ai.py",
 ]
 
 for relative in required:
     path = ROOT / relative
     if not path.is_file() or path.stat().st_size == 0:
         raise SystemExit("Missing required file: " + relative)
+
+ai_path = ROOT / "tools/cb_ai.py"
+try:
+    ast.parse(ai_path.read_text(encoding="utf-8"), filename=str(ai_path))
+except SyntaxError as exc:
+    raise SystemExit("Python syntax error in tools/cb_ai.py: " + str(exc)) from exc
 
 manifest = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"))
 if manifest.get("name") != "CollisionBattlestar":
