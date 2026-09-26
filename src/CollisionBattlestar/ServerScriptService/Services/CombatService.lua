@@ -120,6 +120,13 @@ local function performHit(p:Player,s:any,name:string,d:any,scale:number?)
 	sync(p,s)
 end
 
+local function scheduleHit(p:Player,s:any,action:string,d:any,scale:number?,characterAtRequest:Model,characterToken:number)
+	task.delay(d.Startup,function()
+		if states[p]~=s or s.CharacterToken~=characterToken or p.Character~=characterAtRequest then return end
+		performHit(p,s,action,d,scale)
+	end)
+end
+
 local function request(p:Player,action:string)
 	if not Anti.Allow(p)or not Anti.Validate(action)then return end
 	local s=state(p)
@@ -208,6 +215,7 @@ local function request(p:Player,action:string)
 		if previousAction=="Dash"then s.Busy=math.min(s.Busy,now+d.Startup*.55)end
 		s.Combo=math.clamp(s.Combo+1,1,4)
 		s.LastLight=now
+		s.LastAction=action
 		s.Busy=now+d.Startup+d.Recovery
 		local combo=s.Combo
 		local mult=D.LightChain[combo]or 1
@@ -219,19 +227,19 @@ local function request(p:Player,action:string)
 		s.LastAction=action
 		s.Combo=0
 		s.Busy=now+d.Startup+d.Recovery
+		local characterAtRequest=p.Character
+		local characterToken=s.CharacterToken
 		fb(p,"Swing",{Combo=0,Action="Heavy"})
-		task.delay(d.Startup,function()
-			if states[p]==s then performHit(p,s,action,d)end
-		end)
+		if characterAtRequest then scheduleHit(p,s,action,d,nil,characterAtRequest,characterToken)end
 	elseif action=="Special"then
 		s.LastAction=action
 		if now-s.LastSpecial<d.Cooldown then return end
 		s.LastSpecial=now
 		s.Busy=now+d.Startup+d.Recovery
+		local characterAtRequest=p.Character
+		local characterToken=s.CharacterToken
 		fb(p,"Swing",{Combo=0,Action="Special"})
-		task.delay(d.Startup,function()
-			if states[p]==s then performHit(p,s,action,d)end
-		end)
+		if characterAtRequest then scheduleHit(p,s,action,d,nil,characterAtRequest,characterToken)end
 	end
 
 	sync(p,s)

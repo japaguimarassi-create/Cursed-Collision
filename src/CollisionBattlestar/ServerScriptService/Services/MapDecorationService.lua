@@ -1,11 +1,12 @@
 --!strict
-local R=game:GetService("ReplicatedStorage")
-local U=require(R.Shared.Util)
-local Routes=require(R.Shared.MapRouteDefinitions)
-local Catalog=require(R.Shared.MapAssetCatalog)
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local U=require(ReplicatedStorage.Shared.Util)
+local Routes=require(ReplicatedStorage.Shared.MapRouteDefinitions)
+local Catalog=require(ReplicatedStorage.Shared.MapAssetCatalog)
 local Loader=require(script.Parent.MapAssetLoader)
 
 local S={}
+
 local function prop(parent:Instance,name:string,pos:Vector3,size:Vector3,color:Color3,material:Enum.Material):Part
 	local p=U.Part(parent,name,size,CFrame.new(pos),material,color,true)
 	p.CanTouch=false
@@ -46,63 +47,15 @@ local function sign(parent:Instance,pos:Vector3,text:string,color:Color3)
 	label.Parent=gui
 end
 
-local function findCatalogByName(name:string)
-	for _,item in ipairs(Catalog.References)do
-		if item.Name==name then return item end
-	end
-	return nil
-end
-
-local function loadProp(parent:Instance,catalogName:string,name:string,pos:Vector3,rotation:number):boolean
-	local item=findCatalogByName(catalogName)
-	if not item then return false end
-	local ok,model=pcall(function()
-		return Loader.Load(item.Id,parent,name,CFrame.new(pos)*CFrame.Angles(0,math.rad(rotation),0))
+local function runtimeAsset(id:number,parent:Instance,name:string,pos:Vector3,rotation:number)
+	task.spawn(function()
+		if not parent.Parent then return end
+		local model=Loader.Load(id,parent,name,CFrame.new(pos)*CFrame.Angles(0,math.rad(rotation),0))
+		if model then
+			model:SetAttribute("CollisionBattlestarExternalAsset",true)
+			model:SetAttribute("ApprovedByCatalog",true)
+		end
 	end)
-	if not ok or not model then return false end
-	model:SetAttribute("CollisionBattlestarAssetId",item.Id)
-	model:SetAttribute("CollisionBattlestarAssetLicense",item.License)
-	model:SetAttribute("CollisionBattlestarAssetBudget",item.Budget)
-	return true
-end
-
-local function buildFallback(details:Folder)
-	for index,id in ipairs(Routes.Order)do
-		local node=Routes.Nodes[id]
-		local p=node.Position
-		for _,offset in ipairs({Vector3.new(-70,0,48),Vector3.new(70,0,48),Vector3.new(-70,0,-48)})do
-			planter(details,p+offset)
-		end
-		car(details,p+Vector3.new(-34,0,30),(index%2==0)and 90 or -90)
-		sign(details,p+Vector3.new(0,7,-42),node.Name,node.Color)
-	end
-end
-
-local function buildApprovedAssets(root:Folder):number
-	local loaded=0
-	local origin=Routes.Nodes.Origin.Position
-	local iron=Routes.Nodes.Iron.Position
-	local core=Routes.Nodes.Core.Position
-	local rift=Routes.Nodes.Rift.Position
-	local apex=Routes.Nodes.Apex.Position
-
-	local placements={
-		{Catalog="Bus Stop [FREE!]",Name="HeroBusStop_Origin",Position=origin+Vector3.new(58,2,72),Rotation=180},
-		{Catalog="Bus Stop Pole",Name="HeroBusPole_Core",Position=core+Vector3.new(58,0,-72),Rotation=90},
-		{Catalog="Bus Stop Sign [FREE]",Name="HeroBusSign_Core",Position=core+Vector3.new(58,4,-72),Rotation=90},
-		{Catalog="Bench",Name="HeroBench_Neon",Position=Routes.Nodes.Neon.Position+Vector3.new(-72,1,58),Rotation=0},
-		{Catalog="Bench",Name="HeroBench_Sky",Position=Routes.Nodes.Sky.Position+Vector3.new(72,1,-58),Rotation=180},
-		{Catalog="Dumpster -Free-",Name="HeroDumpster_Iron",Position=iron+Vector3.new(-80,2,-52),Rotation=20},
-		{Catalog="Dumpster -Free-",Name="HeroDumpster_Rift",Position=rift+Vector3.new(-78,2,-48),Rotation=-20},
-		{Catalog="[FREE] Car Showcase",Name="HeroCar_Origin",Position=origin+Vector3.new(-34,0,30),Rotation=90},
-		{Catalog="[FREE] Car Showcase",Name="HeroCar_Apex",Position=apex+Vector3.new(34,0,30),Rotation=-90},
-	}
-	for _,slot in ipairs(placements)do
-		if loadProp(root,slot.Catalog,slot.Name,slot.Position,slot.Rotation)then
-			loaded+=1
-		end
-	end
-	return loaded
 end
 
 function S.Init()
@@ -110,25 +63,31 @@ function S.Init()
 	local environment=root and root:FindFirstChild("Environment")
 	if not environment or not environment:IsA("Folder")then return end
 	if environment:FindFirstChild("ProceduralDetails")then return end
-
 	local details=Instance.new("Folder")
 	details.Name="ProceduralDetails"
-	details:SetAttribute("Role","Fallback")
 	details.Parent=environment
-	buildFallback(details)
 
-	local approved=Instance.new("Folder")
-	approved.Name="ApprovedAssetProps"
-	approved:SetAttribute("Role","OptionalExternalAssets")
-	approved:SetAttribute("LoadPolicy","BestEffortWithProceduralFallback")
-	approved.Parent=environment
-	workspace:SetAttribute("CollisionBattlestarExternalAssetStatus","PENDING")
+	local bench=Catalog.GetById(Catalog.Runtime.Bench)
+	local dumpster=Catalog.GetById(Catalog.Runtime.Dumpster)
+	local blockyCar=Catalog.GetById(Catalog.Runtime.Car)
 
-	task.spawn(function()
-		local loaded=buildApprovedAssets(approved)
-		workspace:SetAttribute("CollisionBattlestarExternalAssetLoaded",loaded)
-		workspace:SetAttribute("CollisionBattlestarExternalAssetStatus",loaded>0 and"PARTIAL_OR_READY"or"FALLBACK_ONLY")
-	end)
+	for index,id in ipairs(Routes.Order)do
+		local node=Routes.Nodes[id]
+		local p=node.Position
+		for _,offset in ipairs({Vector3.new(-70,0,48),Vector3.new(70,0,48),Vector3.new(-70,0,-48)})do planter(details,p+offset)end
+		car(details,p+Vector3.new(-34,0,30),(index%2==0)and 90 or -90)
+		sign(details,p+Vector3.new(0,7,-42),node.Name,node.Color)
+
+		if bench and bench.RuntimeApproved then
+			runtimeAsset(bench.Id,details,"RuntimeBench_"..id,p+Vector3.new(48,0,34),index%2==0 and 90 or -90)
+		end
+		if dumpster and dumpster.RuntimeApproved then
+			runtimeAsset(dumpster.Id,details,"RuntimeDumpster_"..id,p+Vector3.new(-50,0,-34),0)
+		end
+		if blockyCar and blockyCar.RuntimeApproved and (index%2==1) then
+			runtimeAsset(blockyCar.Id,details,"RuntimeCar_"..id,p+Vector3.new(34,0,30),index%2==0 and 90 or -90)
+		end
+	end
 end
 
 return S

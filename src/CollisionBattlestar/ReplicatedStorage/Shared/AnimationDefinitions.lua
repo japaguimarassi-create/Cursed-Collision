@@ -1,5 +1,7 @@
 --!strict
 local A={}
+
+-- Public/free animation packs were verified in the Creator Store, but the public item pages expose pack/model IDs rather than a verified child Animation asset ID that can safely be copied into runtime code. The project also does not declare its player rig type in source. All twelve slots therefore keep Id="" and intentionally use the existing procedural fallback. Sources: https://create.roblox.com/store/asset/75164220659481/Fists-Combat-Animation-Pack-R6-Punch-Fighting and https://create.roblox.com/store/asset/13081191834/R6-Punch-Animation .
 export type Definition={Id:string,Looped:boolean,Priority:Enum.AnimationPriority,Speed:number}
 
 local Tracks:{[string]:Definition}={

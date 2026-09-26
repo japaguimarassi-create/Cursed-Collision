@@ -58,8 +58,12 @@ safeInit("Achievement",function()Achievement.Init(Enemy.Defeated,Events.Started)
 safeInit("BattleStreak",function()BattleStreak.Init(Enemy)end)
 
 local function ensureQuest(p:Player)
-	task.defer(function()
-		if p.Parent and (not p:GetAttribute("QuestId")or p:GetAttribute("QuestId")=="")then
+	task.spawn(function()
+		local deadline=os.clock()+12
+		while p.Parent and p:GetAttribute("PlayerDataReady")~=true and os.clock()<deadline do
+			task.wait(.2)
+		end
+		if p.Parent and p:GetAttribute("PlayerDataReady")==true and (not p:GetAttribute("QuestId")or p:GetAttribute("QuestId")=="")then
 			Quest.Start(p)
 		end
 	end)

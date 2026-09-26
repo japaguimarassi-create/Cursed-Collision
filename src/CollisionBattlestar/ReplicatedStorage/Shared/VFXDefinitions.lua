@@ -11,7 +11,17 @@ V.Palette={
 	Break=Color3.fromRGB(175,76,255),
 	Reality=Color3.fromRGB(197,92,255),
 }
-V.Trails={BladeLifetime=.11,BladeWidth=.72,SlashFade=.12}
-V.ImpactWaves={Default=.32,Heavy=.46,Special=.56,Reality=.80}
-V.Limits={MaxEffects=40,ImpactLifetime=.35,HeavyLifetime=.55,DashLifetime=.3,OverdriveLifetime=.7,RealityLifetime=1.1}
+V.Limits={
+	MaxEffects=40,
+	ImpactLifetime=.35,
+	HeavyLifetime=.55,
+	DashLifetime=.3,
+	OverdriveLifetime=.7,
+	BladeTrailLifetime=.13,
+	ShockwaveLifetime=.32,
+	RealityPulseLifetime=.8,
+}
+V.BladeTrail={Lifetime=.13,Width=Vector2.new(1.05,.08),MinLength=.08,Fade=.12}
+V.Shockwave={Thickness=.2,Duration=.32,Expansion=4}
+V.RealityBreak={WarningStrength=.55,BeginStrength=.75,EscalationStrength=1,ClimaxStrength=1.35,EndDuration=1.2}
 return V
