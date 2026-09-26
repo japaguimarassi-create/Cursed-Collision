@@ -7,10 +7,13 @@ local camera=workspace.CurrentCamera
 local feedback=ReplicatedStorage:WaitForChild("CollisionRemotes"):WaitForChild("Feedback")
 local baseFov=70
 local busy=false
+local activeTween:Tween?
 
 local function tweenFov(value:number,duration:number)
 	if not camera then return end
-	TweenService:Create(camera,TweenInfo.new(duration,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{FieldOfView=value}):Play()
+	if activeTween then activeTween:Cancel() end
+	activeTween=TweenService:Create(camera,TweenInfo.new(duration,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{FieldOfView=value})
+	activeTween:Play()
 end
 
 feedback.OnClientEvent:Connect(function(kind:string)
