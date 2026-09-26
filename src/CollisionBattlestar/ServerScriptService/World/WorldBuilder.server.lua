@@ -14,6 +14,8 @@ local eventAnchor=Routes.Nodes.Core.Position+Vector3.new(0,6,0)
 local function cleanup()
 	local old=workspace:FindFirstChild("CollisionBattlestarWorld")
 	if old then old:Destroy()end
+	local oldStreak=workspace:FindFirstChild("BattleStreakArena")
+	if oldStreak then oldStreak:Destroy()end
 	for _,item in ipairs(workspace:GetChildren())do
 		if item:IsA("SpawnLocation")and item.Name:sub(1,15)=="CollisionSpawn_"then item:Destroy()end
 	end
