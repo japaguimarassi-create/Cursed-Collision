@@ -78,7 +78,7 @@ for token in ("GetPartBoundsInBox","GetPartBoundsInRadius","TakeDamage","BlockSt
     if token not in combat:
         fail("combat contract missing: "+token)
 
-world=read("ServerScriptService/World/WorldBuilder.server.lua")
+world=read("ServerScriptService/World/WorldBuilder.lua")
 for token in ("CollisionBattlestarWorld","MapLoaded","SpawnLocation","buildDistrict","buildRoadNetwork","Rebuild","Verify"):
     if token not in world:
         fail("map contract missing: "+token)
