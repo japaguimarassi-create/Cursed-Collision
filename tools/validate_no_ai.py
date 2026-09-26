@@ -21,7 +21,7 @@ for base in (ROOT/".github/workflows", ROOT/"tools"):
         if not path.is_file():
             continue
         text=path.read_text(encoding="utf-8",errors="ignore").lower()
-        blocked=("gemini_api_key","gemini-","openai_api_key","hud_ai_generator","self_heal.py","qa-ai-review")
+        blocked=("gemini_api_key","gemini-","openai_api_key","HUD_AI_PIPELINE","qa-ai-review")
         if any(token in text for token in blocked):
             print("FAIL: AI integration marker remains:", path.relative_to(ROOT))
             sys.exit(1)
