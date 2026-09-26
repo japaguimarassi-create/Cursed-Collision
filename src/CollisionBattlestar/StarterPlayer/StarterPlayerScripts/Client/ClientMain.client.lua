@@ -157,10 +157,7 @@ local function refreshProfilePanel()
   local streak=stats and stats:FindFirstChild("Streak")
   local profile=label(panel,"Stats")
   if profile then
-    profile.Text=("LEVEL %d
-%d KOs
-%d CREDITS
-%d STREAK"):format(
+    profile.Text=("LEVEL %d\n%d KOs\n%d CREDITS\n%d STREAK"):format(
       tonumber(player:GetAttribute("Level"))or 1,
       kos and kos:IsA("IntValue") and kos.Value or 0,
       credits and credits:IsA("IntValue") and credits.Value or 0,
