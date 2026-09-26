@@ -7,6 +7,7 @@ local Debris=game:GetService("Debris")
 
 local player=Players.LocalPlayer
 local guiParent=player:WaitForChild("PlayerGui")
+local ContentProvider=game:GetService("ContentProvider")
 local Shared=ReplicatedStorage:WaitForChild("Shared")
 local C=require(Shared.Config)
 local Routes=require(Shared.MapDefinitions)
@@ -49,6 +50,12 @@ else
   player:SetAttribute("HUDRuntimeError",tostring(buildResult))
 end
 
+if gui then
+  gui.Enabled=true
+  local loading=gui:FindFirstChild("LoadingScreen")
+  if loading and loading:IsA("GuiObject") then loading.Visible=true; loading.Active=true end
+end
+
 local connections:{RBXScriptConnection}={}
 local owned:{[string]:boolean}={}
 local activeTab="Featured"
@@ -72,6 +79,182 @@ end
 local function show(parent:Instance,name:string,on:boolean)
   local v=find(parent,name)
   if v and v:IsA("GuiObject") then v.Visible=on end
+end
+
+local bootBus=Instance.new("BindableEvent")
+local bootState:{[string]:string}={}
+local bootDetails:{[string]:string}={}
+local bootDone=false
+
+local function setBootAgent(name:string,state:string,detail:string)
+  bootState[name]=state
+  bootDetails[name]=detail
+  local screen=gui and gui:FindFirstChild("LoadingScreen")
+  if screen and screen:IsA("GuiObject") then
+    local agents=screen:FindFirstChild("Agents")
+    local card=agents and agents:FindFirstChild("Agent_"..name)
+    if card and card:IsA("GuiObject") then
+      local stateLabel=card:FindFirstChild("State")
+      local dot=card:FindFirstChild("Dot")
+      if stateLabel and stateLabel:IsA("TextLabel") then stateLabel.Text=state end
+      if dot and dot:IsA("Frame") then
+        dot.BackgroundColor3=state=="PASS" and C.UI.Success or state=="FAIL" and C.UI.Danger or C.UI.Accent
+      end
+    end
+    local status=screen:FindFirstChild("Status")
+    local detailLabel=screen:FindFirstChild("Detail")
+    if status and status:IsA("TextLabel") then status.Text=name.." • "..state end
+    if detailLabel and detailLabel:IsA("TextLabel") then detailLabel.Text=detail end
+  end
+end
+
+local function setBootProgress(ratio:number,statusText:string,detailText:string)
+  local screen=gui and gui:FindFirstChild("LoadingScreen")
+  if not screen or not screen:IsA("GuiObject") then return end
+  local track=screen:FindFirstChild("ProgressTrack")
+  local fill=track and track:FindFirstChild("Fill")
+  if fill and fill:IsA("Frame") then fill.Size=UDim2.new(math.clamp(ratio,0,1),0,1,0) end
+  local status=screen:FindFirstChild("Status")
+  local detail=screen:FindFirstChild("Detail")
+  if status and status:IsA("TextLabel") then status.Text=statusText end
+  if detail and detail:IsA("TextLabel") then detail.Text=detailText end
+end
+
+local function recoverClientHud():boolean
+  local ok,result=pcall(HUD.Build)
+  if not ok or not result or not result:IsA("ScreenGui") then return false end
+  gui=result
+  gui.ScreenInsets=Enum.ScreenInsets.CoreUISafeInsets
+  gui.Parent=guiParent
+  gui.Enabled=true
+  return true
+end
+
+local function runBootAgent(name:string,checkFn:()->(boolean,string),timeout:number)
+  task.spawn(function()
+    local started=os.clock()
+    while os.clock()-started<timeout do
+      local ok,passed,detail=pcall(checkFn)
+      if ok and passed==true then
+        setBootAgent(name,"PASS",tostring(detail or "Ready."))
+        bootBus:Fire(name,true,tostring(detail or "Ready."))
+        return
+      end
+      setBootAgent(name,"WAIT",tostring(detail or "Waiting for runtime state…"))
+      task.wait(.25)
+    end
+    local ok,passed,detail=pcall(checkFn)
+    if ok and passed==true then
+      setBootAgent(name,"PASS",tostring(detail or "Ready."))
+      bootBus:Fire(name,true,tostring(detail or "Ready."))
+    else
+      setBootAgent(name,"RECOVER",tostring(detail or "Applying local recovery…"))
+      local recovered=(name=="HUD" or name=="QA") and recoverClientHud() or false
+      if recovered then
+        local checkOk,checkPassed,checkDetail=pcall(checkFn)
+        if checkOk and checkPassed==true then
+          setBootAgent(name,"PASS",tostring(checkDetail or "Recovered."))
+          bootBus:Fire(name,true,tostring(checkDetail or "Recovered."))
+          return
+        end
+      end
+      setBootAgent(name,"FAIL",tostring(detail or "Startup check failed."))
+      bootBus:Fire(name,false,tostring(detail or "Startup check failed."))
+    end
+  end)
+end
+
+local function finishLoading()
+  if bootDone then return end
+  bootDone=true
+  setBootProgress(1,"BATTLE LINE READY","Entering live combat…")
+  local screen=gui and gui:FindFirstChild("LoadingScreen")
+  if not screen or not screen:IsA("GuiObject") then return end
+  task.delay(.25,function()
+    if not screen.Parent then return end
+    for _,v in ipairs(screen:GetDescendants()) do
+      if v:IsA("TextLabel") then
+        TweenService:Create(v,TweenInfo.new(.2,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{TextTransparency=1}):Play()
+      elseif v:IsA("Frame") then
+        TweenService:Create(v,TweenInfo.new(.25,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{BackgroundTransparency=1}):Play()
+      end
+    end
+    task.wait(.3)
+    if screen.Parent then
+      screen.Visible=false
+      screen.Active=false
+    end
+  end)
+end
+
+local function startInternalBoot()
+  if not gui then return end
+  setBootProgress(.06,"STARTING INTERNAL AGENTS","Checking client/server contracts…")
+  local names={"QA","HUD","COMBAT","ASSETS"}
+  local resolved={}
+  local completed=0
+  local busConnection
+  busConnection=bootBus.Event:Connect(function(name:string,passed:boolean,detail:string)
+    if resolved[name] then return end
+    resolved[name]={pass=passed,detail=detail}
+    completed+=1
+    local ratio=.10+(completed/#names)*.82
+    setBootProgress(ratio,name.." • "..(passed and "READY" or "RECOVERING"),detail)
+    if completed<#names then return end
+    if busConnection then busConnection:Disconnect() end
+    local failed=0
+    for _,agent in ipairs(names) do
+      if resolved[agent] and not resolved[agent].pass then failed+=1 end
+    end
+    if failed>0 then
+      setBootProgress(.94,"RECOVERY REQUIRED","A startup detector reported a failure.")
+      task.delay(1,finishLoading)
+    else
+      finishLoading()
+    end
+  end)
+
+  runBootAgent("QA",function()
+    local required={"CombatRequest","MovementRequest","Feedback","MapTravelRequest","UtilityRequest","UtilityFeedback","GameState"}
+    for _,name in ipairs(required) do
+      if not remotes:FindFirstChild(name) then return false,"Missing remote: "..name end
+    end
+    return true,"Remote contract online."
+  end,6)
+
+  runBootAgent("HUD",function()
+    local screen=gui and gui:FindFirstChild("LoadingScreen")
+    if not gui or not gui.Parent then return false,"HUD instance missing." end
+    for _,name in ipairs({"PlayerPanel","Health","Energy","Awakening","Hotbar","MobileActions","MapPanel","ShopPanel","QuestPanel","ProfilePanel"}) do
+      if not gui:FindFirstChild(name,true) then return false,"Missing HUD element: "..name end
+    end
+    return true,"HUD contract online."
+  end,6)
+
+  runBootAgent("COMBAT",function()
+    if workspace:GetAttribute("CollisionBattlestarServerReady")~=true then return false,"Waiting for server runtime." end
+    local character=player.Character
+    if not character then return false,"Waiting for character." end
+    local humanoid=character:FindFirstChildOfClass("Humanoid")
+    local root=character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root then return false,"Waiting for combat rig." end
+    if humanoid.Health<=0 then return false,"Waiting for live humanoid." end
+    return true,"Combat avatar online."
+  end,12)
+
+  runBootAgent("ASSETS",function()
+    if workspace:GetAttribute("CollisionBattlestarMapReady")~=true then return false,"Waiting for Battle Line map." end
+    local world=workspace:FindFirstChild("CollisionBattlestarWorld")
+    local map=world and world:FindFirstChild("Map")
+    if not world or not map then return false,"Waiting for map hierarchy." end
+    local requiredDistricts={"Origin","Metro","Core","Iron","Apex"}
+    local count=0
+    for _,id in ipairs(requiredDistricts) do
+      if map:FindFirstChild(id.."_Ground") then count+=1 end
+    end
+    if count<5 then return false,"Waiting for all five districts." end
+    return true,"All five districts online."
+  end,14)
 end
 
 local function clear(parent:Instance)
@@ -456,6 +639,23 @@ end
 
 bindUI()
 platformRefresh()
+
+local gameState=remotes:FindFirstChild("GameState")
+if gameState and gameState:IsA("RemoteEvent") then
+  bind(gameState.OnClientEvent,function(kind:any,value:any)
+    if kind=="ProfileReady" then
+      setBootProgress(.32,"PROFILE READY","Player data synchronized.")
+    elseif kind=="Ready" then
+      setBootProgress(.76,"SERVER READY","Server runtime "..tostring(value or "ready").." acknowledged.")
+    end
+  end)
+end
+
+task.spawn(function()
+  pcall(function() ContentProvider:PreloadAsync({gui}) end)
+end)
+
+task.spawn(startInternalBoot)
 
 bind(UserInputService:GetPropertyChangedSignal("PreferredInput"),platformRefresh)
 bind(UserInputService.InputBegan,function(input,gpe)
