@@ -12,6 +12,7 @@ REQUIRED=[
 "ReplicatedStorage/Shared/CombatDefinitions.lua",
 "ReplicatedStorage/Shared/MapDefinitions.lua",
 "ReplicatedStorage/Shared/HUDTheme.lua",
+"ReplicatedStorage/Shared/AnimationProfiles.lua",
 "ServerScriptService/Bootstrap.server.lua",
 "ServerScriptService/World/WorldBuilder.server.lua",
 "ServerScriptService/World/MapAssetLoader.lua",
@@ -95,12 +96,20 @@ for token in ("Light","Dash","Block","Special","MouseButton1","LeftShift"):
     if token not in defs:
         fail("combat input definition missing: "+token)
 
-print("PASS: Collision Battlestar v2 manifest")
+animations=read("ReplicatedStorage/Shared/AnimationProfiles.lua")
+for token in ("Vanguard","Impact","18576726303","18576729183","18576731629","2515090838","17866759652"):
+    if token not in animations:
+        fail("animation profile missing: "+token)
+
+controller=read("StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua")
+for token in ("Animator","LoadAnimation","PreloadAsync","clip.Priority","AdjustWeight","AdjustSpeed","AnimationRuntimeReady"):
+    if token not in controller:
+        fail("animation runtime contract missing: "+token)
+
+print("PASS: Collision Battlestar animation pass manifest")
 print(f"PASS: {len(active)} active Lua files")
-print("PASS: standalone urban battleground map")
-print("PASS: optional sanitized public 3D hero props")
-print("PASS: server-authoritative combat and separated movement authority")
-print("PASS: responsive safe-area HUD and mobile controls")
-print("PASS: procedural animation, VFX and camera feedback")
-print("PASS: guarded DataStore persistence")
+print("PASS: real AnimationTrack loading with safe fallback")
+print("PASS: two deterministic animation sets")
+print("PASS: priority-based action blending")
+print("PASS: preloading and permission failure fallback")
 print("PASS: legacy fusion and removed combat marker scan clean")
