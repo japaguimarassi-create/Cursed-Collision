@@ -2,9 +2,28 @@
   "name": "CollisionBattlestar",
   "tree": {
     "$className": "DataModel",
-    "Workspace": {"$properties": {"StreamingEnabled": true, "StreamingMinRadius": 96, "StreamingTargetRadius": 384}},
-    "ReplicatedStorage": {"$path": "src/CollisionBattlestar/ReplicatedStorage"},
-    "ServerScriptService": {"$path": "src/CollisionBattlestar/ServerScriptService"},
-    "StarterPlayer": {"$className": "StarterPlayer","StarterPlayerScripts": {"$path": "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts"}}
+    "Workspace": {
+      "$properties": {
+        "StreamingEnabled": true,
+        "StreamingMinRadius": 96,
+        "StreamingTargetRadius": 320,
+        "Gravity": 196.2
+      }
+    },
+    "ReplicatedStorage": {
+      "$path": "src/CollisionBattlestar/ReplicatedStorage"
+    },
+    "ServerScriptService": {
+      "$path": "src/CollisionBattlestar/ServerScriptService"
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "$properties": {
+        "EnableMouseLockOption": true
+      },
+      "StarterPlayerScripts": {
+        "$path": "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts"
+      }
+    }
   }
 }
