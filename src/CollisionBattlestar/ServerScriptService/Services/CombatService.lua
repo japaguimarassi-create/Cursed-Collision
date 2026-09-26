@@ -1,286 +1,155 @@
 --!strict
 local Players=game:GetService("Players")
-local R=game:GetService("ReplicatedStorage")
-local C=require(R.Shared.Config)
-local D=require(R.Shared.CombatDefinitions)
-local U=require(R.Shared.Util)
-local Anti=require(script.Parent.Parent.Security.AntiCheatService)
-local Destruction=require(script.Parent.DestructionService)
-local Hitbox=require(script.Parent.HitboxService)
-local Hybrid=require(R.Shared.HybridCombatRules)
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+
+local Config=require(ReplicatedStorage.Shared.Config)
+local U=require(ReplicatedStorage.Shared.Util)
 
 local S={}
-local states:{[Player]:any}={}
+local remotes=ReplicatedStorage:WaitForChild("CollisionRemotes")
+local request=remotes:WaitForChild("CombatRequest")
+local feedback=remotes:WaitForChild("Feedback")
+local state={}
 
-local function state(p:Player)
-	local s=states[p]
-	if s then return s end
-	s={Busy=0,LastLight=0,Combo=0,LastDash=0,LastSpecial=0,LastOverdrive=0,IsBlocking=false,ParryUntil=0,Momentum=0,Instability=0,Overdrive=false,Style="Blade",LastAction="",CharacterToken=0}
-	states[p]=s
-	return s
-end
+local function now():number return os.clock() end
 
-local function sync(p:Player,s:any)
-	p:SetAttribute("Momentum",math.floor(s.Momentum))
-	p:SetAttribute("Instability",math.floor(s.Instability))
-	p:SetAttribute("Overdrive",s.Overdrive)
-	p:SetAttribute("IsBlocking",s.IsBlocking)
-	p:SetAttribute("ParryUntil",s.ParryUntil)
-	p:SetAttribute("CombatStyle",s.Style)
-end
-
-local function fb(p:Player,k:string,v:any?)
-	R.CollisionRemotes.Feedback:FireClient(p,k,v)
-end
-
-local function performHit(p:Player,s:any,name:string,d:any,scale:number?)
-	local character=p.Character
+local function getCharacter(player:Player):(Model?,Humanoid?,BasePart?)
+	local character=player.Character
+	local humanoid=U.Humanoid(character)
 	local root=U.Root(character)
-	local hum=U.Hum(character)
-	if not root or not hum or hum.Health<=0 then return end
-	local style=C.Styles[s.Style]
-	if not style then return end
-	local range=d.Range*style.Range
-	local size=Vector3.new(d.Width*style.Range,d.Height,range)
-	local cf=root.CFrame*CFrame.new(0,0,-(range*.5+1.5))
-	local targets=Hitbox.Query(character,cf,size,{MaxTargets=12,LineOfSight=true})
-
-	for _,target in ipairs(targets)do
-		local model=target.Model
-		local targetHum=target.Humanoid
-		local targetRoot=target.Root
-		local targetPlayer=target.Player
-		local ownerUserId=tonumber(model:GetAttribute("BattleStreakOwnerUserId"))or 0
-		if ownerUserId>0 and p.UserId~=ownerUserId then continue end
-
-		local targetState=targetPlayer and states[targetPlayer]
-		if targetState and targetState.ParryUntil>=os.clock()then
-			s.Busy=os.clock()+.6
-			s.Momentum=U.Clamp(s.Momentum-18,0,C.Combat.MomentumMax)
-			fb(p,"Parried")
-			fb(targetPlayer,"ParrySuccess")
-			continue
-		end
-
-		local styleScale=(name=="Light"and style.Light)or(name=="Heavy"and style.Heavy)or style.Special
-		local damage=d.Damage*styleScale*(scale or 1)
-		if s.Overdrive then damage*=C.Combat.Actions.Overdrive.Power end
-
-		local blocked=targetPlayer and targetPlayer:GetAttribute("IsBlocking")==true
-		if blocked and not d.GuardBreak then
-			damage*=C.Combat.BlockMultiplier
-		elseif blocked and d.GuardBreak and targetState then
-			targetState.IsBlocking=false
-			targetState.ParryUntil=0
-			sync(targetPlayer,targetState)
-			fb(targetPlayer,"GuardBreak")
-		end
-
-		targetHum:TakeDamage(damage)
-		model:SetAttribute("LastHitUserId",p.UserId)
-
-		local push=targetRoot.Position-root.Position
-		if push.Magnitude>.1 then
-			local vertical=8
-			if Hybrid.IsAirborne(hum)then
-				vertical=s.Combo>=4 and -34 or 20
-			end
-			targetRoot.AssemblyLinearVelocity=push.Unit*d.Knockback+Vector3.new(0,vertical,0)
-			if Hybrid.Features.WallImpact and Hybrid.IsNearWall(targetRoot.Position,push.Unit,5,model)then
-				targetHum:TakeDamage(math.max(2,d.Damage*.18))
-				Destruction.BreakInBox(targetRoot.CFrame,Vector3.new(10,10,10),1)
-				fb(p,"WallImpact",{Position=targetRoot.Position,Action=name})
-			end
-		end
-
-		s.Momentum=U.Clamp(s.Momentum+d.MomentumGain,0,C.Combat.MomentumMax)
-		if s.Overdrive then
-			s.Instability=U.Clamp(s.Instability+C.Combat.Actions.Overdrive.InstabilityPerAction,0,C.Combat.InstabilityMax)
-		end
-
-		local payload={Position=targetRoot.Position,Action=name,Damage=math.floor(damage)}
-		fb(p,"Hit",payload)
-		if targetPlayer then fb(targetPlayer,"HitTaken",payload)end
-	end
-
-	if name=="Heavy"or name=="Special"then
-		local strength=name=="Special"and 2 or 1
-		local broken=Destruction.BreakInBox(cf,size,strength)
-		if broken>0 then
-			fb(p,"BreakFX",{Position=cf.Position,Size=size,Strength=strength})
-		end
-	end
-
-	if s.Overdrive and s.Instability>=C.Combat.InstabilityMax then
-		s.Overdrive=false
-		s.Busy=os.clock()+.8
-		s.Momentum=U.Clamp(s.Momentum-25,0,C.Combat.MomentumMax)
-		fb(p,"OverdriveCollapse")
-	end
-	sync(p,s)
+	if not character or not humanoid or not root or humanoid.Health<=0 then return nil,nil,nil end
+	return character,humanoid,root
 end
 
-local function scheduleHit(p:Player,s:any,action:string,d:any,scale:number?,characterAtRequest:Model,characterToken:number)
-	task.delay(d.Startup,function()
-		if states[p]~=s or s.CharacterToken~=characterToken or p.Character~=characterAtRequest then return end
-		performHit(p,s,action,d,scale)
+local function markCombat(player:Player)
+	player:SetAttribute("LastCombatAt",now())
+end
+
+local function targetHumanoids(attacker:Player,cframe:CFrame,size:Vector3):{Humanoid}
+	local params=OverlapParams.new()
+	params.FilterType=Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances={attacker.Character}
+	params.MaxParts=40
+	local found={}
+	local seen={}
+	for _,part in ipairs(workspace:GetPartBoundsInBox(cframe,size,params)) do
+		local model=U.Model(part)
+		local humanoid=model and U.Humanoid(model)
+		if model and humanoid and humanoid.Health>0 and model~=attacker.Character and not seen[humanoid] then
+			seen[humanoid]=true
+			table.insert(found,humanoid)
+		end
+	end
+	return found
+end
+
+local function hit(attacker:Player,humanoid:Humanoid,damage:number,knockback:number)
+	local victim=Players:GetPlayerFromCharacter(humanoid.Parent)
+	if victim and victim:GetAttribute("Blocking")==true then
+		local started=tonumber(victim:GetAttribute("BlockStarted"))or 0
+		if now()-started<=Config.Combat.ParryWindow then
+			feedback:FireClient(attacker,"Parry")
+			feedback:FireClient(victim,"Parry")
+			local _,_,root=getCharacter(attacker)
+			if root then root.AssemblyLinearVelocity=-root.CFrame.LookVector*42+Vector3.new(0,18,0) end
+			return
+		end
+		damage*=Config.Combat.BlockMultiplier
+	end
+
+	local root=U.Root(humanoid.Parent)
+	if root then
+		local attackerRoot=U.Root(attacker.Character)
+		local direction=attackerRoot and (root.Position-attackerRoot.Position).Unit or Vector3.new(0,0,-1)
+		root.AssemblyLinearVelocity=direction*knockback+Vector3.new(0,knockback*.22,0)
+	end
+	humanoid:TakeDamage(damage)
+	feedback:FireClient(attacker,"Hit",{Position=root and root.Position or Vector3.zero,Damage=damage})
+	feedback:FireClient(Players:GetPlayerFromCharacter(humanoid.Parent) or attacker,"HitTaken",{Position=root and root.Position or Vector3.zero,Damage=damage})
+	if humanoid.Health<=0 then
+		local playerService=require(script.Parent.PlayerService)
+		playerService.AddKO(attacker)
+		if victim then playerService.ResetStreak(victim) end
+	end
+end
+
+local function light(player:Player)
+	local character,_,root=getCharacter(player)
+	if not character or not root then return end
+	local t=now()
+	if t<(tonumber(player:GetAttribute("NextLight"))or 0) then return end
+	local combo=tonumber(player:GetAttribute("Combo"))or 0
+	local started=tonumber(player:GetAttribute("ComboStarted"))or 0
+	if t-started>Config.Combat.ComboReset then combo=0 end
+	combo=math.clamp(combo+1,1,4)
+	player:SetAttribute("Combo",combo)
+	player:SetAttribute("ComboStarted",t)
+	player:SetAttribute("NextLight",t+Config.Combat.Actions.Light.Cooldown)
+	markCombat(player)
+
+	local action=Config.Combat.Actions.Light
+	local offset=action.Offset+(combo==4 and 1 or 0)
+	local cframe=root.CFrame*CFrame.new(0,0,-offset)
+	local knockback=combo==4 and action.Knockback*1.8 or action.Knockback
+	for _,humanoid in ipairs(targetHumanoids(player,cframe,action.Size)) do
+		hit(player,humanoid,action.Damage,knockback)
+	end
+	feedback:FireClient(player,"Swing",{Combo=combo})
+end
+
+local function special(player:Player)
+	local _,_,root=getCharacter(player)
+	if not root then return end
+	local t=now()
+	if t<(tonumber(player:GetAttribute("NextSpecial"))or 0) then return end
+	player:SetAttribute("NextSpecial",t+Config.Combat.Actions.Special.Cooldown)
+	markCombat(player)
+	for _,humanoid in ipairs(targetHumanoids(player,root.CFrame,Vector3.new(Config.Combat.Actions.Special.Radius*2,10,Config.Combat.Actions.Special.Radius*2))) do
+		hit(player,humanoid,Config.Combat.Actions.Special.Damage,Config.Combat.Actions.Special.Knockback)
+	end
+	feedback:FireClient(player,"Special")
+end
+
+local function dash(player:Player)
+	local _,humanoid,root=getCharacter(player)
+	if not humanoid or not root then return end
+	local t=now()
+	if t<(tonumber(player:GetAttribute("NextDash"))or 0) then return end
+	player:SetAttribute("NextDash",t+Config.Combat.Dash.Cooldown)
+	markCombat(player)
+	player:SetAttribute("DashInvulnerable",true)
+	root.AssemblyLinearVelocity=root.CFrame.LookVector*Config.Combat.Dash.Speed+Vector3.new(0,root.AssemblyLinearVelocity.Y,0)
+	feedback:FireClient(player,"Dash")
+	task.delay(Config.Combat.Dash.Duration,function()
+		if player.Parent then player:SetAttribute("DashInvulnerable",false) end
 	end)
 end
 
-local function request(p:Player,action:string)
-	if not Anti.Allow(p)or not Anti.Validate(action)then return end
-	local s=state(p)
-	local now=os.clock()
-	local previousAction=s.LastAction
-	if action~="SprintStart"and action~="SprintEnd"then
-		p:SetAttribute("LastCombatAt",now)
-	end
-	local hum=U.Hum(p.Character)
-	local root=U.Root(p.Character)
-	if not hum or not root or hum.Health<=0 then return end
-
-	if action=="BlockStart"then
-		s.LastAction=action
-		s.IsBlocking=true
-		s.ParryUntil=now+C.Combat.ParryWindow
-		sync(p,s)
-		fb(p,"BlockStart")
-		return
-	end
-
-	if action=="BlockEnd"then
-		s.LastAction=action
-		s.IsBlocking=false
-		s.ParryUntil=0
-		sync(p,s)
-		fb(p,"BlockEnd")
-		return
-	end
-
-	if action=="StyleToggle"then
-		s.LastAction=action
-		s.Style=s.Style=="Blade"and"Martial"or"Blade"
-		sync(p,s)
-		fb(p,"Style",s.Style)
-		return
-	end
-
-	if action=="SprintStart"or action=="SprintEnd"then return end
-	if now<s.Busy or s.IsBlocking then return end
-
-	if action=="Parry"then
-		s.LastAction=action
-		s.ParryUntil=now+C.Combat.ParryWindow
-		s.Busy=now+.32
-		s.Momentum=U.Clamp(s.Momentum+3,0,C.Combat.MomentumMax)
-		sync(p,s)
-		fb(p,"Parry")
-		return
-	end
-
-	if action=="Dash"then
-		if now-s.LastDash<C.Combat.Actions.Dash.Cooldown then return end
-		s.LastAction=action
-		s.LastDash=now
-		s.Busy=now+C.Combat.Actions.Dash.Duration
-		local dir=hum.MoveDirection
-		if dir.Magnitude<.1 then dir=root.CFrame.LookVector end
-		root.AssemblyLinearVelocity=dir.Unit*(C.Combat.Actions.Dash.Distance/C.Combat.Actions.Dash.Duration)
-		s.Momentum=U.Clamp(s.Momentum+C.Combat.Actions.Dash.MomentumGain,0,C.Combat.MomentumMax)
-		sync(p,s)
-		fb(p,"Dash")
-		return
-	end
-
-	if action=="Overdrive"then
-		s.LastAction=action
-		if s.Overdrive or now-s.LastOverdrive<C.Combat.Actions.Overdrive.Cooldown then return end
-		if s.Momentum<C.Combat.Actions.Overdrive.MinimumMomentum then
-			fb(p,"OverdriveDenied","Momentum too low")
-			return
-		end
-		s.LastOverdrive=now
-		s.Overdrive=true
-		s.Instability=0
-		sync(p,s)
-		fb(p,"OverdriveStart")
-		return
-	end
-
-	local d=C.Combat.Actions[action]
-	if not d then return end
-
-	if action=="Light"then
-		if now-s.LastLight>Hybrid.ComboReset then s.Combo=0 end
-		if previousAction=="Dash"then s.Busy=math.min(s.Busy,now+d.Startup*.55)end
-		s.Combo=math.clamp(s.Combo+1,1,4)
-		s.LastLight=now
-		s.LastAction=action
-		s.Busy=now+d.Startup+d.Recovery
-		local combo=s.Combo
-		local mult=D.LightChain[combo]or 1
-		local characterAtRequest=p.Character
-		local characterToken=s.CharacterToken
-		fb(p,"Swing",{Combo=combo,Action="Light"})
-		if characterAtRequest then
-			task.delay(d.Startup,function()
-				if states[p]~=s or s.CharacterToken~=characterToken or p.Character~=characterAtRequest then return end
-				performHit(p,s,action,d,mult)
-			end)
-		end
-	elseif action=="Heavy"then
-		s.LastAction=action
-		s.Combo=0
-		s.Busy=now+d.Startup+d.Recovery
-		local characterAtRequest=p.Character
-		local characterToken=s.CharacterToken
-		fb(p,"Swing",{Combo=0,Action="Heavy"})
-		if characterAtRequest then scheduleHit(p,s,action,d,nil,characterAtRequest,characterToken)end
-	elseif action=="Special"then
-		s.LastAction=action
-		if now-s.LastSpecial<d.Cooldown then return end
-		s.LastSpecial=now
-		s.Busy=now+d.Startup+d.Recovery
-		local characterAtRequest=p.Character
-		local characterToken=s.CharacterToken
-		fb(p,"Swing",{Combo=0,Action="Special"})
-		if characterAtRequest then scheduleHit(p,s,action,d,nil,characterAtRequest,characterToken)end
-	end
-
-	sync(p,s)
+local function setBlock(player:Player,active:boolean)
+	if not getCharacter(player) then return end
+	player:SetAttribute("Blocking",active)
+	player:SetAttribute("BlockStarted",active and now() or 0)
+	if active then markCombat(player) end
+	feedback:FireClient(player,"Block",active)
 end
 
 function S.Init()
-	Anti.Init()
-	R.CollisionRemotes.CombatRequest.OnServerEvent:Connect(request)
-	Players.PlayerRemoving:Connect(function(p)states[p]=nil end)
-	Players.PlayerAdded:Connect(function(p)
-		local s=state(p)
-		sync(p,s)
-		p.CharacterAdded:Connect(function(c)
-			local h=c:WaitForChild("Humanoid")
-			s.Busy=0;s.LastLight=0;s.Combo=0;s.LastDash=0;s.LastSpecial=0;s.LastOverdrive=0
-			s.CharacterToken+=1
-			s.IsBlocking=false;s.ParryUntil=0;s.Momentum=0;s.Instability=0;s.Overdrive=false;s.LastAction=""
-			p:SetAttribute("LastCombatAt",0)
-			sync(p,s)
-			h.WalkSpeed=C.Combat.BaseWalkSpeed
-		end)
-		task.spawn(function()
-			while p.Parent do
-				task.wait(.25)
-				local current=states[p]
-				if not current then break end
-				if current.Overdrive then
-					current.Instability=U.Clamp(current.Instability-C.Combat.Actions.Overdrive.InstabilityDrain*.25,0,C.Combat.InstabilityMax)
-					if current.Instability<=0 then current.Overdrive=false end
-				else
-					current.Momentum=U.Clamp(current.Momentum-.8,0,C.Combat.MomentumMax)
-				end
-				sync(p,current)
-			end
-		end)
+	request.OnServerEvent:Connect(function(player,action)
+		local entry=state[player]
+		local t=now()
+		if not entry then entry={WindowStart=t,Count=0};state[player]=entry end
+		if t-entry.WindowStart>=1 then entry.WindowStart=t;entry.Count=0 end
+		entry.Count+=1
+		if entry.Count>Config.Combat.RequestRate then return end
+		if typeof(action)~="string" then return end
+		if action=="Light" then light(player)
+		elseif action=="Dash" then dash(player)
+		elseif action=="BlockStart" then setBlock(player,true)
+		elseif action=="BlockEnd" then setBlock(player,false)
+		elseif action=="Special" then special(player)
+		end
 	end)
+	Players.PlayerRemoving:Connect(function(player)state[player]=nil end)
 end
 
 return S
