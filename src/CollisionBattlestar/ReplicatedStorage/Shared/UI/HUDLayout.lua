@@ -86,10 +86,10 @@ function M.Build():ScreenGui
 
  local utility=frame(gui,"Utility",UDim2.fromOffset(350,42),UDim2.new(1,-364,0,14),C.UI.Panel,.05,12)
  outline(utility,C.UI.Muted,.72)
- for i,item in ipairs({{"ShopButton","MARKET"},{"MapButton","MAP"},{"FighterButton","FIGHTERS"},{"MenuButton","MENU"}}) do
-  local w=i==4 and 64 or 88
-  local b=button(utility,item[1],item[2],UDim2.fromOffset(w,34),UDim2.fromOffset(5+(i-1)*(i==4 and 71 or 91),4))
-  b.TextSize=9
+ local utilityNames={{"ShopButton","MARKET"},{"MapButton","MAP"},{"FighterButton","FIGHTERS"},{"MenuButton","MENU"}}
+ for i,item in ipairs(utilityNames) do
+  local b=button(utility,item[1],item[2],UDim2.fromOffset(80,34),UDim2.fromOffset(5+(i-1)*86,4))
+  b.TextSize=8
  end
 
  local badge=frame(gui,"CombatBadge",UDim2.fromOffset(250,50),UDim2.new(.5,-125,0,16),C.UI.Panel,.18,12)
@@ -100,7 +100,7 @@ function M.Build():ScreenGui
  label(location,"Text","ORIGIN PLAZA  •  LV 1",UDim2.fromScale(1,1),UDim2.fromOffset(10,0),Enum.Font.GothamBold,9,C.UI.Text,Enum.TextXAlignment.Left)
 
  local hotbar=frame(gui,"Hotbar",UDim2.fromOffset(510,96),UDim2.new(.5,-255,1,-8),C.UI.Panel,.04,14)
- hotbar.AnchorPoint=Vector2.new(.5,1);outline(hotbar,C.UI.Muted,.70)
+ hotbar.AnchorPoint=Vector2.new(.5,1);hotbar.Visible=not UserInputService.TouchEnabled;outline(hotbar,C.UI.Muted,.70)
  local slots={{"Light","M1","LMB"},{"Dash","DASH","Q"},{"Block","GUARD","F"},{"Special","SPECIAL","R"}}
  for i,s in ipairs(slots) do
   local b=button(hotbar,s[1],s[2],UDim2.fromOffset(112,72),UDim2.fromOffset(9+(i-1)*124,10))
