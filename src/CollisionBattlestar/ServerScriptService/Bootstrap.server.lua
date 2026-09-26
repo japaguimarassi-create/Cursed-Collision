@@ -10,7 +10,7 @@ if not remotes then
 	remotes.Name="CollisionRemotes"
 	remotes.Parent=ReplicatedStorage
 end
-for _,name in ipairs({"CombatRequest","MovementRequest","Feedback","MapTravelRequest","MapTravelFeedback","BootRequest","BootFeedback"}) do
+for _,name in ipairs({"CombatRequest","MovementRequest","Feedback","MapTravelRequest","MapTravelFeedback","BootRequest","BootFeedback","UtilityRequest","UtilityFeedback"}) do
 	if not remotes:FindFirstChild(name) then
 		local event=Instance.new("RemoteEvent")
 		event.Name=name
@@ -23,6 +23,7 @@ local PlayerService=require(script.Parent.Services.PlayerService)
 local CombatService=require(script.Parent.Services.CombatService)
 local MovementService=require(script.Parent.Services.MovementService)
 local MapTravelService=require(script.Parent.Services.MapTravelService)
+local UtilityService=require(script.Parent.Services.UtilityService)
 
 local bootFeedback=remotes:WaitForChild("BootFeedback")
 local bootRequest=remotes:WaitForChild("BootRequest")
@@ -99,6 +100,7 @@ local function ensure()
 	if not stages.CombatService then stage("CombatService",function() CombatService.Init() return true end) end
 	if not stages.MovementService then stage("MovementService",function() MovementService.Init() return true end) end
 	if not stages.MapTravelService then stage("MapTravelService",function() MapTravelService.Init() return true end) end
+	if not stages.UtilityService then stage("UtilityService",function() UtilityService.Init() return true end) end
 
 	local verified=verifyRuntime()
 	if not verified then
