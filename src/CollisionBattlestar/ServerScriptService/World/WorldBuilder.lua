@@ -26,7 +26,9 @@ local function box(parent:Instance,name:string,size:Vector3,pos:Vector3,material
 end
 
 local function neon(parent:Instance,name:string,size:Vector3,pos:Vector3,color:Color3)
-	return part(parent,name,size,CFrame.new(pos),Enum.Material.Neon,color,false,.04)
+	local p=part(parent,name,size,CFrame.new(pos),Enum.Material.Neon,color,false,.04)
+	p.CastShadow=false
+	return p
 end
 
 local function destructible(parent:Instance,name:string,size:Vector3,pos:Vector3,color:Color3,hp:number)
@@ -63,7 +65,7 @@ end
 
 local function sign(parent:Instance,name:string,pos:Vector3,textValue:string,color:Color3)
 	box(parent,name.."_Post",Vector3.new(.45,5,.45),pos+Vector3.new(0,2.5,0),Enum.Material.Metal,Color3.fromRGB(55,59,67),true)
-	local board=box(parent,name.."_Board",Vector3.new(10,3,.4),pos+Vector3.new(0,5.4,0),Enum.Material.SmoothPlastic,Color3.fromRGB(22,27,35),true)
+	local board=box(parent,name.."_Board",Vector3.new(10,3,.4),pos+Vector3.new(0,5.4,0),Enum.Material.SmoothPlastic,Color3.fromRGB(22,27,35),false)
 	local surface=Instance.new("SurfaceGui")
 	surface.Face=Enum.NormalId.Front
 	surface.LightInfluence=0
