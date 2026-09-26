@@ -167,7 +167,7 @@ for token in ("Nodes","Order","Origin","Core","Apex","battleline_v1"):
 if "MapTravelRequest" not in bootstrap or "MapTravelFeedback" not in bootstrap:
     fail("map travel remote contract missing")
 travel=read("ServerScriptService/Services/MapTravelService.lua")
-for token in ("RequestStreamAroundAsync","PivotTo","MapTravelRequest","MapTravelFeedback","CollisionState"):
+for token in ("RequestStreamAroundAsync","PivotTo","MapTravelRequest","MapTravelFeedback","CurrentMapNode"):
     if token not in travel:
         fail("map travel service contract missing: "+token)
 map_ui=read("StarterPlayer/StarterPlayerScripts/Client/MapRouteController.client.lua")
