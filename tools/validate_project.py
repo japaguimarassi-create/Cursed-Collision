@@ -90,17 +90,17 @@ for token in ("GetAsync","UpdateAsync","BindToClose","180","CollisionBattlestar_
         fail("data contract missing: "+token)
 
 hud=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
-for token in ("CollisionHUD","LoadingScreen","PlayerPanel","Health","Energy","Awakening","Hotbar","MobileActions","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","Notice","ClashPanel","CoreUISafeInsets"):
+for token in ("CollisionHUD","LoadingScreen","PlayerCard","Objective","TopRight","Signal","MissionChip","ActionBar","PowerActions","MobileActions","QuickDock","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","ScoreboardPanel","SettingsPanel","Notice","ClashPanel","CoreUISafeInsets"):
     if token not in hud:
         fail("HUD contract missing: "+token)
 
 ui=read("StarterPlayer/StarterPlayerScripts/Client/UIController.lua")
-for token in ("ShopState","BuyItem","EquipItem","SetCharacter","RedeemCode","ClaimMission","MobileActions","ClashPanel","Clash"):
+for token in ("ShopState","BuyItem","EquipItem","SetCharacter","RedeemCode","ClaimMission","MobileActions","ScoreboardPanel","SettingsPanel","ClashPanel","Clash"):
     if token not in ui:
         fail("UI contract missing: "+token)
 
 client=read("StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua")
-for token in ("HUD.Build","PreloadAsync","startBoot","checkCombat","checkAssets","bootDone","Clash1","Clash4","ButtonR2","ButtonL2","ButtonY"):
+for token in ("HUD.Build","PreloadAsync","startBoot","checkCombat","checkAssets","bootDone","Clash1","Clash4","ButtonR2","ButtonL2","ButtonY","PlayerCard","ActionBar","QuickDock"):
     if token not in client:
         fail("client contract missing: "+token)
 
