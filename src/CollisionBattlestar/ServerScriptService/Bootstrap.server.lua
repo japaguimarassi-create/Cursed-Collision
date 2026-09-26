@@ -90,7 +90,6 @@ travel.OnServerEvent:Connect(function(player,nodeId)
  if t-(travelRate[player] or 0)<1.2 then return end
  travelRate[player]=t
  if not Routes.Get(nodeId) then return end
- local _,humanoid=CombatService and nil,nil
  local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
  if not root or not root:IsA("BasePart") then return end
  if (tonumber(player:GetAttribute("HitStunUntil")) or 0)>t then return end
