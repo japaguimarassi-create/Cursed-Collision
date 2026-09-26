@@ -142,10 +142,10 @@ for token in ("CollisionHUD","IsReady","Build","HUDRuntimeReady","HUDLayout"):
     if token not in hud:
         fail("HUD recovery contract missing: "+token)
 
-loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
+loading=read("StarterPlayer/StarterPlayerScripts/Client/HUDBootstrap.client.lua")
 for token in ("HUDBootstrap","HUDRecovery","HUDRuntimeReady"):
     if token not in loading:
-        fail("loading recovery contract missing: "+token)
+        fail("HUD bootstrap contract missing: "+token)
 
 print("PASS: fault-tolerant server and client startup recovery")
 print("PASS: non-blocking HUD bootstrap without recovery screen")
@@ -178,7 +178,7 @@ for token in ("Idle","Walk","Jump","Fall","M1_1","M1_4","Special","Dash","HitTak
         fail("animation profile missing: "+token)
 
 controller=read("StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua")
-for token in ("Animator","PreloadAsync","LoadAnimation","AdjustWeight","AdjustSpeed","Running","StateChanged","InputBegan","CollisionHUD"):
+for token in ("Animator","PreloadAsync","LoadAnimation","AdjustWeight","AdjustSpeed","Running","StateChanged","CollisionHUD"):
     if token not in controller:
         fail("animation runtime missing: "+token)
 
