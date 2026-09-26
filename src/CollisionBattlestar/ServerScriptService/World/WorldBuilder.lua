@@ -23,15 +23,15 @@ local function neon(parent:Instance,name:string,size:Vector3,pos:Vector3,color:C
 end
 
 local function road(parent:Instance,name:string,size:Vector3,pos:Vector3)
-	makePart(parent,name,size,pos,Enum.Material.Asphalt,Color3.fromRGB(25,28,34),true)
+	return makePart(parent,name,size,pos,Enum.Material.Asphalt,Color3.fromRGB(25,28,34),true)
 end
 
 local function laneMark(parent:Instance,name:string,size:Vector3,pos:Vector3)
-	makePart(parent,name,size,pos,Enum.Material.SmoothPlastic,Color3.fromRGB(214,219,225),false,.05)
+	return makePart(parent,name,size,pos,Enum.Material.SmoothPlastic,Color3.fromRGB(214,219,225),false,.05)
 end
 
 local function curb(parent:Instance,name:string,size:Vector3,pos:Vector3)
-	makePart(parent,name,size,pos,Enum.Material.Concrete,Color3.fromRGB(105,110,119),true)
+	return makePart(parent,name,size,pos,Enum.Material.Concrete,Color3.fromRGB(105,110,119),true)
 end
 
 local function tree(parent:Instance,pos:Vector3,index:number)
@@ -68,24 +68,33 @@ local function building(parent:Instance,name:string,pos:Vector3,size:Vector3,acc
 			local lit=rng:NextNumber()<.42
 			local wc=lit and accent or Color3.fromRGB(56,77,93)
 			neon(parent,name.."_W_F_"..level.."_"..column,Vector3.new(4.2,3.2,.18),Vector3.new(x,y,pos.Z-size.Z/2-.18),wc)
-			if level<levels and style%2==0 then neon(parent,name.."_W_B_"..level.."_"..column,Vector3.new(4.2,3.2,.18),Vector3.new(x,y,pos.Z+size.Z/2+.18),wc) end
+			if level<levels and style%2==0 then
+				neon(parent,name.."_W_B_"..level.."_"..column,Vector3.new(4.2,3.2,.18),Vector3.new(x,y,pos.Z+size.Z/2+.18),wc)
+			end
 		end
 	end
-	if size.Y>=46 then makePart(parent,name.."_RoofAccess",Vector3.new(12,5,10),Vector3.new(pos.X,pos.Y+size.Y+3,pos.Z),Enum.Material.Concrete,Color3.fromRGB(44,47,54),true) end
+	if size.Y>=46 then
+		makePart(parent,name.."_RoofAccess",Vector3.new(12,5,10),Vector3.new(pos.X,pos.Y+size.Y+3,pos.Z),Enum.Material.Concrete,Color3.fromRGB(44,47,54),true)
+	end
 end
 
 local function shop(parent:Instance,name:string,pos:Vector3,accent:Color3)
 	makePart(parent,name,Vector3.new(34,17,24),Vector3.new(pos.X,8.5,pos.Z),Enum.Material.Concrete,Color3.fromRGB(65,70,79),true)
 	neon(parent,name.."_Sign",Vector3.new(25,3,.35),Vector3.new(pos.X,14,pos.Z-12.3),accent)
 	makePart(parent,name.."_Door",Vector3.new(7,10,.25),Vector3.new(pos.X,5,pos.Z-12.45),Enum.Material.Glass,Color3.fromRGB(25,35,45),false,.12)
-	for x=-9,9,18 do neon(parent,name.."_Window"..x,Vector3.new(7,5,.2),Vector3.new(pos.X+x,8,pos.Z-12.5),Color3.fromRGB(65,110,135)) end
+	for x=-9,9,18 do
+		neon(parent,name.."_Window"..x,Vector3.new(7,5,.2),Vector3.new(pos.X+x,8,pos.Z-12.5),Color3.fromRGB(65,110,135))
+	end
 end
 
 local function crosswalk(parent:Instance,x:number,z:number,vertical:boolean,index:number)
 	for i=1,7 do
 		local offset=(i-4)*4.2
-		if vertical then laneMark(parent,"Crosswalk_"..index.."_"..i,Vector3.new(3.1,.12,26),Vector3.new(x+offset,.58,z))
-		else laneMark(parent,"Crosswalk_"..index.."_"..i,Vector3.new(26,.12,3.1),Vector3.new(x,.58,z+offset)) end
+		if vertical then
+			laneMark(parent,"Crosswalk_"..index.."_"..i,Vector3.new(3.1,.12,26),Vector3.new(x+offset,.58,z))
+		else
+			laneMark(parent,"Crosswalk_"..index.."_"..i,Vector3.new(26,.12,3.1),Vector3.new(x,.58,z+offset))
+		end
 	end
 end
 
@@ -125,7 +134,9 @@ local function buildRoadNetwork(parent:Instance)
 	for x=-520,390,130 do
 		curb(parent,"CurbN_"..x,Vector3.new(120,1.4,3),Vector3.new(x,1,-34))
 		curb(parent,"CurbS_"..x,Vector3.new(120,1.4,3),Vector3.new(x,1,34))
-		for dash=1,5 do laneMark(parent,"Lane_"..x.."_"..dash,Vector3.new(18,.12,1.2),Vector3.new(x-48+(dash-1)*24,.66,0)) end
+		for dash=1,5 do
+			laneMark(parent,"Lane_"..x.."_"..dash,Vector3.new(18,.12,1.2),Vector3.new(x-48+(dash-1)*24,.66,0))
+		end
 	end
 	crosswalk(parent,-260,0,false,1)
 	crosswalk(parent,0,0,false,2)
@@ -146,29 +157,35 @@ local function lighting()
 	Lighting.OutdoorAmbient=Color3.fromRGB(61,70,84)
 end
 
-function S.Init()
-	if root then return end
+local function build():Folder
 	local old=workspace:FindFirstChild("CollisionBattlestarWorld")
 	if old then old:Destroy() end
-	root=Instance.new("Folder")
-	root.Name="CollisionBattlestarWorld"
-	root.Parent=workspace
+	local newRoot=Instance.new("Folder")
+	newRoot.Name="CollisionBattlestarWorld"
+	newRoot.Parent=workspace
 	local map=Instance.new("Folder")
 	map.Name="Map"
-	map.Parent=root
+	map.Parent=newRoot
 	local spawns=Instance.new("Folder")
 	spawns.Name="Spawns"
-	spawns.Parent=root
+	spawns.Parent=newRoot
+
 	makePart(map,"WorldGround",Vector3.new(Config.Map.Width,2,Config.Map.Depth),Vector3.new(0,-2,0),Enum.Material.Grass,Color3.fromRGB(37,42,42),true)
 	buildRoadNetwork(map)
-	for _,id in ipairs(Routes.Order) do buildDistrict(map,Routes.Nodes[id],table.find(Routes.Order,id) or 1) end
+	for _,id in ipairs(Routes.Order) do
+		local node=Routes.Nodes[id]
+		if not node then error("Missing route node: "..id) end
+		buildDistrict(map,node,table.find(Routes.Order,id) or 1)
+	end
 	makePart(map,"RiverWallNorth",Vector3.new(1320,10,8),Vector3.new(0,5,370),Enum.Material.Brick,Color3.fromRGB(45,50,58),true)
 	makePart(map,"RiverWallSouth",Vector3.new(1320,10,8),Vector3.new(0,5,-370),Enum.Material.Brick,Color3.fromRGB(45,50,58),true)
+
 	for index,id in ipairs(Routes.Order) do
+		local node=Routes.Nodes[id]
 		local spawn=Instance.new("SpawnLocation")
 		spawn.Name="BattleSpawn_"..index
 		spawn.Size=Vector3.new(9,1,9)
-		spawn.CFrame=CFrame.new(Routes.Nodes[id].Spawn)
+		spawn.CFrame=CFrame.new(node.Spawn)
 		spawn.Anchored=true
 		spawn.Neutral=true
 		spawn.Duration=0
@@ -178,13 +195,54 @@ function S.Init()
 		spawn.CanQuery=false
 		spawn.Parent=spawns
 	end
-	root:SetAttribute("MapVersion",Routes.Version)
-	root:SetAttribute("MapLoaded",true)
-	workspace:SetAttribute("CollisionBattlestarMapReady",true)
-	workspace:SetAttribute("CollisionBattlestarMapError","")
-	workspace:SetAttribute("CollisionBattlestarMapVersion",Routes.Version)
+
+	newRoot:SetAttribute("MapVersion",Routes.Version)
+	newRoot:SetAttribute("MapLoaded",true)
 	lighting()
-	AssetLoader.Init(root)
+	return newRoot
 end
+
+local function verify(newRoot:Folder):boolean
+	local map=newRoot:FindFirstChild("Map")
+	local spawns=newRoot:FindFirstChild("Spawns")
+	if not map or not spawns then return false end
+	local count=0
+	for _,id in ipairs(Routes.Order) do
+		if map:FindFirstChild(id.."_Plaza") then count+=1 end
+	end
+	local spawnCount=0
+	for _,item in ipairs(spawns:GetChildren()) do
+		if item:IsA("SpawnLocation") then spawnCount+=1 end
+	end
+	return count==#Routes.Order and spawnCount==#Routes.Order and map:FindFirstChild("WorldGround")~=nil
+end
+
+function S.Init()
+	if root and root.Parent and verify(root) then return true end
+	return S.Rebuild()
+end
+
+function S.Rebuild():boolean
+	workspace:SetAttribute("CollisionBattlestarMapReady",false)
+	workspace:SetAttribute("CollisionBattlestarMapError","building")
+	root=nil
+	local ok,result=pcall(build)
+	if not ok or not result or not verify(result) then
+		if result and result:IsA("Folder") then result:Destroy() end
+		workspace:SetAttribute("CollisionBattlestarMapError",tostring(result or "map verification failed"))
+		return false
+	end
+	root=result
+	workspace:SetAttribute("CollisionBattlestarMapError","")
+	workspace:SetAttribute("CollisionBattlestarMapReady",true)
+	workspace:SetAttribute("CollisionBattlestarMapVersion",Routes.Version)
+	AssetLoader.Init(root)
+	return true
+end
+
+function S.Verify():boolean
+	return root~=nil and root.Parent==workspace and verify(root)
+end
+
 function S.GetRoot():Folder? return root end
 return S
