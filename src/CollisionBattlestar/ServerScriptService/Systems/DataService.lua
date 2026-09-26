@@ -85,6 +85,7 @@ local function mirror(player:Player,p:Profile)
  player:SetAttribute("DailyKOs",p.DailyKOs)
  player:SetAttribute("WeeklyKOs",p.WeeklyKOs)
  player:SetAttribute("LifetimeKOs",p.LifetimeKOs)
+ if player:GetAttribute("Streak")==nil then player:SetAttribute("Streak",0) end
 end
 
 function M:Get(player:Player):Profile?
@@ -147,8 +148,13 @@ function M:AddKO(player:Player):number
  p.Credits+=Config.Progression.KOReward
  p.XP+=Config.Progression.KOXP
  p.Level=levelForXP(p.XP)
+ player:SetAttribute("Streak",(tonumber(player:GetAttribute("Streak")) or 0)+1)
  mirror(player,p)
  return Config.Progression.KOReward
+end
+
+function M:ResetStreak(player:Player)
+ if player.Parent then player:SetAttribute("Streak",0) end
 end
 
 function M:Buy(player:Player,itemId:string,price:number):boolean
