@@ -14,16 +14,32 @@ local wave = 0
 local active = false
 local spawnRng = Random.new()
 
-local spawnPositions = {
-    Vector3.new(-310, 5, -310),
-    Vector3.new(310, 5, -310),
-    Vector3.new(-310, 5, 310),
-    Vector3.new(310, 5, 310),
-    Vector3.new(-180, 5, 0),
-    Vector3.new(180, 5, 0),
-    Vector3.new(0, 5, -180),
-    Vector3.new(0, 5, 180),
+local fallbackSpawnPositions = {
+    Vector3.new(-72, 8, -72),
+    Vector3.new(72, 8, -72),
+    Vector3.new(-72, 8, 72),
+    Vector3.new(72, 8, 72),
 }
+
+local function getArenaSpawnPositions(): {Vector3}
+    local folder = workspace:FindFirstChild("ArenaEnemySpawns")
+    if not folder then
+        return fallbackSpawnPositions
+    end
+
+    local positions = {}
+    for _, instance in ipairs(folder:GetChildren()) do
+        if instance:IsA("BasePart") then
+            table.insert(positions, instance.Position)
+        end
+    end
+
+    if #positions == 0 then
+        return fallbackSpawnPositions
+    end
+
+    return positions
+end
 
 local function broadcast(kind: string, ...)
     State:FireAllClients(kind, ...)
@@ -44,6 +60,7 @@ local function spawnWave(currentWave: number)
         Config.Waves.MaxAliveEnemies
     )
     local tier = tierForWave(currentWave)
+    local spawnPositions = getArenaSpawnPositions()
 
     for index = 1, count do
         local point = spawnPositions[((index - 1) % #spawnPositions) + 1]
