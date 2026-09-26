@@ -75,9 +75,13 @@ for token in ("RequestRate","RequestBurst","GetPartBoundsInBox","GetPartBoundsIn
         fail("combat contract missing: "+token)
 
 world=read("ServerScriptService/Systems/WorldService.lua")
-for token in ("Origin","Metro","Core","Iron","Apex","CBS_Destructible","RequestStreamAroundAsync","CollisionBattlestarMapReady"):
+for token in ("CBS_Destructible","RequestStreamAroundAsync","CollisionBattlestarMapReady"):
     if token not in world:
         fail("world contract missing: "+token)
+routes=read("ReplicatedStorage/Shared/MapDefinitions.lua")
+for token in ("Origin","Metro","Core","Iron","Apex","BattleLine_Urban_V5"):
+    if token not in routes:
+        fail("map contract missing: "+token)
 
 data=read("ServerScriptService/Systems/DataService.lua")
 for token in ("GetAsync","UpdateAsync","BindToClose","180","CollisionBattlestar_Profile_v4"):
