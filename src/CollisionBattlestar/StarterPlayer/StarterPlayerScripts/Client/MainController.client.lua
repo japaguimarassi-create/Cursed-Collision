@@ -6,6 +6,11 @@ local TweenService=game:GetService("TweenService")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 local player=Players.LocalPlayer
+local playerGui=player:WaitForChild("PlayerGui")
+local existingHud=playerGui:FindFirstChild("CollisionHUD")
+if existingHud and existingHud:IsA("ScreenGui") and existingHud:GetAttribute("ManagedByFallback")==true then
+	return
+end
 local remotes=ReplicatedStorage:WaitForChild("CollisionRemotes")
 local combat=remotes:WaitForChild("CombatRequest")
 local movement=remotes:WaitForChild("MovementRequest")
