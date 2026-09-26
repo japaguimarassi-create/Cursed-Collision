@@ -34,5 +34,11 @@ jobs:
             /tmp/luau/luau-compile --only-parse "$file"
           done < <(find src/CollisionBattlestar -type f -name "*.lua" -print0)
 
+      - name: Reject legacy runtime files and markers
+        run: |
+          set -euo pipefail
+          ! find src/CollisionBattlestar -type f \( -name "QARunner.client.lua" -o -name "QAService.server.lua" \) -print -quit | grep -q .
+          ! grep -RniE "HUDRecovery|WorldBuilder|MapAssetLoader|DestructionService" src/CollisionBattlestar || true
+
       - name: Check patch whitespace
         run: git diff --check

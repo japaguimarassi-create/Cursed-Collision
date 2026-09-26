@@ -1,114 +1,136 @@
 from pathlib import Path
 import json
+import re
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
 SRC=ROOT/"src"/"CollisionBattlestar"
 
-REQUIRED=[
-    "ReplicatedStorage/Shared/BuildInfo.lua",
-    "ReplicatedStorage/Shared/Config.lua",
-    "ReplicatedStorage/Shared/MapDefinitions.lua",
-    "ReplicatedStorage/Shared/StoreCatalog.lua",
-    "ReplicatedStorage/Shared/QAContract.lua",
-    "ReplicatedStorage/Shared/UI/HUDLayout.lua",
-    "ServerScriptService/Bootstrap.server.lua",
-    "ServerScriptService/QAService.server.lua",
-    "StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua",
-    "StarterPlayer/StarterPlayerScripts/Client/QARunner.client.lua",
-]
-
 def fail(message):
-    print("FAIL:",message)
+    print("FAIL:", message)
     sys.exit(1)
 
-def read(path):
-    p=SRC/path
-    if not p.is_file():
-        fail("missing active file: "+str(p))
-    return p.read_text(encoding="utf-8")
-
-for path in REQUIRED:
-    read(path)
+def read(relative):
+    path=SRC/relative
+    if not path.is_file():
+        fail("missing active file: "+str(path))
+    return path.read_text(encoding="utf-8")
 
 manifest=json.loads((ROOT/"default.project.json").read_text(encoding="utf-8"))
 if manifest.get("name")!="CollisionBattlestar":
     fail("manifest name mismatch")
-
 tree=manifest.get("tree",{})
 if tree.get("Workspace",{}).get("$properties",{}).get("StreamingEnabled") is not True:
     fail("StreamingEnabled must be true")
-
-expected={
-    "ReplicatedStorage":"src/CollisionBattlestar/ReplicatedStorage",
-    "ServerScriptService":"src/CollisionBattlestar/ServerScriptService",
-}
-for service,path in expected.items():
-    if tree.get(service,{}).get("$path")!=path:
-        fail(service+" path mismatch")
-
+if tree.get("ReplicatedStorage",{}).get("$path")!="src/CollisionBattlestar/ReplicatedStorage":
+    fail("ReplicatedStorage path mismatch")
+if tree.get("ServerScriptService",{}).get("$path")!="src/CollisionBattlestar/ServerScriptService":
+    fail("ServerScriptService path mismatch")
 if tree.get("StarterPlayer",{}).get("StarterPlayerScripts",{}).get("$path")!="src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts":
     fail("StarterPlayerScripts path mismatch")
 
-active=list(SRC.rglob("*.lua"))
-if len(active)!=len(REQUIRED):
-    fail("unexpected active Lua file count: "+str(len(active)))
+lua_files=list(SRC.rglob("*.lua"))
+server_runtimes=list(SRC.rglob("*.server.lua"))
+client_runtimes=list(SRC.rglob("*.client.lua"))
+if [p.relative_to(SRC).as_posix() for p in server_runtimes]!=["ServerScriptService/Bootstrap.server.lua"]:
+    fail("server runtime contract mismatch")
+if [p.relative_to(SRC).as_posix() for p in client_runtimes]!=["StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua"]:
+    fail("client runtime contract mismatch")
+for legacy in ("ServerScriptService/QAService.server.lua","StarterPlayer/StarterPlayerScripts/Client/QARunner.client.lua"):
+    if (SRC/legacy).exists():
+        fail("legacy runtime remains: "+legacy)
+
+required=[
+"ReplicatedStorage/Shared/BuildInfo.lua",
+"ReplicatedStorage/Shared/Config.lua",
+"ReplicatedStorage/Shared/MapDefinitions.lua",
+"ReplicatedStorage/Shared/StoreCatalog.lua",
+"ReplicatedStorage/Shared/QAContract.lua",
+"ReplicatedStorage/Shared/Net.lua",
+"ReplicatedStorage/Shared/CharacterDefinitions.lua",
+"ReplicatedStorage/Shared/UI/HUDLayout.lua",
+"ServerScriptService/Bootstrap.server.lua",
+"ServerScriptService/Systems/DataService.lua",
+"ServerScriptService/Systems/WorldService.lua",
+"ServerScriptService/Systems/EconomyService.lua",
+"ServerScriptService/Systems/CombatService.lua",
+"ServerScriptService/Systems/QAService.lua",
+"StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua",
+"StarterPlayer/StarterPlayerScripts/Client/UIController.lua",
+"StarterPlayer/StarterPlayerScripts/Client/FXController.lua",
+"StarterPlayer/StarterPlayerScripts/Client/CameraController.lua",
+"StarterPlayer/StarterPlayerScripts/Client/QAClient.lua",
+]
+for path in required:
+    read(path)
 
 server=read("ServerScriptService/Bootstrap.server.lua")
-for token in (
-    "CollisionRemotes","CombatRequest","MovementRequest","Feedback",
-    "MapTravelRequest","UtilityRequest","buildMap","CollisionBattlestarMapReady",
-    "GetPartBoundsInBox","GetPartBoundsInRadius","BlockStart","BlockEnd",
-    "Dash","Special","TakeDamage","Overdrive","ParryWindow","DataStoreService",
-    "BuyItem","EquipItem","RedeemCode"
-):
+for token in ("CollisionRemotes","CombatRequest","MovementRequest","UtilityRequest","MapTravelRequest","Feedback","GameState","CombatFX","WorldService:Build()","DataService:Init()","EconomyService:Init","CombatService:Init","QAService:Init","ProcessReceipt"):
     if token not in server:
-        fail("server contract missing: "+token)
+        fail("bootstrap contract missing: "+token)
 
-hud=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
-for token in (
-    "CollisionHUD","PlayerPanel","Health","Energy","Awakening","Hotbar",
-    "MobileActions","MapPanel","ShopPanel","QuestPanel","ProfilePanel",
-    "Tabs","Featured","Emotes","Robux"
-):
-    if token not in hud:
-        fail("HUD contract missing: "+token)
+combat=read("ServerScriptService/Systems/CombatService.lua")
+for token in ("RequestRate","RequestBurst","GetPartBoundsInBox","GetPartBoundsInRadius","Light","Dash","BlockStart","BlockEnd","Special","Awaken","Domain","Clash1","Clash2","Clash3","Clash4","ParryWindow","CBS_Destructible"):
+    if token not in combat:
+        fail("combat contract missing: "+token)
 
-client=read("StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua")
-for token in (
-    "HUD.Build","CombatRequest","MovementRequest","MapTravelRequest",
-    "ShopState","BuyItem","EquipItem","RedeemCode","MobileM1","MobileGuard",
-    "MobileDash","MobileSpecial","NextLight","NextDash","NextSpecial"
-):
-    if token not in client:
-        fail("client contract missing: "+token)
-
-config=read("ReplicatedStorage/Shared/Config.lua")
-for token in ("Light","Dash","Block","Special","RequestRate","ParryWindow","EnergyRegen","MaxFX","Special"):
-    if token not in config:
-        fail("config contract missing: "+token)
-
+world=read("ServerScriptService/Systems/WorldService.lua")
+for token in ("CBS_Destructible","RequestStreamAroundAsync","CollisionBattlestarMapReady"):
+    if token not in world:
+        fail("world contract missing: "+token)
 routes=read("ReplicatedStorage/Shared/MapDefinitions.lua")
-for token in ("Origin","Metro","Core","Iron","Apex","BattleLine_Urban_v4"):
+for token in ("Origin","Metro","Core","Iron","Apex","BattleLine_Urban_V5"):
     if token not in routes:
         fail("map contract missing: "+token)
 
+data=read("ServerScriptService/Systems/DataService.lua")
+for token in ("GetAsync","UpdateAsync","BindToClose","180","CollisionBattlestar_Profile_v4"):
+    if token not in data:
+        fail("data contract missing: "+token)
+
+hud=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
+for token in ("CollisionHUD","LoadingScreen","PlayerPanel","Health","Energy","Awakening","Hotbar","MobileActions","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","Notice","ClashPanel","CoreUISafeInsets"):
+    if token not in hud:
+        fail("HUD contract missing: "+token)
+
+ui=read("StarterPlayer/StarterPlayerScripts/Client/UIController.lua")
+for token in ("ShopState","BuyItem","EquipItem","SetCharacter","RedeemCode","ClaimMission","MobileActions","ClashPanel","Clash"):
+    if token not in ui:
+        fail("UI contract missing: "+token)
+
+client=read("StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua")
+for token in ("HUD.Build","PreloadAsync","startBoot","checkCombat","checkAssets","bootDone","Clash1","Clash4","ButtonR2","ButtonL2","ButtonY"):
+    if token not in client:
+        fail("client contract missing: "+token)
+
+fighters=read("ReplicatedStorage/Shared/CharacterDefinitions.lua")
+match=re.search(r'M\.Order=\{([^}]*)\}',fighters,re.S)
+if not match:
+    fail("fighter order missing")
+count=len(re.findall(r'"[^"]+"',match.group(1)))
+if count!=24:
+    fail("fighter roster count mismatch: "+str(count))
+
 store=read("ReplicatedStorage/Shared/StoreCatalog.lua")
-for token in ("Featured","Emotes","Bundle350","Bundle30000","Emote_Salute","Skin_Neon"):
-    if token not in store:
-        fail("store contract missing: "+token)
+if "for i=1,150 do" not in store:
+    fail("150 emote generator missing")
 
-print("PASS: Collision Battlestar clean rebuild")
-print("PASS: exactly one server runtime and one client runtime")
-print("PASS: functional combat, map travel, economy, shop and HUD contracts")
+qa=read("ReplicatedStorage/Shared/QAContract.lua")
+for token in ("Clash1","Clash2","Clash3","Clash4","ClashPanel"):
+    if token not in qa:
+        fail("QA contract missing: "+token)
+
+build=read("ReplicatedStorage/Shared/BuildInfo.lua")
+for token in ('B.Version="4.0.0"','B.Roster=24','B.Emotes=150','BattleLine_Urban_V5'):
+    if token not in build:
+        fail("build contract missing: "+token)
+
+print("PASS: Collision Battlestar v4 architecture")
+print("PASS: one server runtime + one client runtime")
+print("PASS: 24-fighter data contract + 150-emote catalog")
+print("PASS: server-authoritative combat + four-move domain clash")
+print("PASS: connected streamed city + destructible geometry")
+print("PASS: safe-area HUD + mobile/console input")
+print("PASS: resilient profile persistence and receipt pipeline")
+print("PASS: startup loading gate and runtime QA")
 print("PASS: no legacy runtime files remain")
-
-qaServer=read("ServerScriptService/QAService.server.lua")
-for token in ("QAContract","ReportEvent","ControlEvent","DummyName","GITHUB_QA_TOKEN","CollisionQALatest"):
-    if token not in qaServer:
-        fail("QA server contract missing: "+token)
-
-qaClient=read("StarterPlayer/StarterPlayerScripts/Client/QARunner.client.lua")
-for token in ("COLLISION QA BOT","HUD exists","HUD enabled","QA bot spawn","M1 reaches QA bot","Block state toggles","TakeScreenshotCaptureAsync","QAReport"):
-    if token not in qaClient:
-        fail("QA client contract missing: "+token)

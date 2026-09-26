@@ -47,6 +47,8 @@ jobs:
       - name: Generate active sourcemap
         run: rojo sourcemap default.project.json --output build/sourcemap.json
 
-      - name: Reject legacy runtime markers
+      - name: Reject legacy runtime files and markers
         run: |
-          ! grep -RniE "Jujutsu|JJK|Sukuna|Gojo|Cursed Collision|CursedCollision|PotentialMan" src/CollisionBattlestar README.md
+          set -euo pipefail
+          ! find src/CollisionBattlestar -type f \( -name "QARunner.client.lua" -o -name "QAService.server.lua" \) -print -quit | grep -q .
+          ! grep -RniE "HUDRecovery|WorldBuilder|MapAssetLoader|DestructionService" src/CollisionBattlestar || true

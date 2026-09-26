@@ -1,17 +1,15 @@
 --!strict
 local C={}
-C.Items={
-{Id="Emote_Salute",Name="SALUTE",Category="Emotes",Price=125,Kind="Emote",Description="A clean competitive salute."},
-{Id="Emote_Charge",Name="CHARGE UP",Category="Emotes",Price=150,Kind="Emote",Description="Short energy stance."},
-{Id="Emote_Point",Name="LOCK ON",Category="Emotes",Price=175,Kind="Emote",Description="Choose your next target."},
-{Id="Emote_Victory",Name="VICTORY",Category="Emotes",Price=200,Kind="Emote",Description="Post-KO celebration."},
-{Id="Emote_Ready",Name="READY",Category="Emotes",Price=225,Kind="Emote",Description="Competitive ready pose."},
-{Id="Skin_Neon",Name="NEON VECTOR",Category="Featured",Price=750,Kind="Skin",Description="Blue-violet combat palette."},
-{Id="Skin_Iron",Name="IRON CORE",Category="Featured",Price=900,Kind="Skin",Description="Industrial combat palette."},
-{Id="Skin_Apex",Name="APEX SIGNAL",Category="Featured",Price=1100,Kind="Skin",Description="High-contrast arena palette."},
-{Id="Title_Rival",Name="RIVAL",Category="Featured",Price=300,Kind="Title",Description="Profile title."},
-{Id="Title_Veteran",Name="VETERAN",Category="Featured",Price=600,Kind="Title",Description="Profile title."}}
-C.Bundles={{Id="Bundle350",Name="350 CREDITS",Robux=49},{Id="Bundle1000",Name="1,000 CREDITS",Robux=119},{Id="Bundle2500",Name="2,500 CREDITS",Robux=239},{Id="Bundle5000",Name="5,000 CREDITS",Robux=399},{Id="Bundle7500",Name="7,500 CREDITS",Robux=849},{Id="Bundle15000",Name="15,000 CREDITS",Robux=2499},{Id="Bundle30000",Name="30,000 CREDITS",Robux=5399,Best=true}}
+C.Items={}
+local featured={{"Skin_Neon","NEON VECTOR",750,"Skin","Cyan-violet combat palette."},{"Skin_Iron","IRON CORE",900,"Skin","Industrial close-range palette."},{"Skin_Apex","APEX SIGNAL",1100,"Skin","High-contrast arena palette."},{"Title_Rival","RIVAL",300,"Title","Competitive profile title."},{"Title_Veteran","VETERAN",600,"Title","Veteran profile title."},{"Title_Wanderer","WANDERER",450,"Title","City-roaming title."},{"Title_Overclocked","OVERCLOCKED",800,"Title","High-output title."},{"Banner_Cyan","CYAN VECTOR",400,"Banner","Profile banner."}}
+for _,v in ipairs(featured) do table.insert(C.Items,{Id=v[1],Name=v[2],Category="Featured",Price=v[3],Kind=v[4],Description=v[5]}) end
+local emoteNames={"SALUTE","CHARGE UP","LOCK ON","VICTORY","READY","POINT","TAUNT","FOCUS","WAVE","LAUGH","POSE","CLAP","BOW","FLEX","ZEN","THINK","SIT","LEAN","SPIN","SHRUG","CHEER","SCOUT","THUMBS UP","STAND OFF","REST","SIGNAL","GLARE","JUMP","KNEEL","WALK OFF"}
+for i=1,150 do
+  local n=emoteNames[((i-1)%#emoteNames)+1]
+  local tier=math.floor((i-1)/30)
+  table.insert(C.Items,{Id=string.format("Emote_%03d",i),Name=n.." "..string.format("%03d",i),Category="Emotes",Price=125+tier*25,Kind="Emote",Description="Collection emote "..string.format("%03d",i)})
+end
+C.Bundles={{Id="Bundle350",Name="350 CREDITS",Robux=49,ProductId=0},{Id="Bundle1000",Name="1,000 CREDITS",Robux=119,ProductId=0},{Id="Bundle2500",Name="2,500 CREDITS",Robux=239,ProductId=0},{Id="Bundle5000",Name="5,000 CREDITS",Robux=399,ProductId=0},{Id="Bundle7500",Name="7,500 CREDITS",Robux=849,ProductId=0},{Id="Bundle15000",Name="15,000 CREDITS",Robux=2499,ProductId=0},{Id="Bundle30000",Name="30,000 CREDITS",Robux=5399,ProductId=0,Best=true}}
 function C.Get(id:string)
   for _,item in ipairs(C.Items) do if item.Id==id then return item end end
   return nil
