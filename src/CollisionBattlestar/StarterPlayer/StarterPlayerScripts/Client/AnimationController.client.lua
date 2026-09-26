@@ -71,7 +71,7 @@ local function play(name:string,group:string,speed:number?,fade:number?):boolean
 	if not track then return false end
 	stopGroup(group,fade or .04)
 	local clipSpeed=speed or track.Speed
-	track:Play(fade or .04,0,clipSpeed)
+	track:Play(fade or .04,1,clipSpeed)
 	track:AdjustWeight(1,fade or .04)
 	track:AdjustSpeed(clipSpeed)
 	active[group]=name
