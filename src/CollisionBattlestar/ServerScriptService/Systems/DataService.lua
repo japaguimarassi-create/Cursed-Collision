@@ -265,12 +265,17 @@ end
 
 function Service:GrantDeveloperProduct(player: Player, product, purchaseId: string)
     local receiptId = tostring(purchaseId)
+    local current = profiles[player]
+
     local success, result = pcall(function()
         return store:UpdateAsync(key(player), function(raw)
-            local profile = sanitize(raw)
-            if profile.ProcessedPurchases[receiptId] then
-                return profile
+            local stored = sanitize(raw)
+
+            if stored.ProcessedPurchases[receiptId] then
+                return stored
             end
+
+            local profile = if current then sanitize(current) else stored
 
             local kind = tostring(product.Kind or "")
             if kind == "Credits" then
