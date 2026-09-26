@@ -52,7 +52,9 @@ end
 
 function Shop.Mount(root, config, player: Player, remote: RemoteEvent, stateRemote: RemoteEvent)
     local launcher = makeButton(root.Gui, "ShopButton", "STORE", UDim2.fromOffset(92, 34), config.UI.Surface2)
-    launcher.Position = UDim2.new(1, -18, 0, 118)
+    launcher.Position = UDim2.new(1, -18, 0, 18)
+    launcher.ZIndex = 120
+    launcher.TextSize = 10
     launcher.AnchorPoint = Vector2.new(1, 0)
 
     local overlay = Instance.new("Frame")
