@@ -228,16 +228,12 @@ def main() -> int:
 
     client = genai.Client(api_key=key)
 
-    if args.finalists_only:
-        candidates = sorted(candidates_dir.glob("candidate_*.png"))
-        if len(candidates) < args.top:
-            raise SystemExit("Not enough existing candidates for --finalists-only")
-    tasks = {}
     if not args.finalists_only:
+        tasks = {}
         with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        for candidate_id in range(1, args.count + 1):
-            path = candidates_dir / f"candidate_{candidate_id:03d}.png"
-            tasks[pool.submit(generate_one, client, args.image_model, references, path, candidate_id)] = candidate_id
+            for candidate_id in range(1, args.count + 1):
+                path = candidates_dir / f"candidate_{candidate_id:03d}.png"
+                tasks[pool.submit(generate_one, client, args.image_model, references, path, candidate_id)] = candidate_id
             for future in as_completed(tasks):
                 candidate_id = tasks[future]
                 try:
