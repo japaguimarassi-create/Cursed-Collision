@@ -12,6 +12,8 @@ required = [
     "gamepasses/manifest.json",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/Config.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/GamePassIds.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/GameDSL.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/GameProgram.lua",
     "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua",
     "src/CollisionBattlestar/ServerScriptService/Systems/DataService.lua",
     "src/CollisionBattlestar/ServerScriptService/Systems/EnemyService.lua",
@@ -48,6 +50,10 @@ for path in lua_files:
         raise SystemExit("Merge marker found in " + str(path))
     if "loadstring(" in source:
         raise SystemExit("Dynamic code loading found in " + str(path))
+
+config_source = (ROOT / "src/CollisionBattlestar/ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
+if "GameProgram" not in config_source:
+    raise SystemExit("Config.lua is not connected to Collision Script")
 
 legacy = {
     "TagService.lua",
