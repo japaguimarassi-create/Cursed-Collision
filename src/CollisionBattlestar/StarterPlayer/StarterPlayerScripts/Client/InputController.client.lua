@@ -1,53 +1,19 @@
 --!strict
-
-local ContextActionService = game:GetService("ContextActionService")
-
-local remotes = game:GetService("ReplicatedStorage"):WaitForChild("Remotes")
-local Action = remotes:WaitForChild("Action") :: RemoteEvent
-
-local function bind(name: string, title: string, position: UDim2, inputs: {Enum.KeyCode | Enum.UserInputType}, callback)
-    local function handler(_, state)
-        if state == Enum.UserInputState.Begin then
-            callback()
-        end
+local ContextActionService=game:GetService("ContextActionService")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local actionRemote=ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Action")::RemoteEvent
+local Controller={}; local initialized=false
+local function bind(name:string,inputs:{Enum.KeyCode|Enum.UserInputType},actionName:string)
+    ContextActionService:UnbindAction(name)
+    ContextActionService:BindAction(name,function(_,state)
+        if state==Enum.UserInputState.Begin then actionRemote:FireServer(actionName) end
         return Enum.ContextActionResult.Sink
-    end
-
-    ContextActionService:BindAction(name, handler, true, table.unpack(inputs))
-    ContextActionService:SetTitle(name, title)
-
-    local button = ContextActionService:GetButton(name)
-    if button then
-        button.Position = position
-        button.Size = UDim2.fromOffset(72, 72)
-        button.BackgroundTransparency = 0.12
-        button.Font = Enum.Font.GothamBold
-        button.TextScaled = true
-    end
+    end,false,table.unpack(inputs))
 end
-
-local Controller = {}
-
 function Controller:Init()
-    bind(
-        "CBS_Attack",
-        "ATK",
-        UDim2.fromScale(0.83, 0.72),
-        {Enum.UserInputType.MouseButton1, Enum.KeyCode.ButtonR2},
-        function()
-            Action:FireServer("M1")
-        end
-    )
-
-    bind(
-        "CBS_Dash",
-        "DASH",
-        UDim2.fromScale(0.73, 0.62),
-        {Enum.KeyCode.Q, Enum.KeyCode.ButtonB},
-        function()
-            Action:FireServer("Dash")
-        end
-    )
+    if initialized then return end
+    bind("CBS_Attack",{Enum.UserInputType.MouseButton1,Enum.KeyCode.ButtonR2},"M1")
+    bind("CBS_Dash",{Enum.KeyCode.Q,Enum.KeyCode.ButtonB},"Dash")
+    initialized=true
 end
-
 return Controller
