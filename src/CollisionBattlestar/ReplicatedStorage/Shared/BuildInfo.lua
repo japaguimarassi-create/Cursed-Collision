@@ -6,5 +6,5 @@ B.BuildTag="urban-combat-evolution-2026-09-26"
 B.Map="BattleLine_Urban_v3"
 B.Combat="server-authoritative-v2"
 B.HUD="battleline-hud-v2"
-B.Animation="track-blend-v1"
+B.Animation="track-blend-v2"
 return B
