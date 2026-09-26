@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -20,6 +21,7 @@ MAX_SNAPSHOT = 900_000
 MAX_FILE = 45_000
 MAX_OPS = 8
 EXCLUDED = {".git", ".cb-ai", "build", "node_modules", "__pycache__"}
+SENSITIVE_PARTS = {".env", ".env.local", ".env.production", "secret", "secrets", "credential", "credentials", "token", "tokens", "password", "private_key"}
 ALLOWED_PREFIXES = ("src/", "tools/", "docs/")
 ALLOWED_ROOTS = {"README.md", "default.project.json", "rokit.toml", ".gitignore"}
 
@@ -96,9 +98,21 @@ def include(path: Path) -> bool:
     rel = path.relative_to(ROOT)
     if any(part in EXCLUDED for part in rel.parts):
         return False
+    if path.name.lower() in SENSITIVE_PARTS or any(part.lower() in SENSITIVE_PARTS for part in rel.parts):
+        return False
     return path.is_file() and path.suffix.lower() in {
         ".lua", ".luau", ".py", ".json", ".toml", ".yml", ".yaml", ".md"
     }
+
+def sanitize(text: str) -> str:
+    text = re.sub(
+        r'(?im)("?(?:gemini_api_key|openai_api_key|api_key|access_token|secret|password|roblosecurity)"?\s*[:=]\s*)"[^"]*"',
+        r'\1"[REDACTED]"',
+        text,
+    )
+    text = re.sub(r'(?i)\bsk-[A-Za-z0-9_-]{20,}\b', "[REDACTED_OPENAI_KEY]", text)
+    text = re.sub(r'(?i)\bAIza[0-9A-Za-z_-]{20,}\b', "[REDACTED_GOOGLE_KEY]", text)
+    return text
 
 def snapshot() -> str:
     files = [p for p in ROOT.rglob("*") if include(p)]
