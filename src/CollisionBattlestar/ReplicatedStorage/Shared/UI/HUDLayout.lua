@@ -174,6 +174,16 @@ function M.Build():ScreenGui
  label(profile,"Stats","LEVEL 1\n0 KOs\n0 CREDITS\n0 STREAK",UDim2.fromOffset(480,190),UDim2.fromOffset(20,68),Enum.Font.GothamBlack,18,C.UI.Text,Enum.TextXAlignment.Left)
  label(profile,"Build","COLLISION BATTLESTAR  •  V4",UDim2.fromOffset(470,20),UDim2.fromOffset(20,280),Enum.Font.Gotham,8,C.UI.Muted,Enum.TextXAlignment.Left)
 
+ local clash=frame(gui,"ClashPanel",UDim2.fromOffset(520,128),UDim2.new(.5,-260,0,84),C.UI.Panel,.04,110)
+ clash.Visible=false;outline(clash,C.UI.Accent2,.45)
+ label(clash,"Title","DOMAIN CLASH",UDim2.fromOffset(220,25),UDim2.fromOffset(15,9),Enum.Font.GothamBlack,15,C.UI.Text,Enum.TextXAlignment.Left)
+ label(clash,"Score","0  •  0",UDim2.fromOffset(150,22),UDim2.new(1,-165,0,10),Enum.Font.GothamBlack,12,C.UI.Accent2,Enum.TextXAlignment.Right)
+ label(clash,"Hint","FOUR UNIVERSAL CLASH MOVES",UDim2.fromOffset(300,16),UDim2.fromOffset(15,34),Enum.Font.GothamBold,7,C.UI.Muted,Enum.TextXAlignment.Left)
+ for i,name in ipairs({"STRIKE","COUNTER","BREAK","FINISH"}) do
+  local b=button(clash,"Clash"..i,name,UDim2.fromOffset(113,48),UDim2.fromOffset(10+(i-1)*125,61))
+  b.ZIndex=113
+ end
+
  local notice=frame(gui,"Notice",UDim2.fromOffset(420,48),UDim2.new(.5,-210,0,76),C.UI.Panel,.06,12);notice.Visible=false;notice.ZIndex=120
  label(notice,"Text","",UDim2.fromScale(1,1),UDim2.fromScale(0,0),Enum.Font.GothamBlack,11,C.UI.Text,Enum.TextXAlignment.Center)
  outline(notice,C.UI.Muted,.65)
