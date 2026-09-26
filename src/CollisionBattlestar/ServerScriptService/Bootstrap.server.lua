@@ -50,7 +50,7 @@ AntiCheatService:Init(Config)
 WorldService:Init(Config)
 ZoneService:Init(Config)
 DataService:Init(Config)
-MonetizationService:Init(Config)
+MonetizationService:Init(Config, DataService)
 TravelService:Init(Config, ZoneService)
 
 AdminRemote.OnServerEvent:Connect(function(player, action)
