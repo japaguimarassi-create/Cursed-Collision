@@ -51,6 +51,9 @@ end
 local function mirror(player:Player,s:State)
  player:SetAttribute("Combo",s.combo)
  player:SetAttribute("Blocking",s.blocking)
+ player:SetAttribute("HitStunUntil",s.stunUntil)
+ player:SetAttribute("DashUntil",s.dashUntil)
+ player:SetAttribute("HitStun",s.stunUntil>now())
  player:SetAttribute("Energy",math.max(0,tonumber(player:GetAttribute("Energy")) or Config.Resources.MaxEnergy))
  player:SetAttribute("Overdrive",s.overdrive)
  player:SetAttribute("AwakeningActive",s.awakening)
@@ -459,7 +462,13 @@ end
 function M:Movement(player:Player,sprint:boolean)
  if typeof(sprint)~="boolean" or player:GetAttribute("DataReady")~=true then return end
  local s=state(player)
- if s.stunUntil>now() then return end
+ if s.stunUntil>now() or s.blocking then
+  if s.blocking then
+   local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+   if humanoid then humanoid.WalkSpeed=Config.Movement.BlockWalkSpeed end
+  end
+  return
+ end
  local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
  if humanoid then humanoid.WalkSpeed=sprint and Config.Movement.SprintSpeed or Config.Movement.WalkSpeed end
 end
