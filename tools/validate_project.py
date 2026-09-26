@@ -86,9 +86,14 @@ for token in ("BattleLine_Urban_v2","Origin","Metro","Core","Iron","Apex"):
         fail("route definition missing: "+token)
 
 ui=read("StarterPlayer/StarterPlayerScripts/Client/MainController.client.lua")
-for token in ("CollisionHUD","OVERDRIVE","BATTLE LINE","MAP","DASH","GUARD","SPECIAL","RIFT FIGHTER"):
+for token in ("CollisionHUD","OVERDRIVE","BATTLE LINE","MAP","Definitions.Slots","RIFT FIGHTER"):
     if token not in ui:
         fail("HUD contract missing: "+token)
+
+defs=read("ReplicatedStorage/Shared/CombatDefinitions.lua")
+for token in ("Light","Dash","Block","Special","MouseButton1","LeftShift"):
+    if token not in defs:
+        fail("combat input definition missing: "+token)
 
 print("PASS: Collision Battlestar v2 manifest")
 print(f"PASS: {len(active)} active Lua files")
