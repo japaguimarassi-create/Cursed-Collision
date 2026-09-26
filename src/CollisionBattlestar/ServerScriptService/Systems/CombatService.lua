@@ -5,6 +5,7 @@ local Debris=game:GetService("Debris")
 local CollectionService=game:GetService("CollectionService")
 local Config=require(ReplicatedStorage.Shared.Config)
 local Fighters=require(ReplicatedStorage.Shared.CharacterDefinitions)
+local HitboxService=require(script.Parent.HitboxService)
 
 type State={
  bucketStart:number,
@@ -24,7 +25,8 @@ type State={
  overdrive:number,
  perfectReady:boolean,
  clashId:number?,
- clashScore:number
+ clashScore:number,
+ clashMoveNext:number
 }
 type DomainState={id:number,owner:Player,part:BasePart,expires:number}
 
@@ -41,7 +43,7 @@ local function now():number return os.clock() end
 local function state(player:Player):State
  local s=states[player]
  if s then return s end
- s={bucketStart=now(),bucketCount=0,combo=0,comboExpire=0,nextLight=0,nextDash=0,nextSpecial=0,nextDomain=0,blockStarted=0,blocking=false,stunUntil=0,dashUntil=0,awakening=false,awakeningUntil=0,overdrive=0,perfectReady=false,clashId=nil,clashScore=0}
+ s={bucketStart=now(),bucketCount=0,combo=0,comboExpire=0,nextLight=0,nextDash=0,nextSpecial=0,nextDomain=0,blockStarted=0,blocking=false,stunUntil=0,dashUntil=0,awakening=false,awakeningUntil=0,overdrive=0,perfectReady=false,clashId=nil,clashScore=0,clashMoveNext=0}
  states[player]=s
  return s
 end
@@ -49,6 +51,9 @@ end
 local function mirror(player:Player,s:State)
  player:SetAttribute("Combo",s.combo)
  player:SetAttribute("Blocking",s.blocking)
+ player:SetAttribute("HitStunUntil",s.stunUntil)
+ player:SetAttribute("DashUntil",s.dashUntil)
+ player:SetAttribute("HitStun",s.stunUntil>now())
  player:SetAttribute("Energy",math.max(0,tonumber(player:GetAttribute("Energy")) or Config.Resources.MaxEnergy))
  player:SetAttribute("Overdrive",s.overdrive)
  player:SetAttribute("AwakeningActive",s.awakening)
@@ -89,41 +94,11 @@ local function fighterFor(player:Player)
 end
 
 local function getHumanoids(player:Player,cf:CFrame,size:Vector3):{Humanoid}
- local params=OverlapParams.new()
- params.FilterType=Enum.RaycastFilterType.Exclude
- params.FilterDescendantsInstances={player.Character}
- params.MaxParts=64
- local out:{Humanoid}={}
- local seen:{[Humanoid]:boolean}={}
- for _,part in ipairs(workspace:GetPartBoundsInBox(cf,size,params)) do
-  local model=part:FindFirstAncestorOfClass("Model")
-  local humanoid=model and model:FindFirstChildOfClass("Humanoid")
-  if humanoid and humanoid.Health>0 and not seen[humanoid] then
-   local victimPlayer=Players:GetPlayerFromCharacter(model)
-   if victimPlayer~=player then
-    seen[humanoid]=true;table.insert(out,humanoid)
-   end
-  end
- end
- return out
+ return HitboxService.Box(player,cf,size,-0.25)
 end
 
 local function getHumanoidsRadius(player:Player,position:Vector3,radius:number):{Humanoid}
- local params=OverlapParams.new()
- params.FilterType=Enum.RaycastFilterType.Exclude
- params.FilterDescendantsInstances={player.Character}
- params.MaxParts=64
- local out:{Humanoid}={}
- local seen:{[Humanoid]:boolean}={}
- for _,part in ipairs(workspace:GetPartBoundsInRadius(position,radius,params)) do
-  local model=part:FindFirstAncestorOfClass("Model")
-  local humanoid=model and model:FindFirstChildOfClass("Humanoid")
-  if humanoid and humanoid.Health>0 and not seen[humanoid] then
-   local victimPlayer=Players:GetPlayerFromCharacter(model)
-   if victimPlayer~=player then seen[humanoid]=true;table.insert(out,humanoid) end
-  end
- end
- return out
+ return HitboxService.Radius(player,position,radius)
 end
 
 local function damageDestructibles(position:Vector3,radius:number,damage:number)
@@ -259,8 +234,8 @@ local function light(player:Player)
  local cf=root.CFrame*CFrame.new(0,0,-Config.Combat.Light.Offset)
  local knock=Config.Combat.Light.Knockback[index]
  if variant=="Uppercut" then knock=knock+10 elseif variant=="Downslam" then knock=math.max(10,knock-6) end
- hitList(player,getHumanoids(player,cf,Config.Combat.Light.Hitbox),damage,knock,false,finisher)
  player:SetAttribute("LastM1Variant",variant)
+ hitList(player,getHumanoids(player,cf,Config.Combat.Light.Hitbox),damage,knock,false,finisher)
  send(player,"Swing",{Position=cf.Position,Combo=index,Variant=variant})
  fx("Swing",cf.Position,{combo=index,color=fighterFor(player).Color})
  mirror(player,s)
@@ -487,9 +462,30 @@ end
 function M:Movement(player:Player,sprint:boolean)
  if typeof(sprint)~="boolean" or player:GetAttribute("DataReady")~=true then return end
  local s=state(player)
- if s.stunUntil>now() then return end
+ if s.stunUntil>now() or s.blocking then
+  if s.blocking then
+   local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+   if humanoid then humanoid.WalkSpeed=Config.Movement.BlockWalkSpeed end
+  end
+  return
+ end
  local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
  if humanoid then humanoid.WalkSpeed=sprint and Config.Movement.SprintSpeed or Config.Movement.WalkSpeed end
+end
+
+function M:Reset(player:Player)
+ local s=state(player)
+ if s.clashId and domains[s.clashId] then
+  destroyDomain(s.clashId)
+ end
+ s.combo=0;s.comboExpire=0;s.nextLight=0;s.nextDash=0;s.nextSpecial=0
+ s.blockStarted=0;s.blocking=false;s.stunUntil=0;s.dashUntil=0
+ s.awakening=false;s.awakeningUntil=0;s.overdrive=0;s.perfectReady=false
+ s.clashId=nil;s.clashScore=0;s.clashMoveNext=0
+ player:SetAttribute("Energy",Config.Resources.MaxEnergy)
+ player:SetAttribute("MaxEnergy",Config.Resources.MaxEnergy)
+ player:SetAttribute("LastM1Variant","Neutral")
+ mirror(player,s)
 end
 
 function M:Init(dataService,feedback:RemoteEvent,fxRemote:UnreliableRemoteEvent)
@@ -500,8 +496,7 @@ function M:Init(dataService,feedback:RemoteEvent,fxRemote:UnreliableRemoteEvent)
    task.wait(.15)
    local _,humanoid=characterParts(player)
    if humanoid then humanoid.WalkSpeed=Config.Movement.WalkSpeed;humanoid.JumpPower=Config.Movement.JumpPower end
-   s.blocking=false;s.stunUntil=0;s.dashUntil=0;s.combo=0;s.awakening=false;s.awakeningUntil=0;s.overdrive=0;s.perfectReady=false;s.clashId=nil;s.clashScore=0
-   player:SetAttribute("Energy",Config.Resources.MaxEnergy);mirror(player,s)
+   self:Reset(player)
   end)
   player:SetAttribute("MaxEnergy",Config.Resources.MaxEnergy)
   player:SetAttribute("Energy",Config.Resources.MaxEnergy)

@@ -24,7 +24,8 @@ jobs:
       - name: Python automation syntax validation
         run: |
           python3 -m py_compile tools/validate_project.py
-          python3 -m py_compile tools/self_heal.py
+          python3 -m py_compile tools/validate_no_ai.py
+          python3 tools/validate_no_ai.py
 
 
       - name: Compile every active Luau file

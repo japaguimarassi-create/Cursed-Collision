@@ -85,6 +85,7 @@ local function mirror(player:Player,p:Profile)
  player:SetAttribute("DailyKOs",p.DailyKOs)
  player:SetAttribute("WeeklyKOs",p.WeeklyKOs)
  player:SetAttribute("LifetimeKOs",p.LifetimeKOs)
+ if player:GetAttribute("Streak")==nil then player:SetAttribute("Streak",0) end
 end
 
 function M:Get(player:Player):Profile?
@@ -93,19 +94,31 @@ end
 
 function M:Load(player:Player):boolean
  local loaded:any=nil
- for attempt=1,3 do
+ for attempt=1,5 do
   local ok,result=pcall(function() return store:GetAsync(key(player)) end)
-  if ok then loaded=result;break end
-  task.wait(math.min(6,2^(attempt-1)))
+  if ok then
+   loaded=result
+   break
+  end
+  task.wait(math.min(12,2^(attempt-1)*2))
+ end
+ if loaded==nil and player.Parent then
+  player:SetAttribute("DataReady",false)
+  player:SetAttribute("DataLoadFailed",true)
+  return false
  end
  cache[player]=normalize(loaded)
+ player:SetAttribute("DataLoadFailed",false)
  mirror(player,cache[player])
  return true
 end
 
 function M:Save(player:Player):boolean
  local p=cache[player]
- if not p or busy[player] then return false end
+ if not p then return false end
+ local deadline=os.clock()+5
+ while busy[player] and os.clock()<deadline do task.wait(.05) end
+ if busy[player] then return false end
  busy[player]=true
  refreshWindows(p)
  local payload={Credits=p.Credits,KOs=p.KOs,XP=p.XP,Level=p.Level,Owned=p.Owned,EquippedCharacter=p.EquippedCharacter,EquippedTitle=p.EquippedTitle,EquippedItem=p.EquippedItem,DailyKOs=p.DailyKOs,WeeklyKOs=p.WeeklyKOs,LifetimeKOs=p.LifetimeKOs,DailyKey=p.DailyKey,WeeklyKey=p.WeeklyKey,Codes=p.Codes}
@@ -147,8 +160,13 @@ function M:AddKO(player:Player):number
  p.Credits+=Config.Progression.KOReward
  p.XP+=Config.Progression.KOXP
  p.Level=levelForXP(p.XP)
+ player:SetAttribute("Streak",(tonumber(player:GetAttribute("Streak")) or 0)+1)
  mirror(player,p)
  return Config.Progression.KOReward
+end
+
+function M:ResetStreak(player:Player)
+ if player.Parent then player:SetAttribute("Streak",0) end
 end
 
 function M:Buy(player:Player,itemId:string,price:number):boolean
@@ -208,14 +226,26 @@ end
 
 function M:Init()
  Players.PlayerAdded:Connect(function(player)
-  task.spawn(function() self:Load(player) end)
+  task.spawn(function()
+   while player.Parent and player:GetAttribute("DataReady")~=true do
+    if self:Load(player) then break end
+    task.wait(10)
+   end
+  end)
  end)
  Players.PlayerRemoving:Connect(function(player)
   self:Save(player)
   cache[player]=nil
   busy[player]=nil
  end)
- for _,player in ipairs(Players:GetPlayers()) do task.spawn(function() self:Load(player) end) end
+ for _,player in ipairs(Players:GetPlayers()) do
+  task.spawn(function()
+   while player.Parent and player:GetAttribute("DataReady")~=true do
+    if self:Load(player) then break end
+    task.wait(10)
+   end
+  end)
+ end
  task.spawn(function()
   while game.Parent do
    task.wait(180)
