@@ -33,6 +33,7 @@ local ShopService = require(Systems:WaitForChild("ShopService"))
 local ZoneService = require(Systems:WaitForChild("ZoneService"))
 local TravelService = require(Systems:WaitForChild("TravelService"))
 local AntiCheatService = require(Systems:WaitForChild("AntiCheatService"))
+local AdminService = require(Systems:WaitForChild("AdminService"))
 
 local OWNER_USERNAME = "CreeperGMT1"
 local OWNER_USER_ID = 0
@@ -53,27 +54,12 @@ DataService:Init(Config)
 MonetizationService:Init(Config, DataService)
 TravelService:Init(Config, ZoneService)
 
-AdminRemote.OnServerEvent:Connect(function(player, action)
-    if player.UserId ~= OWNER_USER_ID then
-        return
-    end
-    if action == "NextWave" then
-        WaveService:AdminNextWave()
-    elseif action == "Reward" then
-        DataService:AddCredits(player, 1000)
-    elseif action == "Clear" then
-        EnemyService:Clear()
-    elseif action == "Heal" then
-        local character = player.Character
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        if humanoid then humanoid.Health = humanoid.MaxHealth end
-    end
-end)
 EnemyService:Init(Config, DataService, remotes:WaitForChild("State"))
 CombatService:Init(Config, DataService, AntiCheatService)
 WaveService:Init(Config, EnemyService, DataService)
 CompanionService:Init(Config, DataService)
 ShopService:Init(Config, DataService, MonetizationService)
+AdminService:Init(Config, DataService, WaveService, EnemyService, ShopService, ZoneService, AdminRemote, remotes:WaitForChild("State") :: RemoteEvent, OWNER_USER_ID)
 
 local function configureCharacter(player: Player, character: Model)
     local humanoid = character:WaitForChild("Humanoid") :: Humanoid
