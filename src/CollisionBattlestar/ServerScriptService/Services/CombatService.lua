@@ -15,7 +15,7 @@ local states:{[Player]:any}={}
 local function state(p:Player)
 	local s=states[p]
 	if s then return s end
-	s={Busy=0,LastLight=0,Combo=0,LastDash=0,LastSpecial=0,LastOverdrive=0,IsBlocking=false,ParryUntil=0,Momentum=0,Instability=0,Overdrive=false,Style="Blade",LastAction=""}
+	s={Busy=0,LastLight=0,Combo=0,LastDash=0,LastSpecial=0,LastOverdrive=0,IsBlocking=false,ParryUntil=0,Momentum=0,Instability=0,Overdrive=false,Style="Blade",LastAction="",CharacterToken=0}
 	states[p]=s
 	return s
 end
@@ -219,10 +219,15 @@ local function request(p:Player,action:string)
 		s.Busy=now+d.Startup+d.Recovery
 		local combo=s.Combo
 		local mult=D.LightChain[combo]or 1
+		local characterAtRequest=p.Character
+		local characterToken=s.CharacterToken
 		fb(p,"Swing",{Combo=combo,Action="Light"})
-		task.delay(d.Startup,function()
-			if states[p]==s then performHit(p,s,action,d,mult)end
-		end)
+		if characterAtRequest then
+			task.delay(d.Startup,function()
+				if states[p]~=s or s.CharacterToken~=characterToken or p.Character~=characterAtRequest then return end
+				performHit(p,s,action,d,mult)
+			end)
+		end
 	elseif action=="Heavy"then
 		s.LastAction=action
 		s.Combo=0
@@ -255,6 +260,7 @@ function S.Init()
 		p.CharacterAdded:Connect(function(c)
 			local h=c:WaitForChild("Humanoid")
 			s.Busy=0;s.LastLight=0;s.Combo=0;s.LastDash=0;s.LastSpecial=0;s.LastOverdrive=0
+			s.CharacterToken+=1
 			s.IsBlocking=false;s.ParryUntil=0;s.Momentum=0;s.Instability=0;s.Overdrive=false;s.LastAction=""
 			p:SetAttribute("LastCombatAt",0)
 			sync(p,s)
