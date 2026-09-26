@@ -83,6 +83,8 @@ function M.Build():ScreenGui
 	gui.Name="CollisionHUD"
 	gui.ResetOnSpawn=false
 	gui.IgnoreGuiInset=false
+	gui.ScreenInsets=Enum.ScreenInsets.CoreUISafeInsets
+	gui.Enabled=true
 	gui.DisplayOrder=20
 	gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
 	gui:SetAttribute("HUDVersion","3.0")
@@ -108,10 +110,12 @@ function M.Build():ScreenGui
 	avatarImage.BackgroundTransparency=1
 	avatarImage.Parent=avatar
 	corner(avatarImage,31)
-	local ok,url=pcall(function()
-		return Players:GetUserThumbnailAsync(player.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size100x100)
+	task.spawn(function()
+		local ok,url=pcall(function()
+			return Players:GetUserThumbnailAsync(player.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size100x100)
+		end)
+		if ok and avatarImage.Parent then avatarImage.Image=url end
 	end)
-	if ok then avatarImage.Image=url end
 
 	text(topLeft,"Name",player.DisplayName,18,UDim2.fromOffset(84,10),Enum.Font.GothamBlack,18,C.UI.Text,Enum.TextXAlignment.Left)
 	text(topLeft,"Title","RIVAL • BATTLE PILOT",10,UDim2.fromOffset(84,31),Enum.Font.GothamBold,9,C.UI.Muted,Enum.TextXAlignment.Left)
@@ -174,7 +178,7 @@ function M.Build():ScreenGui
 	end
 	close:SetAttribute("CloseMap",true)
 
-	local shop=frame(gui,"ShopPanel",UDim2.fromOffset(880,575),UDim2.fromScale(.5,.52),C.UI.Panel,.01,18)
+	local shop=frame(gui,"ShopPanel",UDim2.fromScale(.86,.76),UDim2.fromScale(.5,.52),C.UI.Panel,.01,18)
 	shop.AnchorPoint=Vector2.new(.5,.5)
 	shop.Visible=false
 	shop.ZIndex=50
