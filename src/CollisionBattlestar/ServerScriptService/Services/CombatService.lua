@@ -247,7 +247,8 @@ function S.Init()
 		p.CharacterAdded:Connect(function(c)
 			local h=c:WaitForChild("Humanoid")
 			s.Busy=0;s.LastLight=0;s.Combo=0;s.LastDash=0;s.LastSpecial=0;s.LastOverdrive=0
-			s.IsBlocking=false;s.ParryUntil=0;s.Momentum=0;s.Instability=0;s.Overdrive=false
+			s.IsBlocking=false;s.ParryUntil=0;s.Momentum=0;s.Instability=0;s.Overdrive=false;s.LastAction=""
+			p:SetAttribute("LastCombatAt",0)
 			sync(p,s)
 			h.WalkSpeed=C.Combat.BaseWalkSpeed
 		end)
