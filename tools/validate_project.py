@@ -126,7 +126,7 @@ for token in ("BootRequest","BootFeedback","CollisionBattlestarReady","WorldRepa
         fail("recovery boot contract missing: "+token)
 
 loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
-for token in ("CollisionBootScreen","mapReady","hudReady","characterReady","bootRequest:FireServer","restartLocalScript","Recovery"):
+for token in ("CollisionBootScreen","mapReady","hudReady","characterReady","bootRequest:FireServer","forceHudRecovery","HUDRecovery","Recovery"):
     if token not in loading:
         fail("loading recovery contract missing: "+token)
 
