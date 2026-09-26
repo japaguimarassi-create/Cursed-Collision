@@ -33,11 +33,31 @@ local ShopService = require(Systems:WaitForChild("ShopService"))
 local ZoneService = require(Systems:WaitForChild("ZoneService"))
 local TravelService = require(Systems:WaitForChild("TravelService"))
 
+local OWNER_USER_ID = 0
+local AdminRemote = Instance.new("RemoteEvent")
+AdminRemote.Name = "AdminAction"
+AdminRemote.Parent = remotes
+
 WorldService:Init(Config)
 ZoneService:Init(Config)
 DataService:Init(Config)
 MonetizationService:Init(Config)
 TravelService:Init(Config, ZoneService)
+
+AdminRemote.OnServerEvent:Connect(function(player, action)
+    if player.UserId ~= OWNER_USER_ID then
+        return
+    end
+    if action == "NextWave" then
+        WaveService:AdminNextWave()
+    elseif action == "Reward" then
+        DataService:AddCredits(player, 1000)
+    elseif action == "Heal" then
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid.Health = humanoid.MaxHealth end
+    end
+end)
 EnemyService:Init(Config, DataService, remotes:WaitForChild("State"))
 CombatService:Init(Config, DataService)
 WaveService:Init(Config, EnemyService, DataService)
