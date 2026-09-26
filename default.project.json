@@ -4,7 +4,13 @@
     "$className": "DataModel",
     "Workspace": {
       "$properties": {
-        "StreamingEnabled": true
+        "StreamingEnabled": true,
+        "StreamingMinRadius": 256,
+        "StreamingTargetRadius": 768,
+        "StreamOutBehavior": "Opportunistic",
+        "ModelStreamingBehavior": "Improved",
+        "PredictiveStreamingMode": "Enabled",
+        "EnableSLIMAvatars": true
       }
     },
     "ReplicatedStorage": {
