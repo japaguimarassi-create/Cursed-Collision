@@ -10,6 +10,8 @@ required = [
     "rokit.toml",
     "README.md",
     "gamepasses/manifest.json",
+    "developer-products/manifest.json",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/HUD/Shop.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/Config.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/GamePassIds.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/GameDSL.lua",
