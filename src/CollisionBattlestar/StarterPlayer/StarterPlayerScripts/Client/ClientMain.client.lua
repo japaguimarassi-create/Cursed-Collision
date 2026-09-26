@@ -1,5 +1,8 @@
 --!strict
+
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local root = script.Parent
@@ -7,99 +10,194 @@ local root = script.Parent
 local fallback: ScreenGui? = nil
 local booting = false
 
+local function rounded(parent: Instance, radius: number)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius)
+    corner.Parent = parent
+end
+
+local function makeText(parent: Instance, textValue: string, size: number, bold: boolean?)
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.Text = textValue
+    label.TextColor3 = Color3.fromRGB(245, 247, 252)
+    label.Font = bold == false and Enum.Font.GothamMedium or Enum.Font.GothamBold
+    label.TextSize = size
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextYAlignment = Enum.TextYAlignment.Center
+    label.Parent = parent
+    return label
+end
+
 local function makeFallback()
     if fallback and fallback.Parent then
         return
     end
+
     local gui = Instance.new("ScreenGui")
     gui.Name = "CollisionBattlestarHUDFallback"
     gui.ResetOnSpawn = false
-    gui.DisplayOrder = 95
+    gui.IgnoreGuiInset = false
+    gui.DisplayOrder = 90
     gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
     gui.Parent = playerGui
 
-    local top = Instance.new("Frame")
-    top.Size = UDim2.fromOffset(250, 62)
-    top.Position = UDim2.fromOffset(18, 18)
-    top.BackgroundColor3 = Color3.fromRGB(13, 16, 24)
-    top.BackgroundTransparency = 0.06
-    top.BorderSizePixel = 0
-    top.Parent = gui
-    local topCorner = Instance.new("UICorner")
-    topCorner.CornerRadius = UDim.new(0, 16)
-    topCorner.Parent = top
+    local scale = Instance.new("UIScale")
+    scale.Scale = 1
+    scale.Parent = gui
 
-    local title = Instance.new("TextLabel")
-    title.BackgroundTransparency = 1
-    title.Size = UDim2.new(1, -28, 0, 24)
-    title.Position = UDim2.fromOffset(14, 8)
-    title.Font = Enum.Font.GothamBold
-    title.Text = "COLLISION BATTLESTAR"
-    title.TextColor3 = Color3.fromRGB(245, 247, 252)
-    title.TextSize = 12
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = top
+    local profile = Instance.new("Frame")
+    profile.Size = UDim2.fromOffset(230, 54)
+    profile.Position = UDim2.fromOffset(18, 18)
+    profile.BackgroundColor3 = Color3.fromRGB(13, 16, 24)
+    profile.BackgroundTransparency = 0.08
+    profile.BorderSizePixel = 0
+    profile.Parent = gui
+    rounded(profile, 16)
 
-    local state = Instance.new("TextLabel")
-    state.BackgroundTransparency = 1
-    state.Size = UDim2.new(1, -28, 0, 18)
-    state.Position = UDim2.fromOffset(14, 32)
-    state.Font = Enum.Font.GothamMedium
-    state.Text = "CONNECTING HUD"
-    state.TextColor3 = Color3.fromRGB(151, 162, 181)
-    state.TextSize = 8
-    state.TextXAlignment = Enum.TextXAlignment.Left
-    state.Parent = top
+    local avatar = Instance.new("ImageLabel")
+    avatar.Size = UDim2.fromOffset(42, 42)
+    avatar.Position = UDim2.fromOffset(6, 6)
+    avatar.BackgroundTransparency = 1
+    avatar.Parent = profile
+    rounded(avatar, 99)
 
-    local bottom = Instance.new("Frame")
-    bottom.Size = UDim2.fromOffset(286, 54)
-    bottom.Position = UDim2.new(0, 18, 1, -18)
-    bottom.AnchorPoint = Vector2.new(0, 1)
-    bottom.BackgroundColor3 = Color3.fromRGB(13, 16, 24)
-    bottom.BackgroundTransparency = 0.06
-    bottom.BorderSizePixel = 0
-    bottom.Parent = gui
-    local bottomCorner = Instance.new("UICorner")
-    bottomCorner.CornerRadius = UDim.new(0, 16)
-    bottomCorner.Parent = bottom
+    pcall(function()
+        avatar.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+    end)
 
-    local status = Instance.new("TextLabel")
-    status.BackgroundTransparency = 1
-    status.Size = UDim2.new(1, -24, 1, 0)
-    status.Position = UDim2.fromOffset(12, 0)
-    status.Font = Enum.Font.GothamBold
-    status.Text = "WAVE 0   •   0 TARGETS   •   HP 100"
-    status.TextColor3 = Color3.fromRGB(245, 247, 252)
-    status.TextSize = 10
-    status.TextXAlignment = Enum.TextXAlignment.Left
-    status.Parent = bottom
+    local name = makeText(profile, player.DisplayName, 12)
+    name.Size = UDim2.new(1, -58, 0, 20)
+    name.Position = UDim2.fromOffset(56, 5)
+
+    local stats = makeText(profile, "DMG 0   DEF 0   SPD 0", 7, false)
+    stats.TextColor3 = Color3.fromRGB(151, 162, 181)
+    stats.Size = UDim2.new(1, -58, 0, 16)
+    stats.Position = UDim2.fromOffset(56, 27)
+
+    local wave = makeText(gui, "WAVE 00", 18)
+    wave.AnchorPoint = Vector2.new(0.5, 0)
+    wave.Position = UDim2.fromScale(0.5, 0)
+    wave.Size = UDim2.fromOffset(180, 36)
+    wave.TextXAlignment = Enum.TextXAlignment.Center
+
+    local enemies = makeText(gui, "0 HOSTILES", 8, false)
+    enemies.AnchorPoint = Vector2.new(0.5, 0)
+    enemies.Position = UDim2.fromScale(0.5, 0)
+    enemies.Size = UDim2.fromOffset(180, 18)
+    enemies.Position += UDim2.fromOffset(0, 34)
+    enemies.TextColor3 = Color3.fromRGB(151, 162, 181)
+    enemies.TextXAlignment = Enum.TextXAlignment.Center
+
+    local creditsPanel = Instance.new("Frame")
+    creditsPanel.Size = UDim2.fromOffset(152, 44)
+    creditsPanel.Position = UDim2.new(1, -18, 0, 18)
+    creditsPanel.AnchorPoint = Vector2.new(1, 0)
+    creditsPanel.BackgroundColor3 = Color3.fromRGB(13, 16, 24)
+    creditsPanel.BackgroundTransparency = 0.08
+    creditsPanel.BorderSizePixel = 0
+    creditsPanel.Parent = gui
+    rounded(creditsPanel, 14)
+
+    local credits = makeText(creditsPanel, "◈ 0", 13)
+    credits.Size = UDim2.new(1, -14, 1, 0)
+    credits.Position = UDim2.fromOffset(7, 0)
+
+    local vitals = Instance.new("Frame")
+    vitals.Size = UDim2.fromOffset(286, 54)
+    vitals.Position = UDim2.new(0, 18, 1, -18)
+    vitals.AnchorPoint = Vector2.new(0, 1)
+    vitals.BackgroundTransparency = 1
+    vitals.Parent = gui
+
+    local hpBack = Instance.new("Frame")
+    hpBack.Size = UDim2.fromOffset(236, 8)
+    hpBack.Position = UDim2.fromOffset(48, 27)
+    hpBack.BackgroundColor3 = Color3.fromRGB(31, 38, 54)
+    hpBack.BorderSizePixel = 0
+    hpBack.Parent = vitals
+    rounded(hpBack, 4)
+
+    local hpFill = Instance.new("Frame")
+    hpFill.Size = UDim2.fromScale(1, 1)
+    hpFill.BackgroundColor3 = Color3.fromRGB(106, 235, 163)
+    hpFill.BorderSizePixel = 0
+    hpFill.Parent = hpBack
+    rounded(hpFill, 4)
+
+    local hpText = makeText(vitals, "HP 100 / 100", 8, false)
+    hpText.Size = UDim2.fromOffset(236, 18)
+    hpText.Position = UDim2.fromOffset(48, 6)
+
+    local attack = Instance.new("TextButton")
+    attack.Size = UDim2.fromOffset(84, 84)
+    attack.Position = UDim2.new(0.5, -90, 1, -18)
+    attack.AnchorPoint = Vector2.new(0.5, 1)
+    attack.BackgroundColor3 = Color3.fromRGB(22, 27, 39)
+    attack.Text = "ATTACK"
+    attack.TextColor3 = Color3.fromRGB(245, 247, 252)
+    attack.Font = Enum.Font.GothamBold
+    attack.TextSize = 9
+    attack.AutoButtonColor = true
+    attack.Parent = gui
+    rounded(attack, 42)
+
+    local dash = Instance.new("TextButton")
+    dash.Size = UDim2.fromOffset(72, 72)
+    dash.Position = UDim2.new(0.5, 48, 1, -24)
+    dash.AnchorPoint = Vector2.new(0.5, 1)
+    dash.BackgroundColor3 = Color3.fromRGB(22, 27, 39)
+    dash.Text = "DASH"
+    dash.TextColor3 = Color3.fromRGB(245, 247, 252)
+    dash.Font = Enum.Font.GothamBold
+    dash.TextSize = 8
+    dash.AutoButtonColor = true
+    dash.Parent = gui
+    rounded(dash, 36)
 
     fallback = gui
 
     local function refresh()
         local character = player.Character
         local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        local hp = humanoid and math.floor(humanoid.Health + 0.5) or 0
-        local wave = workspace:GetAttribute("CollisionWave") or 0
-        local enemies = workspace:GetAttribute("CollisionEnemies") or 0
-        status.Text = ("WAVE %d   •   %d TARGETS   •   HP %d"):format(wave, enemies, hp)
+        local hp = humanoid and humanoid.Health or 0
+        local maxHp = humanoid and humanoid.MaxHealth or 100
+        local waveValue = tonumber(workspace:GetAttribute("CollisionWave")) or 0
+        local enemyValue = tonumber(workspace:GetAttribute("CollisionEnemies")) or 0
+
+        wave.Text = ("WAVE %02d"):format(waveValue)
+        enemies.Text = ("%d HOSTILES"):format(enemyValue)
+        credits.Text = "◈ " .. tostring(player:GetAttribute("Credits") or 0)
+        hpText.Text = ("HP %d / %d"):format(math.floor(hp + 0.5), math.floor(maxHp + 0.5))
+        hpFill.Size = UDim2.fromScale(maxHp > 0 and math.clamp(hp / maxHp, 0, 1) or 0, 1)
+        stats.Text = ("DMG %d   DEF %d   SPD %d"):format(
+            player:GetAttribute("DamageLevel") or 0,
+            player:GetAttribute("DefenseLevel") or 0,
+            player:GetAttribute("SpeedLevel") or 0
+        )
     end
 
-    workspace:GetAttributeChangedSignal("CollisionWave"):Connect(refresh)
-    workspace:GetAttributeChangedSignal("CollisionEnemies"):Connect(refresh)
-    player.CharacterAdded:Connect(function(character)
-        local humanoid = character:WaitForChild("Humanoid", 8)
+    local function hookCharacter(character: Model)
+        local humanoid = character:FindFirstChildOfClass("Humanoid") or character:WaitForChild("Humanoid", 8)
         if humanoid then
             humanoid.HealthChanged:Connect(refresh)
+            humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(refresh)
         end
         refresh()
-    end)
-    if player.Character then
-        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.HealthChanged:Connect(refresh)
-        end
     end
+
+    player.CharacterAdded:Connect(hookCharacter)
+    workspace:GetAttributeChangedSignal("CollisionWave"):Connect(refresh)
+    workspace:GetAttributeChangedSignal("CollisionEnemies"):Connect(refresh)
+    player:GetAttributeChangedSignal("Credits"):Connect(refresh)
+    player:GetAttributeChangedSignal("DamageLevel"):Connect(refresh)
+    player:GetAttributeChangedSignal("DefenseLevel"):Connect(refresh)
+    player:GetAttributeChangedSignal("SpeedLevel"):Connect(refresh)
+
+    if player.Character then
+        task.spawn(hookCharacter, player.Character)
+    end
+
     refresh()
 end
 
@@ -114,17 +212,19 @@ local function tryBoot()
     if booting then
         return
     end
-    booting = true
-    makeFallback()
 
-    for attempt = 1, 24 do
+    booting = true
+
+    for attempt = 1, 18 do
         local ok, controller = pcall(function()
-            return require(root:WaitForChild("UIController", 8))
+            return require(root:WaitForChild("UIController", 12))
         end)
+
         if ok and controller then
             local initialized = pcall(function()
                 controller:Init()
             end)
+
             if initialized and playerGui:FindFirstChild("CollisionBattlestarHUD") then
                 player:SetAttribute("CollisionHUDReady", true)
                 destroyFallback()
@@ -132,12 +232,21 @@ local function tryBoot()
                 return
             end
         end
-        task.wait(math.min(1.25, 0.2 + attempt * 0.04))
+
+        task.wait(math.min(1.5, 0.25 + attempt * 0.05))
     end
+
+    if not fallback then
+        makeFallback()
+    end
+
     booting = false
 end
 
-task.spawn(tryBoot)
+task.spawn(function()
+    task.wait(2)
+    tryBoot()
+end)
 
 task.spawn(function()
     local input = root:FindFirstChild("InputController")
@@ -149,17 +258,18 @@ task.spawn(function()
 end)
 
 player.CharacterAdded:Connect(function()
-    task.delay(0.8, tryBoot)
+    task.delay(1, tryBoot)
 end)
 
 task.spawn(function()
     while player.Parent do
         task.wait(4)
         local gui = playerGui:FindFirstChild("CollisionBattlestarHUD")
-        if not gui or not gui:IsA("ScreenGui") then
-            task.spawn(tryBoot)
-        else
+        if gui and gui:IsA("ScreenGui") then
             gui.Enabled = true
+            destroyFallback()
+        elseif not booting then
+            task.spawn(tryBoot)
         end
     end
 end)
