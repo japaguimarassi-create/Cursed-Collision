@@ -15,6 +15,7 @@ local Economy = require(HUD:WaitForChild("Economy"))
 local Navigation = require(HUD:WaitForChild("Navigation"))
 local Feedback = require(HUD:WaitForChild("Feedback"))
 local Admin = require(HUD:WaitForChild("Admin"))
+local Vitals = require(HUD:WaitForChild("Vitals"))
 
 local Controller = {}
 local initialized = false
@@ -59,6 +60,7 @@ function Controller:Init()
     local economy = Economy.Mount(root, Config, player)
     Navigation.Mount(root, Config, player, travel)
     local feedback = Feedback.Mount(root, Config)
+    Vitals.Mount(root, Config, player)
     Admin.Mount(root, Config, player, adminRemote)
 
     state.OnClientEvent:Connect(function(kind: string, a, b)
@@ -94,6 +96,15 @@ function Controller:Init()
     player:GetAttributeChangedSignal("Zone"):Connect(function()
         status.Zone.Text = (player:GetAttribute("Zone") or "PvE") == "PvP" and "PVP BATTLEGROUNDS" or "PVE"
     end)
+
+    local function syncPersistentState()
+        status.Wave.Text = ("WAVE %d"):format(workspace:GetAttribute("CollisionWave") or 0)
+        status.Enemies.Text = ("%d ENEMIES"):format(workspace:GetAttribute("CollisionEnemies") or 0)
+    end
+
+    workspace:GetAttributeChangedSignal("CollisionWave"):Connect(syncPersistentState)
+    workspace:GetAttributeChangedSignal("CollisionEnemies"):Connect(syncPersistentState)
+    syncPersistentState()
 
     player:SetAttribute("CollisionHUDReady", true)
     initialized = true
