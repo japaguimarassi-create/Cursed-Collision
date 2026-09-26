@@ -91,8 +91,7 @@ for index,id in ipairs(Routes.Order)do
 	b.Font=Enum.Font.GothamBold
 	b.TextSize=11
 	b.TextWrapped=true
-	b.Text=node.Name.."
-"..node.Subtitle
+	b.Text=node.Name.."\n"..node.Subtitle
 	b.AutoButtonColor=false
 	b.Selectable=true
 	b.Parent=scroll
