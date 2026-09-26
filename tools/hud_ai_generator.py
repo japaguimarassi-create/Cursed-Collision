@@ -15,7 +15,7 @@ from typing import Any
 from google import genai
 
 DEFAULT_IMAGE_MODEL = "gemini-3.1-flash-image"
-DEFAULT_CRITIC_MODEL = "gemini-3.8-flash"
+DEFAULT_CRITIC_MODEL = "gemini-3.7-flash"
 DEFAULT_COUNT = 100
 DEFAULT_TOP = 10
 DEFAULT_WORKERS = 3
@@ -200,6 +200,7 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     parser.add_argument("--image-model", default=DEFAULT_IMAGE_MODEL)
     parser.add_argument("--critic-model", default=DEFAULT_CRITIC_MODEL)
+    parser.add_argument("--finalists-only", action="store_true")
     args = parser.parse_args()
 
     key = os.getenv("GEMINI_API_KEY")
@@ -227,18 +228,23 @@ def main() -> int:
 
     client = genai.Client(api_key=key)
 
+    if args.finalists_only:
+        candidates = sorted(candidates_dir.glob("candidate_*.png"))
+        if len(candidates) < args.top:
+            raise SystemExit("Not enough existing candidates for --finalists-only")
     tasks = {}
-    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+    if not args.finalists_only:
+        with ThreadPoolExecutor(max_workers=args.workers) as pool:
         for candidate_id in range(1, args.count + 1):
             path = candidates_dir / f"candidate_{candidate_id:03d}.png"
             tasks[pool.submit(generate_one, client, args.image_model, references, path, candidate_id)] = candidate_id
-        for future in as_completed(tasks):
-            candidate_id = tasks[future]
-            try:
-                future.result()
-                print(f"generated {candidate_id:03d}/{args.count}")
-            except Exception as exc:
-                print(f"generation_failed {candidate_id:03d}: {exc}")
+            for future in as_completed(tasks):
+                candidate_id = tasks[future]
+                try:
+                    future.result()
+                    print(f"generated {candidate_id:03d}/{args.count}")
+                except Exception as exc:
+                    print(f"generation_failed {candidate_id:03d}: {exc}")
 
     candidates = sorted(candidates_dir.glob("candidate_*.png"))
     if len(candidates) < args.top:
