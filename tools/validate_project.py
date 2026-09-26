@@ -104,7 +104,7 @@ print("PASS: functional combat, map travel, economy, shop and HUD contracts")
 print("PASS: no legacy runtime files remain")
 
 qaServer=read("ServerScriptService/QAService.server.lua")
-for token in ("QAContract","ReportEvent","ControlEvent","CBS_QA_BOT","GITHUB_QA_TOKEN","CollisionQALatest"):
+for token in ("QAContract","ReportEvent","ControlEvent","DummyName","GITHUB_QA_TOKEN","CollisionQALatest"):
     if token not in qaServer:
         fail("QA server contract missing: "+token)
 
