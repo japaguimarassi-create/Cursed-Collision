@@ -1,7 +1,7 @@
 --!strict
 local R=game:GetService("ReplicatedStorage")
 local U=require(R.Shared.Util)
-local Catalog=require(R.Shared.MapAssetCatalog)
+local Routes=require(R.Shared.MapRouteDefinitions)
 
 local S={}
 local function prop(parent:Instance,name:string,pos:Vector3,size:Vector3,color:Color3,material:Enum.Material):Part
@@ -11,9 +11,13 @@ local function prop(parent:Instance,name:string,pos:Vector3,size:Vector3,color:C
 	return p
 end
 
-local function dumpster(parent:Instance,pos:Vector3)
-	prop(parent,"DumpsterBody",pos+Vector3.new(0,2,0),Vector3.new(6,4,3),Color3.fromRGB(55,61,70),Enum.Material.Metal)
-	prop(parent,"DumpsterLid",pos+Vector3.new(0,4.2,0),Vector3.new(6.2,.35,3.2),Color3.fromRGB(40,45,52),Enum.Material.Metal)
+local function car(parent:Instance,pos:Vector3,rotation:number)
+	local cf=CFrame.new(pos)*CFrame.Angles(0,math.rad(rotation),0)
+	local body=prop(parent,"ParkedCarBody",pos+Vector3.new(0,1.2,0),Vector3.new(8,1.6,14),Color3.fromRGB(48,54,66),Enum.Material.Metal)
+	body.CFrame=cf*CFrame.new(0,1.2,0)
+	local cabin=prop(parent,"ParkedCarCabin",pos+Vector3.new(0,2.9,.7),Vector3.new(5.5,1.8,7),Color3.fromRGB(73,112,139),Enum.Material.Glass)
+	cabin.CFrame=cf*CFrame.new(0,2.9,.7)
+	cabin.Transparency=.18
 end
 
 local function planter(parent:Instance,pos:Vector3)
@@ -22,30 +26,22 @@ local function planter(parent:Instance,pos:Vector3)
 	leaf.Shape=Enum.PartType.Ball
 end
 
-local function car(parent:Instance,pos:Vector3,rotation:number)
-	local base=CFrame.new(pos)*CFrame.Angles(0,math.rad(rotation),0)
-	local body=U.Part(parent,"ParkedCarBody",Vector3.new(8,1.6,14),base*CFrame.new(0,1.3,0),Enum.Material.Metal,Color3.fromRGB(48,54,66),true)
-	body.CanTouch=false;body.CanQuery=false
-	local cabin=U.Part(parent,"ParkedCarCabin",Vector3.new(5.5,1.8,7),base*CFrame.new(0,2.9,.7),Enum.Material.Glass,Color3.fromRGB(73,112,139),true)
-	cabin.CanTouch=false;cabin.CanQuery=false;cabin.Transparency=.18
-end
-
-local function buildChunk(parent:Instance,index:number)
-	local x=index%2==0 and 1 or -1
-	local z=index<=2 and 1 or -1
-	local base=Vector3.new(x*(145+index*18),0,z*(145+index*14))
-	local catalog=Catalog.GetByUse("street props")
-	local reference=catalog[1]
-	local folder=Instance.new("Folder")
-	folder.Name="DetailChunk_"..index
-	folder:SetAttribute("ReferenceAssetId",reference and reference.Id or 0)
-	folder.Parent=parent
-	for i=-1,1 do
-		planter(folder,base+Vector3.new(i*24,0,18))
-		if i~=0 then dumpster(folder,base+Vector3.new(i*34,0,-18))end
-	end
-	car(folder,base+Vector3.new(-24,0,-42),z>0 and 0 or 180)
-	car(folder,base+Vector3.new(24,0,-42),z>0 and 180 or 0)
+local function sign(parent:Instance,pos:Vector3,text:string,color:Color3)
+	local part=prop(parent,"RouteSign",pos,Vector3.new(14,4,.5),color,Enum.Material.Neon)
+	local gui=Instance.new("BillboardGui")
+	gui.Size=UDim2.fromOffset(180,42)
+	gui.StudsOffset=Vector3.new(0,2.8,0)
+	gui.AlwaysOnTop=true
+	gui.Parent=part
+	local label=Instance.new("TextLabel")
+	label.Size=UDim2.fromScale(1,1)
+	label.BackgroundTransparency=1
+	label.Font=Enum.Font.GothamBold
+	label.TextScaled=true
+	label.TextColor3=Color3.fromRGB(245,247,252)
+	label.TextStrokeTransparency=.45
+	label.Text=text
+	label.Parent=gui
 end
 
 function S.Init()
@@ -56,13 +52,13 @@ function S.Init()
 	local details=Instance.new("Folder")
 	details.Name="ProceduralDetails"
 	details.Parent=environment
-	task.spawn(function()
-		for index=1,4 do
-			if not details.Parent then return end
-			buildChunk(details,index)
-			task.wait()
-		end
-	end)
+	for index,id in ipairs(Routes.Order)do
+		local node=Routes.Nodes[id]
+		local p=node.Position
+		for _,offset in ipairs({Vector3.new(-70,0,48),Vector3.new(70,0,48),Vector3.new(-70,0,-48)})do planter(details,p+offset)end
+		car(details,p+Vector3.new(-34,0,30),(index%2==0)and 90 or -90)
+		sign(details,p+Vector3.new(0,7,-42),node.Name,node.Color)
+	end
 end
 
 return S
