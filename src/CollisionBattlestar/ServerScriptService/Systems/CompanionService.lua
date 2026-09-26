@@ -6,6 +6,7 @@ local AnimationService=require(script.Parent:WaitForChild("NPCAnimation"))
 local Service={}
 local Config
 local DataService
+local AI
 type FriendInfo={UserId:number,Username:string,DisplayName:string}
 type ActiveCompanion={
     Model:Model,
@@ -301,7 +302,7 @@ local function think(player:Player,state:ActiveCompanion)
             humanoid:MoveTo(modelRoot.Position)
             state.Animation:Play("Attack",0.05,1)
 
-            task.delay(0.12,function()
+            task.delay(AI.AttackWindup,function()
                 if not model.Parent or not enemy.Parent or not enemy.PrimaryPart then return end
                 local liveHumanoid=enemy:FindFirstChildOfClass("Humanoid")
                 if liveHumanoid and liveHumanoid.Health>0 and (enemy.PrimaryPart.Position-modelRoot.Position).Magnitude<=definition.AttackRange+1 and hasLineOfSight(state,enemy) then
@@ -313,16 +314,16 @@ local function think(player:Player,state:ActiveCompanion)
             return
         end
 
-        if distance<=definition.AttackRange+10 and hasLineOfSight(state,enemy) then
+        if distance<=definition.AttackRange+AI.StrafeDistance*4 and hasLineOfSight(state,enemy) then
             local dir=Vector3.new(enemy.PrimaryPart.Position.X-modelRoot.Position.X,0,enemy.PrimaryPart.Position.Z-modelRoot.Position.Z)
             local flat=dir.Magnitude>0 and dir.Unit or Vector3.new(0,0,1)
-            local side=Vector3.new(-flat.Z,0,flat.X)*(state.Slot==1 and 2.5 or -2.5)
+            local side=Vector3.new(-flat.Z,0,flat.X)*(state.Slot==1 and AI.StrafeDistance or -AI.StrafeDistance)
             humanoid:MoveTo(enemy.PrimaryPart.Position-flat*(definition.AttackRange*0.8)+side)
             return
         end
 
         if os.clock()>=state.NextThink or not state.Waypoints then
-            state.NextThink=os.clock()+0.8
+            state.NextThink=os.clock()+AI.RepathInterval
             repath(state,enemy)
         end
 
@@ -341,9 +342,9 @@ local function think(player:Player,state:ActiveCompanion)
         end
     end
 
-    local formation=playerRoot.CFrame*CFrame.new(state.Slot==1 and -5 or 5,0,5)
+    local formation=playerRoot.CFrame*CFrame.new(state.Slot==1 and -AI.FormationDistance or AI.FormationDistance,0,AI.FormationDistance)
     local desired=formation.Position
-    if (desired-modelRoot.Position).Magnitude>7 then
+    if (desired-modelRoot.Position).Magnitude>AI.FollowDistance then
         humanoid:MoveTo(desired)
     else
         humanoid:MoveTo(modelRoot.Position)
@@ -375,6 +376,7 @@ end
 function Service:Init(config,dataService)
     Config=config
     DataService=dataService
+    AI=config.AI.Companion
 
     Players.PlayerAdded:Connect(function(player)
         player.CharacterAdded:Connect(function()
@@ -408,7 +410,7 @@ function Service:Init(config,dataService)
                     for _,state in ipairs(states) do think(player,state) end
                 end
             end
-            task.wait(0.14)
+            task.wait(AI.ThinkInterval)
         end
     end)
 end
