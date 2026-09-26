@@ -49,15 +49,15 @@ jobs:
               if found:
                   ids[item['key']] = int(found['gamePassId'])
                   continue
-              body = json.dumps({
-                  'name': item['name'],
-                  'description': item['description'],
-                  'isForSale': True,
-                  'price': int(item['price']),
-                  'isRegionalPricingEnabled': True,
-              })
               create_url = 'https://apis.roblox.com/game-passes/v1/universes/' + universe + '/game-passes'
-              created = json.loads(subprocess.check_output(['curl', '-fsS', '--request', 'POST', *headers, '--data', body, create_url], text=True))
+              form = [
+                  '-F', 'name=' + item['name'],
+                  '-F', 'description=' + item['description'],
+                  '-F', 'isForSale=true',
+                  '-F', 'price=' + str(int(item['price'])),
+                  '-F', 'isRegionalPricingEnabled=true',
+              ]
+              created = json.loads(subprocess.check_output(['curl', '-fsS', '--request', 'POST', '-H', 'x-api-key: ' + key, *form, create_url], text=True))
               game_pass_id = created.get('gamePassId')
               if not isinstance(game_pass_id, int) or game_pass_id <= 0:
                   raise SystemExit('Invalid game pass ID for ' + item['name'])
