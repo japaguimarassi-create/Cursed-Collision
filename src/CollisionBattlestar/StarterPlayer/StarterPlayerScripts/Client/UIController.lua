@@ -179,10 +179,42 @@ end
 
 function M:Bind(guiArg:ScreenGui,remotesArg)
  gui=guiArg;remotes=remotesArg
+ local mobilePanel=find(gui,"MobileActions")
+ if mobilePanel and mobilePanel:IsA("GuiObject") then
+  mobilePanel.Visible=UserInputService.TouchEnabled
+ end
  combat=remotes:WaitForChild("CombatRequest") :: RemoteEvent
  utility=remotes:WaitForChild("UtilityRequest") :: RemoteEvent
  travel=remotes:WaitForChild("MapTravelRequest") :: RemoteEvent
  feedback=remotes:WaitForChild("Feedback") :: RemoteEvent
+
+ local hotbar=find(gui,"Hotbar")
+ local hlight=hotbar and find(hotbar,"Light")
+ local hdash=hotbar and find(hotbar,"Dash")
+ local hspecial=hotbar and find(hotbar,"Special")
+ if hlight and hlight:IsA("GuiButton") then bind(hlight.Activated,function() combat:FireServer("Light") end) end
+ if hdash and hdash:IsA("GuiButton") then bind(hdash.Activated,function() combat:FireServer("Dash") end) end
+ if hspecial and hspecial:IsA("GuiButton") then bind(hspecial.Activated,function() combat:FireServer("Special") end) end
+
+ local mobile=find(gui,"MobileActions")
+ local function bindTap(name:string,action:string)
+  local b=mobile and find(mobile,name)
+  if b and b:IsA("GuiButton") then bind(b.Activated,function() combat:FireServer(action) end) end
+ end
+ bindTap("MobileM1","Light")
+ bindTap("MobileDash","Dash")
+ bindTap("MobileSpecial","Special")
+ bindTap("MobileAwaken","Awaken")
+ bindTap("MobileDomain","Domain")
+ local guard=mobile and find(mobile,"MobileGuard")
+ if guard and guard:IsA("GuiObject") then
+  bind(guard.InputBegan,function(input)
+   if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then combat:FireServer("BlockStart") end
+  end)
+  bind(guard.InputEnded,function(input)
+   if input.UserInputType==Enum.UserInputType.Touch or input.UserInputType==Enum.UserInputType.MouseButton1 then combat:FireServer("BlockEnd") end
+  end)
+ end
 
  local bar=find(gui,"Utility")
  for buttonName,panelName in pairs({ShopButton="ShopPanel",MapButton="MapPanel",FighterButton="FighterPanel"}) do
