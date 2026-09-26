@@ -604,7 +604,12 @@ end)
 for _,player in ipairs(Players:GetPlayers()) do
   load(player)
   player.CharacterAdded:Connect(function(character) configureCharacter(player,character) end)
-  task.spawn(function() spawnPlayer(player) end)
+  remotes.GameState:FireClient(player,"ProfileReady",Config.Version)
+  task.spawn(function()
+    spawnPlayer(player)
+    task.wait(.1)
+    if player.Parent then remotes.GameState:FireClient(player,"Ready",Config.Version) end
+  end)
 end
 
 Players.PlayerRemoving:Connect(function(player)
