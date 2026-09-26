@@ -22,6 +22,8 @@ for base in (ROOT/".github/workflows", ROOT/"tools"):
             continue
         text=path.read_text(encoding="utf-8",errors="ignore").lower()
         blocked=("gemini_api_key","gemini-","openai_api_key","HUD_AI_PIPELINE","qa-ai-review")
+        if path == ROOT/"tools"/"validate_no_ai.py":
+            continue
         if any(token in text for token in blocked):
             print("FAIL: AI integration marker remains:", path.relative_to(ROOT))
             sys.exit(1)
