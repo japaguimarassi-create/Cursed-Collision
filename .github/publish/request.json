@@ -1,8 +1,8 @@
 {
-  "publish": true,
+  "publish": false,
   "universe_id": "5290480963",
   "place_id": "15338267657",
   "request_id": "collision-battlestar-mobile-performance-hud-2026-09-26",
-  "status": "armed",
+  "status": "consumed",
   "armed_at": "2026-09-26T15:52:35.724Z"
 }
