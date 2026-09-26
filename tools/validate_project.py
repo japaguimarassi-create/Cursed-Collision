@@ -90,17 +90,17 @@ for token in ("GetAsync","UpdateAsync","BindToClose","180","CollisionBattlestar_
         fail("data contract missing: "+token)
 
 hud=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
-for token in ("CollisionHUD","LoadingScreen","PlayerPanel","Health","Energy","Awakening","Hotbar","MobileActions","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","Notice","ClashPanel","CoreUISafeInsets"):
+for token in ("CollisionHUD","LoadingScreen","PlayerCard","Objective","TopRight","Signal","MissionChip","CombatFeed","ActionBar","PowerActions","MobileActions","QuickDock","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","ScoreboardPanel","SettingsPanel","Notice","ClashPanel","CoreUISafeInsets"):
     if token not in hud:
         fail("HUD contract missing: "+token)
 
 ui=read("StarterPlayer/StarterPlayerScripts/Client/UIController.lua")
-for token in ("ShopState","BuyItem","EquipItem","SetCharacter","RedeemCode","ClaimMission","MobileActions","ClashPanel","Clash"):
+for token in ("ShopState","BuyItem","EquipItem","SetCharacter","RedeemCode","ClaimMission","MobileActions","ScoreboardPanel","SettingsPanel","ClashPanel","Clash"):
     if token not in ui:
         fail("UI contract missing: "+token)
 
 client=read("StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua")
-for token in ("HUD.Build","PreloadAsync","startBoot","checkCombat","checkAssets","bootDone","Clash1","Clash4","ButtonR2","ButtonL2","ButtonY"):
+for token in ("HUD.Build","PreloadAsync","startBoot","checkCombat","checkAssets","bootDone","Clash1","Clash4","ButtonR2","ButtonL2","ButtonY","PlayerCard","ActionBar","QuickDock"):
     if token not in client:
         fail("client contract missing: "+token)
 
@@ -113,8 +113,8 @@ if count!=24:
     fail("fighter roster count mismatch: "+str(count))
 
 store=read("ReplicatedStorage/Shared/StoreCatalog.lua")
-if "for i=1,150 do" not in store:
-    fail("150 emote generator missing")
+if 'Kind="Emote"' in store or "Emote_" in store:
+    fail("emotes remain in active store catalog")
 
 qa=read("ReplicatedStorage/Shared/QAContract.lua")
 for token in ("Clash1","Clash2","Clash3","Clash4","ClashPanel"):
@@ -127,7 +127,7 @@ for token in ("GetPartBoundsInBox","GetPartBoundsInRadius","OverlapParams","Huma
         fail("hitbox contract missing: "+token)
 
 build=read("ReplicatedStorage/Shared/BuildInfo.lua")
-for token in ('B.Version="4.0.0"','B.Roster=24','B.Emotes=150','BattleLine_Urban_V5'):
+for token in ('B.Version="4.0.0"','B.Roster=24','B.Emotes=0','B.HUD="modern-roblox-hud-v5"','BattleLine_Urban_V5'):
     if token not in build:
         fail("build contract missing: "+token)
 

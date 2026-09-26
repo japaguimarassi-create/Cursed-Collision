@@ -79,7 +79,7 @@ local function checkQA():boolean
 end
 
 local function checkHUD():boolean
- local required={"CollisionHUD","LoadingScreen","PlayerPanel","Health","Energy","Awakening","Hotbar","MobileActions","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","Notice"}
+ local required={"CollisionHUD","LoadingScreen","PlayerCard","Objective","TopRight","Signal","MissionChip","CombatFeed","ActionBar","PowerActions","MobileActions","QuickDock","MapPanel","ShopPanel","FighterPanel","QuestPanel","ProfilePanel","ScoreboardPanel","SettingsPanel","Notice","ClashPanel"}
  for _,name in ipairs(required) do
   if not node(name) then return false end
  end
