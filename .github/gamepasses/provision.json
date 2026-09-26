@@ -1,5 +1,5 @@
 {
-  "create": false,
+  "create": true,
   "universe_id": "5290480963",
-  "status": "blocked-missing-game-pass-read-write-scope"
+  "status": "armed"
 }
