@@ -1,0 +1,38 @@
+name: Collision Battlestar Static Validation
+
+on:
+  pull_request:
+    paths:
+      - "src/CollisionBattlestar/**"
+      - "default.project.json"
+      - "tools/validate_project.py"
+      - ".github/workflows/collision-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate project contract
+        run: python3 tools/validate_project.py
+
+      - name: Install Luau compiler
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 -o /tmp/luau.zip https://github.com/luau-lang/luau/releases/download/0.740/luau-ubuntu.zip
+          unzip -q /tmp/luau.zip -d /tmp/luau
+          chmod +x /tmp/luau/luau-compile
+
+      - name: Parse every active Luau file
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            /tmp/luau/luau-compile --only-parse "$file"
+          done < <(find src/CollisionBattlestar -type f -name "*.lua" -print0)
+
+      - name: Check patch whitespace
+        run: git diff --check

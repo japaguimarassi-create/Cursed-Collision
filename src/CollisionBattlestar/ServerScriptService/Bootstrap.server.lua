@@ -590,10 +590,13 @@ buildMap()
 Players.PlayerAdded:Connect(function(player)
   load(player)
   player.CharacterAdded:Connect(function(character) configureCharacter(player,character) end)
+  remotes.GameState:FireClient(player,"ProfileReady",Config.Version)
   task.spawn(function()
     task.wait(.15)
     if player.Parent then
       spawnPlayer(player)
+      task.wait(.1)
+      remotes.GameState:FireClient(player,"Ready",Config.Version)
     end
   end)
 end)
@@ -601,7 +604,12 @@ end)
 for _,player in ipairs(Players:GetPlayers()) do
   load(player)
   player.CharacterAdded:Connect(function(character) configureCharacter(player,character) end)
-  task.spawn(function() spawnPlayer(player) end)
+  remotes.GameState:FireClient(player,"ProfileReady",Config.Version)
+  task.spawn(function()
+    spawnPlayer(player)
+    task.wait(.1)
+    if player.Parent then remotes.GameState:FireClient(player,"Ready",Config.Version) end
+  end)
 end
 
 Players.PlayerRemoving:Connect(function(player)
@@ -669,4 +677,4 @@ utility.OnServerEvent:Connect(function(player,action,value)
   end
 end)
 
-remotes.GameState:FireAllClients("Ready",Config.Version)
+workspace:SetAttribute("CollisionBattlestarServerReady",true)

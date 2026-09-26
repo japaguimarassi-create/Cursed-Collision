@@ -209,6 +209,40 @@ function M.Build():ScreenGui
 	text(profilePanel,"Stats","LV 1\n0 KOs\n0 Credits",UDim2.fromOffset(480,160),UDim2.fromOffset(20,74),Enum.Font.GothamBold,18,C.UI.Text,Enum.TextXAlignment.Left)
 	local pclose=button(profilePanel,"Close","×",UDim2.fromOffset(42,38),UDim2.new(1,-58,0,12))
 
+	local loading=frame(gui,"LoadingScreen",UDim2.fromScale(1,1),UDim2.fromScale(0,0),C.UI.Panel,.02,0)
+	loading.ZIndex=200
+	loading.Active=true
+	local backdrop=frame(loading,"Backdrop",UDim2.fromScale(1,1),UDim2.fromScale(0,0),C.UI.PanelSoft,.18,0)
+	backdrop.ZIndex=200
+	local title=text(loading,"Title","COLLISION BATTLESTAR",UDim2.fromScale(.86,.10),UDim2.fromScale(.07,.19),Enum.Font.GothamBlack,30,C.UI.Text,Enum.TextXAlignment.Center)
+	title.ZIndex=202
+	local subtitle=text(loading,"Subtitle","SYNCING BATTLE LINE",UDim2.fromScale(.86,.05),UDim2.fromScale(.07,.30),Enum.Font.GothamBold,11,C.UI.Muted,Enum.TextXAlignment.Center)
+	subtitle.ZIndex=202
+	local status=text(loading,"Status","STARTING INTERNAL AGENTS",UDim2.fromScale(.86,.055),UDim2.fromScale(.07,.39),Enum.Font.GothamBlack,13,C.UI.Accent,Enum.TextXAlignment.Center)
+	status.ZIndex=202
+	local detail=text(loading,"Detail","Preparing a safe combat session…",UDim2.fromScale(.86,.05),UDim2.fromScale(.07,.455),Enum.Font.Gotham,10,C.UI.Muted,Enum.TextXAlignment.Center)
+	detail.ZIndex=202
+	local track=frame(loading,"ProgressTrack",UDim2.fromScale(.62,.012),UDim2.fromScale(.19,.535),C.UI.PanelAlt,0,6)
+	track.ZIndex=202
+	local fill=frame(track,"Fill",UDim2.fromScale(.02,1),UDim2.fromScale(0,0),C.UI.Accent,0,6)
+	fill.ZIndex=203
+	local agents=frame(loading,"Agents",UDim2.fromScale(.70,.22),UDim2.fromScale(.15,.59),Color3.new(),1,0)
+	agents.ZIndex=202
+	for i,name in ipairs({"QA","HUD","COMBAT","ASSETS"}) do
+		local x=((i-1)%4)*.25
+		local card=frame(agents,"Agent_"..name,UDim2.fromScale(.235,.70),UDim2.fromScale(x,0),C.UI.PanelAlt,.06,9)
+		card.ZIndex=203
+		local dot=frame(card,"Dot",UDim2.fromOffset(8,8),UDim2.fromOffset(10,11),C.UI.Muted,0,4)
+		dot.ZIndex=204
+		local nameLabel=text(card,"Name",name,UDim2.new(1,-28,0,18),UDim2.fromOffset(24,6),Enum.Font.GothamBlack,9,C.UI.Text,Enum.TextXAlignment.Left)
+		nameLabel.ZIndex=204
+		local state=text(card,"State","WAIT",UDim2.new(1,-18,0,18),UDim2.fromOffset(9,31),Enum.Font.GothamBold,8,C.UI.Muted,Enum.TextXAlignment.Center)
+		state.ZIndex=204
+	end
+	local footer=text(loading,"Footer","4 internal startup agents • coordinated boot • safe-area aware",UDim2.fromScale(.88,.04),UDim2.fromScale(.06,.91),Enum.Font.Gotham,8,C.UI.Muted,Enum.TextXAlignment.Center)
+	footer.ZIndex=202
+
+	gui:SetAttribute("LoadingScreenReady",true)
 	gui:SetAttribute("HUDRuntimeReady",true)
 	return gui
 end
