@@ -1,30 +1,31 @@
 --!strict
-local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local Players=game:GetService("Players")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 local player=Players.LocalPlayer
-local remotes=ReplicatedStorage:WaitForChild("CollisionRemotes")
+local playerGui=player:WaitForChild("PlayerGui")
 local HUDRecovery=require(ReplicatedStorage.Shared.HUDRecovery)
 
 local function boot()
-    local ok,result=pcall(function()
-        return HUDRecovery.Build()
-    end)
-    if ok and result then
+    if HUDRecovery.IsReady() then return true end
+    local ok,result=pcall(HUDRecovery.Build)
+    if ok and result and result:IsA("ScreenGui") then
         player:SetAttribute("HUDBootstrapReady",true)
-        return
+        player:SetAttribute("HUDRuntimeError","")
+        return true
     end
     player:SetAttribute("HUDBootstrapReady",false)
+    player:SetAttribute("HUDRuntimeError",tostring(result or HUDRecovery.GetLastError()))
+    return false
 end
 
-if player.Character then
-    task.defer(boot)
-else
-    task.defer(boot)
-end
-
-remotes:WaitForChild("BootFeedback").OnClientEvent:Connect(function(kind:string)
-    if kind=="Ready" and not HUDRecovery.IsReady() then
-        boot()
+task.spawn(function()
+    for attempt=1,12 do
+        if boot() then return end
+        task.wait(math.min(.25*attempt,2))
     end
+end)
+
+player.CharacterAdded:Connect(function()
+    task.defer(boot)
 end)
