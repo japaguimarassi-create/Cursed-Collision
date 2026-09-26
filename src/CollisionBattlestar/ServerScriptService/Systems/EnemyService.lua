@@ -144,7 +144,9 @@ local function createEnemy(position:Vector3,tier:number,elite:boolean):Model?
                 local finalReward=rewardAmount
                 if elite and attacker:GetAttribute("Pass_EliteBonus")==true then finalReward*=2 end
                 if attacker:GetAttribute("Pass_VIP")==true then finalReward*=1.1 end
-                finalReward=math.floor(finalReward); DataService:AddCredits(attacker,finalReward); stateEvent:FireClient(attacker,"Reward",finalReward,elite)
+                finalReward=math.floor(finalReward)
+                local _,granted = DataService:AddCredits(attacker,finalReward)
+                stateEvent:FireClient(attacker,"Reward",granted,elite)
             end
         end
         task.delay(1.2,function() if model.Parent then model:Destroy() end end)
