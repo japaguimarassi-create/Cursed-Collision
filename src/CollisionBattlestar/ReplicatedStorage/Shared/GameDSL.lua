@@ -46,6 +46,8 @@ function DSL:compile()
     if type(self._data.Combat.M1) ~= "table" or type(self._data.Combat.Dash) ~= "table" then error("Collision Script: Combat requires M1 and Dash") end
     for _, key in ipairs({"Tier1","Tier2","Tier3","Elite"}) do if type(self._data.Enemies[key]) ~= "table" then error(("Collision Script: enemy preset %s is missing"):format(key)) end end
     if type(self._data.AI.Enemy) ~= "table" or type(self._data.AI.Companion) ~= "table" then error("Collision Script: AI requires Enemy and Companion") end
+    if type(self._data.Shop.Companions) ~= "table" or type(self._data.Shop.Skins) ~= "table" then error("Collision Script: Shop requires Companions and Skins") end
+    if type(self._data.Shop.DeveloperProducts) ~= "table" then error("Collision Script: Shop requires DeveloperProducts") end
     local output = copy(self._data)
     if type(self._data.BuildVersion) ~= "string" or type(self._data.UniverseId) ~= "number" or type(self._data.PlaceId) ~= "number" or type(self._data.GameMode) ~= "string" then
         error("Collision Script: identity is incomplete")
