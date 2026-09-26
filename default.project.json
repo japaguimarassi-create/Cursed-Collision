@@ -9,7 +9,6 @@
         "StreamingTargetRadius": 768,
         "StreamOutBehavior": "Opportunistic",
         "ModelStreamingBehavior": "Improved",
-        "PredictiveStreamingMode": "Enabled",
         "EnableSLIMAvatars": true
       }
     },
