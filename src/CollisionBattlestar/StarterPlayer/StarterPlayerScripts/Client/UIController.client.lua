@@ -146,6 +146,12 @@ function Controller:Init()
             Feedback.Show(feedback, Config, ("-%d HP"):format(tonumber(a) or 0), Config.UI.Warning, 0.55)
         elseif kind == "Attack" then
             Feedback.Show(feedback, Config, "STRIKE", Config.UI.Accent, 0.2)
+        elseif kind == "AdminMessage" then
+            local tone = tostring(b or "INFO")
+            local color = if tone == "BAD" then Config.UI.Danger elseif tone == "GOOD" then Config.UI.Good else Config.UI.Info
+            Feedback.Show(feedback, Config, tostring(a), color, 2)
+        elseif kind == "AdminAnnouncement" then
+            Feedback.Show(feedback, Config, "OWNER  •  " .. tostring(a), Config.UI.Warning, 4)
         end
     end)
 
