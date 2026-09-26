@@ -1,29 +1,26 @@
-name: Collision Battlestar AI QA Review
+name: Collision Battlestar Manual AI QA Review
 
 on:
-  repository_dispatch:
-    types: [collision-battlestar-qa]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   review:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Write runtime report
-        env:
-          PAYLOAD: ${{ toJson(github.event.client_payload.report) }}
-        run: |
-          set -euo pipefail
-          mkdir -p qa/results
-          printf '%s' "$PAYLOAD" > qa/results/latest.json
-      - name: AI review
+      - name: Review latest stored report
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           set -euo pipefail
+          mkdir -p qa/results
+          if [[ ! -f qa/results/latest.json ]]; then
+            printf '%s\n' "No stored runtime report." > qa/results/ai_review.md
+            exit 0
+          fi
           if [[ -z "${GEMINI_API_KEY}" ]]; then
             printf '%s\n' "AI review skipped: GEMINI_API_KEY repository secret is not configured." > qa/results/ai_review.md
             exit 0
@@ -33,48 +30,20 @@ jobs:
           from pathlib import Path
           report=json.loads(Path("qa/results/latest.json").read_text())
           prompt=(
-              "You are the automated QA reviewer for the Roblox game Collision Battlestar. "
-              "Analyze the runtime detector report below. Do not invent facts. "
-              "Return a concise engineering review with: overall status, failed detectors, likely root causes, "
-              "and the next concrete fixes. Treat PASS/FAIL from the detector as evidence, not as guesses. "
-              "Do not claim you visually inspected the screenshot unless captureAvailable is true.\n\n"
-              + json.dumps(report, ensure_ascii=False, indent=2)
+              "Review this Collision Battlestar runtime QA report. "
+              "Use only the evidence provided. Identify failed detectors, likely root causes, and concrete next fixes. "
+              "Do not claim visual inspection unless the report says a capture is available.\n\n"
+              + json.dumps(report,ensure_ascii=False,indent=2)
           )
-          body=json.dumps({
-              "contents":[{"parts":[{"text":prompt}]}],
-              "generationConfig":{"maxOutputTokens":1200}
-          }).encode()
+          body=json.dumps({"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"maxOutputTokens":1200}}).encode()
           req=urllib.request.Request(
               "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
               data=body,
-              headers={
-                  "Content-Type":"application/json",
-                  "x-goog-api-key":os.environ["GEMINI_API_KEY"]
-              },
+              headers={"Content-Type":"application/json","x-goog-api-key":os.environ["GEMINI_API_KEY"]},
               method="POST"
           )
-          with urllib.request.urlopen(req, timeout=60) as response:
+          with urllib.request.urlopen(req,timeout=60) as response:
               data=json.load(response)
-          text=data["candidates"][0]["content"]["parts"][0]["text"]
-          Path("qa/results/ai_review.md").write_text("# Collision Battlestar AI QA Review\n\n"+text+"\n",encoding="utf-8")
+          result=data["candidates"][0]["content"]["parts"][0]["text"]
+          Path("qa/results/ai_review.md").write_text("# Collision Battlestar AI QA Review\n\n"+result+"\n",encoding="utf-8")
           PY
-      - name: Human-readable detector summary
-        run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          report=json.loads(Path("qa/results/latest.json").read_text())
-          lines=["# Collision Battlestar QA","","Status: **"+str(report.get("status","UNKNOWN"))+"**","Passed: **"+str(report.get("passed",0))+"/"+str(report.get("total",0))+"**","","| Detector | Result | Detail |","|---|---|---|"]
-          for item in report.get("results",[]):
-            mark="PASS" if item.get("pass") else "FAIL"
-            lines.append("| "+str(item.get("name",""))+" | "+mark+" | "+str(item.get("detail",""))+" |")
-          Path("qa/results/latest.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
-          PY
-      - name: Commit report
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add qa/results
-          git commit -m "qa: record Collision Battlestar runtime and AI review" || exit 0
-          git push
