@@ -202,9 +202,7 @@ function M.Build():ScreenGui
 
 	local profilePanel=frame(gui,"ProfilePanel",UDim2.fromOffset(520,340),UDim2.fromScale(.5,.5),C.UI.Panel,.02,15); profilePanel.AnchorPoint=Vector2.new(.5,.5); profilePanel.Visible=false
 	text(profilePanel,"Title","PROFILE",UDim2.fromOffset(300,32),UDim2.fromOffset(20,18),Enum.Font.GothamBlack,21,C.UI.Text,Enum.TextXAlignment.Left)
-	text(profilePanel,"Stats","LV 1
-0 KOs
-0 Credits",UDim2.fromOffset(480,160),UDim2.fromOffset(20,74),Enum.Font.GothamBold,18,C.UI.Text,Enum.TextXAlignment.Left)
+	text(profilePanel,"Stats","LV 1\n0 KOs\n0 Credits",UDim2.fromOffset(480,160),UDim2.fromOffset(20,74),Enum.Font.GothamBold,18,C.UI.Text,Enum.TextXAlignment.Left)
 	local pclose=button(profilePanel,"Close","×",UDim2.fromOffset(42,38),UDim2.new(1,-58,0,12))
 
 	gui:SetAttribute("HUDRuntimeReady",true)
