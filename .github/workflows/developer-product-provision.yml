@@ -78,8 +78,10 @@ jobs:
               created = json.loads(subprocess.check_output([
                   "curl", "-fsS", "--request", "POST",
                   "-H", "x-api-key: " + key,
-                  "-H", "Content-Type: application/json",
-                  "--data", body,
+                  "-F", "name=" + name,
+                  "-F", "description=" + str(item.get("description", "")),
+                  "-F", "isForSale=true",
+                  "-F", "price=" + str(int(item["price"])),
                   create_url
               ], text=True))
 
