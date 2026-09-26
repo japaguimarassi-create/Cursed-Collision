@@ -173,7 +173,7 @@ UserInputService.InputBegan:Connect(function(input,gpe)
   combat:FireServer("Awaken")
  elseif input.KeyCode==Enum.KeyCode.T or input.KeyCode==Enum.KeyCode.ButtonA then
   combat:FireServer("Domain")
- elseif (tonumber(input.KeyCode.Name:match("^One$")) or 0)>0 then
+ elseif input.KeyCode==Enum.KeyCode.One then
   combat:FireServer("Clash1")
  elseif input.KeyCode==Enum.KeyCode.Two then
   combat:FireServer("Clash2")
