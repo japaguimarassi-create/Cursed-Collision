@@ -207,9 +207,11 @@ local function snapshot(player:Player)
   local p=profiles[player] or defaultProfile()
   local owned={}
   for id,value in pairs(p.Owned) do owned[id]=value end
+  local credits=stats and stats:FindFirstChild("Credits")
+  local kos=stats and stats:FindFirstChild("KOs")
   return {
-    Credits=stats and stats:FindFirstChild("Credits") and (stats.Credits :: IntValue).Value or 0,
-    KOs=stats and stats:FindFirstChild("KOs") and (stats.KOs :: IntValue).Value or 0,
+    Credits=credits and credits:IsA("IntValue") and credits.Value or 0,
+    KOs=kos and kos:IsA("IntValue") and kos.Value or 0,
     XP=tonumber(player:GetAttribute("XP"))or 0,
     Owned=owned,
     Equipped=p.Equipped,
