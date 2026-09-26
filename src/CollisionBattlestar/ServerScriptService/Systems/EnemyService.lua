@@ -10,143 +10,54 @@ local Config
 local DataService
 local stateEvent
 
-local skinRng = Random.new(260926)
-
-local skins = {
-    Urban = {
-        Body = Color3.fromRGB(72, 86, 104),
-        Head = Color3.fromRGB(172, 182, 194),
-        Accent = Color3.fromRGB(102, 126, 166),
-        Metal = Color3.fromRGB(42, 48, 58),
-        Visor = Color3.fromRGB(120, 210, 255),
-        DisplayName = "URBAN",
-    },
-    Rust = {
-        Body = Color3.fromRGB(92, 64, 52),
-        Head = Color3.fromRGB(170, 156, 144),
-        Accent = Color3.fromRGB(190, 92, 54),
-        Metal = Color3.fromRGB(64, 48, 42),
-        Visor = Color3.fromRGB(255, 164, 80),
-        DisplayName = "RUST",
-    },
-    Toxic = {
-        Body = Color3.fromRGB(48, 76, 62),
-        Head = Color3.fromRGB(164, 182, 166),
-        Accent = Color3.fromRGB(118, 224, 126),
-        Metal = Color3.fromRGB(35, 52, 43),
-        Visor = Color3.fromRGB(176, 255, 118),
-        DisplayName = "TOXIC",
-    },
-    Violet = {
-        Body = Color3.fromRGB(66, 54, 90),
-        Head = Color3.fromRGB(178, 170, 194),
-        Accent = Color3.fromRGB(156, 102, 232),
-        Metal = Color3.fromRGB(44, 36, 58),
-        Visor = Color3.fromRGB(216, 158, 255),
-        DisplayName = "VIOLET",
-    },
-    Frost = {
-        Body = Color3.fromRGB(70, 92, 112),
-        Head = Color3.fromRGB(190, 204, 216),
-        Accent = Color3.fromRGB(126, 206, 240),
-        Metal = Color3.fromRGB(52, 66, 80),
-        Visor = Color3.fromRGB(176, 238, 255),
-        DisplayName = "FROST",
-    },
-    Void = {
-        Body = Color3.fromRGB(28, 31, 40),
-        Head = Color3.fromRGB(112, 118, 132),
-        Accent = Color3.fromRGB(88, 94, 126),
-        Metal = Color3.fromRGB(18, 21, 28),
-        Visor = Color3.fromRGB(154, 148, 255),
-        DisplayName = "VOID",
-    },
-    Apex = {
-        Body = Color3.fromRGB(82, 44, 50),
-        Head = Color3.fromRGB(214, 190, 188),
-        Accent = Color3.fromRGB(255, 94, 72),
-        Metal = Color3.fromRGB(58, 28, 32),
-        Visor = Color3.fromRGB(255, 194, 96),
-        DisplayName = "APEX",
-    },
-}
-
-local regularSkinNames = {"Urban", "Rust", "Toxic", "Violet", "Frost", "Void"}
-
-local function accessory(parent: Instance, name: string, size: Vector3, cframe: CFrame, material: Enum.Material, color: Color3): BasePart
-    local p = Instance.new("Part")
-    p.Name = name
-    p.Size = size
-    p.CFrame = cframe
-    p.Anchored = false
-    p.CanCollide = false
-    p.CanTouch = false
-    p.CanQuery = false
-    p.Massless = true
-    p.Material = material
-    p.Color = color
-    p.TopSurface = Enum.SurfaceType.Smooth
-    p.BottomSurface = Enum.SurfaceType.Smooth
-    p.Parent = parent
-    return p
-end
-
-local function applySkin(model: Model, root: BasePart, torso: BasePart, head: BasePart, leftArm: BasePart, rightArm: BasePart, leftLeg: BasePart, rightLeg: BasePart, tier: number, elite: boolean)
-    local skinName = if elite then "Apex" else regularSkinNames[skinRng:NextInteger(1, #regularSkinNames)]
-    local skin = skins[skinName]
-
-    torso.Color = skin.Body
-    leftArm.Color = skin.Body
-    rightArm.Color = skin.Body
-    leftLeg.Color = skin.Metal
-    rightLeg.Color = skin.Metal
-    head.Color = skin.Head
-
-    local cosmetics = Instance.new("Folder")
-    cosmetics.Name = "Skin_" .. skinName
-    cosmetics.Parent = model
-
-    local chest = accessory(cosmetics, "ChestPlate", Vector3.new(2.55, 1.7, 0.42), torso.CFrame * CFrame.new(0, 0.35, -0.98), Enum.Material.Metal, skin.Metal)
-    weld(root, chest)
-
-    local core = accessory(cosmetics, "EnergyCore", Vector3.new(0.7, 0.7, 0.16), torso.CFrame * CFrame.new(0, 0.35, -1.2), Enum.Material.Neon, skin.Accent)
-    core.Shape = Enum.PartType.Cylinder
-    core.CFrame *= CFrame.Angles(math.rad(90), 0, 0)
-    weld(root, core)
-
-    local visor = accessory(cosmetics, "Visor", Vector3.new(1.45, 0.32, 0.18), head.CFrame * CFrame.new(0, 0.25, -0.92), Enum.Material.Neon, skin.Visor)
-    weld(root, visor)
-
-    local leftShoulder = accessory(cosmetics, "ShoulderL", Vector3.new(1.25, 0.5, 1.25), root.CFrame * CFrame.new(-1.82, 0.95, 0), Enum.Material.Metal, skin.Metal)
-    leftShoulder.Shape = Enum.PartType.Ball
-    weld(root, leftShoulder)
-
-    local rightShoulder = accessory(cosmetics, "ShoulderR", Vector3.new(1.25, 0.5, 1.25), root.CFrame * CFrame.new(1.82, 0.95, 0), Enum.Material.Metal, skin.Metal)
-    rightShoulder.Shape = Enum.PartType.Ball
-    weld(root, rightShoulder)
-
-    local belt = accessory(cosmetics, "Belt", Vector3.new(2.85, 0.4, 2), root.CFrame * CFrame.new(0, -1.05, 0), Enum.Material.Metal, skin.Accent)
-    weld(root, belt)
-
-    local back = accessory(cosmetics, "BackPlate", Vector3.new(2.4, 2, 0.3), root.CFrame * CFrame.new(0, 0.2, 1), Enum.Material.Metal, skin.Metal)
-    weld(root, back)
-
-    if tier >= 2 then
-        local crest = accessory(cosmetics, "Crest", Vector3.new(0.45, 1.0, 0.45), head.CFrame * CFrame.new(0, 1.0, 0), Enum.Material.Neon, skin.Accent)
-        crest.Shape = Enum.PartType.Ball
-        weld(root, crest)
-    end
-
-    model:SetAttribute("Skin", skinName)
-    model:SetAttribute("SkinDisplayName", skin.DisplayName)
-end
-
 local enemies: {[Model]: {
     Tier: number,
     Elite: boolean,
     LastAttack: number,
     ThinkAt: number,
 }} = {}
+
+local skinRng = Random.new(260926)
+
+local skins = {
+    Urban = {
+        Shirt = 607785314,
+        Pants = 398633812,
+        Body = Color3.fromRGB(72, 86, 104),
+        Head = Color3.fromRGB(172, 182, 194),
+        Accent = Color3.fromRGB(102, 126, 166),
+    },
+    Street = {
+        Shirt = 398633584,
+        Pants = 398634487,
+        Body = Color3.fromRGB(72, 74, 82),
+        Head = Color3.fromRGB(186, 178, 164),
+        Accent = Color3.fromRGB(74, 112, 154),
+    },
+    Rider = {
+        Shirt = 144076358,
+        Pants = 398633812,
+        Body = Color3.fromRGB(48, 57, 68),
+        Head = Color3.fromRGB(176, 184, 192),
+        Accent = Color3.fromRGB(72, 132, 202),
+    },
+    Green = {
+        Shirt = 382538059,
+        Pants = 398633812,
+        Body = Color3.fromRGB(52, 78, 62),
+        Head = Color3.fromRGB(172, 184, 174),
+        Accent = Color3.fromRGB(98, 178, 112),
+    },
+    Elite = {
+        Shirt = 398633584,
+        Pants = 398633812,
+        Body = Color3.fromRGB(72, 42, 50),
+        Head = Color3.fromRGB(210, 188, 184),
+        Accent = Color3.fromRGB(232, 76, 70),
+    },
+}
+
+local regularSkinNames = {"Urban", "Street", "Rider", "Green"}
 
 local function now()
     return os.clock()
@@ -175,25 +86,106 @@ local function closestPlayer(position: Vector3): Player?
     return best
 end
 
-local function makePart(parent: Instance, name: string, size: Vector3, color: Color3): BasePart
-    local part = Instance.new("Part")
-    part.Name = name
-    part.Size = size
-    part.Color = color
-    part.Material = Enum.Material.SmoothPlastic
-    part.CanCollide = true
-    part.Parent = parent
-    return part
+local function applyDisplay(model: Model, tier: number, elite: boolean)
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    local head = model:FindFirstChild("Head")
+    if not humanoid or not head or not head:IsA("BasePart") then
+        return
+    end
+
+    humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "EnemyTitle"
+    billboard.Size = UDim2.fromOffset(150, elite and 38 or 26)
+    billboard.StudsOffset = Vector3.new(0, 3.1, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = 85
+    billboard.Adornee = head
+    billboard.Parent = model
+
+    local title = Instance.new("TextLabel")
+    title.BackgroundTransparency = 1
+    title.Size = UDim2.fromScale(1, 0.72)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = elite and 11 or 9
+    title.TextColor3 = if elite then Config.UI.Danger else Config.UI.Text
+    title.TextStrokeTransparency = 0.45
+    title.Text = if elite then "ELITE" else ("TIER %d"):format(tier)
+    title.Parent = billboard
+
+    local back = Instance.new("Frame")
+    back.Name = "HealthBack"
+    back.Size = UDim2.new(0.78, 0, 0, 5)
+    back.Position = UDim2.new(0.11, 0, 0.75, 0)
+    back.BackgroundColor3 = Color3.fromRGB(24, 26, 32)
+    back.BorderSizePixel = 0
+    back.Parent = billboard
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = back
+
+    local fill = Instance.new("Frame")
+    fill.Name = "HealthFill"
+    fill.Size = UDim2.fromScale(1, 1)
+    fill.BackgroundColor3 = if elite then Config.UI.Danger else Config.UI.Good
+    fill.BorderSizePixel = 0
+    fill.Parent = back
+
+    local fillCorner = Instance.new("UICorner")
+    fillCorner.CornerRadius = UDim.new(1, 0)
+    fillCorner.Parent = fill
+
+    humanoid.HealthChanged:Connect(function(health)
+        if back.Parent and humanoid.MaxHealth > 0 then
+            fill.Size = UDim2.fromScale(math.clamp(health / humanoid.MaxHealth, 0, 1), 1)
+        end
+    end)
 end
 
-local function weld(a: BasePart, b: BasePart)
-    local constraint = Instance.new("WeldConstraint")
-    constraint.Part0 = a
-    constraint.Part1 = b
-    constraint.Parent = a
-end
+local function createHumanoidEnemy(position: Vector3, tier: number, elite: boolean): Model?
+    local skinName = if elite then "Elite" else regularSkinNames[skinRng:NextInteger(1, #regularSkinNames)]
+    local skin = skins[skinName]
 
-local function createEnemy(position: Vector3, tier: number, elite: boolean): Model
+    local description = Instance.new("HumanoidDescription")
+    description.Shirt = skin.Shirt
+    description.Pants = skin.Pants
+    description.HeadColor = skin.Head
+    description.TorsoColor = skin.Body
+    description.LeftArmColor = skin.Body
+    description.RightArmColor = skin.Body
+    description.LeftLegColor = skin.Body
+    description.RightLegColor = skin.Body
+    description.BodyTypeScale = if elite then 0.5 else 0.42
+    description.ProportionScale = 0.7
+    description.WidthScale = if elite then 1.02 else 0.86
+    description.DepthScale = if elite then 0.96 else 0.84
+    description.HeightScale = if elite then 1.06 else 1
+    description.HeadScale = 0.96
+
+    local ok, model = pcall(function()
+        return Players:CreateHumanoidModelFromDescriptionAsync(description, Enum.HumanoidRigType.R15)
+    end)
+
+    if not ok or not model then
+        return nil
+    end
+
+    model.Name = if elite then "EliteEnemy" else ("Enemy_Tier%d"):format(tier)
+    model.Parent = workspace
+
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    local root = model:FindFirstChild("HumanoidRootPart")
+
+    if not humanoid or not root or not root:IsA("BasePart") then
+        model:Destroy()
+        return nil
+    end
+
+    model:PivotTo(CFrame.new(position))
+    humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+
     local baseConfig = if tier >= 3 then Config.Enemies.Tier3 elseif tier == 2 then Config.Enemies.Tier2 else Config.Enemies.Tier1
     local multiplier = if elite then Config.Enemies.Elite else nil
 
@@ -202,50 +194,11 @@ local function createEnemy(position: Vector3, tier: number, elite: boolean): Mod
     local damage = baseConfig.Damage * (multiplier and multiplier.DamageMultiplier or 1)
     local reward = baseConfig.Reward * (multiplier and multiplier.RewardMultiplier or 1)
 
-    local model = Instance.new("Model")
-    model.Name = if elite then "EliteEnemy" else ("Enemy_Tier%d"):format(tier)
-    model.Parent = workspace
-
-    local root = makePart(
-        model,
-        "HumanoidRootPart",
-        Vector3.new(2.6, 3.2, 1.8),
-        if elite then Config.UI.Danger else Color3.fromRGB(80, 105 + tier * 20, 125)
-    )
-    root.CFrame = CFrame.new(position)
-
-    local torso = makePart(model, "Torso", Vector3.new(3, 3.4, 1.8), root.Color)
-    torso.CFrame = root.CFrame * CFrame.new(0, 0.2, 0)
-    weld(root, torso)
-
-    local head = makePart(model, "Head", Vector3.new(2.1, 2.1, 2.1), if elite then Color3.fromRGB(255, 100, 105) else Color3.fromRGB(190, 195, 205))
-    head.Shape = Enum.PartType.Ball
-    head.CFrame = root.CFrame * CFrame.new(0, 2.65, 0)
-    weld(root, head)
-
-    local leftArm = makePart(model, "LeftArm", Vector3.new(0.9, 3.2, 0.9), torso.Color)
-    leftArm.CFrame = root.CFrame * CFrame.new(-1.95, 0.15, 0)
-    weld(root, leftArm)
-
-    local rightArm = makePart(model, "RightArm", Vector3.new(0.9, 3.2, 0.9), torso.Color)
-    rightArm.CFrame = root.CFrame * CFrame.new(1.95, 0.15, 0)
-    weld(root, rightArm)
-
-    local leftLeg = makePart(model, "LeftLeg", Vector3.new(1.05, 3.4, 1.05), torso.Color)
-    leftLeg.CFrame = root.CFrame * CFrame.new(-0.75, -3.2, 0)
-    weld(root, leftLeg)
-
-    local rightLeg = makePart(model, "RightLeg", Vector3.new(1.05, 3.4, 1.05), torso.Color)
-    rightLeg.CFrame = root.CFrame * CFrame.new(0.75, -3.2, 0)
-    weld(root, rightLeg)
-
-    local humanoid = Instance.new("Humanoid")
     humanoid.MaxHealth = health
     humanoid.Health = health
     humanoid.WalkSpeed = speed
     humanoid.JumpPower = 44
     humanoid.AutoRotate = true
-    humanoid.Parent = model
 
     model.PrimaryPart = root
     model:SetAttribute("Enemy", true)
@@ -253,44 +206,43 @@ local function createEnemy(position: Vector3, tier: number, elite: boolean): Mod
     model:SetAttribute("Elite", elite)
     model:SetAttribute("Damage", damage)
     model:SetAttribute("Reward", reward)
+    model:SetAttribute("Skin", skinName)
+    model:SetAttribute("SkinShirtId", skin.Shirt)
+    model:SetAttribute("SkinPantsId", skin.Pants)
 
     CollectionService:AddTag(model, "EnemyNPC")
 
-    applySkin(model, root, torso, head, leftArm, rightArm, leftLeg, rightLeg, tier, elite)
+    local rootPart = root :: BasePart
+    rootPart.CanCollide = true
+    rootPart.CanTouch = false
+
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            descendant.CanTouch = false
+            descendant:SetNetworkOwner(nil)
+        end
+    end
+
+    applyDisplay(model, tier, elite)
 
     if elite then
         local highlight = Instance.new("Highlight")
         highlight.Name = "EliteMarker"
         highlight.FillColor = Config.UI.Danger
-        highlight.FillTransparency = 0.35
+        highlight.FillTransparency = 0.48
         highlight.OutlineColor = Color3.fromRGB(255, 235, 235)
         highlight.OutlineTransparency = 0
         highlight.DepthMode = Enum.HighlightDepthMode.Occluded
         highlight.Adornee = model
         highlight.Parent = model
 
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = "EliteLabel"
-        billboard.Size = UDim2.fromOffset(120, 28)
-        billboard.StudsOffset = Vector3.new(0, 4.4, 0)
-        billboard.Adornee = head
-        billboard.Parent = model
-
-        local label = Instance.new("TextLabel")
-        label.BackgroundTransparency = 1
-        label.Size = UDim2.fromScale(1, 1)
-        label.Text = ("ELITE • %s"):format(tostring(model:GetAttribute("SkinDisplayName") or "APEX"))
-        label.Font = Enum.Font.GothamBold
-        label.TextScaled = true
-        label.TextColor3 = Config.UI.Danger
-        label.TextStrokeTransparency = 0.3
-        label.Parent = billboard
-    end
-
-    for _, descendant in ipairs(model:GetDescendants()) do
-        if descendant:IsA("BasePart") then
-            descendant:SetNetworkOwner(nil)
-        end
+        local marker = Instance.new("PointLight")
+        marker.Name = "EliteGlow"
+        marker.Color = Config.UI.Danger
+        marker.Brightness = 1.2
+        marker.Range = 9
+        marker.Shadows = false
+        marker.Parent = rootPart
     end
 
     local runtime = {
@@ -299,6 +251,7 @@ local function createEnemy(position: Vector3, tier: number, elite: boolean): Mod
         LastAttack = 0,
         ThinkAt = 0,
     }
+
     enemies[model] = runtime
 
     humanoid.Died:Connect(function()
@@ -441,7 +394,7 @@ function Service:Init(config, dataService, stateRemote)
 end
 
 function Service:Spawn(position: Vector3, tier: number, elite: boolean)
-    return createEnemy(position, tier, elite)
+    return createHumanoidEnemy(position, tier, elite)
 end
 
 function Service:Count(): number
