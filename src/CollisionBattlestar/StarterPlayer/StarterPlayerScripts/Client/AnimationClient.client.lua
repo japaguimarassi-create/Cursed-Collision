@@ -9,6 +9,7 @@ local feedback=R:WaitForChild("CollisionRemotes"):WaitForChild("Feedback")
 local tracks:{[string]:AnimationTrack}={}
 local character:Model?
 local animator:Animator?
+local activeName:string?
 local fallbackToken=0
 
 local function findJoint(model:Model,names:{string}):Motor6D?
@@ -23,8 +24,11 @@ local function bind(c:Model)
 	character=c
 	tracks={}
 	animator=nil
+	activeName=nil
+	fallbackToken+=1
 	local humanoid=c:WaitForChild("Humanoid",5)
 	if not humanoid or not humanoid:IsA("Humanoid")then return end
+	player:SetAttribute("CollisionBattlestarRigType",humanoid.RigType.Name)
 	animator=humanoid:FindFirstChildOfClass("Animator")
 	if not animator then
 		animator=Instance.new("Animator")
@@ -52,17 +56,29 @@ local function load(name:string):AnimationTrack?
 	return loaded
 end
 
-local function play(name:string,speed:number?)
+local function stopActionExcept(name:string)
+	for otherName,track in pairs(tracks)do
+		if otherName~=name and track.IsPlaying and track.Priority.Value>=Enum.AnimationPriority.Action.Value then
+			track:Stop(.09)
+		end
+	end
+end
+
+local function play(name:string,speed:number?):boolean
 	local loaded=load(name)
 	if not loaded then return false end
 	local def=Animation.Get(name)
-	loaded:Play(.06,1,speed or (def and def.Speed or 1))
+	stopActionExcept(name)
+	loaded:Play(.09,0, speed or (def and def.Speed or 1))
+	loaded:AdjustWeight(1,.08)
+	activeName=name
 	return true
 end
 
 local function stop(name:string)
 	local loaded=tracks[name]
-	if loaded and loaded.IsPlaying then loaded:Stop(.06)end
+	if loaded and loaded.IsPlaying then loaded:Stop(.09)end
+	if activeName==name then activeName=nil end
 end
 
 local function fallback(action:string,combo:number)
