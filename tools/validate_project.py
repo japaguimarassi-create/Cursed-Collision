@@ -59,6 +59,7 @@ required=[
 "StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/UIController.lua",
 "StarterPlayer/StarterPlayerScripts/Client/FXController.lua",
+"StarterPlayer/StarterPlayerScripts/Client/CombatAnimationController.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CameraController.lua",
 "StarterPlayer/StarterPlayerScripts/Client/QAClient.lua",
 ]
@@ -76,7 +77,7 @@ for token in ("RequestRate","RequestBurst","HitboxService","Light","Dash","Block
         fail("combat contract missing: "+token)
 
 world=read("ServerScriptService/Systems/WorldService.lua")
-for token in ("CBS_Destructible","RequestStreamAroundAsync","CollisionBattlestarMapReady"):
+for token in ("CBS_Destructible","RequestStreamAroundAsync","CollisionBattlestarMapReady","CombatDummy","CreateHumanoidModelFromDescriptionAsync"):
     if token not in world:
         fail("world contract missing: "+token)
 routes=read("ReplicatedStorage/Shared/MapDefinitions.lua")
@@ -100,7 +101,7 @@ for token in ("ShopState","BuyItem","EquipItem","SetCharacter","RedeemCode","Cla
         fail("UI contract missing: "+token)
 
 client=read("StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua")
-for token in ("HUD.Build","PreloadAsync","startBoot","checkCombat","checkAssets","bootDone","Clash1","Clash4","ButtonR2","ButtonL2","ButtonY"):
+for token in ("HUD.Build","PreloadAsync","startBoot","checkCombat","checkAssets","bootDone","Clash1","Clash4","ButtonR2","ButtonL2","ButtonY","CombatAnimationController"):
     if token not in client:
         fail("client contract missing: "+token)
 
