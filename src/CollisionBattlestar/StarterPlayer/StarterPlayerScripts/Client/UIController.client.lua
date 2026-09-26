@@ -6,112 +6,144 @@ local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
-local Net = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Net")).Get()
+local remotes = ReplicatedStorage:WaitForChild("Remotes")
+local State = remotes:WaitForChild("State") :: RemoteEvent
 
 local Controller = {}
 
-local timerLabel: TextLabel
-local roleLabel: TextLabel
-local infoLabel: TextLabel
+local waveLabel: TextLabel
+local enemyLabel: TextLabel
+local moneyLabel: TextLabel
+local levelLabel: TextLabel
+local rewardLabel: TextLabel
 
-local function round(parent: Instance, radius: number)
+local function rounded(parent: Instance, radius: number)
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, radius)
     c.Parent = parent
 end
 
-local function border(parent: Instance)
+local function stroke(parent: Instance)
     local s = Instance.new("UIStroke")
     s.Color = Config.UI.Stroke
     s.Thickness = 1
-    s.Transparency = 0.25
+    s.Transparency = 0.2
     s.Parent = parent
 end
 
-local function text(parent: Instance, value: string, size: number)
-    local label = Instance.new("TextLabel")
-    label.BackgroundTransparency = 1
-    label.Text = value
-    label.TextColor3 = Config.UI.Text
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = size
-    label.TextXAlignment = Enum.TextXAlignment.Center
-    label.TextYAlignment = Enum.TextYAlignment.Center
-    label.Parent = parent
-    return label
+local function makeText(parent: Instance, value: string, size: number)
+    local t = Instance.new("TextLabel")
+    t.BackgroundTransparency = 1
+    t.Text = value
+    t.TextColor3 = Config.UI.Text
+    t.Font = Enum.Font.GothamBold
+    t.TextSize = size
+    t.TextXAlignment = Enum.TextXAlignment.Center
+    t.TextYAlignment = Enum.TextYAlignment.Center
+    t.Parent = parent
+    return t
+end
+
+local function panel(parent: Instance, size: UDim2, position: UDim2)
+    local p = Instance.new("Frame")
+    p.Size = size
+    p.Position = position
+    p.BackgroundColor3 = Config.UI.Surface
+    p.BackgroundTransparency = 0.06
+    p.Parent = parent
+    rounded(p, 14)
+    stroke(p)
+    return p
 end
 
 function Controller:Init()
     local gui = Instance.new("ScreenGui")
-    gui.Name = "TagHUD"
+    gui.Name = "PvEHUD"
     gui.ResetOnSpawn = false
-    gui.IgnoreGuiInset = false
     gui.Parent = player:WaitForChild("PlayerGui")
 
-    local top = Instance.new("Frame")
+    local top = panel(gui, UDim2.fromOffset(330, 96), UDim2.fromScale(0.5, 0.035))
     top.AnchorPoint = Vector2.new(0.5, 0)
-    top.Position = UDim2.fromScale(0.5, 0.035)
-    top.Size = UDim2.fromOffset(360, 112)
-    top.BackgroundColor3 = Config.UI.Surface
-    top.BackgroundTransparency = 0.08
-    top.Parent = gui
-    round(top, 18)
-    border(top)
 
-    timerLabel = text(top, "TAG", 28)
-    timerLabel.Size = UDim2.new(1, 0, 0, 42)
-    timerLabel.Position = UDim2.fromOffset(0, 6)
+    waveLabel = makeText(top, "WAVE 0", 24)
+    waveLabel.Size = UDim2.new(0.5, 0, 0, 44)
+    waveLabel.Position = UDim2.fromOffset(8, 3)
 
-    roleLabel = text(top, "AGUARDE", 14)
-    roleLabel.Size = UDim2.new(1, 0, 0, 28)
-    roleLabel.Position = UDim2.fromOffset(0, 48)
-    roleLabel.TextColor3 = Config.UI.Muted
+    enemyLabel = makeText(top, "INIMIGOS 0", 12)
+    enemyLabel.Size = UDim2.new(0.5, -8, 0, 44)
+    enemyLabel.Position = UDim2.new(0.5, 0, 0, 3)
+    enemyLabel.TextColor3 = Config.UI.Muted
 
-    infoLabel = text(top, "Corra e use as estruturas do mapa para escapar.", 11)
-    infoLabel.Size = UDim2.new(1, -24, 0, 26)
-    infoLabel.Position = UDim2.fromOffset(12, 78)
-    infoLabel.Font = Enum.Font.GothamMedium
-    infoLabel.TextColor3 = Config.UI.Muted
+    moneyLabel = makeText(top, "0 C", 14)
+    moneyLabel.Size = UDim2.new(0.5, -8, 0, 34)
+    moneyLabel.Position = UDim2.fromScale(0, 0.53)
+    moneyLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    local function roleForUserId(userId: number)
-        return player.UserId == userId
+    levelLabel = makeText(top, "D 0   DEF 0   SPD 0", 11)
+    levelLabel.Size = UDim2.new(0.5, -8, 0, 34)
+    levelLabel.Position = UDim2.fromScale(0.5, 0.53)
+    levelLabel.TextColor3 = Config.UI.Muted
+
+    local rewardPanel = panel(gui, UDim2.fromOffset(300, 54), UDim2.fromScale(0.5, 0.87))
+    rewardPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+    rewardLabel = makeText(rewardPanel, "Derrote inimigos para ganhar créditos.", 12)
+    rewardLabel.Size = UDim2.fromScale(1, 1)
+    rewardLabel.Font = Enum.Font.GothamMedium
+    rewardLabel.TextColor3 = Config.UI.Muted
+
+    local function refresh()
+        local credits = player:GetAttribute("Credits") or 0
+        local damage = player:GetAttribute("DamageLevel") or 0
+        local defense = player:GetAttribute("DefenseLevel") or 0
+        local speed = player:GetAttribute("SpeedLevel") or 0
+        moneyLabel.Text = ("%d C"):format(credits)
+        levelLabel.Text = ("D %d   DEF %d   SPD %d"):format(damage, defense, speed)
     end
 
-    Net.State.OnClientEvent:Connect(function(kind: string, a, b)
-        if kind == "Intermission" then
-            timerLabel.Text = ("PRÓXIMA RODADA  %02d"):format(tonumber(a) or 0)
-            timerLabel.TextColor3 = Config.UI.Text
-            roleLabel.Text = "Escolhendo o pegador..."
-            roleLabel.TextColor3 = Config.UI.Muted
-        elseif kind == "RoundStart" then
-            local taggerId = tonumber(b) or 0
-            timerLabel.Text = ("%02d"):format(tonumber(a) or 0)
-            roleLabel.Text = if roleForUserId(taggerId) then "VOCÊ É O PEGADOR" else "CORRA"
-            roleLabel.TextColor3 = if roleForUserId(taggerId) then Config.UI.Danger else Config.UI.Good
-            infoLabel.Text = if roleForUserId(taggerId) then "Toque em outro jogador para passar a marca." else "Evite o jogador vermelho."
-        elseif kind == "RoundTime" then
-            timerLabel.Text = ("%02d"):format(tonumber(a) or 0)
-            local taggerId = tonumber(b) or 0
-            if roleForUserId(taggerId) then
-                roleLabel.Text = "VOCÊ É O PEGADOR"
-                roleLabel.TextColor3 = Config.UI.Danger
-            else
-                roleLabel.Text = "CORRA"
-                roleLabel.TextColor3 = Config.UI.Good
-            end
-        elseif kind == "TagTransfer" then
-            local taggerId = tonumber(a) or 0
-            timerLabel.TextColor3 = Config.UI.Danger
-            roleLabel.Text = if roleForUserId(taggerId) then "VOCÊ É O PEGADOR" else "PEGADOR MUDOU"
-            roleLabel.TextColor3 = Config.UI.Danger
-            infoLabel.Text = if roleForUserId(taggerId) then "Agora você precisa marcar alguém." else "Fique longe do jogador vermelho."
-            TweenService:Create(timerLabel, TweenInfo.new(0.15), {TextTransparency = 0.15}):Play()
-        elseif kind == "RoundEnd" then
-            timerLabel.Text = "FIM"
-            timerLabel.TextColor3 = Config.UI.Text
-            roleLabel.Text = "Rodada encerrada"
-            roleLabel.TextColor3 = Config.UI.Muted
-            infoLabel.Text = ("Jogadores livres: %d"):format(tonumber(a) or 0)
+    for _, name in ipairs({"Credits", "DamageLevel", "DefenseLevel", "SpeedLevel"}) do
+        player:GetAttributeChangedSignal(name):Connect(refresh)
+    end
+    refresh()
+
+    State.OnClientEvent:Connect(function(kind: string, a, b, c)
+        if kind == "WaveIntermission" then
+            waveLabel.Text = "PRÓXIMA WAVE"
+            enemyLabel.Text = ("%ds"):format(tonumber(a) or 0)
+            enemyLabel.TextColor3 = Config.UI.Warning
+        elseif kind == "WaveStart" then
+            waveLabel.Text = ("WAVE %d"):format(tonumber(a) or 0)
+            enemyLabel.Text = ("%d INIMIGOS"):format(tonumber(b) or 0)
+            enemyLabel.TextColor3 = Config.UI.Text
+            rewardLabel.Text = "ELITE VERMELHO = maior ameaça da wave"
+            rewardLabel.TextColor3 = Config.UI.Danger
+        elseif kind == "WaveState" then
+            waveLabel.Text = ("WAVE %d"):format(tonumber(a) or 0)
+            enemyLabel.Text = ("%d INIMIGOS"):format(tonumber(b) or 0)
+        elseif kind == "Reward" then
+            rewardLabel.Text = ("+%d C"):format(tonumber(a) or 0)
+            rewardLabel.TextColor3 = Config.UI.Good
+            task.delay(0.8, function()
+                if rewardLabel.Parent then
+                    rewardLabel.Text = "Derrote inimigos para ganhar créditos."
+                    rewardLabel.TextColor3 = Config.UI.Muted
+                end
+            end)
+        elseif kind == "WaveReward" then
+            rewardLabel.Text = ("WAVE %d CONCLUÍDA  •  +%d C"):format(tonumber(b) or 0, tonumber(a) or 0)
+            rewardLabel.TextColor3 = Config.UI.Good
+        elseif kind == "WaveClear" then
+            enemyLabel.Text = "LIMPA"
+        elseif kind == "ShopMessage" then
+            rewardLabel.Text = tostring(a)
+            rewardLabel.TextColor3 = Config.UI.Warning
+            task.delay(1.5, function()
+                if rewardLabel.Parent then
+                    rewardLabel.Text = "Derrote inimigos para ganhar créditos."
+                    rewardLabel.TextColor3 = Config.UI.Muted
+                end
+            end)
+        elseif kind == "Attack" then
+            TweenService:Create(rewardLabel, TweenInfo.new(0.08), {TextTransparency = 0.15}):Play()
         end
     end)
 end

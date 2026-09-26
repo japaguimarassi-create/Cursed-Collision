@@ -1,17 +1,37 @@
 # Collision Battlestar
 
-A clean rebuild of the Roblox experience foundation.
+PvE wave fighter foundation.
 
-The project is source-first and deterministic:
-- Rojo is the source of truth.
-- Gameplay state is validated on the server.
-- M1, Dash, Block and Special are the initial combat actions.
-- The first world is generated from deterministic Luau code.
-- The HUD is compact and platform-aware.
-- No AI dependency is required at runtime or build time.
+Current playable loop:
+- procedurally generated combat world;
+- escalating enemy waves;
+- one red Elite enemy per wave;
+- server-authoritative M1 combat;
+- enemy AI with pathfinding and melee attacks;
+- credits for every kill and wave-clear bonuses;
+- persistent damage, defense and speed upgrades;
+- recruitable NPC companions with stronger tiers;
+- physical upgrade/companion shop;
+- Roblox GamePass integration through MarketplaceService;
+- optional Open Cloud provisioning for the six new passes.
 
 Roblox target:
 - Universe: 5290480963
 - Place: 15338267657
 
-This rebuild is the stable base for later character, animation, VFX and progression passes.
+GamePasses:
+- Elite Hunter
+- Companion Slot+
+- Arsenal VIP
+- VIP
+- Wave Master
+- Companion Prime
+
+GamePass IDs are generated into the Shared/GamePassIds.lua module. A zero ID means that pass has not yet been provisioned.
+
+The project does not depend on arbitrary free models for its core runtime. Roblox's official NPC Kit is reserved as an optional later asset source.
+
+Next planned slice after the PvE build is verified:
+- a compact HUD entry point;
+- teleport to a distant white minimalist PvP battleground;
+- separate PvP systems from the PvE world.

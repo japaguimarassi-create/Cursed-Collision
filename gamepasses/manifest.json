@@ -1,0 +1,11 @@
+{
+  "universeId": "5290480963",
+  "passes": [
+    {"key":"EliteBonus","name":"Elite Hunter","description":"Dobra as recompensas recebidas de inimigos Elite.","price":49},
+    {"key":"SecondCompanion","name":"Companion Slot+","description":"Permite equipar dois NPCs aliados.","price":79},
+    {"key":"ShopDiscount","name":"Arsenal VIP","description":"Reduz permanentemente os preços da loja em 15%.","price":59},
+    {"key":"VIP","name":"VIP","description":"Bônus permanente de recompensas e cosméticos VIP.","price":99},
+    {"key":"ExtraWaveReward","name":"Wave Master","description":"Aumenta em 25% a recompensa de conclusão das ondas.","price":89},
+    {"key":"StarterCompanion","name":"Companion Prime","description":"Desbloqueia imediatamente o uso do Scout.","price":39}
+  ]
+}

@@ -9,11 +9,20 @@ required = [
     "default.project.json",
     "rokit.toml",
     "README.md",
+    "gamepasses/manifest.json",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/Config.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/GamePassIds.lua",
     "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/DataService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/EnemyService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/CombatService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/WaveService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/CompanionService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/ShopService.lua",
+    "src/CollisionBattlestar/ServerScriptService/Systems/MonetizationService.lua",
     "src/CollisionBattlestar/ServerScriptService/Systems/WorldService.lua",
-    "src/CollisionBattlestar/ServerScriptService/Systems/TagService.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/ClientMain.client.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/InputController.client.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Client/UIController.client.lua",
 ]
 
@@ -26,15 +35,10 @@ manifest = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"
 if manifest.get("name") != "CollisionBattlestar":
     raise SystemExit("Unexpected project name")
 
-workspace = manifest["tree"]["Workspace"]["$properties"]
-if workspace.get("StreamingEnabled") is not True:
-    raise SystemExit("StreamingEnabled must remain enabled")
+if manifest["tree"]["Workspace"]["$properties"].get("StreamingEnabled") is not True:
+    raise SystemExit("StreamingEnabled is disabled")
 
-source_root = ROOT / "src"
-lua_files = list(source_root.rglob("*.lua"))
-if len(lua_files) != 6:
-    raise SystemExit("Unexpected Luau file count: {}".format(len(lua_files)))
-
+lua_files = list((ROOT / "src").rglob("*.lua"))
 for path in lua_files:
     source = path.read_text(encoding="utf-8")
     if any(marker in source for marker in ("<<<<<<<", "=======", ">>>>>>>")):
@@ -42,16 +46,4 @@ for path in lua_files:
     if "loadstring(" in source:
         raise SystemExit("Dynamic code loading found in " + str(path))
 
-for legacy in (
-    "HUDLayout.lua",
-    "CombatService.lua",
-    "DataService.lua",
-    "InputController.client.lua",
-    "FXController.client.lua",
-    "roblox_connection.sh",
-    "validate_no_ai.py",
-):
-    if any(path.name == legacy for path in ROOT.rglob("*")):
-        raise SystemExit("Old rebuild artifact remains: " + legacy)
-
-print("Validated clean Tag rebuild with {} Luau files.".format(len(lua_files)))
+print("Validated PvE rebuild with {} Luau files.".format(len(lua_files)))
