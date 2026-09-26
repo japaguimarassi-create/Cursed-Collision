@@ -14,7 +14,7 @@ REQUIRED=[
 "ReplicatedStorage/Shared/HUDTheme.lua",
 "ReplicatedStorage/Shared/AnimationProfiles.lua",
 "ServerScriptService/Bootstrap.server.lua",
-"ServerScriptService/World/WorldBuilder.server.lua",
+"ServerScriptService/World/WorldBuilder.lua",
 "ServerScriptService/World/MapAssetLoader.lua",
 "ServerScriptService/Services/PlayerService.lua",
 "ServerScriptService/Services/CombatService.lua",
@@ -25,6 +25,7 @@ REQUIRED=[
 "StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CameraController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/PlatformHUDController.client.lua",
+"StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua",
 ]
 FORBIDDEN=("jujutsu","jjk","sukuna","gojo","megumi","cursed collision","cursedcollision","potentialman","heavy")
 
@@ -78,7 +79,7 @@ for token in ("GetPartBoundsInBox","GetPartBoundsInRadius","TakeDamage","BlockSt
         fail("combat contract missing: "+token)
 
 world=read("ServerScriptService/World/WorldBuilder.server.lua")
-for token in ("CollisionBattlestarWorld","MapLoaded","SpawnLocation","buildDistrict","buildRoadNetwork"):
+for token in ("CollisionBattlestarWorld","MapLoaded","SpawnLocation","buildDistrict","buildRoadNetwork","Rebuild","Verify"):
     if token not in world:
         fail("map contract missing: "+token)
 
@@ -118,5 +119,16 @@ for token in ("PreferredInput","GetImageForKeyCode","TouchTapIcon","GamepadPromp
     if token not in platform:
         fail("platform HUD contract missing: "+token)
 
+boot=read("ServerScriptService/Bootstrap.server.lua")
+for token in ("BootRequest","BootFeedback","CollisionBattlestarReady","WorldRepair","verifyRuntime","ensure"):
+    if token not in boot:
+        fail("recovery boot contract missing: "+token)
+
+loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
+for token in ("CollisionBootScreen","mapReady","hudReady","characterReady","bootRequest:FireServer","restartLocalScript","Recovery"):
+    if token not in loading:
+        fail("loading recovery contract missing: "+token)
+
 print("PASS: legacy fusion and removed combat marker scan clean")
+print("PASS: fault-tolerant server and client startup recovery")
 print("PASS: platform-specific mobile and console image HUD")
