@@ -44,5 +44,5 @@
       "id": 0
     }
   ],
-  "note": "Developer Product IDs must be replaced with the real IDs created in Creator Hub before Robux products can be purchased."
+  "setup": "Replace id=0 with the real Developer Product IDs from Creator Hub."
 }
