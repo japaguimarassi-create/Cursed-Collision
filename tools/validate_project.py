@@ -22,10 +22,13 @@ REQUIRED=[
 "ServerScriptService/Services/CombatService.lua",
 "ServerScriptService/Services/MovementService.lua",
 "ServerScriptService/Services/MapTravelService.lua",
+"ServerScriptService/Services/UtilityService.lua",
+"ServerScriptService/Services/DestructionService.lua",
 
 "StarterPlayer/StarterPlayerScripts/Client/VFXController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CameraController.client.lua",
+"StarterPlayer/StarterPlayerScripts/Client/UtilityController.client.lua",
 
 "StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua",
 ]
@@ -71,7 +74,7 @@ for path in active:
             fail(f"legacy or removed runtime marker in {path}: {marker}")
 
 bootstrap=read("ServerScriptService/Bootstrap.server.lua")
-for name in ("CombatRequest","MovementRequest","Feedback","MapTravelRequest","MapTravelFeedback"):
+for name in ("CombatRequest","MovementRequest","Feedback","MapTravelRequest","MapTravelFeedback","UtilityRequest","UtilityFeedback"):
     if name not in bootstrap:
         fail("missing remote: "+name)
 
@@ -81,12 +84,12 @@ for token in ("GetPartBoundsInBox","GetPartBoundsInRadius","TakeDamage","BlockSt
         fail("combat contract missing: "+token)
 
 world=read("ServerScriptService/World/WorldBuilder.lua")
-for token in ("CollisionBattlestarWorld","MapLoaded","SpawnLocation","buildDistrict","buildRoadNetwork","Rebuild","Verify"):
+for token in ("CollisionBattlestarWorld","MapLoaded","SpawnLocation","district","roads","Rebuild","Verify","CBS_Destructible"):
     if token not in world:
         fail("map contract missing: "+token)
 
 routes=read("ReplicatedStorage/Shared/MapDefinitions.lua")
-for token in ("BattleLine_Urban_v2","Origin","Metro","Core","Iron","Apex"):
+for token in ("BattleLine_Urban_v3","Origin","Metro","Core","Iron","Apex"):
     if token not in routes:
         fail("route definition missing: "+token)
 
@@ -101,7 +104,7 @@ for token in ("Light","Dash","Block","Special","MouseButton1","LeftShift"):
         fail("combat input definition missing: "+token)
 
 animations=read("ReplicatedStorage/Shared/AnimationProfiles.lua")
-for token in ("Vanguard","Impact","18576726303","18576729183","18576731629","2515090838","17866759652"):
+for token in ("Vanguard","Impact","18576729183","18576731629","2515090838","17866759652","522635514","522638767"):
     if token not in animations:
         fail("animation profile missing: "+token)
 
@@ -151,3 +154,30 @@ for token in ("StatusFrame","HealthBackground","EnergyBackground","UltBackground
     if token not in layout:
         fail("HUD layout contract missing: "+token)
 
+
+utility=read("ServerScriptService/Services/UtilityService.lua")
+for token in ("UtilityRequest","UtilityFeedback","Respawn","Ping","LoadCharacter"):
+    if token not in utility:
+        fail("utility contract missing: "+token)
+
+destruction=read("ServerScriptService/Services/DestructionService.lua")
+for token in ("CBS_Destructible","TryDamage","DestructibleHP","DestructibleMaxHP","restore"):
+    if token not in destruction:
+        fail("destruction contract missing: "+token)
+
+utilityClient=read("StarterPlayer/StarterPlayerScripts/Client/UtilityController.client.lua")
+for token in ("SYSTEM MENU","RESPAWN","COMBAT SETTINGS","CONTROLS","getPingPosition","utility:FireServer","MenuPanel"):
+    if token not in utilityClient:
+        fail("utility client contract missing: "+token)
+
+animations=read("ReplicatedStorage/Shared/AnimationProfiles.lua")
+for token in ("Idle","Walk","Jump","Fall","M1_1","M1_4","Special","Dash","HitTaken","522635514","522638767","2515090838"):
+    if token not in animations:
+        fail("animation profile missing: "+token)
+
+controller=read("StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua")
+for token in ("Animator","PreloadAsync","LoadAnimation","AdjustWeight","AdjustSpeed","Running","StateChanged","InputBegan","CollisionHUD"):
+    if token not in controller:
+        fail("animation runtime missing: "+token)
+
+print("PASS: functional menu, ping, destructible city and animation controller")

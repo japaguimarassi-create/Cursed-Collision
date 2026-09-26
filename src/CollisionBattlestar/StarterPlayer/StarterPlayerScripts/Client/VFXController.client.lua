@@ -88,6 +88,9 @@ local function damageText(position:Vector3,damage:number,critical:boolean)
 end
 
 feedback.OnClientEvent:Connect(function(kind:string,value:any)
+	if player:GetAttribute("LocalFXHigh") == false and (kind=="Hit" or kind=="HitTaken" or kind=="Guard" or kind=="GuardBreak" or kind=="Evade" or kind=="Special" or kind=="Dash" or kind=="Swing" or kind=="DestructHit") then
+		return
+	end
 	if typeof(value)=="table" and typeof(value.Position)=="Vector3" then
 		local position=value.Position
 		if kind=="Hit" then
@@ -114,5 +117,7 @@ feedback.OnClientEvent:Connect(function(kind:string,value:any)
 		if root and root:IsA("BasePart") then burst(root.Position,Config.UI.Accent2) end
 	elseif kind=="Swing" and typeof(value)=="table" and typeof(value.Position)=="Vector3" then
 		ring(value.Position,Config.UI.Accent,false)
+	elseif kind=="DestructHit" and typeof(value)=="table" and typeof(value.Position)=="Vector3" then
+		ring(value.Position,Config.UI.Accent2,false)
 	end
 end)
