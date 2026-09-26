@@ -158,8 +158,13 @@ local function addOverdrive(player:Player,amount:number)
  mirror(player,s)
 end
 
-local function registerCombatHit(attacker:Player,victim:Player?)
+local function registerCombatHit(attacker:Player,victim:Player?,damage:number)
  addOverdrive(attacker,6)
+ local energy=tonumber(attacker:GetAttribute("Energy")) or 0
+ attacker:SetAttribute("Energy",math.min(Config.Resources.MaxEnergy,energy+Config.Resources.HitEnergy))
+ if victim then
+  addOverdrive(victim,math.clamp(damage*Config.Resources.DamageAwakening,0,25))
+ end
  if victim then
   local vs=state(victim)
   if vs.clashId and vs.clashId==state(attacker).clashId then state(attacker).clashScore+=1 end
@@ -199,10 +204,18 @@ local function applyHit(attacker:Player,victimHumanoid:Humanoid,damage:number,kn
  local after=victimHumanoid.Health
  if victim then
   applyStun(victim,Config.Combat.Stun)
-  registerCombatHit(attacker,victim)
+  registerCombatHit(attacker,victim,damage)
   send(victim,"HitTaken",{Position=victimRoot.Position,Damage=damage})
  end
- if attackerRoot then victimRoot.AssemblyLinearVelocity=attackerRoot.CFrame.LookVector*knockback+Vector3.new(0,finisher and 18 or 7,0) end
+ if attackerRoot then
+  local vertical=finisher and 18 or 7
+  victimRoot.AssemblyLinearVelocity=attackerRoot.CFrame.LookVector*knockback+Vector3.new(0,vertical,0)
+  if finisher and victim then
+   local stateHumanoid=victimHumanoid
+   stateHumanoid.PlatformStand=true
+   task.delay(.42,function() if stateHumanoid.Parent and stateHumanoid.Health>0 then stateHumanoid.PlatformStand=false end end)
+  end
+ end
  send(attacker,"Hit",{Position=victimRoot.Position,Damage=damage,Finisher=finisher})
  fx("Hit",victimRoot.Position,{damage=damage,finisher=finisher})
  damageDestructibles(victimRoot.Position,finisher and 8 or 5,damage)
@@ -237,10 +250,15 @@ local function light(player:Player)
  local index=s.combo
  local damage=Config.Combat.Light.Damage[index]
  local finisher=index==4
+ local variant="Neutral"
+ local vertical=root.AssemblyLinearVelocity.Y
+ if finisher and vertical>5 then variant="Uppercut" elseif finisher and vertical<-5 then variant="Downslam" end
  if s.perfectReady then damage*=1.45;s.perfectReady=false end
  local cf=root.CFrame*CFrame.new(0,0,-Config.Combat.Light.Offset)
- hitList(player,getHumanoids(player,cf,Config.Combat.Light.Hitbox),damage,Config.Combat.Light.Knockback[index],false,finisher)
- send(player,"Swing",{Position=cf.Position,Combo=index})
+ local knock=Config.Combat.Light.Knockback[index]
+ if variant=="Uppercut" then knock=knock+10 elseif variant=="Downslam" then knock=math.max(10,knock-6) end
+ hitList(player,getHumanoids(player,cf,Config.Combat.Light.Hitbox),damage,knock,false,finisher)
+ send(player,"Swing",{Position=cf.Position,Combo=index,Variant=variant})
  fx("Swing",cf.Position,{combo=index,color=fighterFor(player).Color})
  mirror(player,s)
 end
