@@ -8,8 +8,7 @@
         "StreamingMinRadius": 256,
         "StreamingTargetRadius": 768,
         "StreamOutBehavior": "Opportunistic",
-        "ModelStreamingBehavior": "Improved",
-        "EnableSLIMAvatars": true
+        "ModelStreamingBehavior": "Improved"
       }
     },
     "ReplicatedStorage": {
