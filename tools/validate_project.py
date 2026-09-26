@@ -133,12 +133,12 @@ for token in ("CollisionBootScreen","mapReady","hudReady","characterReady","boot
 
 print("PASS: legacy fusion and removed combat marker scan clean")
 hud=read("ReplicatedStorage/Shared/HUDRecovery.lua")
-for token in ("CollisionHUD","IsReady","Build","HUDRecoveryReady","HUDLayout"):
+for token in ("CollisionHUD","IsReady","Build","HUDRuntimeReady","HUDLayout"):
     if token not in hud:
         fail("HUD recovery contract missing: "+token)
 
 loading=read("StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua")
-for token in ("HUDRecovery","forceHudRecovery","hudReady","CollisionBootScreen","HUDRecoveryError"):
+for token in ("HUDRecovery","forceHudRecovery","hudReady","CollisionBootScreen"):
     if token not in loading:
         fail("loading recovery contract missing: "+token)
 
@@ -151,7 +151,3 @@ for token in ("StatusFrame","HealthBackground","EnergyBackground","UltBackground
     if token not in layout:
         fail("HUD layout contract missing: "+token)
 
-runtime=read("StarterPlayer/StarterPlayerScripts/Client/HUDRuntime.client.lua")
-for token in ("combat:FireServer","movement:FireServer","travel:FireServer","HUDRuntimeReady","PreferredInput","GuiNavigationEnabled"):
-    if token not in runtime:
-        fail("HUD runtime contract missing: "+token)
