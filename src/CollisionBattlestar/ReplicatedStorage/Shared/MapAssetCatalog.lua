@@ -9,7 +9,6 @@ local References:{AssetReference}={
 	{Id=8673868211,Name="Bus Stop Sign [FREE]",Use="route signage",Budget="14 tris / 1 decal",License="Creator Store: explicitly FREE",ContainsScripts=false},
 	{Id=18143058886,Name="Bus Stop Pole",Use="route signage",Budget="648 tris / 2 decals",License="Creator Store: description says free",ContainsScripts=false},
 	{Id=5157346970,Name="[FREE] Car Showcase",Use="parked vehicle hero prop",Budget="2,120 tris / 4 decals",License="Creator Store: explicitly FREE",ContainsScripts=false},
-	{Id=72984214938380,Name="City Props Pack Street Building Car RP",Use="future research only",Budget="not accepted into runtime without license/asset inspection",License="Creator Store listing includes Free tag; runtime not selected",ContainsScripts=false},
 	{Id=16663903306,Name="Free R6 battleground animations (v7)",Use="animation source pack",Budget="1,066 tris / 727 vertices",License="Creator Store: open source; explicitly permits battleground use/monetization",ContainsScripts=false},
 }
 A.References=References
