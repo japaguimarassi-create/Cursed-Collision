@@ -20,10 +20,38 @@ function M:Run(gui:ScreenGui,remotes)
  if not owner() then return end
  local control=remotes:WaitForChild(QA.ControlEvent) :: RemoteEvent
  local report=remotes:WaitForChild(QA.ReportEvent) :: RemoteEvent
+ local combat=remotes:WaitForChild("CombatRequest") :: RemoteEvent
+ local travel=remotes:WaitForChild("MapTravelRequest") :: RemoteEvent
  control:FireServer("SpawnBot")
  task.wait(.4)
  local detectors={}
  local passed=true
+
+ combat:FireServer("Light")
+ task.wait(.25)
+ detectors["Smoke M1"]= (tonumber(player:GetAttribute("Combo")) or 0)>0
+ combat:FireServer("Dash")
+ task.wait(.25)
+ detectors["Smoke Dash"]= (tonumber(player:GetAttribute("NextDash")) or 0)>os.clock()
+ combat:FireServer("BlockStart")
+ task.wait(.12)
+ detectors["Smoke Block"]=player:GetAttribute("Blocking")==true
+ combat:FireServer("BlockEnd")
+ task.wait(.08)
+ detectors["Smoke Block Release"]=player:GetAttribute("Blocking")~=true
+ combat:FireServer("Special")
+ task.wait(.25)
+ detectors["Smoke Special Cooldown"]= (tonumber(player:GetAttribute("NextSpecial")) or 0)>os.clock()
+ combat:FireServer("Awaken")
+ combat:FireServer("Domain")
+ for i=1,4 do combat:FireServer("Clash"..tostring(i));task.wait(.04) end
+ travel:FireServer("Metro")
+ task.wait(.25)
+ detectors["Smoke Metro Travel"]=player:GetAttribute("CurrentMapNode")=="Metro"
+ travel:FireServer("Origin")
+ task.wait(.25)
+ detectors["Smoke Origin Travel"]=player:GetAttribute("CurrentMapNode")=="Origin"
+
  local pg=player:FindFirstChildOfClass("PlayerGui")
  local current=pg and pg:FindFirstChild("CollisionHUD")
  detectors["HUD exists"]=current~=nil
