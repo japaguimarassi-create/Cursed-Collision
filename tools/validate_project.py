@@ -66,7 +66,7 @@ hud=read("ReplicatedStorage/Shared/UI/HUDLayout.lua")
 for token in (
     "CollisionHUD","PlayerPanel","Health","Energy","Awakening","Hotbar",
     "MobileActions","MapPanel","ShopPanel","QuestPanel","ProfilePanel",
-    "TabFeatured","TabEmotes","TabRobux"
+    "Tabs","Featured","Emotes","Robux"
 ):
     if token not in hud:
         fail("HUD contract missing: "+token)
