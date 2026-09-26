@@ -60,7 +60,7 @@ local function setup(player:Player)
 	for name,value in pairs({
 		Blocking=false,BlockStarted=0,LastCombatAt=0,CurrentMapNode="Origin",
 		Combo=0,ComboStarted=0,NextLight=0,NextDash=0,NextSpecial=0,
-		DashInvulnerable=false,HitStunUntil=0,Overdrive=0,XP=0,Level=1,DataReady=false,
+		DashInvulnerable=false,HitStunUntil=0,Overdrive=0,Energy=100,MaxEnergy=100,XP=0,Level=1,DataReady=false,
 	}) do player:SetAttribute(name,value) end
 
 	local old=player:FindFirstChild("leaderstats")
