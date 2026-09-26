@@ -43,6 +43,56 @@ local function ownedDefinitions(player: Player)
     return result
 end
 
+local friendCache: {[Player]: {UserId: number, Username: string, DisplayName: string}} = {}
+
+local function loadFriend(player: Player)
+    if friendCache[player] then
+        return friendCache[player]
+    end
+
+    local ok, pages = pcall(function()
+        return Players:GetFriendsAsync(player.UserId)
+    end)
+
+    if not ok or not pages then
+        return nil
+    end
+
+    local friends = {}
+    while true do
+        local page = pages:GetCurrentPage()
+        for _, friend in ipairs(page) do
+            if type(friend) == "table" and type(friend.Id) == "number" then
+                table.insert(friends, {
+                    UserId = friend.Id,
+                    Username = tostring(friend.Username or "Friend"),
+                    DisplayName = tostring(friend.DisplayName or friend.Username or "Friend"),
+                })
+            end
+        end
+
+        if pages.IsFinished then
+            break
+        end
+
+        local advanced = pcall(function()
+            pages:AdvanceToNextPageAsync()
+        end)
+
+        if not advanced then
+            break
+        end
+    end
+
+    if #friends == 0 then
+        return nil
+    end
+
+    local selected = friends[Random.new(player.UserId):NextInteger(1, #friends)]
+    friendCache[player] = selected
+    return selected
+end
+
 local function createCompanion(player: Player, definition)
     local character = player.Character
     local playerRoot = character and character:FindFirstChild("HumanoidRootPart")
@@ -50,47 +100,79 @@ local function createCompanion(player: Player, definition)
         return nil
     end
 
-    local model = Instance.new("Model")
-    model.Name = "Companion_" .. definition.Key
+    local friend = loadFriend(player)
+    if not friend then
+        return nil
+    end
+
+    local ok, model = pcall(function()
+        return Players:CreateHumanoidModelFromUserIdAsync(friend.UserId)
+    end)
+
+    if not ok or not model then
+        return nil
+    end
+
+    model.Name = "Companion_" .. definition.Key .. "_" .. friend.Username
     model.Parent = workspace
 
-    local body = Instance.new("Part")
-    body.Name = "HumanoidRootPart"
-    body.Size = Vector3.new(2.4, 3.1, 2)
-    body.CFrame = playerRoot.CFrame * CFrame.new(5, 2, 5)
-    body.Material = Enum.Material.Metal
-    body.Color = Color3.fromRGB(80, 170, 220)
-    body.Parent = model
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    local root = model:FindFirstChild("HumanoidRootPart")
 
-    local head = Instance.new("Part")
-    head.Name = "Head"
-    head.Shape = Enum.PartType.Ball
-    head.Size = Vector3.new(2, 2, 2)
-    head.CFrame = body.CFrame * CFrame.new(0, 2.5, 0)
-    head.Material = Enum.Material.Neon
-    head.Color = Color3.fromRGB(170, 235, 255)
-    head.Parent = model
+    if not humanoid or not root or not root:IsA("BasePart") then
+        model:Destroy()
+        return nil
+    end
 
-    local weld = Instance.new("WeldConstraint")
-    weld.Part0 = body
-    weld.Part1 = head
-    weld.Parent = body
+    model:PivotTo(playerRoot.CFrame * CFrame.new(5, 0, 5))
+    model.PrimaryPart = root
 
-    local humanoid = Instance.new("Humanoid")
     humanoid.MaxHealth = definition.Health
     humanoid.Health = definition.Health
     humanoid.WalkSpeed = definition.Speed
     humanoid.JumpPower = 44
-    humanoid.Parent = model
+    humanoid.AutoRotate = true
+    humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 
-    model.PrimaryPart = body
     model:SetAttribute("Companion", true)
     model:SetAttribute("OwnerUserId", player.UserId)
     model:SetAttribute("CompanionKey", definition.Key)
     model:SetAttribute("Damage", definition.Damage)
+    model:SetAttribute("FriendUserId", friend.UserId)
+    model:SetAttribute("FriendUsername", friend.Username)
+    model:SetAttribute("FriendDisplayName", friend.DisplayName)
+
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            descendant.CanTouch = false
+            descendant.CanQuery = false
+            descendant:SetNetworkOwner(nil)
+        end
+    end
+
+    local head = model:FindFirstChild("Head")
+    if head and head:IsA("BasePart") then
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "FriendCompanionLabel"
+        billboard.Size = UDim2.fromOffset(190, 38)
+        billboard.StudsOffset = Vector3.new(0, 3.2, 0)
+        billboard.AlwaysOnTop = true
+        billboard.MaxDistance = 70
+        billboard.Adornee = head
+        billboard.Parent = model
+
+        local label = Instance.new("TextLabel")
+        label.BackgroundTransparency = 1
+        label.Size = UDim2.fromScale(1, 1)
+        label.Font = Enum.Font.GothamBold
+        label.TextSize = 10
+        label.TextColor3 = Color3.fromRGB(225, 238, 255)
+        label.TextStrokeTransparency = 0.5
+        label.Text = ("ALLY • %s"):format(friend.DisplayName)
+        label.Parent = billboard
+    end
 
     CollectionService:AddTag(model, "CompanionNPC")
-    body:SetNetworkOwner(nil)
 
     humanoid.Died:Connect(function()
         nextAttack[model] = nil
@@ -253,6 +335,7 @@ function Service:Init(config, dataService)
             end
         end
         active[player] = nil
+        friendCache[player] = nil
     end)
 
     for _, player in ipairs(Players:GetPlayers()) do
