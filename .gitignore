@@ -3,3 +3,5 @@ build/
 *.rbxlx
 __pycache__/
 *.pyc
+.cb-ai/
+.cb-ai.json
