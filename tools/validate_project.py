@@ -89,7 +89,7 @@ for token in ("CollisionBattlestarWorld","MapLoaded","SpawnLocation","district",
         fail("map contract missing: "+token)
 
 routes=read("ReplicatedStorage/Shared/MapDefinitions.lua")
-for token in ("BattleLine_Urban_v2","Origin","Metro","Core","Iron","Apex"):
+for token in ("BattleLine_Urban_v3","Origin","Metro","Core","Iron","Apex"):
     if token not in routes:
         fail("route definition missing: "+token)
 
