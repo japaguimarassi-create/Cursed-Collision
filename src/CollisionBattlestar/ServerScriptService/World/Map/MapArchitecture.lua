@@ -1,143 +1,63 @@
 --!strict
 local T=require(script.Parent.MapContext)
-local s=T.Get()
-local PALETTE=s.PALETTE
-
-local function streetSegment(parent:Instance,name:string,pos:Vector3,size:Vector3,rotation:number)
-	local road=T.Part(parent,name,size,CFrame.new(pos)*CFrame.Angles(0,math.rad(rotation),0),Enum.Material.Asphalt,PALETTE.Street,true,true)
-	local lineSize=rotation%180==0 and Vector3.new(size.X,.08,1.2) or Vector3.new(1.2,.08,size.Z)
-	local line=T.Part(parent,name.."_Center",lineSize,CFrame.new(pos+Vector3.new(0,.54,0))*CFrame.Angles(0,math.rad(rotation),0),Enum.Material.Neon,Color3.fromRGB(170,180,195),false,false)
-	line.Transparency=.35
-	return road
-end
-
-local function sidewalk(parent:Instance,name:string,pos:Vector3,size:Vector3)
-	return T.Part(parent,name,size,CFrame.new(pos),Enum.Material.Concrete,PALETTE.Sidewalk,true,true)
-end
-
-local function streetLight(parent:Instance,pos:Vector3,rotation:number)
-	T.Part(parent,"StreetLight",Vector3.new(.8,12,.8),CFrame.new(pos+Vector3.new(0,6,0)),Enum.Material.Metal,PALETTE.Metal,true,true)
-	T.Part(parent,"StreetLightArm",Vector3.new(4,.5,.5),CFrame.new(pos+Vector3.new(rotation*2,11,0)),Enum.Material.Metal,PALETTE.Metal,true,true)
-	local lamp=T.Part(parent,"StreetLightGlow",Vector3.new(1.4,.5,1.4),CFrame.new(pos+Vector3.new(rotation*3.3,10.8,0)),Enum.Material.Neon,PALETTE.Neon,false,false)
-	lamp.CanTouch=false
-end
-
-local function windowStrip(parent:Instance,name:string,pos:Vector3,size:Vector3,vertical:boolean,color:Color3)
-	local w=T.Part(parent,name,size,CFrame.new(pos),Enum.Material.Glass,color,false,false)
-	w.Transparency=.12
-	if vertical then
-		w.Size=Vector3.new(.5,size.Y,size.Z)
-	else
-		w.Size=Vector3.new(size.X,.5,size.Z)
-	end
-	return w
-end
-
-local function simpleBuilding(parent:Instance,name:string,base:Vector3,width:number,depth:number,height:number,color:Color3,accent:Color3,regionId:string)
-	local body=T.Part(parent,name,Vector3.new(width,height,depth),CFrame.new(base+Vector3.new(0,height/2,0)),Enum.Material.Concrete,color,true,true)
-	body:SetAttribute("RegionId",regionId)
-	T.Part(parent,name.."_Roof",Vector3.new(width+2,1.5,depth+2),CFrame.new(base+Vector3.new(0,height+.75,0)),Enum.Material.Metal,PALETTE.DarkMetal,true,true)
-	T.Tag(body,"EnvironmentStatic")
-	local strips=math.max(2,math.floor(width/11))
-	for i=1,strips do
-		local x=(-width/2)+(i*(width/(strips+1)))
-		windowStrip(parent,name.."_Glass_"..i,base+Vector3.new(x,height*.56,-depth/2-.28),Vector3.new(2,height*.50,.4),false,accent)
-	end
-	local crown=T.Part(parent,name.."_Crown",Vector3.new(math.max(5,width*.55),2,math.max(5,depth*.55)),CFrame.new(base+Vector3.new(0,height+2,0)),Enum.Material.Neon,accent,false,false)
-	crown.CanTouch=false
-end
-
-local function tower(parent:Instance,name:string,base:Vector3,width:number,depth:number,height:number,accent:Color3,regionId:string)
-	local body=T.Part(parent,name,Vector3.new(width,height,depth),CFrame.new(base+Vector3.new(0,height/2,0)),Enum.Material.Concrete,PALETTE.Concrete,true,true)
-	body:SetAttribute("RegionId",regionId)
-	local podiumH=math.min(18,height*.18)
-	T.Part(parent,name.."_Podium",Vector3.new(width+10,podiumH,depth+10),CFrame.new(base+Vector3.new(0,podiumH/2,0)),Enum.Material.Concrete,Color3.fromRGB(73,78,90),true,true)
-	for y=podiumH+8,height-5,8 do
-		T.Part(parent,name.."_Band_"..tostring(math.floor(y)),Vector3.new(width+.7,.55,depth+.7),CFrame.new(base+Vector3.new(0,y,0)),Enum.Material.Neon,accent,false,false)
-	end
-	for y=8,height-8,8 do
-		local front=T.Part(parent,name.."_FrontWindow_"..tostring(y),Vector3.new(width*.68,.9,.6),CFrame.new(base+Vector3.new(0,y,-depth/2-.7)),Enum.Material.Glass,accent,false,false)
-		front.Transparency=.08
-		local side=T.Part(parent,name.."_SideWindow_"..tostring(y),Vector3.new(.6,.9,depth*.68),CFrame.new(base+Vector3.new(width/2+.7,y,0)),Enum.Material.Glass,accent,false,false)
-		side.Transparency=.10
-	end
-	local crown=T.Part(parent,name.."_Crown",Vector3.new(width*.65,3,depth*.65),CFrame.new(base+Vector3.new(0,height+2,0)),Enum.Material.Neon,accent,false,false)
-	T.Tag(body,"EnvironmentStatic")
-	T.Tag(crown,"LandmarkVisual")
-end
-
-local function enterableBuilding(parent:Instance,name:string,pos:Vector3,width:number,depth:number,height:number,regionId:string,accent:Color3)
-	local wall=4
-	local frontZ=-depth/2
-	T.Part(parent,name.."_Back",Vector3.new(width,height,wall),CFrame.new(pos+Vector3.new(0,height/2,depth/2)),Enum.Material.Concrete,PALETTE.Concrete,true,true)
-	T.Part(parent,name.."_Left",Vector3.new(wall,height,depth),CFrame.new(pos+Vector3.new(-width/2,height/2,0)),Enum.Material.Concrete,PALETTE.Concrete,true,true)
-	T.Part(parent,name.."_Right",Vector3.new(wall,height,depth),CFrame.new(pos+Vector3.new(width/2,height/2,0)),Enum.Material.Concrete,PALETTE.Concrete,true,true)
-	local frontWidth=(width-12)/2
-	T.Part(parent,name.."_FrontL",Vector3.new(frontWidth,height,wall),CFrame.new(pos+Vector3.new(-(width-frontWidth)/2,height/2,frontZ)),Enum.Material.Concrete,PALETTE.Concrete,true,true)
-	T.Part(parent,name.."_FrontR",Vector3.new(frontWidth,height,wall),CFrame.new(pos+Vector3.new((width-frontWidth)/2,height/2,frontZ)),Enum.Material.Concrete,PALETTE.Concrete,true,true)
-	for floor=1,math.max(1,math.floor(height/10)) do
-		T.Part(parent,name.."_Floor_"..floor,Vector3.new(width-8,.8,depth-8),CFrame.new(pos+Vector3.new(0,floor*10-1,0)),Enum.Material.Concrete,Color3.fromRGB(70,73,82),true,true)
-	end
-	local frame=T.Part(parent,name.."_DoorFrame",Vector3.new(12,12,1),CFrame.new(pos+Vector3.new(0,6,frontZ-.2)),Enum.Material.Metal,PALETTE.DarkMetal,true,true)
-	frame:SetAttribute("RegionId",regionId)
-	T.Part(parent,name.."_Sign",Vector3.new(math.min(width*.45,18),3,.5),CFrame.new(pos+Vector3.new(0,height-4,frontZ-.6)),Enum.Material.Neon,accent,false,false)
-	T.Marker(parent,name.."_InteriorVolume",pos+Vector3.new(0,height/2,0),Vector3.new(width-4,height-2,depth-4),regionId)
-end
-
-local function tree(parent:Instance,pos:Vector3,scale:number)
-	local trunk=T.Part(parent,"TreeTrunk",Vector3.new(scale*.7,scale*2.5,scale*.7),CFrame.new(pos+Vector3.new(0,scale*1.25,0)),Enum.Material.Wood,Color3.fromRGB(87,62,46),true,false)
-	trunk.CanQuery=false
-	local crown=T.Part(parent,"TreeCrown",Vector3.new(scale*2.5,scale*2.5,scale*2.5),CFrame.new(pos+Vector3.new(0,scale*3,0)),Enum.Material.Grass,Color3.fromRGB(67,127,82),true,false)
-	crown.Shape=Enum.PartType.Ball
-	crown.CanQuery=false
-end
-
-local function bench(parent:Instance,pos:Vector3,rotation:number)
-	T.Part(parent,"BenchSeat",Vector3.new(6,.5,1.6),CFrame.new(pos+Vector3.new(0,1,0))*CFrame.Angles(0,math.rad(rotation),0),Enum.Material.Wood,Color3.fromRGB(98,68,48),true,false)
-	T.Part(parent,"BenchBack",Vector3.new(6,1.8,.45),CFrame.new(pos+Vector3.new(0,2,0))*CFrame.Angles(0,math.rad(rotation),0),Enum.Material.Wood,Color3.fromRGB(98,68,48),true,false)
-end
-
-local function roofLadder(parent:Instance,name:string,pos:Vector3,height:number)
-	local ladder=Instance.new("TrussPart")
-	ladder.Name=name
-	ladder.Size=Vector3.new(2,height,2)
-	ladder.CFrame=CFrame.new(pos+Vector3.new(0,height/2,0))
-	ladder.Material=Enum.Material.Metal
-	ladder.Color=PALETTE.Metal
-	ladder.Anchored=true
-	ladder.Parent=parent
-	return ladder
-end
-
-local function stair(parent:Instance,name:string,start:Vector3,steps:number,width:number,height:number,forward:Vector3)
-	local dir=forward.Magnitude>.1 and forward.Unit or Vector3.new(0,0,1)
-	for i=1,steps do
-		local pos=start+dir*((i-1)*2.2)+Vector3.new(0,(i-1)*height,0)
-		T.Part(parent,name.."_"..i,Vector3.new(width,height*i,3),CFrame.new(pos+Vector3.new(0,height*i/2,0)),Enum.Material.Concrete,PALETTE.Sidewalk,true,true)
-	end
-end
-
-local function skybridge(parent:Instance,name:string,pos:Vector3,length:number,rotation:number)
+local Routes=require(game.ReplicatedStorage.Shared.MapRouteDefinitions)
+local M={}
+local function road(parent:Instance,name:string,pos:Vector3,size:Vector3,rotation:number)
 	local cf=CFrame.new(pos)*CFrame.Angles(0,math.rad(rotation),0)
-	T.Part(parent,name.."_Deck",Vector3.new(length,2,14),cf,Enum.Material.Metal,PALETTE.DarkMetal,true,true)
-	T.Part(parent,name.."_RailA",Vector3.new(length,3,.6),cf*CFrame.new(0,2.2,-6),Enum.Material.Glass,PALETTE.Neon,true,false)
-	T.Part(parent,name.."_RailB",Vector3.new(length,3,.6),cf*CFrame.new(0,2.2,6),Enum.Material.Glass,PALETTE.Neon,true,false)
-	for x=-length/2+12,length/2-12,24 do
-		T.Part(parent,name.."_Beam_"..tostring(x),Vector3.new(.8,8,16),cf*CFrame.new(x,-4,0),Enum.Material.Metal,PALETTE.Metal,true,true)
+	T.Part(parent,name,size,cf,Enum.Material.Asphalt,Color3.fromRGB(29,32,39),true,true,false)
+	local lineSize=rotation%180==0 and Vector3.new(size.X,.08,1.1)or Vector3.new(1.1,.08,size.Z)
+	T.Decor(parent,name.."_Line",lineSize,cf*CFrame.new(0,.54,0),Enum.Material.Neon,Color3.fromRGB(145,151,166)).Transparency=.38
+end
+local function sidewalk(parent:Instance,name:string,pos:Vector3,size:Vector3)T.Part(parent,name,size,CFrame.new(pos),Enum.Material.Concrete,Color3.fromRGB(92,96,106),true,true,false)end
+local function lamp(parent:Instance,pos:Vector3,color:Color3)
+	T.Part(parent,"LampPole",Vector3.new(.7,11,.7),CFrame.new(pos+Vector3.new(0,5.5,0)),Enum.Material.Metal,Color3.fromRGB(47,52,61),true,true,false)
+	T.Part(parent,"LampArm",Vector3.new(4,.45,.45),CFrame.new(pos+Vector3.new(2,10,0)),Enum.Material.Metal,Color3.fromRGB(47,52,61),true,true,false)
+	T.Decor(parent,"LampGlow",Vector3.new(1.3,.45,1.3),CFrame.new(pos+Vector3.new(3.4,9.7,0)),Enum.Material.Neon,color)
+end
+local function building(parent:Instance,name:string,pos:Vector3,size:Vector3,color:Color3,accent:Color3,regionId:string)
+	local body=T.Part(parent,name,size,CFrame.new(pos+Vector3.new(0,size.Y/2,0)),Enum.Material.Concrete,color,true,true,false)
+	body:SetAttribute("RegionId",regionId);T.Tag(body,"EnvironmentStatic")
+	local roof=T.Decor(parent,name.."_Roof",Vector3.new(size.X+2,1.4,size.Z+2),CFrame.new(pos+Vector3.new(0,size.Y+.7,0)),Enum.Material.Metal,Color3.fromRGB(40,44,53));T.Tag(roof,"LandmarkVisual")
+	for floor=1,math.max(1,math.floor(size.Y/12))do T.Decor(parent,name.."_WindowBand_"..floor,Vector3.new(size.X*.72,.8,.45),CFrame.new(pos.X,pos.Y+floor*10,pos.Z-size.Z/2-.4),Enum.Material.Glass,accent)end
+end
+local function tower(parent:Instance,name:string,pos:Vector3,width:number,depth:number,height:number,accent:Color3,regionId:string)
+	building(parent,name,pos,Vector3.new(width,height,depth),Color3.fromRGB(72,77,88),accent,regionId)
+	for y=16,height-6,10 do T.Decor(parent,name.."_Band_"..y,Vector3.new(width+1,.5,depth+1),CFrame.new(pos+Vector3.new(0,y,0)),Enum.Material.Neon,accent)end
+end
+local function warehouse(parent:Instance,name:string,pos:Vector3,width:number,depth:number,height:number,accent:Color3,regionId:string)
+	local body=T.Part(parent,name,Vector3.new(width,height,depth),CFrame.new(pos+Vector3.new(0,height/2,0)),Enum.Material.Metal,Color3.fromRGB(69,72,80),true,true,false)
+	body:SetAttribute("RegionId",regionId);T.Tag(body,"EnvironmentStatic")
+	for x=-width/2+8,width/2-7,16 do T.Decor(parent,name.."_Panel_"..x,Vector3.new(2,height*.7,.5),CFrame.new(pos+Vector3.new(x,height*.56,-depth/2-.5)),Enum.Material.Neon,accent)end
+	T.Destructible(parent,name.."_Door",pos+Vector3.new(0,height*.31,-depth/2-.5),Vector3.new(math.min(18,width*.42),height*.62,.6),Color3.fromRGB(34,38,46))
+end
+local function canopy(parent:Instance,name:string,pos:Vector3,color:Color3)
+	T.Part(parent,name.."_Top",Vector3.new(22,1.2,18),CFrame.new(pos+Vector3.new(0,8,0)),Enum.Material.Metal,color,true,true,false)
+	for _,x in ipairs({-9,9})do for _,z in ipairs({-7,7})do T.Part(parent,name.."_Post",Vector3.new(.7,8,.7),CFrame.new(pos+Vector3.new(x,4,z)),Enum.Material.Metal,Color3.fromRGB(44,49,58),true,true,false)end end
+end
+local function cover(parent:Instance,pos:Vector3,color:Color3)T.Destructible(parent,"Cover",pos+Vector3.new(0,2,0),Vector3.new(7,4,3),color)end
+function M.BuildRoads(parent:Instance)
+	road(parent,"MainSpine",Vector3.new(0,0,0),Vector3.new(1700,1,40),0)
+	road(parent,"SouthCombatLane",Vector3.new(0,0,105),Vector3.new(1700,1,22),0)
+	road(parent,"NorthCombatLane",Vector3.new(0,0,-105),Vector3.new(1700,1,22),0)
+	for x=-720,720,120 do road(parent,"CrossStreet",Vector3.new(x,0,0),Vector3.new(18,1,240),90)end
+	for x=-720,720,80 do sidewalk(parent,"SidewalkA",Vector3.new(x,0,25),Vector3.new(58,1,14));sidewalk(parent,"SidewalkB",Vector3.new(x,0,-25),Vector3.new(58,1,14));lamp(parent,Vector3.new(x,0,31),Color3.fromRGB(92,198,255))end
+end
+function M.BuildZoneShell(parent:Instance,node:any)
+	local p=node.Position
+	T.Part(parent,node.Id.."_Floor",Vector3.new(220,2,210),CFrame.new(p.X,-1,p.Z),Enum.Material.Concrete,Color3.fromRGB(63,67,77),true,true,false)
+	T.Decor(parent,node.Id.."_Ring",Vector3.new(130,.4,130),CFrame.new(p.X,.2,p.Z),Enum.Material.Neon,node.Color)
+	local center=T.Part(parent,node.Id.."_CombatFloor",Vector3.new(140,.8,110),CFrame.new(p.X,.75,p.Z),Enum.Material.Slate,Color3.fromRGB(48,52,62),true,true,false);center:SetAttribute("RegionId",node.Id)
+	for angle=0,315,45 do local a=math.rad(angle);cover(parent,p+Vector3.new(math.cos(a)*78,2,math.sin(a)*66),node.Color)end
+end
+function M.BuildLandmark(parent:Instance,id:string)
+	local node=Routes.Nodes[id];local p=node.Position
+	if id=="Origin" then tower(parent,"OriginGate",p+Vector3.new(-72,0,-70),26,26,44,node.Color,id);canopy(parent,"OriginTraining",p+Vector3.new(55,0,52),node.Color)
+	elseif id=="Neon" then tower(parent,"NeonTower",p+Vector3.new(74,0,-62),34,34,76,node.Color,id);building(parent,"NeonArcade",p+Vector3.new(-62,0,60),Vector3.new(50,26,42),Color3.fromRGB(69,65,82),node.Color,id)
+	elseif id=="Iron" then warehouse(parent,"IronWarehouse",p+Vector3.new(-62,0,-58),72,48,28,node.Color,id);for x=-48,48,24 do canopy(parent,"Market",p+Vector3.new(x,0,56),node.Color)end
+	elseif id=="Core" then tower(parent,"CoreSpire",p+Vector3.new(0,0,-68),42,42,98,node.Color,id);local core=T.Decor(parent,"CollisionPillar",Vector3.new(18,24,18),CFrame.new(p+Vector3.new(0,12,0)),Enum.Material.Neon,node.Color);core.Shape=Enum.PartType.Ball;T.Tag(core,"CollisionResponsive")
+	elseif id=="Sky" then tower(parent,"SkyTower",p+Vector3.new(65,0,65),30,30,90,node.Color,id);T.Part(parent,"SkyDeck",Vector3.new(150,2,18),CFrame.new(p+Vector3.new(0,42,0)),Enum.Material.Metal,Color3.fromRGB(36,41,51),true,true,false);T.Decor(parent,"SkyRail",Vector3.new(150,2.4,.5),CFrame.new(p+Vector3.new(0,44,-8)),Enum.Material.Glass,node.Color)
+	elseif id=="Rift" then warehouse(parent,"RiftFactory",p+Vector3.new(-58,0,55),76,52,30,node.Color,id);local crater=T.Decor(parent,"RiftCore",Vector3.new(32,4,32),CFrame.new(p+Vector3.new(15,2,-34)),Enum.Material.Neon,node.Color);crater.Shape=Enum.PartType.Cylinder;T.Tag(crater,"CollisionResponsive")
+	else warehouse(parent,"ApexArena",p+Vector3.new(0,0,-66),94,58,20,node.Color,id);local ring=T.Decor(parent,"ApexRing",Vector3.new(90,.6,90),CFrame.new(p+Vector3.new(0,2,34)),Enum.Material.Neon,node.Color);ring.Shape=Enum.PartType.Cylinder;T.Tag(ring,"BattleStreakArenaVisual")
 	end
 end
-
-return {
-	streetSegment=streetSegment,
-	sidewalk=sidewalk,
-	streetLight=streetLight,
-	windowStrip=windowStrip,
-	simpleBuilding=simpleBuilding,
-	tower=tower,
-	enterableBuilding=enterableBuilding,
-	tree=tree,
-	bench=bench,
-	roofLadder=roofLadder,
-	stair=stair,
-	skybridge=skybridge,
-}
+return M
