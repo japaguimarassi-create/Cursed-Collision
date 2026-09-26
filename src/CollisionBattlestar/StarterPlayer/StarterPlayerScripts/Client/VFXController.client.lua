@@ -114,6 +114,49 @@ local function rootPosition():Vector3?
 	return root and root:IsA("BasePart") and root.Position or nil
 end
 
+local function bladeLimb(character:Model):BasePart?
+	for _,name in ipairs({"RightHand","RightLowerArm","RightUpperArm","Right Arm"})do
+		local part=character:FindFirstChild(name,true)
+		if part and part:IsA("BasePart")then return part end
+	end
+	return nil
+end
+
+local function bladeTrail(character:Model,color:Color3,scale:number)
+	local limb=bladeLimb(character)
+	if not limb or not acquire()then return end
+	local a0=Instance.new("Attachment")
+	a0.Position=Vector3.new(0,scale*.65,scale*.7)
+	a0.Parent=limb
+	local a1=Instance.new("Attachment")
+	a1.Position=Vector3.new(0,-scale*.65,scale*.7)
+	a1.Parent=limb
+	local trail=Instance.new("Trail")
+	trail.Name="CBS_BladeTrail"
+	trail.Attachment0=a0
+	trail.Attachment1=a1
+	trail.Lifetime=V.BladeTrail.Lifetime
+	trail.MinLength=V.BladeTrail.MinLength
+	trail.FaceCamera=true
+	trail.LightEmission=1
+	trail.Color=ColorSequence.new(color)
+	trail.WidthScale=NumberSequence.new({
+		NumberSequenceKeypoint.new(0,V.BladeTrail.Width.X),
+		NumberSequenceKeypoint.new(1,V.BladeTrail.Width.Y),
+	})
+	trail.Transparency=NumberSequence.new({
+		NumberSequenceKeypoint.new(0,.08),
+		NumberSequenceKeypoint.new(1,1),
+	})
+	trail.Parent=limb
+	task.delay(V.BladeTrail.Lifetime+V.BladeTrail.Fade,function()
+		if trail.Parent then trail:Destroy()end
+		if a0.Parent then a0:Destroy()end
+		if a1.Parent then a1:Destroy()end
+	end)
+	release(V.BladeTrail.Lifetime+V.BladeTrail.Fade)
+end
+
 local function realityPulse(strength:number)
 	if not acquire()then return end
 	local responsive=CollectionService:GetTagged("CollisionResponsive")
@@ -142,7 +185,7 @@ local function realityPulse(strength:number)
 			end
 		end
 	end)
-	release(.35)
+	release(V.Limits.RealityLifetime+.08)
 end
 
 feedback.OnClientEvent:Connect(function(key:string,value:any)
@@ -165,6 +208,10 @@ feedback.OnClientEvent:Connect(function(key:string,value:any)
 			local action=typeof(value.Action)=="string"and value.Action or"Light"
 			local color=action=="Heavy"and V.Palette.Heavy or action=="Special"and V.Palette.Special or V.Palette.Light
 			beamSlash(pos,color,action=="Special"and 3.5 or 2.1)
+			local character=player.Character
+			if character then
+				bladeTrail(character,color,math.max(1,action=="Special"and 1.8 or action=="Heavy"and 1.4 or 1.1))
+			end
 		end
 	elseif key=="OverdriveStart"then
 		local pos=rootPosition()
