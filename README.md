@@ -43,3 +43,6 @@ External animation IDs are treated as optional runtime candidates, not as guaran
 ## Build pipeline
 
 The project uses a Rojo source-of-truth manifest, GitHub Actions validation and a manual Roblox publication workflow. Static validation and Roblox acceptance do not replace live device testing for visual quality, combat feel, animation compatibility, streaming behavior or sustained mobile frame rate.
+
+
+Boot recovery revision: self-contained client HUD bootstrap with verified startup gating.
