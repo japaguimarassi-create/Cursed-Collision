@@ -113,8 +113,8 @@ if count!=24:
     fail("fighter roster count mismatch: "+str(count))
 
 store=read("ReplicatedStorage/Shared/StoreCatalog.lua")
-if "for i=1,150 do" not in store:
-    fail("150 emote generator missing")
+if 'Kind="Emote"' in store or "Emote_" in store:
+    fail("emotes remain in active store catalog")
 
 qa=read("ReplicatedStorage/Shared/QAContract.lua")
 for token in ("Clash1","Clash2","Clash3","Clash4","ClashPanel"):
@@ -127,7 +127,7 @@ for token in ("GetPartBoundsInBox","GetPartBoundsInRadius","OverlapParams","Huma
         fail("hitbox contract missing: "+token)
 
 build=read("ReplicatedStorage/Shared/BuildInfo.lua")
-for token in ('B.Version="4.0.0"','B.Roster=24','B.Emotes=150','BattleLine_Urban_V5'):
+for token in ('B.Version="4.0.0"','B.Roster=24','B.Emotes=0','B.HUD="modern-roblox-hud-v5"','BattleLine_Urban_V5'):
     if token not in build:
         fail("build contract missing: "+token)
 
