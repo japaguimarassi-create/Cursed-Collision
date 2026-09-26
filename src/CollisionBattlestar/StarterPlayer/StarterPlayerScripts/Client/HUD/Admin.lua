@@ -15,6 +15,9 @@ function Admin.Mount(root, config, player, remote)
 
         local launcher = root.Button(root.Gui, "AdminMenuButton", "CONTROL", UDim2.fromOffset(96, 30))
         launcher.Position = UDim2.fromOffset(18, 82)
+        launcher.ZIndex = 120
+        launcher.Text = "ADMIN"
+        launcher.TextSize = 9
         launcher.TextSize = 8
         launcher.BackgroundColor3 = config.UI.Danger
 
