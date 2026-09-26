@@ -17,8 +17,6 @@ local animator:Animator?
 local tracks:TrackMap={}
 local failed:{[string]:boolean}={}
 local active:{[string]:string}={}
-local guiConnections:{RBXScriptConnection}={}
-local inputBound=false
 local locomotionSerial=0
 
 local function makeAnimation(id:string,name:string):Animation
@@ -184,9 +182,6 @@ feedback.OnClientEvent:Connect(function(kind:string,value:any)
 	end
 end)
 
-playerGui.ChildAdded:Connect(function(child)
-	if child.Name=="CollisionHUD" then task.defer(bindGui) end
-end)
 
 player.CharacterAdded:Connect(bind)
 if player.Character then bind(player.Character) end
