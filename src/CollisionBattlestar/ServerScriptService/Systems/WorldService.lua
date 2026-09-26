@@ -113,6 +113,10 @@ function M:Build()
   local p=part(spawnFolder,"Spawn_"..nodeId,Vector3.new(8,1,8),Routes.Nodes[nodeId].Position+Vector3.new(0,4,28),Routes.Nodes[nodeId].Color,Enum.Material.Neon,false,.55)
   table.insert(spawns,p)
  end
+ local npcs=Instance.new("Folder")
+ npcs.Name="NPCs"
+ npcs.Parent=world
+ createTrainingDummy(npcs)
  workspace:SetAttribute("CollisionBattlestarMapReady",true)
  workspace:SetAttribute("CollisionBattlestarWorldVersion",Routes.Version)
  workspace:SetAttribute("CollisionBattlestarWorldPartCount",#workspace:GetDescendants())
