@@ -121,7 +121,7 @@ local function sendReportToGitHub(report:any)
 			Headers={
 				["Accept"]="application/vnd.github+json",
 				["Content-Type"]="application/json",
-				["Authorization"]="Bearer "..tostring(secret),
+				["Authorization"]=secret:AddPrefix("Bearer "),
 				["X-GitHub-Api-Version"]="2026-03-10",
 			},
 			Body=payload,
