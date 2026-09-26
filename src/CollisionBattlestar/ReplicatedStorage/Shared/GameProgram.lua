@@ -5,10 +5,7 @@ local GamePassIds = require(script.Parent:WaitForChild("GamePassIds"))
 
 local game = DSL.game("Collision Battlestar")
 
-game._data.BuildVersion = "pve-4.0.0"
-game._data.UniverseId = 5290480963
-game._data.PlaceId = 15338267657
-game._data.GameMode = "PvE"
+game:identity("pve-4.0.0", 5290480963, 15338267657, "PvE")
 
 game:meta({
     Authoring = "Collision Script",
