@@ -143,13 +143,15 @@ function M.Build():ScreenGui
  local code=frame(shop,"Code",UDim2.fromOffset(270,38),UDim2.new(1,-290,0,74),C.UI.PanelSoft,0,9);code.ZIndex=54
  local input=Instance.new("TextBox");input.Name="Input";input.Size=UDim2.new(1,-78,1,0);input.Position=UDim2.fromOffset(8,0);input.BackgroundTransparency=1;input.PlaceholderText="REDEEM CODE";input.TextColor3=C.UI.Text;input.Font=Enum.Font.GothamBold;input.TextSize=10;input.Parent=code
  local redeem=button(code,"Redeem","OK",UDim2.fromOffset(58,30),UDim2.new(1,-64,.5,-15));redeem.ZIndex=55
- local content=frame(shop,"Content",UDim2.new(1,-40,1,-128),UDim2.fromOffset(20,120),Color3.new(),1,0);content.ZIndex=53
+ local content=Instance.new("ScrollingFrame")
+ content.Name="Content";content.Size=UDim2.new(1,-40,1,-128);content.Position=UDim2.fromOffset(20,120);content.BackgroundTransparency=1;content.BorderSizePixel=0;content.ScrollBarThickness=4;content.ScrollBarImageTransparency=.35;content.AutomaticCanvasSize=Enum.AutomaticSize.Y;content.CanvasSize=UDim2.new(0,0,0,0);content.ZIndex=53;content.Parent=shop
 
  local fighters=modal("FighterPanel",UDim2.fromScale(.92,.82))
  label(fighters,"Title","FIGHTER SELECT",UDim2.fromOffset(360,34),UDim2.fromOffset(20,14),Enum.Font.GothamBlack,23,C.UI.Text,Enum.TextXAlignment.Left)
  label(fighters,"Sub","24 fighters • data-driven combat profiles",UDim2.fromOffset(390,20),UDim2.fromOffset(20,44),Enum.Font.Gotham,9,C.UI.Muted,Enum.TextXAlignment.Left)
  button(fighters,"Close","×",UDim2.fromOffset(40,36),UDim2.new(1,-56,0,11))
- local fighterContent=frame(fighters,"Content",UDim2.new(1,-40,1,-82),UDim2.fromOffset(20,72),Color3.new(),1,0);fighterContent.ZIndex=53
+ local fighterContent=Instance.new("ScrollingFrame")
+ fighterContent.Name="Content";fighterContent.Size=UDim2.new(1,-40,1,-82);fighterContent.Position=UDim2.fromOffset(20,72);fighterContent.BackgroundTransparency=1;fighterContent.BorderSizePixel=0;fighterContent.ScrollBarThickness=4;fighterContent.ScrollBarImageTransparency=.35;fighterContent.AutomaticCanvasSize=Enum.AutomaticSize.Y;fighterContent.CanvasSize=UDim2.new(0,0,0,0);fighterContent.ZIndex=53;fighterContent.Parent=fighters
  local grid=Instance.new("UIGridLayout");grid.CellSize=UDim2.fromOffset(190,74);grid.CellPadding=UDim2.fromOffset(8,8);grid.SortOrder=Enum.SortOrder.LayoutOrder;grid.Parent=fighterContent
  for i,id in ipairs(Fighters.Order) do
   local f=Fighters.Get(id)
