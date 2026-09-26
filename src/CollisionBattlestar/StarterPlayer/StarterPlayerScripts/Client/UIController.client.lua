@@ -5,7 +5,10 @@ local StarterGui = game:GetService("StarterGui")
 
 local player = Players.LocalPlayer
 local rootFolder = script.Parent
-local HUD = rootFolder:WaitForChild("HUD", 15)
+local HUD = rootFolder:WaitForChild("HUD", 30)
+if not HUD then
+    error("HUD modules unavailable")
+end
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Root = require(HUD:WaitForChild("Root"))
 local Status = require(HUD:WaitForChild("Status"))
@@ -15,7 +18,8 @@ local Vitals = require(HUD:WaitForChild("Vitals"))
 local Actions = require(HUD:WaitForChild("Actions"))
 local Navigation = require(HUD:WaitForChild("Navigation"))
 local Feedback = require(HUD:WaitForChild("Feedback"))
-local Admin = require(HUD:WaitForChild("Admin"))
+local Admin = require(HUD:WaitForChild("Admin", 30))
+local Shop = require(HUD:WaitForChild("Shop", 30))
 
 local Controller = {}
 local initialized = false
@@ -75,14 +79,57 @@ function Controller:Init()
         AnimateIn = Root.AnimateIn,
     }
 
-    Profile.Mount(root, Config, player)
-    local status = Status.Mount(root, Config)
-    Economy.Mount(root, Config, player)
-    Vitals.Mount(root, Config, player)
-    local actions = Actions.Mount(root)
-    Navigation.Mount(root, Config, player, travelRemote)
-    local feedback = Feedback.Mount(root, Config)
-    Admin.Mount(root, Config, player, adminRemote)
+    local function safeMount(name, callback)
+        local ok, result = pcall(callback)
+        if not ok then
+            warn("[CollisionBattlestar][HUD] " .. name .. " failed: " .. tostring(result))
+            return nil
+        end
+        return result
+    end
+
+    safeMount("Profile", function()
+        Profile.Mount(root, Config, player)
+    end)
+
+    local status = safeMount("Status", function()
+        return Status.Mount(root, Config)
+    end)
+
+    safeMount("Economy", function()
+        Economy.Mount(root, Config, player)
+    end)
+
+    safeMount("Vitals", function()
+        Vitals.Mount(root, Config, player)
+    end)
+
+    local actions = safeMount("Actions", function()
+        return Actions.Mount(root)
+    end)
+
+    safeMount("Navigation", function()
+        Navigation.Mount(root, Config, player, travelRemote)
+    end)
+
+    local feedback = safeMount("Feedback", function()
+        return Feedback.Mount(root, Config)
+    end)
+
+    local shopRemote = ReplicatedStorage:WaitForChild("Remotes", 15):WaitForChild("Shop", 15)
+    if shopRemote and shopRemote:IsA("RemoteEvent") then
+        safeMount("Shop", function()
+            Shop.Mount(root, Config, player, shopRemote :: RemoteEvent, stateRemote)
+        end)
+    end
+
+    safeMount("Admin", function()
+        Admin.Mount(root, Config, player, adminRemote)
+    end)
+
+    if not status or not actions or not feedback then
+        error("Critical HUD modules failed")
+    end
 
     actions.M1.Button.Activated:Connect(function()
         if actions.M1.Activate() then
