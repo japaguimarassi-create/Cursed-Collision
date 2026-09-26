@@ -14,7 +14,6 @@ local M={}
 local currentGui:ScreenGui?
 local inputBound=false
 local feedbackBound=false
-local statsBound=false
 local characterBound=false
 local lastError=""
 
@@ -308,10 +307,6 @@ function M.Build():ScreenGui?
 		updateScale(gui)
 		if workspace.CurrentCamera then
 			workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function() updateScale(gui) end)
-		end
-		healthUpdate=renderHealth
-		if not statsBound then
-			statsBound=true
 		end
 		renderHealth()
 		renderEnergy()
