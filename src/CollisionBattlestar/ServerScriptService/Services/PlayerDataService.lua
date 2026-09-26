@@ -94,6 +94,7 @@ local function bindAttributes(p:Player,d:any)
 end
 
 local function setupPlayer(p:Player)
+	p:SetAttribute("PlayerDataReady",false)
 	local d,status=load(p)
 	if not d then
 		p:Kick(status=="LOCKED" and "Profile is active in another server." or "Profile data could not be loaded safely.")
@@ -110,20 +111,33 @@ local function setupPlayer(p:Player)
 	c.Value=d.Coins
 	c.Parent=ls
 	bindAttributes(p,d)
+	p:SetAttribute("PlayerDataReady",true)
 end
 
 function S.Init()
-	Players.PlayerAdded:Connect(setupPlayer)
+	Players.PlayerAdded:Connect(function(p)
+	p:SetAttribute("PlayerDataReady",false)
+	task.defer(setupPlayer,p)
+end)
 	Players.PlayerRemoving:Connect(function(p)
-		save(p)
-		task.wait(.15)
-		S.Release(p)
+		local saved=save(p)
+		if saved then
+			task.wait(.15)
+			S.Release(p)
+		else
+			warn("[Collision Battlestar] Profile save failed; retaining session lock until timeout for UserId "..tostring(p.UserId))
+		end
+		p:SetAttribute("PlayerDataReady",false)
 		profiles[p]=nil
 	end)
 	game:BindToClose(function()
 		for _,p in Players:GetPlayers()do
-			save(p)
-			S.Release(p)
+			local saved=save(p)
+			if saved then
+				S.Release(p)
+			else
+				warn("[Collision Battlestar] BindToClose save failed; retaining session lock until timeout for UserId "..tostring(p.UserId))
+			end
 		end
 	end)
 	for _,p in Players:GetPlayers()do

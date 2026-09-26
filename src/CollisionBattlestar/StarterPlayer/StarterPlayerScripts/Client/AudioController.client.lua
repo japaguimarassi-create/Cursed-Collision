@@ -1,67 +1,73 @@
 --!strict
 local SoundService=game:GetService("SoundService")
-local Debris=game:GetService("Debris")
-local Players=game:GetService("Players")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
-local ROOT=SoundService:FindFirstChild("CollisionAudio")or Instance.new("Folder")
-ROOT.Name="CollisionAudio"
-ROOT.Parent=SoundService
-ROOT:SetAttribute("SystemReady",true)
-ROOT:SetAttribute("ContentStatus","PUBLIC_FREE_CREATOR_STORE_IMPACT_ASSET")
+local folder=SoundService:FindFirstChild("CollisionAudio")
+if not folder then
+	folder=Instance.new("Folder")
+	folder.Name="CollisionAudio"
+	folder.Parent=SoundService
+end
 
-local IMPACT_ID="rbxassetid://9075325599"
--- Verified source: Creator Store "Punch Sound Effect Sfx 2 (free to use)", asset 9075325599.
--- The listing explicitly says "free to use" and reports a 2-second sound effect.
-local function playAt(position:Vector3,volume:number,speed:number)
-	local holder=Instance.new("Part")
-	holder.Name="CollisionAudioSource"
-	holder.Anchored=true
-	holder.CanCollide=false
-	holder.CanTouch=false
-	holder.CanQuery=false
-	holder.Transparency=1
-	holder.Size=Vector3.one
-	holder.CFrame=CFrame.new(position)
-	holder.Parent=workspace
+-- 9075325599: Creator Store item explicitly "(free to use)". https://create.roblox.com/store/asset/9075325599/Punch-Sound-Effect-Sfx-2-free-to-use
+-- 1198923651: Creator Store description says "feel free to use it". https://create.roblox.com/store/asset/1198923651
+-- 1885641628: Creator Store description says "feel free to use". https://create.roblox.com/store/asset/1885641628/bounce-sound-effect
+-- 82845990304289: Creator Store description says "Free to use". https://create.roblox.com/store/asset/82845990304289/User-Interface-Glass-Style-Button-Click
+
+local cues={
+	Hit={Id="rbxassetid://9075325599",Volume=.3,Speed=1.0,Source="https://create.roblox.com/store/asset/9075325599/Punch-Sound-Effect-Sfx-2-free-to-use"},
+	Heavy={Id="rbxassetid://1198923651",Volume=.38,Speed=.95,Source="https://create.roblox.com/store/asset/1198923651"},
+	Parry={Id="rbxassetid://1198923651",Volume=.34,Speed=1.15,Source="https://create.roblox.com/store/asset/1198923651"},
+	Dash={Id="rbxassetid://1885641628",Volume=.22,Speed=1.15,Source="https://create.roblox.com/store/asset/1885641628/bounce-sound-effect"},
+	UI={Id="rbxassetid://82845990304289",Volume=.18,Speed=1.0,Source="https://create.roblox.com/store/asset/82845990304289/User-Interface-Glass-Style-Button-Click"},
+	Overdrive={Id="rbxassetid://1198923651",Volume=.28,Speed=.82,Source="https://create.roblox.com/store/asset/1198923651"},
+}
+
+local sounds:{[string]:Sound}={}
+
+local function soundFor(name:string):Sound?
+	local existing=sounds[name]
+	if existing then return existing end
+	local cue=cues[name]
+	if not cue then return nil end
 	local sound=Instance.new("Sound")
-	sound.Name="Impact"
-	sound.SoundId=IMPACT_ID
-	sound.Volume=math.clamp(volume,.08,1)
-	sound.PlaybackSpeed=math.clamp(speed,.72,1.35)
-	sound.RollOffMode=Enum.RollOffMode.InverseTapered
-	sound.RollOffMinDistance=8
+	sound.Name="CBS_"..name
+	sound.SoundId=cue.Id
+	sound.Volume=cue.Volume
+	sound.PlaybackSpeed=cue.Speed
 	sound.RollOffMaxDistance=70
-	sound.Parent=holder
-	sound:Play()
-	Debris:AddItem(holder,2.2)
+	sound.Parent=folder
+	sounds[name]=sound
+	return sound
 end
 
-local function rootPosition():Vector3?
-	local character=Players.LocalPlayer.Character
-	local root=character and character:FindFirstChild("HumanoidRootPart")
-	return root and root:IsA("BasePart")and root.Position or nil
+local function play(name:string)
+	local sound=soundFor(name)
+	if sound then sound:Play()end
 end
 
-local feedback=game:GetService("ReplicatedStorage"):WaitForChild("CollisionRemotes"):WaitForChild("Feedback")
+local feedback=ReplicatedStorage:WaitForChild("CollisionRemotes"):WaitForChild("Feedback")
+
 feedback.OnClientEvent:Connect(function(key:string,value:any)
-	if key=="Hit"or key=="HitTaken"or key=="Parried"or key=="ParrySuccess"then
-		if typeof(value)=="table"and typeof(value.Position)=="Vector3"then
-			local action=typeof(value.Action)=="string"and value.Action or"Light"
-			local volume=key=="HitTaken"and .24 or .34
-			local speed=action=="Special"and .84 or action=="Heavy"and .92 or 1.03
-			playAt(value.Position,volume,speed)
+	if key=="Swing"and typeof(value)=="table"then
+		local action=typeof(value.Action)=="string"and value.Action or"Light"
+		if action=="Heavy"then
+			play("Heavy")
 		else
-			local pos=rootPosition()
-			if pos then playAt(pos,.26,1.05)end
+			play("Hit")
 		end
-	elseif key=="GuardBreak"or key=="BreakFX"or key=="WallImpact"then
-		local pos=typeof(value)=="table"and typeof(value.Position)=="Vector3"and value.Position or rootPosition()
-		if pos then playAt(pos,.48,.86)end
+	elseif key=="Hit"or key=="HitTaken"or key=="WallImpact"then
+		play("Hit")
+	elseif key=="Parry"or key=="ParrySuccess"or key=="GuardBreak"then
+		play("Parry")
 	elseif key=="Dash"then
-		local pos=rootPosition()
-		if pos then playAt(pos,.16,1.22)end
-	elseif key=="OverdriveStart"then
-		local pos=rootPosition()
-		if pos then playAt(pos,.25,.78)end
+		play("Dash")
+	elseif key=="OverdriveStart"or key=="OverdriveCollapse"then
+		play("Overdrive")
+	elseif key=="MapTravelSuccess"or key=="MapLocked"or key=="MapUnavailable"then
+		play("UI")
 	end
 end)
+
+folder:SetAttribute("SystemReady",true)
+folder:SetAttribute("ContentStatus","VERIFIED_FREE_CREATOR_STORE_AUDIO")

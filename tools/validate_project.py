@@ -137,9 +137,19 @@ for token in ("Animator","LoadAnimation","RenderStepped"):
         fail("animation client contract missing: "+token)
 
 vfx=read("StarterPlayer/StarterPlayerScripts/Client/VFXController.client.lua")
-for token in ("TweenService","ParticleEmitter","Beam"):
+for token in ("TweenService","ParticleEmitter","Beam","Trail","WorldState"):
     if token not in vfx:
         fail("vfx contract missing: "+token)
+
+audio=read("StarterPlayer/StarterPlayerScripts/Client/AudioController.client.lua")
+for token in ("9075325599","1198923651","1885641628","82845990304289","Feedback"):
+    if token not in audio:
+        fail("audio asset contract missing: "+token)
+
+catalog=read("ReplicatedStorage/Shared/MapAssetCatalog.lua")
+for token in ("RuntimeApproved","400850371","42942436","282662596"):
+    if token not in catalog:
+        fail("runtime map asset contract missing: "+token)
 
 world=read("ServerScriptService/Services/WorldStateService.lua")
 for token in ("Stable","Unstable","Distorted","Invaded","Collapsed","Recovering","Resonating"):

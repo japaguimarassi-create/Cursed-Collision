@@ -103,3 +103,49 @@ IMPORT SAFETY
 - Asset loading runs after the procedural map exists and is best-effort only.
 - If external loading fails, the procedural map remains complete.
 - Never add an unknown AnimationId or SoundId merely to fill a slot.
+
+
+VERIFIED RUNTIME ASSET SET — 2026-09-26
+----------------------------------------
+The project only promotes assets to RuntimeApproved when the public source explicitly supports free use
+and the asset remains within the mobile map budget.
+
+MAP MODELS
+- 400850371 — Bench. Creator Store description: "This is a free bench model." 228 triangles / 456 vertices.
+  Runtime slot: park seating. Source: https://create.roblox.com/store/asset/400850371/Bench
+- 42942436 — Dumpster Free. 82 triangles / 164 vertices as recorded in the project research pass.
+  Runtime slot: alley clutter. Source: https://create.roblox.com/store/asset/42942436/Dumpster-Free
+- 282662596 — [FREE!] Small Blocky Car. 792 triangles / 1,272 vertices, one script.
+  Runtime slot: street parking. Source: https://create.roblox.com/store/asset/282662596/FREE-Small-Blocky-Car
+  Imported scripts are removed by MapAssetLoader before the model is parented.
+
+AUDIO
+- 9075325599 — Punch Sound Effect Sfx 2 (free to use), short impact cue.
+  Runtime slots: Light hit, generic hit, wall impact. Source:
+  https://create.roblox.com/store/asset/9075325599/Punch-Sound-Effect-Sfx-2-free-to-use
+- 1198923651 — Thud, short impact cue; Creator Store description says it is free to use.
+  Runtime slots: Heavy, Parry, Overdrive. Source: https://create.roblox.com/store/asset/1198923651
+- 1885641628 — bounce sound effect, 0:01; Creator Store description says "feel free to use".
+  Runtime slot: Dash cue. Source: https://create.roblox.com/store/asset/1885641628/bounce-sound-effect
+- 82845990304289 — User Interface / Glass Style Button Click, 0:02; Creator Store description says "Free to use".
+  Runtime slot: map/UI feedback. Source:
+  https://create.roblox.com/store/asset/82845990304289/User-Interface-Glass-Style-Button-Click
+
+ANIMATION
+Public/free Creator Store animation packs were verified, including an R6 punch-fighting pack and an R6 punch
+animation. Their public pages expose model/pack IDs, not a child Animation asset ID that can be safely copied
+into AnimationDefinitions.lua. The active source also does not declare the player's rig type. Therefore all
+12 runtime animation IDs remain empty and the existing procedural Motor6D fallback is deliberately retained.
+Sources:
+https://create.roblox.com/store/asset/75164220659481/Fists-Combat-Animation-Pack-R6-Punch-Fighting
+https://create.roblox.com/store/asset/13081191834/R6-Punch-Animation
+Official rig guidance:
+https://create.roblox.com/docs/tutorials/use-case-tutorials/animation/create-an-animation
+
+PLATFORM RIGHTS
+Roblox states that the Creator Store contains free-to-use audio and that third-party asset loading through
+AssetService requires the experience setting "Allow Loading Third Party Assets". MapAssetLoader remains best-effort;
+the procedural map is created first and does not depend on remote loading.
+Sources:
+https://create.roblox.com/docs/audio/assets
+https://create.roblox.com/docs/reference/engine/classes/AssetService
