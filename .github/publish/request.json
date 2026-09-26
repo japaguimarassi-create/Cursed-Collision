@@ -1,8 +1,8 @@
 {
-  "publish": false,
+  "publish": true,
   "universe_id": "5290480963",
   "place_id": "15338267657",
-  "request_id": "collision-battlestar-live-hud-store-2026-09-26",
-  "status": "consumed",
-  "armed_at": "2026-09-26T14:19:50.029Z"
+  "request_id": "collision-battlestar-mobile-performance-hud-2026-09-26",
+  "status": "armed",
+  "armed_at": "2026-09-26T15:52:35.724Z"
 }
