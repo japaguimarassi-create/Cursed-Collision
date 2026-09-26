@@ -3,16 +3,16 @@
 local GamePassIds = require(script.Parent:WaitForChild("GamePassIds"))
 
 return {
-    BuildVersion = "pve-2.0.0",
+    BuildVersion = "pve-2.1.0",
     UniverseId = 5290480963,
     PlaceId = 15338267657,
     GameMode = "PvE",
 
     World = {
         Seed = 260926,
-        Size = 1000,
-        BlockSize = 84,
-        RoadWidth = 28,
+        Size = 1200,
+        BlockSize = 96,
+        RoadWidth = 32,
     },
 
     Combat = {
@@ -30,11 +30,11 @@ return {
 
     Waves = {
         Intermission = 8,
-        FirstWaveEnemies = 4,
+        FirstWaveEnemies = 12,
         EnemyGrowth = 2,
         EliteEveryWave = true,
         CompletionReward = 30,
-        MaxAliveEnemies = 30,
+        MaxAliveEnemies = 28,
     },
 
     Enemies = {
