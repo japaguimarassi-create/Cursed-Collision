@@ -59,6 +59,8 @@ AdminRemote.OnServerEvent:Connect(function(player, action)
         WaveService:AdminNextWave()
     elseif action == "Reward" then
         DataService:AddCredits(player, 1000)
+    elseif action == "Clear" then
+        EnemyService:Clear()
     elseif action == "Heal" then
         local character = player.Character
         local humanoid = character and character:FindFirstChildOfClass("Humanoid")
