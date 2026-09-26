@@ -1,10 +1,11 @@
 --!strict
+
 return {
-    Credits1000 = 0,
-    Credits6000 = 0,
-    Credits25000 = 0,
-    Credits100000 = 0,
-    MoneyStack = 0,
-    DamageStack = 0,
-    SpeedStack = 0,
+    Credits1000 = 3714936531,
+    Credits6000 = 3714936533,
+    Credits25000 = 3714936535,
+    Credits100000 = 3714936537,
+    MoneyStack = 3714936540,
+    DamageStack = 3714936542,
+    SpeedStack = 3714936543,
 }
