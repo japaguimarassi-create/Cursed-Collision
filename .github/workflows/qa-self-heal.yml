@@ -46,6 +46,8 @@ jobs:
         if: steps.gate.outputs.heal == 'true'
         run: |
           set +e
+          mkdir -p ".ci/self-heal/$QA_RUN_ID"
+          printf '%s\n' '{"status":"ERROR","message":"self_heal did not produce a result"}' > ".ci/self-heal/$QA_RUN_ID/result.json"
           python3 tools/self_heal.py
           code=$?
           set -e
