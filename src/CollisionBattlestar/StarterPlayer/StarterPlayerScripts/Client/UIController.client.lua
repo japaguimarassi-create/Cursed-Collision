@@ -9,6 +9,7 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local State = remotes:WaitForChild("State") :: RemoteEvent
 local Travel = remotes:WaitForChild("Travel") :: RemoteEvent
+local AdminAction = remotes:WaitForChild("AdminAction") :: RemoteEvent
 
 local Controller = {}
 
@@ -147,6 +148,58 @@ function Controller:Init()
     player:GetAttributeChangedSignal("Zone"):Connect(function()
         setZone(player:GetAttribute("Zone") or "PvE")
     end)
+
+    if player:GetAttribute("IsOwner") == true then
+        local adminButton = Instance.new("TextButton")
+        adminButton.Name = "AdminMenuButton"
+        adminButton.Size = UDim2.fromOffset(140, 42)
+        adminButton.Position = UDim2.fromScale(0.03, 0.72)
+        adminButton.BackgroundColor3 = Config.UI.Danger
+        adminButton.BackgroundTransparency = 0.08
+        adminButton.Text = "ADMIN MENU"
+        adminButton.TextColor3 = Config.UI.Text
+        adminButton.Font = Enum.Font.GothamBold
+        adminButton.TextSize = 11
+        adminButton.Parent = gui
+        rounded(adminButton, 12)
+        stroke(adminButton)
+
+        local adminPanel = panel(gui, UDim2.fromOffset(250, 230), UDim2.fromScale(0.03, 0.5))
+        adminPanel.Visible = false
+        local layout = Instance.new("UIListLayout")
+        layout.Padding = UDim.new(0, 8)
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        layout.VerticalAlignment = Enum.VerticalAlignment.Center
+        layout.Parent = adminPanel
+
+        local title = text(adminPanel, "ADMIN MENU", 16)
+        title.Size = UDim2.new(1, -20, 0, 32)
+        title.LayoutOrder = 0
+
+        local function adminAction(label: string, action: string)
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(1, -24, 0, 38)
+            button.BackgroundColor3 = Config.UI.Surface2
+            button.Text = label
+            button.TextColor3 = Config.UI.Text
+            button.Font = Enum.Font.GothamBold
+            button.TextSize = 11
+            button.Parent = adminPanel
+            rounded(button, 9)
+            button.Activated:Connect(function()
+                AdminAction:FireServer(action)
+            end)
+        end
+
+        adminAction("NEXT WAVE", "NextWave")
+        adminAction("+1000 CREDITS", "Reward")
+        adminAction("HEAL", "Heal")
+        adminAction("CLEAR ENEMIES", "Clear")
+
+        adminButton.Activated:Connect(function()
+            adminPanel.Visible = not adminPanel.Visible
+        end)
+    end
 
     State.OnClientEvent:Connect(function(kind: string, a, b)
         if kind == "WaveIntermission" then
