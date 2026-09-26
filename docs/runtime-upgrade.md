@@ -1,17 +1,32 @@
-# Cursed Collision Runtime Upgrade
+# Collision Battlestar Runtime Architecture
 
-## Runtime changes
+Updated: 2026-09-26
 
-- Added an AnimationConstraint-capable procedural animation backend for upgraded R15 rigs.
-- Kept the existing Motor6D animation backend intact for legacy-compatible rigs.
-- Added client-side PreSimulation pose application for AnimationConstraint characters.
-- Added movement state coverage for idle, walking, running, sprinting, jumping, and falling.
-- Added attack coverage for the four-hit M1 chain, character skill patterns, dash, reactions, awakening, and transformed poses.
-- Enabled workspace instance streaming and selected an aggressive target radius for the large urban map.
+## Runtime model
 
-## Design rules
+- Rojo compiles only `src/CollisionBattlestar/*`.
+- Gameplay authority stays server-side.
+- Client animation, audio and VFX present server-confirmed actions.
+- The default world is procedural and remains playable when optional asset loading fails.
 
-Gameplay authority remains on the server. Client animation and VFX only present the server-confirmed combat state. Server hit validation continues to use spatial queries and marker windows.
+## Animation
 
-Roblox recommends server-side spatial queries when the result must reflect the complete world, and recommends instance streaming for large worlds and resource-constrained devices. AnimationConstraint is now the default joint type on upgraded R15 avatars, so the project no longer assumes Motor6D is the only procedural joint backend.
+AnimationClient caches configured AnimationTracks, cross-fades between action tracks and records the live Humanoid.RigType as a player attribute.
 
+The active source does not explicitly pin R6 or R15. The procedural fallback therefore uses compatible Motor6D name lookup and remains available until direct public Roblox AnimationIds are verified.
+
+## VFX
+
+VFXController uses a shared effect budget from VFXDefinitions. Impact bursts, expanding waves, blade-style beams and Reality Break environment response are all client-side presentation.
+
+## Map
+
+Battle Line contains seven districts along one continuous route. Streaming is enabled and MapTravelService requests the destination region before Character:PivotTo.
+
+## Asset fallback
+
+MapDecorationService creates procedural details first. Approved public Creator Store props are then loaded asynchronously into a separate folder. Failed loads do not remove or delay the procedural map.
+
+## Performance
+
+The code avoids per-frame gameplay remotes. Persistent presentation loops are small, and short-lived VFX are capped by MaxEffects.
