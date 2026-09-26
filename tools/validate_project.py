@@ -24,6 +24,7 @@ REQUIRED=[
 "StarterPlayer/StarterPlayerScripts/Client/VFXController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CameraController.client.lua",
+"StarterPlayer/StarterPlayerScripts/Client/PlatformHUDController.client.lua",
 ]
 FORBIDDEN=("jujutsu","jjk","sukuna","gojo","megumi","cursed collision","cursedcollision","potentialman","heavy")
 
@@ -112,4 +113,10 @@ print("PASS: real AnimationTrack loading with safe fallback")
 print("PASS: two deterministic animation sets")
 print("PASS: priority-based action blending")
 print("PASS: preloading and permission failure fallback")
+platform=read("StarterPlayer/StarterPlayerScripts/Client/PlatformHUDController.client.lua")
+for token in ("PreferredInput","GetImageForKeyCode","TouchTapIcon","GamepadPrompt","ScreenInsets","DeviceSafeInsets","GuiNavigationEnabled"):
+    if token not in platform:
+        fail("platform HUD contract missing: "+token)
+
 print("PASS: legacy fusion and removed combat marker scan clean")
+print("PASS: platform-specific mobile and console image HUD")
