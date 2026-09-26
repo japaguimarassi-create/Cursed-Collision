@@ -137,9 +137,13 @@ for token in ("Animator","LoadAnimation","RenderStepped"):
         fail("animation client contract missing: "+token)
 
 vfx=read("StarterPlayer/StarterPlayerScripts/Client/VFXController.client.lua")
+vfxdefs=read("ReplicatedStorage/Shared/VFXDefinitions.lua")
 for token in ("TweenService","ParticleEmitter","Beam","Trail","WorldState"):
     if token not in vfx:
         fail("vfx contract missing: "+token)
+for token in ("Trails","ImpactWaves","RealityLifetime","BladeTrail"):
+    if token not in vfxdefs:
+        fail("vfx definitions contract missing: "+token)
 
 audio=read("StarterPlayer/StarterPlayerScripts/Client/AudioController.client.lua")
 for token in ("9075325599","1198923651","1885641628","82845990304289","Feedback"):

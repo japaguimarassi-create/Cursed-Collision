@@ -11,12 +11,15 @@ V.Palette={
 	Break=Color3.fromRGB(175,76,255),
 	Reality=Color3.fromRGB(197,92,255),
 }
+V.Trails={BladeLifetime=.11,BladeWidth=.72,SlashFade=.12}
+V.ImpactWaves={Default=.32,Heavy=.46,Special=.56,Reality=.80}
 V.Limits={
 	MaxEffects=40,
 	ImpactLifetime=.35,
 	HeavyLifetime=.55,
 	DashLifetime=.3,
 	OverdriveLifetime=.7,
+	RealityLifetime=1.1,
 	BladeTrailLifetime=.13,
 	ShockwaveLifetime=.32,
 	RealityPulseLifetime=.8,
