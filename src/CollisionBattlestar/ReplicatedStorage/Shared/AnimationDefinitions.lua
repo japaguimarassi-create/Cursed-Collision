@@ -3,6 +3,10 @@ local A={}
 export type Definition={Id:string,Looped:boolean,Priority:Enum.AnimationPriority,Speed:number}
 
 local Tracks:{[string]:Definition}={
+	-- No direct public animation asset ID was verified for these slots during the 2026-09-26 asset audit.
+	-- Verified source pack: Creator Store model 16663903306, "Free R6 battleground animations (v7)".
+	-- It is explicitly open source for battleground games, but the page does not expose the contained
+	-- animation asset IDs. Those IDs therefore remain empty rather than inventing rbxassetids.
 	Light1={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1},
 	Light2={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1.02},
 	Light3={Id="",Looped=false,Priority=Enum.AnimationPriority.Action,Speed=1.04},
@@ -28,5 +32,4 @@ function A.GetId(name:string):string?
 end
 
 A.Tracks=Tracks
-
 return A
