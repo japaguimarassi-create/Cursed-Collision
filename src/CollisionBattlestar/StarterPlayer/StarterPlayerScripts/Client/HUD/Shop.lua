@@ -1,6 +1,5 @@
 --!strict
 local MarketplaceService = game:GetService("MarketplaceService")
-local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
 local Shop = {}
@@ -301,7 +300,12 @@ function Shop.Mount(root, config, player: Player, remote: RemoteEvent, stateRemo
         if category == "FEATURED" then
             table.insert(items,{Type="Skin",Key="ShadowRonin",Name="Shadow Ronin",Description="Skin anime urbana de energia sombria.",Cost=500,Color=Color3.fromRGB(95,105,180),Glyph="✦"})
             table.insert(items,{Type="Companion",Key="Scout",Name="Scout",Description="Aliado rápido para começar.",Cost=250,Damage=14,Color=config.UI.Info,Glyph="C"})
-            table.insert(items,{Type="Pass",Key="VIP",Name="VIP",Description="Bônus permanente de recompensas.",Price=99,Id=GamePassIds.VIP,Color=config.UI.Warning,Glyph="★"})
+            for _,pass in ipairs(config.GamePasses) do
+                if pass.Key == "VIP" then
+                    table.insert(items,{Type="Pass",Key=pass.Key,Name=pass.Name,Description=pass.Description,Price=pass.Price or 0,Id=pass.Id,Color=config.UI.Warning,Glyph="★"})
+                    break
+                end
+            end
             local moneyProduct = nil
             for _,product in ipairs(config.Shop.DeveloperProducts) do
                 if product.Kind == "MoneyMultiplier" then moneyProduct = product break end
