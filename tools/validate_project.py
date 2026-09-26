@@ -13,6 +13,7 @@ REQUIRED=[
 "ReplicatedStorage/Shared/MapDefinitions.lua",
 "ReplicatedStorage/Shared/HUDTheme.lua",
 "ReplicatedStorage/Shared/HUDRecovery.lua",
+"ReplicatedStorage/Shared/StoreCatalog.lua",
 "ReplicatedStorage/Shared/UI/HUDLayout.lua",
 "ReplicatedStorage/Shared/AnimationProfiles.lua",
 "ServerScriptService/Bootstrap.server.lua",
@@ -29,6 +30,7 @@ REQUIRED=[
 "StarterPlayer/StarterPlayerScripts/Client/AnimationController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/CameraController.client.lua",
 "StarterPlayer/StarterPlayerScripts/Client/UtilityController.client.lua",
+"StarterPlayer/StarterPlayerScripts/StoreController.client.lua",
 
 "StarterPlayer/StarterPlayerScripts/Client/LoadingController.client.lua",
 ]
@@ -51,8 +53,8 @@ manifest=json.loads((ROOT/"default.project.json").read_text(encoding="utf-8"))
 if manifest.get("name")!="CollisionBattlestar":
     fail("manifest name mismatch")
 tree=manifest.get("tree",{})
-if tree.get("Workspace",{}).get("$properties",{}).get("StreamingEnabled") is not False:
-    fail("streaming must be disabled for deterministic world bootstrap")
+if tree.get("Workspace",{}).get("$properties",{}).get("StreamingEnabled") is not True:
+    fail("streaming must be enabled for the continuous world")
 paths={
     "ReplicatedStorage":"src/CollisionBattlestar/ReplicatedStorage",
     "ServerScriptService":"src/CollisionBattlestar/ServerScriptService",
@@ -156,7 +158,7 @@ for token in ("StatusFrame","HealthBackground","EnergyBackground","UltBackground
 
 
 utility=read("ServerScriptService/Services/UtilityService.lua")
-for token in ("UtilityRequest","UtilityFeedback","Respawn","Ping","LoadCharacter"):
+for token in ("UtilityRequest","UtilityFeedback","Respawn","Ping","LoadCharacter","BuyItem","EquipItem","RedeemCode","ShopState"):
     if token not in utility:
         fail("utility contract missing: "+token)
 
@@ -181,3 +183,15 @@ for token in ("Animator","PreloadAsync","LoadAnimation","AdjustWeight","AdjustSp
         fail("animation runtime missing: "+token)
 
 print("PASS: functional menu, ping, destructible city and animation controller")
+
+store=read("ReplicatedStorage/Shared/StoreCatalog.lua")
+for token in ("Emotes","Featured","Bundle_350","Bundle_30000","Emote_Salute","Skin_NeonRunner"):
+    if token not in store:
+        fail("store catalog contract missing: "+token)
+
+storeClient=read("StarterPlayer/StarterPlayerScripts/StoreController.client.lua")
+for token in ("BATTLE MARKET","Featured","Emotes","Robux","RedeemCode","BuyItem","EquipItem","MarketNav","TouchMarketMenu"):
+    if token not in storeClient:
+        fail("store client contract missing: "+token)
+
+print("PASS: functional in-game store, emotes, profile/quest shortcuts and code redemption")
