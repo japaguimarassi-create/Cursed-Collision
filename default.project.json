@@ -24,6 +24,9 @@
       "StarterPlayerScripts": {
         "$path": "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts"
       }
+    },
+    "ReplicatedFirst": {
+      "$path": "src/CollisionBattlestar/ReplicatedFirst"
     }
   }
 }
