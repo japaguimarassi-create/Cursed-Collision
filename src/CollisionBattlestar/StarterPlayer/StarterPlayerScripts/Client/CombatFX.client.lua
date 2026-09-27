@@ -1,6 +1,7 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 local Debris = game:GetService("Debris")
 local TweenService = game:GetService("TweenService")
 
@@ -74,6 +75,9 @@ end
 
 local function hitBurst(position: Vector3)
     pulse(position + Vector3.new(0, 1.4, 0), 3.5, 0.17, Color3.fromRGB(255, 238, 214))
+    if Players.LocalPlayer:GetAttribute("ReducedVFX") == true then
+        return
+    end
     for index = 1, 6 do
         local angle = (index / 6) * math.pi * 2
         streak(position + Vector3.new(0, 1.2, 0), Vector3.new(math.cos(angle), 0.1, math.sin(angle)).Unit, 4, Color3.fromRGB(255, 182, 112))
@@ -89,7 +93,8 @@ fx.OnClientEvent:Connect(function(kind: string, position: Vector3, extra)
         hitBurst(position)
     elseif kind == "Dash" then
         local direction = if typeof(extra) == "Vector3" and extra.Magnitude > 0.05 then extra.Unit else Vector3.new(0, 0, -1)
-        for step = 1, 3 do
+        local steps = if Players.LocalPlayer:GetAttribute("ReducedVFX") == true then 1 else 3
+        for step = 1, steps do
             local offset = direction * (-step * 2.6) + Vector3.new(0, 0.8, 0)
             pulse(position + offset, 1.7 + step * 0.35, 0.18 + step * 0.02, Color3.fromRGB(150, 196, 255))
         end
