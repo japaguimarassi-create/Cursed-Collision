@@ -647,7 +647,7 @@ local function renderAdmin()
         b.Position = UDim2.fromOffset(12 + ((index - 1) % 2) * 96, 44 + math.floor((index - 1) / 2) * 30)
     end
 
-    local moderation = card("BAN", "Ban target with the reason below.")
+    local moderation = card("BAN / UNBAN", "Moderation actions for the selected player.")
     moderation.LayoutOrder = 5
     moderation.Size = UDim2.fromOffset(210, 132)
     local reason = valueBox(moderation, "reason")
@@ -658,6 +658,13 @@ local function renderAdmin()
         end, UDim2.fromOffset(88, 27))
         b.Position = UDim2.fromOffset(12 + ((index - 1) % 2) * 96, 84 + math.floor((index - 1) / 2) * 30)
     end
+    local unban = button(moderation, "UNBAN ID", function()
+        local id = math.floor(tonumber(reason.Text) or 0)
+        if id > 0 then
+            adminRemote:FireServer("Unban", id)
+        end
+    end, UDim2.fromOffset(88, 27))
+    unban.Position = UDim2.fromOffset(12, 144)
 
     local comms = card("ANNOUNCEMENT", "Public owner message.")
     comms.LayoutOrder = 6
@@ -667,6 +674,39 @@ local function renderAdmin()
     button(comms, "BROADCAST", function()
         adminRemote:FireServer("Announcement", nil, nil, messageBox.Text)
     end, UDim2.new(1, -24, 0, 32)).Position = UDim2.fromOffset(12, 84)
+
+    local advanced = card("DATA", "Grant or configure persistent player data.")
+    advanced.LayoutOrder = 7
+    local dataBox = valueBox(advanced, "skin / companion / 2,2,2")
+    dataBox.Position = UDim2.fromOffset(12, 44)
+
+    local dataActions = {
+        {"GrantSkin", "GRANT SKIN"},
+        {"EquipSkin", "EQUIP SKIN"},
+        {"GrantCompanion", "GRANT COMPANION"},
+    }
+    for index, item in ipairs(dataActions) do
+        local b = button(advanced, item[2], function()
+            if adminTargetId then
+                adminRemote:FireServer(item[1], adminTargetId, dataBox.Text)
+            end
+        end, UDim2.fromOffset(88, 28))
+        b.Position = UDim2.fromOffset(12 + ((index - 1) % 2) * 96, 84 + math.floor((index - 1) / 2) * 31)
+    end
+
+    local multiplier = button(advanced, "SET MULT x2", function()
+        if not adminTargetId then return end
+        local raw = string.split(dataBox.Text, ",")
+        local money = tonumber(raw[1]) or 1
+        local damage = tonumber(raw[2]) or 1
+        local speed = tonumber(raw[3]) or 1
+        adminRemote:FireServer("SetMultiplier", adminTargetId, {
+            Money = money,
+            Damage = damage,
+            Speed = speed,
+        })
+    end, UDim2.fromOffset(184, 28))
+    multiplier.Position = UDim2.fromOffset(12, 146)
 end
 
 local tabDefs = {
