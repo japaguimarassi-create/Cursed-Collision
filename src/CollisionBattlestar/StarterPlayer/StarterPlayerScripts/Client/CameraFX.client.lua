@@ -43,12 +43,14 @@ local function ensure()
 end
 
 local function tweenFov(value: number, duration: number)
+    if player:GetAttribute("CameraFOVEnabled") == false then return end
     local current = ensure()
     if not current then return end
     TweenService:Create(current, TweenInfo.new(duration, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {FieldOfView = value}):Play()
 end
 
 local function pulseBlur(size: number, duration: number)
+    if player:GetAttribute("ReducedVFX") == true then return end
     ensure()
     if not blur then return end
     TweenService:Create(blur, TweenInfo.new(duration * 0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = size}):Play()
@@ -60,6 +62,7 @@ local function pulseBlur(size: number, duration: number)
 end
 
 local function pulseGrade(tint: Color3, contrast: number, brightness: number, duration: number)
+    if player:GetAttribute("ReducedVFX") == true then return end
     ensure()
     if not correction then return end
     correction.TintColor = tint
@@ -77,6 +80,7 @@ local function pulseGrade(tint: Color3, contrast: number, brightness: number, du
 end
 
 local function addShake(amount: number)
+    if player:GetAttribute("CameraShakeEnabled") == false then return end
     shake = math.clamp(shake + amount, 0, 3.5)
 end
 
