@@ -5,7 +5,7 @@ local DeveloperProductIds = require(script.Parent:WaitForChild("DeveloperProduct
 
 local game = DSL.game("Collision Battlestar")
 
-game:identity("pve-5.0.0", 5290480963, 15338267657, "PvE")
+game:identity("combat-world-menu-6.0.0", 5290480963, 15338267657, "PvE")
 
 game:meta({
     Authoring = "Collision Script",
@@ -14,11 +14,24 @@ game:meta({
     Economy = "Credits + Robux",
 })
 
-game:world({Seed = 260926, Size = 1200, BlockSize = 96, RoadWidth = 32})
+game:world({Seed = 270926, Size = 1200, BlockSize = 240, RoadWidth = 34})
 
 game:combat({
-    M1 = {Cooldown = 0.34, BaseDamage = 12, Range = 7, BoxSize = Vector3.new(6, 5, 8)},
-    Dash = {Cooldown = 1.25, Distance = 16},
+    M1 = {
+        Cooldown = 0.31,
+        BaseDamage = 14,
+        Range = 8.2,
+        BoxSize = Vector3.new(7.5, 5.5, 8.8),
+        ComboReset = 0.82,
+        Knockback = 34,
+        FinisherKnockback = 72,
+    },
+    Dash = {
+        Cooldown = 1.05,
+        Distance = 22,
+        Speed = 92,
+        Duration = 0.18,
+    },
 })
 
 game:waves({
