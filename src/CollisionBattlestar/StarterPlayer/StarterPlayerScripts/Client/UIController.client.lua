@@ -1,4 +1,5 @@
 --!strict
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
@@ -6,9 +7,11 @@ local StarterGui = game:GetService("StarterGui")
 local player = Players.LocalPlayer
 local rootFolder = script.Parent
 local HUD = rootFolder:WaitForChild("HUD", 30)
+
 if not HUD then
     error("HUD modules unavailable")
 end
+
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Root = require(HUD:WaitForChild("Root"))
 local Status = require(HUD:WaitForChild("Status"))
@@ -16,10 +19,7 @@ local Economy = require(HUD:WaitForChild("Economy"))
 local Profile = require(HUD:WaitForChild("Profile"))
 local Vitals = require(HUD:WaitForChild("Vitals"))
 local Actions = require(HUD:WaitForChild("Actions"))
-local Navigation = require(HUD:WaitForChild("Navigation"))
 local Feedback = require(HUD:WaitForChild("Feedback"))
-local Admin = require(HUD:WaitForChild("Admin", 30))
-local Shop = require(HUD:WaitForChild("Shop", 30))
 
 local Controller = {}
 local initialized = false
@@ -29,14 +29,15 @@ local function getRemotes()
     if not remotes then
         error("Remotes unavailable")
     end
+
     local state = remotes:WaitForChild("State", 15)
     local action = remotes:WaitForChild("Action", 15)
-    local travel = remotes:WaitForChild("Travel", 15)
-    local admin = remotes:WaitForChild("AdminAction", 15)
-    if not state or not action or not travel or not admin then
-        error("HUD remotes unavailable")
+
+    if not state or not action then
+        error("Combat remotes unavailable")
     end
-    return state :: RemoteEvent, action :: RemoteEvent, travel :: RemoteEvent, admin :: RemoteEvent
+
+    return state :: RemoteEvent, action :: RemoteEvent
 end
 
 local function hideDefaultHealth()
@@ -63,7 +64,8 @@ function Controller:Init()
     end
 
     hideDefaultHealth()
-    local stateRemote, actionRemote, travelRemote, adminRemote = getRemotes()
+
+    local stateRemote, actionRemote = getRemotes()
     local gui = Root.Create(player)
 
     local root = {
@@ -108,48 +110,8 @@ function Controller:Init()
         return Actions.Mount(root)
     end)
 
-    safeMount("Navigation", function()
-        Navigation.Mount(root, Config, player, travelRemote)
-    end)
-
     local feedback = safeMount("Feedback", function()
         return Feedback.Mount(root, Config)
-    end)
-
-    local shopRemote = ReplicatedStorage:WaitForChild("Remotes", 15):WaitForChild("Shop", 15)
-    if shopRemote and shopRemote:IsA("RemoteEvent") then
-        safeMount("Shop", function()
-            Shop.Mount(root, Config, player, shopRemote :: RemoteEvent, stateRemote)
-        end)
-    end
-
-    local function mountOptional()
-        local shopRemote = ReplicatedStorage:WaitForChild("Remotes", 15):WaitForChild("Shop", 15)
-        if shopRemote and shopRemote:IsA("RemoteEvent") and not gui:FindFirstChild("ShopButton") then
-            safeMount("ShopRetry", function()
-                Shop.Mount(root, Config, player, shopRemote :: RemoteEvent, stateRemote)
-            end)
-        end
-        if player:GetAttribute("IsOwner") == true and not gui:FindFirstChild("AdminMenuButton") then
-            safeMount("AdminRetry", function()
-                Admin.Mount(root, Config, player, adminRemote)
-            end)
-        end
-    end
-
-    safeMount("Admin", function()
-        Admin.Mount(root, Config, player, adminRemote)
-    end)
-
-    task.spawn(function()
-        for _ = 1, 12 do
-            task.wait(1)
-            if gui.Parent then
-                mountOptional()
-            else
-                break
-            end
-        end
     end)
 
     if not status or not actions or not feedback then
@@ -164,20 +126,28 @@ function Controller:Init()
 
     actions.Dash.Button.Activated:Connect(function()
         if actions.Dash.Activate() then
-            actionRemote:FireServer("Dash")
+            local character = player.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            local direction = humanoid and humanoid.MoveDirection
+            if direction and direction.Magnitude > 0.1 then
+                direction = Vector3.new(direction.X, 0, direction.Z).Unit
+            else
+                direction = nil
+            end
+            actionRemote:FireServer("Dash", direction)
         end
     end)
 
     local function setWave(wave)
         local value = tonumber(wave) or 0
         status.Wave.Text = ("WAVE %02d"):format(value)
-        status.RefreshProgress(value, workspace:GetAttribute("CollisionEnemies") or 0)
+        status.RefreshProgress(value, tonumber(workspace:GetAttribute("CollisionEnemies")) or 0)
     end
 
     local function setEnemies(enemies)
         local value = tonumber(enemies) or 0
         status.Enemies.Text = ("%d HOSTILES"):format(value)
-        status.RefreshProgress(workspace:GetAttribute("CollisionWave") or 0, value)
+        status.RefreshProgress(tonumber(workspace:GetAttribute("CollisionWave")) or 0, value)
     end
 
     stateRemote.OnClientEvent:Connect(function(kind: string, a, b)
@@ -217,7 +187,8 @@ function Controller:Init()
         elseif kind == "PvpHit" then
             Feedback.Show(feedback, Config, ("-%d HP"):format(tonumber(a) or 0), Config.UI.Warning, 0.55)
         elseif kind == "Attack" then
-            Feedback.Show(feedback, Config, "STRIKE", Config.UI.Accent, 0.2)
+            local comboIndex = tonumber(b) or 0
+            Feedback.Show(feedback, Config, comboIndex > 0 and ("STRIKE %d"):format(comboIndex) or "STRIKE", Config.UI.Accent, 0.2)
         elseif kind == "AdminMessage" then
             local tone = tostring(b or "INFO")
             local color = if tone == "BAD" then Config.UI.Danger elseif tone == "GOOD" then Config.UI.Good else Config.UI.Info
