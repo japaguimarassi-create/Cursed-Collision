@@ -399,7 +399,7 @@ local function renderShop()
         local cost = text(frame, skin.Cost == 0 and "FREE" or ("◈ %d"):format(skin.Cost), 9, owned and Config.UI.Good or Config.UI.Warning, true)
         cost.Size = UDim2.new(1, -24, 0, 18)
         cost.Position = UDim2.fromOffset(12, 70)
-        button(frame, skin. Key == (player:GetAttribute("EquippedSkin") or "Default") and "EQUIPPED" or (owned and "EQUIP" or "UNLOCK"), function()
+        button(frame, skin.Key == (player:GetAttribute("EquippedSkin") or "Default") and "EQUIPPED" or (owned and "EQUIP" or "UNLOCK"), function()
             if owned then
                 shopRemote:FireServer("EquipSkin", skin.Key)
             else
@@ -437,7 +437,7 @@ local function renderShop()
         end, UDim2.new(1, -24, 0, 28)).Position = UDim2.fromOffset(12, 98)
     end
 
-    headerCard("ROBux", "Developer products use Roblox's purchase prompt and server receipt processing.")
+    headerCard("ROBUX", "Developer products use Roblox's purchase prompt and server receipt processing.")
     for _, product in ipairs(Config.Shop.DeveloperProducts) do
         local frame = card(product.Name, product.Description)
         frame.LayoutOrder = 80
@@ -579,7 +579,7 @@ local function renderAdmin()
             adminTargetId = target.UserId
             renderAdmin()
         end, UDim2.new(1, -24, 0, 26))
-        b.Position = UDim2.fromOffset(12, 44 + ((index - 1) % 2) * 30)
+        b.Position = UDim2.fromOffset(12 + ((index - 1) % 2) * 96, 44 + math.floor((index - 1) / 2) * 29)
         if adminTargetId == target.UserId then
             b.BackgroundColor3 = Config.UI.Accent
         end
@@ -690,6 +690,7 @@ local renderers = {
 
 local function setTab(name: string)
     activeTab = name
+    grid.CellSize = name == "Admin" and UDim2.fromOffset(210, 320) or UDim2.fromOffset(210, 132)
     for _, child in ipairs(sidebar:GetChildren()) do
         if child:IsA("TextButton") then
             child.BackgroundColor3 = child:GetAttribute("TabName") == name and Config.UI.Accent or Config.UI.Background
