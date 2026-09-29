@@ -26,7 +26,21 @@ local function getParts(player: Player)
     end
 end
 
-local function findEnemy(center: CFrame, size: Vector3, character: Model): Model?
+local function hasLineOfSight(origin: Vector3, target: BasePart, character: Model, enemy: Model): boolean
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {character}
+    params.IgnoreWater = true
+
+    local result = workspace:Raycast(origin, target.Position - origin, params)
+    if not result then
+        return true
+    end
+
+    return result.Instance:IsDescendantOf(enemy)
+end
+
+local function findEnemy(center: CFrame, size: Vector3, character: Model, origin: Vector3): Model?
     local params = OverlapParams.new()
     params.FilterType = Enum.RaycastFilterType.Exclude
     params.FilterDescendantsInstances = {character}
@@ -43,8 +57,10 @@ local function findEnemy(center: CFrame, size: Vector3, character: Model): Model
             local root = model:FindFirstChild("HumanoidRootPart")
             if humanoid and humanoid.Health > 0 and root and root:IsA("BasePart") then
                 local distance = (root.Position - center.Position).Magnitude
+                local visible = hasLineOfSight(origin, root, character, model)
                 if SecurityRules.validTarget("Enemy", false)
                     and SecurityRules.validRange(distance, Constants.Combat.M1.Range + 2)
+                    and SecurityRules.validLineOfSight(not visible)
                     and distance < bestDistance then
                     best = model
                     bestDistance = distance
@@ -55,7 +71,6 @@ local function findEnemy(center: CFrame, size: Vector3, character: Model): Model
 
     return best
 end
-
 function Service:M1(player: Player)
     if not self.security:ValidateAction(player, "M1") then
         return
@@ -77,7 +92,7 @@ function Service:M1(player: Player)
     state.LastAttackAt = now
 
     local center = root.CFrame * CFrame.new(0, 0, -4)
-    local target = findEnemy(center, Constants.Combat.M1.BoxSize, character)
+    local target = findEnemy(center, Constants.Combat.M1.BoxSize, character, root.Position)
     local damage = Constants.Combat.M1.Damages[state.ComboIndex] + self.playerState:GetDamage(player)
 
     self.fxRemote:FireAllClients("M1", center.Position, state.ComboIndex)

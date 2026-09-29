@@ -20,6 +20,10 @@ function Rules.validRange(distance: number, maxRange: number): boolean
     return distance <= maxRange and distance >= 0
 end
 
+function Rules.validLineOfSight(blocked: boolean): boolean
+    return not blocked
+end
+
 function Rules.validZone(zone: string): boolean
     return zone == "PvE" or zone == "PvP"
 end
