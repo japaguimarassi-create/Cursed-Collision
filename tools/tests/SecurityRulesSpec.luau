@@ -13,4 +13,6 @@ return function()
 
     assert(SecurityRules.validRange(7.9, 8) == true)
     assert(SecurityRules.validRange(8.1, 8) == false)
+    assert(SecurityRules.validLineOfSight(false) == true)
+    assert(SecurityRules.validLineOfSight(true) == false)
 end
