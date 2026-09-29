@@ -2,7 +2,7 @@ name: Collision Battlestar Validation
 
 on:
   push:
-    branches: [main]
+    branches: [main, rebuild/collision-battlestar-foundation]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -21,6 +21,8 @@ jobs:
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
+      - name: Run Luau unit tests
+        run: luau tools/tests/run.luau
       - name: Validate source tree
         run: python3 tools/validate_project.py
       - name: Build place
