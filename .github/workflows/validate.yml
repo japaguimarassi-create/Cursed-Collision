@@ -22,7 +22,7 @@ jobs:
         with:
           cache: true
       - name: Parse Luau source
-        run: find src -name '*.lua' -print0 | xargs -0 -n1 luau --only-parse
+        run: find src -name '*.lua' -print0 | xargs -0 -n1 luau --mode=null
       - name: Run Luau unit tests
         run: luau tools/tests/run.luau
       - name: Run map layout test
