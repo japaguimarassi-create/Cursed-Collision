@@ -23,6 +23,8 @@ jobs:
           cache: true
       - name: Run Luau unit tests
         run: luau tools/tests/run.luau
+      - name: Run map layout test
+        run: python3 tools/tests/test_map_layout.py
       - name: Validate source tree
         run: python3 tools/validate_project.py
       - name: Build place
