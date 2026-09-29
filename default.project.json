@@ -14,7 +14,7 @@
       "$path": "src/CollisionBattlestar/ReplicatedStorage"
     },
     "ServerScriptService": {
-      "$path": "src/CollisionBattlestar/ServerScriptService"
+      "$path": "src/CollisionBattlestar/ServerScriptService/Foundation"
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
@@ -22,11 +22,8 @@
         "EnableMouseLockOption": true
       },
       "StarterPlayerScripts": {
-        "$path": "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts"
+        "$path": "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Foundation"
       }
-    },
-    "ReplicatedFirst": {
-      "$path": "src/CollisionBattlestar/ReplicatedFirst"
     }
   }
 }

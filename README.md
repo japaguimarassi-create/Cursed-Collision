@@ -1,37 +1,35 @@
 # Collision Battlestar
 
-PvE wave fighter foundation.
+Where Worlds Collide
 
-Current playable loop:
-- procedurally generated combat world;
-- escalating enemy waves;
-- one red Elite enemy per wave;
-- server-authoritative M1 combat;
-- enemy AI with pathfinding and melee attacks;
-- credits for every kill and wave-clear bonuses;
-- persistent damage, defense and speed upgrades;
-- recruitable NPC companions with stronger tiers;
-- physical upgrade/companion shop;
-- Roblox GamePass integration through MarketplaceService;
-- optional Open Cloud provisioning for the six new passes.
+Collision Battlestar is the current project identity for the rebuild. The repository name remains Cursed-Collision for history compatibility.
 
-Roblox target:
-- Universe: 5290480963
-- Place: 15338267657
+## Foundation loop
 
-GamePasses:
-- Elite Hunter
-- Companion Slot+
-- Arsenal VIP
-- VIP
-- Wave Master
-- Companion Prime
+Join -> Spawn -> Fight -> Defeat enemies -> Earn Credits -> Defeat the red Elite -> Clear the wave -> Upgrade Damage -> Next wave.
 
-GamePass IDs are generated into the Shared/GamePassIds.lua module. A zero ID means that pass has not yet been provisioned.
+The current build focuses on one procedural PvE arena. Persistence, companions, skins, full shop and monetization, PvP, missions, bosses, and large-world content are deferred until this loop is verified.
 
-The project does not depend on arbitrary free models for its core runtime. Roblox's official NPC Kit is reserved as an optional later asset source.
+## Runtime architecture
 
-Next planned slice after the PvE build is verified:
-- a compact HUD entry point;
-- teleport to a distant white minimalist PvP battleground;
-- separate PvP systems from the PvE world.
+- Server-authoritative combat, waves, enemy damage, rewards, and upgrade economy.
+- Three gameplay RemoteEvents: Combat, State, FX.
+- One server bootstrap and one client bootstrap.
+- One mobile-first HUD.
+- Procedural arena geometry with no third-party gameplay scripts.
+
+## Controls
+
+Mobile uses the on-screen M1 and Dash buttons.
+
+Keyboard: Left Click = M1, Q = Dash.
+
+Controller: R2 = M1, B = Dash.
+
+## Development
+
+Validation: python3 tools/validate_project.py
+
+Unit tests: luau tools/tests/run.luau
+
+Build: rojo build default.project.json --output build/CollisionBattlestar.rbxl
