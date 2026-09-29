@@ -270,7 +270,6 @@
 **Files:**
 - Modify: `src/CollisionBattlestar/ServerScriptService/CollisionBattlestar/Combat/Service.lua`
 - Create: `src/CollisionBattlestar/ServerScriptService/CollisionBattlestar/Economy/Service.lua`
-- Create: `src/CollisionBattlestar/ServerScriptService/CollisionBattlestar/ReplicatedStorage/Shared/EconomyRules.lua` is not used; keep economy calculations in `PlayerState` plus a pure test adapter if needed
 - Modify: `src/CollisionBattlestar/ReplicatedStorage/Shared/RemoteContracts.lua`
 - Modify: `tests/CollisionBattlestar/CombatRulesSpec.luau`
 - Modify: `tests/CollisionBattlestar/EconomyRulesSpec.luau`
