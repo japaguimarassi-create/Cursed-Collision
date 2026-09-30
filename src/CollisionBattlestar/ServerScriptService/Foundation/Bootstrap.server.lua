@@ -15,6 +15,7 @@ local Companions=require(script.Parent:WaitForChild("Companions"):WaitForChild("
 local Combat=require(script.Parent:WaitForChild("Combat"):WaitForChild("Service"))
 local Waves=require(script.Parent:WaitForChild("Waves"):WaitForChild("Service"))
 local TestLab=require(script.Parent:WaitForChild("Admin"):WaitForChild("TestLabService"))
+local Analytics=require(script.Parent:WaitForChild("Analytics"):WaitForChild("Service"))
 
 local remotesFolder=ReplicatedStorage:FindFirstChild("Remotes")
 if not remotesFolder then
@@ -45,6 +46,7 @@ local remotes={
 local registry=Registry.new()
 registry:Register("RuntimeState",RuntimeState.new())
 registry:Register("Persistence",Persistence.new())
+registry:Register("Analytics",Analytics.new())
 registry:Register("PlayerState",PlayerState.new())
 registry:Register("Security",Security.new())
 registry:Register("World",World.new())
@@ -59,6 +61,7 @@ registry:Register("TestLab",TestLab.new())
 
 registry:Get("World"):Init()
 registry:Get("Persistence"):Init()
+registry:Get("Analytics"):Init()
 registry:Get("PlayerState"):Init(registry)
 registry:Get("PlayerState"):Start()
 registry:Get("Security"):Start()
