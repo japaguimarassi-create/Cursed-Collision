@@ -2,6 +2,7 @@
 export type Color={number}
 export type Profile={ProfileId:string,ThemeId:string,Tier:string,PrimaryColor:Color,SecondaryColor:Color,AccentColor:Color,BodyVariant:number,HeadVariant:number,GearVariant:number,AccessoryVariant:number,MaterialVariant:number}
 local function rgb(r:number,g:number,b:number):Color return {r,g,b} end
+local function clampByte(value:number):number return math.max(0,math.min(255,value)) end
 local themes:{[string]:{Color,Color,Color}}={
     Urban={rgb(72,82,96),rgb(40,44,52),rgb(126,138,156)},
     Tactical={rgb(62,74,68),rgb(28,34,30),rgb(142,158,132)},
@@ -21,7 +22,7 @@ function Definitions.themeColors(themeId:string,tier:string):({number},{number},
     assert(colors,"unknown theme "..themeId)
     local boost=if tier=="Tier3" then 1.08 elseif tier=="Tier2" then 1.03 else 1
     local p,s,a=colors[1],colors[2],colors[3]
-    return {math.clamp(p[1]*boost,0,255),math.clamp(p[2]*boost,0,255),math.clamp(p[3]*boost,0,255)},s,a
+    return {clampByte(p[1]*boost),clampByte(p[2]*boost),clampByte(p[3]*boost)},s,a
 end
 function Definitions.make(themeId:string,tier:string,index:number):Profile
     assert(themes[themeId],"unknown theme "..themeId)
