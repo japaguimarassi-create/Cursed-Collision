@@ -9,11 +9,12 @@ local Service = {}
 Service.__index = Service
 
 function Service.new()
-    return setmetatable({world = nil, brains = {}, defeatHandler = nil, active = 0}, Service)
+    return setmetatable({world = nil, brains = {}, defeatHandler = nil, active = 0, skinRules = nil}, Service)
 end
 
 function Service:Init(registry)
     self.world = registry:Get("World")
+    self.skinRules = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("EnemySkinRules"))
     local folder = workspace:FindFirstChild("Enemies")
     if folder then
         folder:ClearAllChildren()
@@ -28,9 +29,13 @@ function Service:SetDefeatHandler(callback)
     self.defeatHandler = callback
 end
 
-function Service:Spawn(tier: string, index: number): Model
+function Service:Spawn(tier: string, index: number, themeId: string?, seed: number?): Model
     assert(Constants.Enemies[tier], "Invalid enemy tier")
-    local model = Factory.Create(tier, self.world:GetEnemySpawnCFrame(index))
+    local profile = nil
+    if self.skinRules and themeId then
+        profile = self.skinRules.pick(themeId, tier, (seed or os.clock() * 1000) + index, nil)
+    end
+    local model = Factory.Create(tier, self.world:GetEnemySpawnCFrame(index), profile)
     local humanoid = model:FindFirstChildOfClass("Humanoid")
     self.brains[model] = Brain.new(model, tier)
     self.active += 1
@@ -48,9 +53,7 @@ function Service:Spawn(tier: string, index: number): Model
             end
             self.brains[model] = nil
             task.delay(0.3, function()
-                if model.Parent then
-                    model:Destroy()
-                end
+                if model.Parent then model:Destroy() end
             end)
         end)
     end
@@ -75,15 +78,13 @@ function Service:Start()
     local elapsed = 0
     RunService.Heartbeat:Connect(function(deltaTime)
         elapsed += deltaTime
-        if elapsed < Constants.AI.Tick then
-            return
-        end
+        if elapsed < Constants.AI.Tick then return end
         elapsed = 0
         local now = os.clock()
-
         for model, brain in pairs(self.brains) do
-            Brain.Update(brain, now)
-            if not model.Parent then
+            if model.Parent then
+                Brain.Update(brain, now)
+            else
                 self.brains[model] = nil
             end
         end
