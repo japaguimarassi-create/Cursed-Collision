@@ -41,6 +41,9 @@ local cases: {Case} = {
     {name = "EnemySkinRulesSpec", run = function()
         require("./EnemySkinRulesSpec")()
     end},
+    {name = "EnemySkinDefinitionsSpec", run = function()
+        require("./EnemySkinDefinitionsSpec")()
+    end},
     {name = "ShopRulesSpec", run = function()
         require("./ShopRulesSpec")()
     end},
