@@ -1,4 +1,4 @@
-# Collision Battlestar Friend Echo + Shop Rebuild — Design Specification
+# Collision Battlestar Friend Echo + Enemy Skins + Shop Rebuild — Design Specification
 
 **Date:** 2026-09-30  
 **Project:** Collision Battlestar (repository remains Cursed-Collision for compatibility)  
@@ -6,7 +6,7 @@
 
 ## Goal
 
-Add a social companion system in which a selected Roblox friend can be represented by an AI-controlled Friend Echo, and add a direct-purchase shop/inventory foundation that integrates with the existing PvE wave loop without replacing the player's agency.
+Add a social companion system in which a selected Roblox friend can be represented by an AI-controlled Friend Echo, add coherent randomized enemy skins, and add a direct-purchase shop/inventory foundation that integrates with the existing PvE wave loop without replacing the player's agency.
 
 ## Product principle
 
@@ -16,7 +16,7 @@ The hierarchy is:
 
 **Player > Friend Echo > Wave pressure > Progression > Cosmetics.**
 
-The player must remain the primary combat agent. Friend Echo is assistance, not autoplay. Shop is progression and personalization, not a shortcut that invalidates combat.
+The player must remain the primary combat agent. Friend Echo is assistance, not autoplay. Enemy skins communicate combat identity. Shop is progression and personalization, not a shortcut that invalidates combat.
 
 ## Scope
 
@@ -33,15 +33,19 @@ The player must remain the primary combat agent. Friend Echo is assistance, not 
 - Echo follow, target acquisition, attack, protection/support, retreat and stuck recovery states.
 - Real-player substitution: every active Echo representing a friend UserId is disabled for its owner when that real friend is present in the same server.
 - Client-side Roblox game invite entry point with capability checks.
+- Coherent randomized enemy skin families selected by the server.
+- One wave-level enemy theme with tier-specific variants.
+- Server-owned anti-repeat skin selection.
+- Procedural enemy appearance with bounded geometry/effect budgets and no dependency on third-party gameplay scripts.
 - Shop catalog definitions.
-- Quick Shop during non-combat-safe phases.
+- Quick Shop during safe shop phases.
 - Full Shop overlay.
 - Inventory ownership model.
 - Equip/unequip model.
 - Direct Credits purchases.
 - Atomic server-side purchase transaction.
 - Shop ownership validation on the server.
-- HUD integration for Echo and shop states.
+- HUD integration for Echo, enemy Elite and shop states.
 - Data contracts designed for later persistence.
 - TDD coverage for pure rules and contracts.
 - Performance budgets.
@@ -68,6 +72,71 @@ The player must remain the primary combat agent. Friend Echo is assistance, not 
 - Do not make companions able to use impossible combat behavior.
 - Do not make the shop permanently cover the combat HUD.
 - Do not perform friend discovery continuously or every frame.
+- Do not use random recoloring alone as the enemy skin system.
+
+## Enemy skin system
+
+Enemy skins are a server-side visual generation system.
+
+### Theme families
+
+Initial supported themes:
+- Urban
+- Tactical
+- Industrial
+- Neon
+- Street
+- Corrupted
+- Arctic
+- Desert
+
+Each active wave chooses one theme. Theme selection is independent of combat stats.
+
+### Tier variants
+
+Each theme has tier-compatible visual profiles:
+- Tier1: light/standard silhouette, simpler gear.
+- Tier2: heavier or more specialized gear.
+- Tier3: veteran/advanced silhouette.
+- Elite: unique commander profile with strong red identity.
+
+A skin profile contains:
+- ProfileId
+- ThemeId
+- Tier
+- PrimaryColor
+- SecondaryColor
+- AccentColor
+- BodyVariant
+- HeadVariant
+- GearVariant
+- AccessoryVariant
+- MaterialVariant
+
+### Coherence rules
+
+- Primary, secondary and accent colors must come from the profile's theme palette.
+- A profile may only use variants declared compatible with its theme and tier.
+- Elite profiles always retain the red Elite identity even when their theme changes.
+- The same exact ProfileId must not be selected consecutively within the same wave when at least two valid profiles exist.
+- Server chooses the profile; clients never choose NPC appearance.
+- Cosmetic selection never changes MaxHealth, Damage, WalkSpeed or reward values.
+
+### Performance rules
+
+- Enemy skin assembly uses game-owned procedural parts first.
+- Maximum 14 visible body/gear parts per enemy, excluding the HumanoidRootPart and required label.
+- No per-enemy permanent PointLight for skins.
+- Elite may use one Highlight.
+- Skin generation must not add per-frame work.
+
+### Interfaces
+
+- EnemySkinRules.isValidProfile(profile) -> boolean.
+- EnemySkinRules.validProfiles(themeId, tier) -> {Profile}.
+- EnemySkinRules.pick(themeId, tier, seed, previousProfileId?) -> Profile.
+- EnemySkinDefinitions provides the theme palettes and compatible profile tables.
+- EnemySkinFactory.Apply(model, profile) -> boolean.
 
 ## Friend Echo data model
 
@@ -118,44 +187,62 @@ The visual system must never use the friend's appearance to determine combat pow
 
 ## Echo classes
 
+Initial class behavior and balance parameters are explicit:
+
 ### Vanguard
+- Damage: 20
+- AttackCooldown: 0.90s
+- AttackRange: 5.0 studs
+- PreferredDistance: 4 studs
+- Role: close-range pressure and owner interception.
 
-Short-range protector and pressure fighter.
-
-Initial behavior:
-- preferred distance: close;
-- attack priority: enemies attacking owner, then nearby threats;
-- lower damage than Striker but stronger close-range pressure.
+Target priority:
+1. enemies attacking owner;
+2. enemies within 8 studs of owner;
+3. nearest valid enemy.
 
 ### Striker
+- Damage: 26
+- AttackCooldown: 1.10s
+- AttackRange: 9.0 studs
+- PreferredDistance: 8 studs
+- Role: highest Echo damage contribution.
 
-Damage-oriented attacker.
-
-Initial behavior:
-- preferred distance: medium;
-- attack priority: Elite, strongest threat, then nearest valid target;
-- highest Echo damage contribution.
+Target priority:
+1. Elite;
+2. highest-MaxHealth valid enemy;
+3. nearest valid enemy.
 
 ### Guardian
+- Damage: 16
+- AttackCooldown: 1.00s
+- AttackRange: 5.5 studs
+- PreferredDistance: 5 studs from owner
+- Role: interception and defensive positioning.
 
-Defensive interceptor.
-
-Initial behavior:
-- preferred distance: close-to-owner;
-- attack priority: enemies approaching or targeting owner;
-- favors interception over chasing distant targets.
+Target priority:
+1. enemy targeting/attacking owner;
+2. enemy within 9 studs of owner;
+3. nearest valid enemy.
 
 ### Support
+- Damage: 12
+- AttackCooldown: 1.20s
+- AttackRange: 8.0 studs
+- PreferredDistance: 9 studs
+- HealAmount: 8 HP
+- HealCooldown: 4.0s
+- HealRange: 18 studs
+- Role: safe support, small direct-damage contribution and bounded healing.
 
-Position-preserving support.
+Target priority:
+1. owner recovery need;
+2. enemy threatening owner;
+3. nearest low-risk valid enemy.
 
-Initial behavior:
-- preferred distance: medium;
-- prioritizes owner safety and recovery;
-- performs a small bounded heal/support action on a cooldown;
-- contributes lower direct damage than Vanguard/Striker.
+Support healing cannot exceed the owner's MaxHealth.
 
-Support must use the same server authority and target validation rules as every other Echo.
+All class actions remain server-authoritative.
 
 ## Echo AI state machine
 
@@ -219,6 +306,7 @@ Required guarantees:
 - Echo cannot damage allies/itself.
 - Echo cannot grant itself rewards.
 - Echo cannot bypass Elite or wave rules.
+- Echo healing is bounded and server-issued.
 - Echo rewards remain attributed to the player only through the server's existing reward path.
 
 The player remains the primary combat agent; the Echo is a helper, not an automated victory mechanism.
@@ -357,7 +445,7 @@ During Elite encounters, Elite information remains higher priority than companio
 
 Remote channels are responsibility based:
 
-- Action: combat and gameplay input requests.
+- Action: combat/gameplay/friend action requests.
 - State: authoritative state updates.
 - FX: presentation-only events.
 - Commerce: shop/inventory request and result messages.
@@ -384,7 +472,8 @@ Initial target:
 - bounded path recomputation;
 - bounded FX count;
 - no unbounded per-NPC polling;
-- no high-frequency RemoteEvent spam for continuous movement.
+- no high-frequency RemoteEvent spam for continuous movement;
+- maximum 14 visible enemy skin parts excluding required root/label.
 
 The system should prefer a small number of focused models and effects over large numbers of decorative instances.
 
@@ -397,8 +486,13 @@ Required tests:
 - rejecting self as friend;
 - rejecting non-friend;
 - class validity;
+- exact class parameter bounds;
 - fallback profile selection;
-- support action bounds;
+- support healing cap/cooldown;
+- enemy theme/profile compatibility;
+- deterministic enemy skin selection;
+- consecutive exact-profile rejection;
+- Elite visual identity preservation;
 - no repeated exact visual profile beyond configured anti-repeat rule;
 - Echo state transition validity;
 - target priority per class;
@@ -426,18 +520,19 @@ A Roblox client runtime playtest is not considered verified unless an actual cli
 
 A successful implementation allows a player to:
 1. open the social/companion UI;
-2. choose a valid friend;
-3. receive a server-owned Echo representation with a coherent visual profile or safe fallback;
-4. choose one of four roles;
-5. fight waves while the Echo follows and assists under legal combat rules;
-6. have all Echoes representing a real friend UserId disable when that friend joins;
-7. earn Credits through the existing wave/economy loop;
-8. open Quick Shop during a safe phase or Full Shop;
-9. inspect a known-price item;
-10. buy it with Credits when affordable;
-11. see ownership/equipment reflected in HUD/UI;
-12. invite a friend through the Roblox invite prompt when supported;
-13. do all of this without duplicate HUDs, stuck loading screens, client-authoritative rewards or malformed remote requests.
+2. see a server-selected coherent enemy visual theme during waves;
+3. choose a valid friend;
+4. receive a server-owned Echo representation with a coherent visual profile or safe fallback;
+5. choose one of four roles;
+6. fight waves while the Echo follows and assists under legal combat rules;
+7. have all Echoes representing a real friend UserId disable when that friend joins;
+8. earn Credits through the existing wave/economy loop;
+9. open Quick Shop during a safe phase or Full Shop;
+10. inspect a known-price item;
+11. buy it with Credits when affordable;
+12. see ownership/equipment reflected in HUD/UI;
+13. invite a friend through the Roblox invite prompt when supported;
+14. do all of this without duplicate HUDs, stuck loading screens, client-authoritative rewards or malformed remote requests.
 
 ## Reference basis
 
