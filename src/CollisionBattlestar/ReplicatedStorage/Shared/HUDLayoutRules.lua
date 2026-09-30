@@ -29,6 +29,8 @@ function Rules.get(viewportX: number, viewportY: number, touch: boolean)
     return {
         Scale = scale,
         TouchControls = touch,
+        UseCustomControls = touch,
+        SafeInsetMode = "CoreUISafeInsets",
         StatsWidth = math.floor(statsWidth),
         ActionSize = math.floor(actionSize),
         DashWidth = math.floor(dashWidth),
