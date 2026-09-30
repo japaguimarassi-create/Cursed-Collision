@@ -22,7 +22,10 @@ return function()
 
     local tiny = Rules.get(320, 568, true)
     assert(tiny.Scale >= 0.78)
-    assert(tiny.StatsWidth <= 310)
+    assert(tiny.StatsWidth <= 180)
+    assert(tiny.CombatWidth >= 150)
+    assert(tiny.StatsWidth + tiny.CombatWidth + tiny.Edge * 2 <= 320)
+    assert(tiny.BottomClearance >= tiny.ActionSize + 40)
     assert(tiny.ActionSize >= 74)
     assert(tiny.StackGap >= 6)
 
