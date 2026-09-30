@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {OperationPolicy,ReferenceEngine,RepositoryIndex,parseJson,allowed} from "../luasmith-v4.js";
+
 test("ESM startup",()=>assert.equal(typeof RepositoryIndex,"function"));
+
 test("operation policy rejects unsafe changes",()=>{
   assert.equal(allowed("src/A.lua"),true);
   assert.equal(allowed("../../etc/passwd"),false);
@@ -9,7 +11,11 @@ test("operation policy rejects unsafe changes",()=>{
   assert.throws(()=>OperationPolicy.validate([{action:"update_file",path:"src/a.lua",content:"loadstring('x')"}]));
   assert.throws(()=>OperationPolicy.validate([{action:"update_file",path:"src/a.lua",content:"ROBLOX_API_KEY=secret"}]));
 });
-test("repair parser accepts JSON",()=>assert.equal(parseJson("{\\"status\\":\\"ok\\",\\"operations\\":[]}").status,"ok"));
+
+test("repair parser accepts JSON",()=>{
+  assert.equal(parseJson('{"status":"ok","operations":[]}').status,"ok");
+});
+
 test("reference and repository indexes work",()=>{
   const refs=new ReferenceEngine("/tmp/luasmith-v4-refs.json").load();
   assert.ok(refs.search("Roblox analytics").length>0);
