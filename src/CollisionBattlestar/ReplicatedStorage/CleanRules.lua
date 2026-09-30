@@ -4,37 +4,38 @@ local Rules = {}
 
 export type Tier = "Tier1" | "Tier2" | "Tier3" | "Elite"
 
-local TIER_STATS = {
+type TierStats = {
+    Health: number,
+    Damage: number,
+    Reward: number,
+    Speed: number,
+}
+
+type Skin = {
+    Name: string,
+    Price: number,
+    Primary: {number},
+    Accent: {number},
+}
+
+local tierStats: {[string]: TierStats} = {
     Tier1 = {Health = 70, Damage = 8, Reward = 5, Speed = 11},
     Tier2 = {Health = 125, Damage = 12, Reward = 8, Speed = 12},
     Tier3 = {Health = 210, Damage = 18, Reward = 12, Speed = 13},
     Elite = {Health = 420, Damage = 26, Reward = 35, Speed = 10},
 }
 
-local SKINS = {
-    Default = {Name = "Default", Price = 0, Primary = Color3.fromRGB(205, 214, 228), Accent = Color3.fromRGB(85, 205, 255)},
-    Redline = {Name = "Redline", Price = 125, Primary = Color3.fromRGB(104, 42, 50), Accent = Color3.fromRGB(255, 80, 92)},
-    NeonPulse = {Name = "Neon Pulse", Price = 225, Primary = Color3.fromRGB(36, 76, 94), Accent = Color3.fromRGB(48, 235, 224)},
-    ArcticCore = {Name = "Arctic Core", Price = 325, Primary = Color3.fromRGB(124, 164, 185), Accent = Color3.fromRGB(190, 240, 255)},
+local skins: {[string]: Skin} = {
+    Default = {Name = "Default", Price = 0, Primary = {205, 214, 228}, Accent = {85, 205, 255}},
+    Redline = {Name = "Redline", Price = 125, Primary = {104, 42, 50}, Accent = {255, 80, 92}},
+    NeonPulse = {Name = "Neon Pulse", Price = 225, Primary = {36, 76, 94}, Accent = {48, 235, 224}},
+    ArcticCore = {Name = "Arctic Core", Price = 325, Primary = {124, 164, 185}, Accent = {190, 240, 255}},
 }
 
-local ACTIONS = {
-    Attack = true,
-    Dash = true,
-    Upgrade = true,
-    BuySkin = true,
-    EquipSkin = true,
-    ToggleEcho = true,
-    GetFriends = true,
-    SummonEcho = true,
-    DismissEcho = true,
-    RequestState = true,
-    Admin = true,
-    Respawn = true,
-}
+local echoClasses = {"Vanguard", "Striker", "Guardian", "Support"}
 
-function Rules.enemyStats(tier: string)
-    return TIER_STATS[tier]
+function Rules.enemyStats(tier: string): TierStats?
+    return tierStats[tier]
 end
 
 function Rules.enemyCount(wave: number): number
@@ -60,32 +61,12 @@ function Rules.upgradeCost(level: number): number
     return 50 * (2 ^ math.clamp(level, 0, 10))
 end
 
-function Rules.isActionAllowed(action: unknown): boolean
-    return type(action) == "string" and ACTIONS[action] == true
-end
-
-function Rules.isSkinValid(skinId: unknown): boolean
-    return type(skinId) == "string" and SKINS[skinId] ~= nil
-end
-
-function Rules.skin(skinId: string)
-    return SKINS[skinId]
-end
-
-function Rules.skinIds(): {string}
-    return {"Default", "Redline", "NeonPulse", "ArcticCore"}
-end
-
-function Rules.maxConcurrentEnemies(): number
-    return 20
-end
-
 function Rules.playerMaxHealth(): number
     return 100
 end
 
-function Rules.baseDamage(): {number}
-    return {25, 30, 35}
+function Rules.baseDamage(combo: number): number
+    return ({25, 30, 35})[math.clamp(combo, 1, 3)]
 end
 
 function Rules.attackCooldown(): number
@@ -102,6 +83,31 @@ end
 
 function Rules.dashSpeed(): number
     return 72
+end
+
+function Rules.isValidEchoClass(classId: unknown): boolean
+    for _, value in ipairs(echoClasses) do
+        if value == classId then
+            return true
+        end
+    end
+    return false
+end
+
+function Rules.echoClasses(): {string}
+    return table.clone(echoClasses)
+end
+
+function Rules.skinIds(): {string}
+    return {"Default", "Redline", "NeonPulse", "ArcticCore"}
+end
+
+function Rules.skin(skinId: string): Skin?
+    return skins[skinId]
+end
+
+function Rules.isValidSkin(skinId: unknown): boolean
+    return type(skinId) == "string" and skins[skinId] ~= nil
 end
 
 return table.freeze(Rules)
