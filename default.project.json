@@ -18,7 +18,6 @@
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "$properties": {
-        "CharacterAutoLoads": false,
         "EnableMouseLockOption": true
       },
       "StarterPlayerScripts": {
