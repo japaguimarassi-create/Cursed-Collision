@@ -2,7 +2,7 @@
 
 Where Worlds Collide
 
-Collision Battlestar is an action-first PvE wave arena built around readable combat, a red Elite target, persistent progression, social Friend Echo companions, and recurring content.
+Collision Battlestar is an action-first PvE wave arena built around readable combat, a red Elite target, persistent progression, social Friend Echo companions, recurring content, and owner-controlled QA.
 
 The repository name remains Cursed-Collision for history compatibility.
 
