@@ -18,12 +18,28 @@ required = [
     "src/CollisionBattlestar/ReplicatedStorage/Shared/EconomyRules.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/SecurityRules.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/PlayerState.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/FriendRules.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/CompanionDefinitions.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/EnemySkinDefinitions.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/EnemySkinRules.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/ShopDefinitions.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/ShopRules.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/InventoryRules.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/ProgressionRules.lua",
+    "src/CollisionBattlestar/ReplicatedStorage/Shared/AnalyticsRules.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/HUDContract.lua",
     "src/CollisionBattlestar/ReplicatedStorage/Shared/HUDLayoutRules.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Bootstrap.server.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Core/ServiceRegistry.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Core/RuntimeState.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Core/PlayerState.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Persistence/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Friends/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Companions/Factory.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Companions/Brain.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Companions/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Companions/AvatarResolver.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Companions/VisualProfile.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Security/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/World/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/World/ArenaBuilder.lua",
@@ -31,10 +47,14 @@ required = [
     "src/CollisionBattlestar/ServerScriptService/Foundation/Enemies/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Enemies/EnemyFactory.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Enemies/EnemyBrain.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Enemies/SkinFactory.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Enemies/Navigation.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Combat/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Economy/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Shop/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Shop/InventoryService.lua",
     "src/CollisionBattlestar/ServerScriptService/Foundation/Waves/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Foundation/Admin/TestLabService.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Foundation/ClientBootstrap.client.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Foundation/InputController.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Foundation/HUD/Root.lua",
@@ -80,10 +100,10 @@ for root in legacy_roots:
         raise SystemExit("Legacy runtime source remains: " + str(root))
 
 bootstrap = (ROOT / "src/CollisionBattlestar/ServerScriptService/Foundation/Bootstrap.server.lua").read_text(encoding="utf-8")
-for remote in ("Combat", "State", "FX"):
+for remote in ("Combat", "State", "FX", "Commerce", "Companion", "TestLab"):
     if f'ensureRemote("{remote}")' not in bootstrap:
         raise SystemExit("Required remote missing: " + remote)
-if bootstrap.count('ensureRemote("') != 3:
+if bootstrap.count('ensureRemote("') != 6:
     raise SystemExit("Unexpected remote count")
 
-print("Validated Collision Battlestar foundation runtime and procedural PvE arena.")
+print("Validated Collision Battlestar renewal runtime, services, remotes, and arena.")
