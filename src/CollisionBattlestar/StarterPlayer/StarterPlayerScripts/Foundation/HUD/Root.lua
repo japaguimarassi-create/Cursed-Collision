@@ -71,7 +71,7 @@ function Root.Create(player: Player)
     gui.Name = "CollisionBattlestarHUD"
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = false
-    gui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+    gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     gui.DisplayOrder = 20
     gui.Parent = playerGui
@@ -676,7 +676,7 @@ function Root:_applyResponsiveLayout()
 
     self.PlayerStatus.Size = UDim2.fromOffset(metrics.StatsWidth, 96)
     self.PlayerStatus.Position = UDim2.new(0, metrics.Edge, 1, -metrics.BottomClearance)
-    self.HealthFill.Parent.Size = UDim2.fromOffset(metrics.StatsWidth - 24, 10)
+    self.HealthFill.Parent.Size = UDim2.fromOffset(math.max(104, metrics.StatsWidth - 24), 10)
 
     local mobile = metrics.TouchControls
     local compact = mobile and viewport.X < 500
@@ -728,6 +728,7 @@ function Root:_applyResponsiveLayout()
     self.MenuPanel.Size = UDim2.fromOffset(menuWidth, 248)
     self.MenuPanel.Position = UDim2.new(1, -menuWidth - metrics.Edge, 0, metrics.Edge + 52)
 
+    self.CombatControls.Visible = metrics.UseCustomControls
     self.CombatControls.Size = UDim2.fromOffset(metrics.CombatWidth, if mobile then 242 else 210)
     self.CombatControls.Position = UDim2.new(
         1,
