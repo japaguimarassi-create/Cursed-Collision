@@ -169,6 +169,7 @@ function Root:_buildPlayerStatus()
         Theme.Colors.Muted,
         true
     )
+    self.CreditsTitle = creditsTitle
 
     local _, fill = Components.ProgressBar(
         panel,
@@ -678,6 +679,26 @@ function Root:_applyResponsiveLayout()
     self.HealthFill.Parent.Size = UDim2.fromOffset(metrics.StatsWidth - 24, 10)
 
     local mobile = metrics.TouchControls
+    local compact = mobile and viewport.X < 500
+    if compact then
+        self.HealthValue.Size = UDim2.fromOffset(math.max(78, math.floor(metrics.StatsWidth * 0.48)), 24)
+        self.HealthValue.Position = UDim2.fromOffset(12, 23)
+        self.CreditsTitle.Position = UDim2.fromOffset(math.floor(metrics.StatsWidth * 0.52), 7)
+        self.CreditsTitle.Size = UDim2.fromOffset(math.max(58, metrics.StatsWidth - math.floor(metrics.StatsWidth * 0.52) - 8), 18)
+        self.CreditsValue.Position = UDim2.fromOffset(math.floor(metrics.StatsWidth * 0.52), 23)
+        self.CreditsValue.Size = UDim2.fromOffset(math.max(58, metrics.StatsWidth - math.floor(metrics.StatsWidth * 0.52) - 8), 24)
+        self.CreditsValue.TextSize = 15
+        self.DamageLevel.Visible = false
+    else
+        self.HealthValue.Size = UDim2.fromOffset(104, 24)
+        self.HealthValue.Position = UDim2.fromOffset(12, 23)
+        self.CreditsTitle.Position = UDim2.fromOffset(183, 7)
+        self.CreditsTitle.Size = UDim2.fromOffset(92, 18)
+        self.CreditsValue.Position = UDim2.fromOffset(183, 23)
+        self.CreditsValue.Size = UDim2.fromOffset(120, 24)
+        self.CreditsValue.TextSize = 17
+        self.DamageLevel.Visible = true
+    end
     local navMenuWidth = if mobile then 64 else 82
     local navEchoWidth = if mobile then 62 else 78
     local navShopWidth = if mobile then 62 else 78
@@ -707,7 +728,7 @@ function Root:_applyResponsiveLayout()
     self.MenuPanel.Size = UDim2.fromOffset(menuWidth, 248)
     self.MenuPanel.Position = UDim2.new(1, -menuWidth - metrics.Edge, 0, metrics.Edge + 52)
 
-    self.CombatControls.Size = UDim2.fromOffset(206, if mobile then 242 else 210)
+    self.CombatControls.Size = UDim2.fromOffset(metrics.CombatWidth, if mobile then 242 else 210)
     self.CombatControls.Position = UDim2.new(
         1,
         -metrics.Edge,
