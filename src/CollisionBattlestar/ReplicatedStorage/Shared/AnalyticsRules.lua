@@ -13,7 +13,7 @@ function Rules.normalize(name:string,fields):{Name:string,Fields:{string}}
     local result={Name=name,Fields={}}
     for _,key in ipairs({"action","wave","tier","result","itemId","classId","reason"}) do
         if fields[key]~=nil and #result.Fields<3 then
-            table.insert(result.Fields,tostring(fields[key]))
+            result.Fields[#result.Fields+1]=tostring(fields[key])
         end
     end
     return result
