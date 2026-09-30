@@ -11,15 +11,18 @@ function Rules.get(viewportX: number, viewportY: number, touch: boolean)
     local scale = clampScale(viewportX, viewportY)
     local tiny = math.min(viewportX, viewportY) < 600
 
+    local edge = math.max(12, math.floor(16 * scale))
     local statsWidth = if touch then math.min(352, viewportX * 0.84) else 360
-    if tiny then
+    if touch and viewportX < 500 then
+        statsWidth = math.clamp(viewportX * 0.43, 132, 180)
+    elseif tiny then
         statsWidth = math.min(statsWidth, 310)
     end
 
     local actionSize = if touch then math.clamp(92 * scale, 74, 96) else math.clamp(88 * scale, 76, 96)
-    local edge = math.max(12, math.floor(16 * scale))
+    local combatWidth = if touch then math.clamp(viewportX - statsWidth - edge * 2 - 8, 150, 206) else 206
     local bottomGap = math.max(12, math.floor(14 * scale))
-    local bottomClearance = actionSize + math.max(18, math.floor(22 * scale))
+    local bottomClearance = if touch then actionSize + math.max(40, math.floor(48 * scale)) else actionSize + math.max(18, math.floor(22 * scale))
     local stackGap = math.max(6, math.floor(8 * scale))
 
     return {
@@ -27,6 +30,7 @@ function Rules.get(viewportX: number, viewportY: number, touch: boolean)
         TouchControls = touch,
         StatsWidth = math.floor(statsWidth),
         ActionSize = math.floor(actionSize),
+        CombatWidth = math.floor(combatWidth),
         Edge = edge,
         BottomGap = bottomGap,
         BottomClearance = bottomClearance,
