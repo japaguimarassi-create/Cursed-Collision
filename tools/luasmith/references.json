@@ -1,0 +1,116 @@
+[
+  {
+    "id": "core-loops",
+    "title": "Roblox Core Loops",
+    "url": "https://create.roblox.com/docs/production/game-design/core-loops",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "onboarding",
+    "title": "Roblox Onboarding",
+    "url": "https://create.roblox.com/docs/production/game-design/onboarding",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "discovery",
+    "title": "Roblox Discovery",
+    "url": "https://create.roblox.com/docs/discovery",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "analytics",
+    "title": "Roblox Analytics",
+    "url": "https://create.roblox.com/docs/production/analytics",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "custom-events",
+    "title": "Roblox Custom Events",
+    "url": "https://create.roblox.com/docs/production/analytics/custom-events",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "custom-fields",
+    "title": "Roblox Analytics Custom Fields",
+    "url": "https://create.roblox.com/docs/production/analytics/custom-fields",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "liveops",
+    "title": "Roblox LiveOps Essentials",
+    "url": "https://create.roblox.com/docs/production/game-design/liveops-essentials",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "configs",
+    "title": "Roblox Experience Configs",
+    "url": "https://create.roblox.com/docs/cloud/guides/configs",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "experiments",
+    "title": "Roblox Experiments",
+    "url": "https://create.roblox.com/docs/production/experiments",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "performance",
+    "title": "Roblox Performance Optimization",
+    "url": "https://create.roblox.com/docs/performance-optimization",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "luau-execution",
+    "title": "Roblox Luau Execution",
+    "url": "https://create.roblox.com/docs/cloud/reference/features/luau-execution",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "players",
+    "title": "Roblox Players API",
+    "url": "https://create.roblox.com/docs/reference/engine/classes/Players",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "analytics-service",
+    "title": "Roblox AnalyticsService",
+    "url": "https://create.roblox.com/docs/reference/engine/classes/AnalyticsService",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "engine",
+    "title": "Roblox Engine Reference",
+    "url": "https://create.roblox.com/docs/reference/engine",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "datastores",
+    "title": "Roblox Data Stores",
+    "url": "https://create.roblox.com/docs/cloud-services/data-stores",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "social",
+    "title": "Roblox Design for Social Play",
+    "url": "https://create.roblox.com/docs/production/game-design/design-for-roblox",
+    "sourceType": "official-roblox"
+  },
+  {
+    "id": "strongest",
+    "title": "The Strongest Battlegrounds",
+    "url": "https://www.roblox.com/games/10449761463/The-Strongest-Battlegrounds",
+    "sourceType": "game-reference"
+  },
+  {
+    "id": "doors",
+    "title": "DOORS",
+    "url": "https://www.roblox.com/games/6516141723/DOORS",
+    "sourceType": "game-reference"
+  },
+  {
+    "id": "place-ci-cd",
+    "title": "Roblox Place CI/CD Demo",
+    "url": "https://github.com/Roblox/place-ci-cd-demo",
+    "sourceType": "official-github"
+  }
+]
