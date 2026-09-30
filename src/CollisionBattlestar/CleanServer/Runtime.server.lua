@@ -45,6 +45,7 @@ COMPANIONS.Parent = WORLD
 
 local profiles = {}
 local persistenceReady = {}
+local loadingPersistence = {}
 local attackAt = {}
 local dashAt = {}
 local combo = {}
@@ -131,19 +132,28 @@ end
 
 local function loadProfile(player)
     if not storeOk or not STORE then
-        profiles[player] = defaultProfile()
         persistenceReady[player] = false
         return
     end
 
+    loadingPersistence[player] = true
     local success, data = pcall(function()
         return STORE:GetAsync("u:" .. tostring(player.UserId))
     end)
+    loadingPersistence[player] = nil
+
+    if not player.Parent then
+        return
+    end
+
     if success then
         profiles[player] = migrate(data)
         persistenceReady[player] = true
+        if player.Character then
+            applySkin(player, player.Character)
+        end
+        sync(player)
     else
-        profiles[player] = defaultProfile()
         persistenceReady[player] = false
         warn("[CollisionBattlestar] Data load failed for " .. player.Name)
     end
@@ -1167,24 +1177,33 @@ Action.OnServerEvent:Connect(function(player, action, a, b)
     processAction(player, action, a, b)
 end)
 
-Players.PlayerAdded:Connect(function(player)
+local function initializePlayer(player)
+    profiles[player] = profiles[player] or defaultProfile()
+    persistenceReady[player] = false
+    player:SetAttribute("CBS_DataReady", false)
+    player:SetAttribute("CBS_WorldReady", worldReady)
+    player:SetAttribute("CBS_Owner", adminAllowed(player))
+
+    player.CharacterAdded:Connect(function(character)
+        onCharacterAdded(player, character)
+    end)
+
+    pcall(function()
+        player:LoadCharacter()
+    end)
+    sync(player)
+
     task.spawn(function()
         loadProfile(player)
-        player:SetAttribute("CBS_DataReady", true)
-        player:SetAttribute("CBS_WorldReady", worldReady)
-        player:SetAttribute("CBS_Owner", adminAllowed(player))
-        player.CharacterAdded:Connect(function(character)
-            onCharacterAdded(player, character)
-        end)
-        if player.Character then
-            onCharacterAdded(player, player.Character)
-        else
-            pcall(function()
-                player:LoadCharacter()
-            end)
+        if player.Parent then
+            player:SetAttribute("CBS_DataReady", true)
+            sync(player)
         end
-        sync(player)
     end)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    initializePlayer(player)
 
     for owner, entry in pairs(echoes) do
         if entry.friendUserId == player.UserId then
@@ -1206,6 +1225,7 @@ Players.PlayerRemoving:Connect(function(player)
     destroyEcho(player, "OwnerLeft")
     profiles[player] = nil
     persistenceReady[player] = nil
+    loadingPersistence[player] = nil
     attackAt[player] = nil
     dashAt[player] = nil
     combo[player] = nil
@@ -1215,19 +1235,7 @@ end)
 buildWorld()
 
 for _, player in ipairs(Players:GetPlayers()) do
-    task.spawn(function()
-        loadProfile(player)
-        player:SetAttribute("CBS_DataReady", true)
-        player:SetAttribute("CBS_WorldReady", worldReady)
-        player:SetAttribute("CBS_Owner", adminAllowed(player))
-        player.CharacterAdded:Connect(function(character)
-            onCharacterAdded(player, character)
-        end)
-        pcall(function()
-            player:LoadCharacter()
-        end)
-        sync(player)
-    end)
+    initializePlayer(player)
 end
 
 task.delay(1, function()
