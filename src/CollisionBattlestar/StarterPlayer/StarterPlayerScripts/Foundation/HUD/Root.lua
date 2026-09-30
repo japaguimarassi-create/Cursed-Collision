@@ -698,9 +698,10 @@ function Root:_applyResponsiveLayout()
 
     local waveWidth = if mobile then math.min(292, viewport.X * 0.72) else 292
     self.WaveStatus.Size = UDim2.fromOffset(math.floor(waveWidth), 72)
-    self.WaveStatus.Position = UDim2.new(0.5, -math.floor(waveWidth / 2), 0, metrics.Edge)
+    local waveTop = if mobile then metrics.Edge + 52 else metrics.Edge
+    self.WaveStatus.Position = UDim2.new(0.5, -math.floor(waveWidth / 2), 0, waveTop)
 
-    self.EliteBanner.Position = UDim2.new(0.5, -135, 0, metrics.Edge + 80)
+    self.EliteBanner.Position = UDim2.new(0.5, -135, 0, waveTop + 80)
 
     local menuWidth = math.min(340, math.max(260, viewport.X - metrics.Edge * 2))
     self.MenuPanel.Size = UDim2.fromOffset(menuWidth, 248)
