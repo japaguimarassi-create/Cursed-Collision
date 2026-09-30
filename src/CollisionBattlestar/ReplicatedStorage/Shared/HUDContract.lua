@@ -1,6 +1,19 @@
 --!strict
 
-local names = {"Health", "Credits", "Wave", "Enemies", "Elite", "M1", "Dash", "Menu"}
+local names = {
+    "Health",
+    "Credits",
+    "Wave",
+    "Enemies",
+    "Elite",
+    "Phase",
+    "M1",
+    "Dash",
+    "Menu",
+    "Shop",
+    "Companion",
+    "Notifications",
+}
 
 local Contract = {}
 
@@ -15,6 +28,10 @@ end
 
 function Contract.count(): number
     return #names
+end
+
+function Contract.all(): {string}
+    return table.clone(names)
 end
 
 return Contract
