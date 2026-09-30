@@ -24,7 +24,7 @@ end
 function Rules.validProfiles(themeId:string,tier:string)
     local count=if tier=="Elite" then 2 else 4
     local profiles={}
-    for i=1,count do table.insert(profiles,Definitions.make(themeId,tier,i)) end
+    for i=1,count do profiles[#profiles+1]=Definitions.make(themeId,tier,i) end
     return profiles
 end
 function Rules.pick(themeId:string,tier:string,seed:number,previousProfileId:string?)
