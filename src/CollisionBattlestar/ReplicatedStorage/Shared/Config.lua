@@ -1,2 +1,3 @@
 --!strict
-return require(script.Parent:WaitForChild("GameProgram"))
+
+return require(script.Parent:WaitForChild("Constants"))
