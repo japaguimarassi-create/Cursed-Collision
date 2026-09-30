@@ -1,5 +1,20 @@
 --!strict
-local Definitions = if script then require(script.Parent:WaitForChild("EnemySkinDefinitions")) else require("./EnemySkinDefinitions")
+local Definitions
+do
+    local loaded = false
+    if script then
+        local ok, candidate = pcall(function()
+            return require(script.Parent:WaitForChild("EnemySkinDefinitions"))
+        end)
+        if ok and type(candidate) == "table" and type(candidate.make) == "function" then
+            Definitions = candidate
+            loaded = true
+        end
+    end
+    if not loaded then
+        Definitions = require("./EnemySkinDefinitions")
+    end
+end
 local Rules={}
 local validTiers={Tier1=true,Tier2=true,Tier3=true,Elite=true}
 local function sameColor(a:{number},b:{number}):boolean return a[1]==b[1] and a[2]==b[2] and a[3]==b[3] end
