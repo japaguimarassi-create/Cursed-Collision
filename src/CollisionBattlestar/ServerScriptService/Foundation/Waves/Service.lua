@@ -24,6 +24,7 @@ function Service:Init(registry,remotes)
     self.playerState=registry:Get("PlayerState")
     self.state=registry:Get("RuntimeState")
     self.stateRemote=remotes.State
+    self.analytics=registry:Get("Analytics")
     self.enemies:SetDefeatHandler(function(model,tier,attackerId)
         self:OnEnemyDefeated(model,tier,attackerId)
     end)
@@ -50,6 +51,7 @@ function Service:spawnWave(wave:number)
     local themes=SkinDefinitions.themeIds()
     self.themeId=themes[((wave-1)%#themes)+1]
     self:Broadcast()
+    for _,player in ipairs(Players:GetPlayers()) do self.analytics:Log(player,"Wave",wave,{"Start",self.themeId,tostring(count)}) end
 
     task.spawn(function()
         for index=1,count-1 do
@@ -112,6 +114,7 @@ function Service:OnEnemyDefeated(_,tier:string,attackerId)
         local clearedWave=self.wave
         self.phase="Cleared"
         self:Broadcast()
+        for _,player in ipairs(Players:GetPlayers()) do self.analytics:Log(player,"Wave",clearedWave,{"Cleared",self.themeId,tostring(self.wave)}) end
         self.economy:GrantWaveReward(clearedWave)
         task.delay(Constants.Waves.Intermission,function()
             if #Players:GetPlayers()>0 and self.phase=="Cleared" and self.wave==clearedWave then
