@@ -556,3 +556,420 @@ LuaSmith must not:
 - silently publish unreviewed feature changes;
 - collect secrets into the reference database;
 - manufacture meaningless updates.
+
+
+## 27. Design review against Roblox platform guidance and successful game patterns
+
+This review adds platform-specific and cross-game findings to prevent the agent from optimizing only for code correctness while neglecting player experience and sustainable LiveOps.
+
+### 27.1 Core loop becomes a first-class engineering contract
+
+Roblox describes a core loop as minute-to-minute interaction, the most repeated action set, and the progression engine. The Collision Battlestar loop is therefore formalized as:
+
+Join/Spawn
+-> understand the objective
+-> fight
+-> identify/defeat the red Elite
+-> earn Credits
+-> upgrade
+-> face stronger wave
+-> repeat
+-> play with a friend / Friend Echo
+-> unlock new content
+
+Every new feature must map to at least one step of this loop. A feature that does not strengthen the loop requires explicit owner approval.
+
+Source: Roblox Creator Hub Core Loops:
+https://create.roblox.com/docs/production/game-design/core-loops
+
+### 27.2 First five minutes become a measurable product contract
+
+Roblox guidance emphasizes reaching the fun quickly, teaching the core loop through action, and avoiding lengthy tutorials.
+
+LuaSmith must therefore check the first-session flow for:
+
+- time-to-first-input
+- time-to-first-hit
+- time-to-first-defeat
+- time-to-first-reward
+- time-to-first-upgrade
+- time-to-first-Elite
+- clarity of the next objective
+- ability to play with friends
+
+The Test Lab must include a first-session scenario that verifies this sequence.
+
+Source:
+https://create.roblox.com/docs/production/game-design/onboarding
+https://create.roblox.com/docs/production/analytics/engagement
+
+### 27.3 Social play is a product requirement, not a cosmetic feature
+
+Roblox explicitly identifies friend play, invites and social interaction as important platform behavior.
+
+Collision Battlestar therefore treats:
+- Friend Echo
+- real-friend substitution
+- party/co-play readiness
+- invite prompts
+- visible player identity/cosmetics
+- cooperative wave completion
+
+as part of the long-term retention architecture.
+
+A future PvP zone can coexist with the PvE core, but it must not compromise the cooperative onboarding loop.
+
+Source:
+https://create.roblox.com/docs/production/game-design/design-for-roblox
+https://create.roblox.com/docs/production/roblox-user-base
+
+### 27.4 Discovery becomes a testable engineering input
+
+Roblox documents recommendation signals including play-through behavior, first-play bounce, play days, playtime and intentional co-play. The agent must not predict discovery outcomes, but it should diagnose the game properties that feed into these signals.
+
+The Game Growth dashboard should track, where data is available:
+
+- recommendation play-through rate
+- first-play bounce
+- qualified play
+- playtime
+- play days
+- co-play days
+- spend days
+- Robux per user
+
+Acquisition experiments for title, icon, thumbnail or description must remain separate from gameplay experiments.
+
+Source:
+https://create.roblox.com/docs/discovery
+
+### 27.5 LiveOps must be content-first and system-light
+
+Roblox currently recommends a sustainable cadence in which smaller updates arrive regularly and larger system updates arrive less frequently. The exact cadence is a project configuration, not a promise.
+
+LuaSmith must support a content ladder:
+
+Tier A — bug fixes / balance / QoL
+Tier B — new enemy/theme/mission/shop item
+Tier C — new map modifier / boss / companion class / mode
+Tier D — major system or world expansion
+
+Most maintenance cycles should prefer Tier A/B changes when evidence supports them.
+
+The agent must refuse to invent filler updates simply to satisfy a calendar.
+
+Source:
+https://create.roblox.com/docs/get-started/strategies
+https://create.roblox.com/docs/production/game-design/liveops-essentials
+
+### 27.6 Configs become a deliberate live-tuning layer
+
+Roblox Experience Configs support draft/publish/version history/restore and real-time server reactions. They are appropriate for controlled values such as:
+
+- wave scaling
+- enemy health/damage
+- upgrade costs
+- onboarding timings
+- reward multipliers
+- event durations
+- feature flags
+- test toggles
+
+Stable architecture and code remain in Git. Fast-moving tunables can live in Configs.
+
+The project contract must distinguish:
+CODE_CHANGE versus CONFIG_CHANGE.
+
+Config changes require their own audit trail and rollback reference.
+
+Source:
+https://create.roblox.com/docs/cloud/guides/configs
+https://create.roblox.com/docs/cloud-services/data-stores-vs-memory-stores
+
+### 27.7 Experiments become first-class, not model guesses
+
+Roblox Experiments can test in-game configuration variants and report D1 retention, playtime and monetization metrics.
+
+LuaSmith must never conclude that a feature is “better” from intuition alone when an experiment can answer the question.
+
+Experiment lifecycle:
+
+hypothesis
+-> pre-registration
+-> controlled rollout
+-> measurement
+-> decision
+-> retain / revert / iterate
+
+Source:
+https://create.roblox.com/docs/production/experiments
+
+### 27.8 Analytics must use a small stable event vocabulary
+
+Roblox recommends custom fields over creating large numbers of event names because event-name cardinality is tighter.
+
+Therefore Collision Battlestar analytics should prefer stable events such as:
+
+- Session
+- Wave
+- Combat
+- Upgrade
+- Shop
+- Companion
+- Social
+- Event
+- Progression
+
+with structured custom fields such as:
+
+action, tier, wave, theme, itemId, classId, result, reason, source.
+
+This supports longitudinal analysis without turning telemetry into an unmaintainable dictionary.
+
+Source:
+https://create.roblox.com/docs/production/analytics/custom-events
+
+### 27.9 Reference quality is more important than reference count
+
+“Thousands of references” must not become “thousands of scraped snippets.”
+
+The Reference Engine therefore scores each source by:
+
+1. first-party authority
+2. API/version relevance
+3. freshness
+4. project relevance
+5. reproducibility
+6. usage/license clarity
+7. contradiction status
+
+For Roblox API behavior:
+official Roblox documentation > official Roblox repositories/examples > established technical references > community examples.
+
+A community project can demonstrate a pattern; it cannot override official API documentation.
+
+### 27.10 Cross-game patterns to incorporate
+
+The review examined current public Roblox experiences and update histories as pattern references, not as source code to copy.
+
+Observed patterns relevant to Collision Battlestar include:
+
+**The Strongest Battlegrounds**
+- extremely recognizable basic combat verbs
+- cross-device control language
+- immediate combat identity
+- dedicated emote/social surface
+
+Source:
+https://www.roblox.com/games/10449761463/The-Strongest-Battlegrounds
+
+**DOORS**
+- strong first-run goal clarity
+- badges and repeat-run structure
+- explicit friend-play achievement
+- ongoing event/update surface
+
+Source:
+https://www.roblox.com/games/6516141723/DOORS
+
+**Anime Vanguards**
+- repeated content updates
+- separate permanent and temporary events
+- progression systems layered onto the core mode
+- QoL patches alongside major updates
+- multiple acquisition paths for new content
+
+Sources:
+https://www.roblox.com/games/16146832113/Anime-Vanguards-Extermination-Event-Pt-1
+https://vanguards.gg/changelog
+
+These observations are patterns, not claims that any specific mechanic caused any specific popularity result.
+
+### 27.11 Collision Battlestar-specific product direction
+
+The agent must protect the game's identity instead of turning it into a generic simulator or generic battleground.
+
+The first public-facing identity should be understandable in one sentence:
+
+“Fight escalating PvE waves, hunt the red Elite, upgrade your build, and bring a Friend Echo to survive the Collision.”
+
+This becomes a design filter for onboarding, thumbnails, update notes and feature proposals.
+
+The future PvP battleground is an extension, not the definition of the initial experience.
+
+### 27.12 Accessibility and device coverage
+
+Testing must include at least:
+
+- narrow mobile portrait
+- typical mobile portrait
+- mobile landscape
+- desktop
+- controller input
+
+The HUD contract remains safe-area aware.
+
+The agent must reject changes that introduce known control collisions, unreadable HUD regions, or action buttons outside the intended input zone.
+
+### 27.13 Performance gates are product gates
+
+Roblox identifies frame rate, memory, join time and server heartbeat as core performance concerns.
+
+The validation system therefore adds:
+
+- build-size trend
+- asset-count trend when measurable
+- server heartbeat checks in runtime tests
+- memory growth checks when measurable
+- first-render/join timing where test infrastructure permits
+- remote event frequency checks
+- active enemy/AI budget checks
+
+The agent must compare against the previous successful baseline, not only against fixed absolute limits.
+
+Source:
+https://create.roblox.com/docs/performance-optimization
+
+### 27.14 Test-place CI design is now mandatory when credentials exist
+
+Roblox's current Luau Execution API allows headless execution against a place and supports automated testing and configuration. The official Roblox place CI/CD demo demonstrates the separate-test-place architecture.
+
+LuaSmith must therefore support:
+
+source branch
+-> build RBXL
+-> publish candidate to test place
+-> execute test script against that version
+-> collect return values/logs
+-> attach evidence to PR
+-> promote only after release policy passes
+
+The implementation must use the current Luau Execution API and current concurrency limits rather than copying stale limits from older examples.
+
+Sources:
+https://create.roblox.com/docs/cloud/reference/features/luau-execution
+https://github.com/Roblox/place-ci-cd-demo
+
+### 27.15 Production publication safety is tightened
+
+The repository's current publication workflow is triggered by pushes to main. That is acceptable only if main is protected and every main commit is guaranteed to have passed all required test gates.
+
+The revised release policy therefore requires:
+
+- PR validation before merge
+- test-place verification before merge for runtime changes when configured
+- protected main branch
+- separate production API permission
+- deployment workflow that refuses non-production IDs
+- explicit release audit metadata
+- rollback procedure using a known-good place version
+
+No scheduled research job can bypass these controls.
+
+### 27.16 The Test Lab is also a regression laboratory
+
+The personal Test Lab must not be merely an admin command menu.
+
+Every major gameplay system receives at least one deterministic scenario:
+
+- new player onboarding
+- wave 1
+- wave progression
+- red Elite
+- M1
+- Dash
+- enemy targeting
+- Friend Echo
+- shop purchase
+- inventory/equip
+- reward grant
+- save/load
+- anti-cheat rejection
+- recovery from server/runtime errors
+
+Each scenario returns a machine-readable PASS/FAIL plus evidence.
+
+### 27.17 “No errors” is redefined as measurable risk control
+
+Absolute absence of future bugs cannot be guaranteed.
+
+The acceptance target is:
+
+- no known blocker
+- no known security regression
+- no failed mandatory test
+- no unexplained build/runtime error in the tested path
+- no unauthorized production mutation
+- reproducible rollback
+- monitored post-release signals
+- automatic incident capture for newly discovered failures
+
+This is the standard the agent can actually enforce.
+
+## 28. Review conclusion
+
+The original architecture was strong as a repair agent but too code-centric for the stated goal of making Collision Battlestar a durable Roblox experience.
+
+The revised architecture is therefore explicitly split into four quality layers:
+
+Engineering Quality
+-> Play Quality
+-> LiveOps Quality
+-> Growth/Discovery Diagnostics
+
+A LuaSmith run is not successful merely because Luau compiles. It is successful only when the requested change is technically valid, aligned with the core loop, verified in the appropriate environment, observable after release, and reversible.
+
+## 29. Reference index for the review
+
+Roblox — Core loops:
+https://create.roblox.com/docs/production/game-design/core-loops
+
+Roblox — Onboarding:
+https://create.roblox.com/docs/production/game-design/onboarding
+
+Roblox — Design for Roblox:
+https://create.roblox.com/docs/production/game-design/design-for-roblox
+
+Roblox — Engagement:
+https://create.roblox.com/docs/production/analytics/engagement
+
+Roblox — Discovery:
+https://create.roblox.com/docs/discovery
+
+Roblox — Experiments:
+https://create.roblox.com/docs/production/experiments
+
+Roblox — Analytics:
+https://create.roblox.com/docs/production/analytics
+
+Roblox — Custom events:
+https://create.roblox.com/docs/production/analytics/custom-events
+
+Roblox — LiveOps essentials:
+https://create.roblox.com/docs/production/game-design/liveops-essentials
+
+Roblox — Recommended strategies:
+https://create.roblox.com/docs/get-started/strategies
+
+Roblox — Experience configs:
+https://create.roblox.com/docs/cloud/guides/configs
+
+Roblox — Performance:
+https://create.roblox.com/docs/performance-optimization
+
+Roblox — Luau Execution:
+https://create.roblox.com/docs/cloud/reference/features/luau-execution
+
+Roblox — Place CI/CD Demo:
+https://github.com/Roblox/place-ci-cd-demo
+
+Pattern references:
+The Strongest Battlegrounds:
+https://www.roblox.com/games/10449761463/The-Strongest-Battlegrounds
+
+DOORS:
+https://www.roblox.com/games/6516141723/DOORS
+
+Anime Vanguards:
+https://www.roblox.com/games/16146832113/Anime-Vanguards-Extermination-Event-Pt-1
+https://vanguards.gg/changelog
