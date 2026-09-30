@@ -6,6 +6,12 @@ function State.new()
     return {
         Credits = 0,
         DamageLevel = 0,
+        XP = 0,
+        TotalKills = 0,
+        HighestWave = 0,
+        OwnedItems = {},
+        EquippedSkin = "Default",
+        EquippedEcho = "None",
         Wave = 0,
         DataReady = false,
         ComboIndex = 0,
