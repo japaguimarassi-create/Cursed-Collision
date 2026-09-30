@@ -53,7 +53,7 @@ class RepositoryIndex{
  constructor(root){this.root=root;this.files=[];}
  build(){let total=0;for(const p of walk(this.root).sort()){const rel=normalize(path.relative(this.root,p));if(!allowed(rel))continue;const text=read(p);if(text===null)continue;const body=text.length>MAX_FILE?text.slice(0,MAX_FILE)+"\\n[truncated]":text;this.files.push({path:rel,size:text.length,hash:hash(text),text:body});total+=body.length;if(total>=MAX_SNAPSHOT)break;}return this;}
  search(q,limit=12){const terms=tokenize(q);return this.files.map(f=>{const words=tokenize(f.path+" "+f.text);let score=0;for(const t of terms)if(words.includes(t))score+=2;if(f.path.toLowerCase().includes(String(q).toLowerCase()))score+=4;return{score,f};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.f);}
- symbols(){return this.files.map(f=>({path:f.path,requires:[...f.text.matchAll(/require\\s*\\(([^)]+)\\)/g)].map(m=>m[1]),remotes:[...f.text.matchAll(/ensureRemote\\(\\s*["']([^"']+)["']/g)].map(m=>m[1]),attributes:[...f.text.matchAll(/SetAttribute\\(\\s*["']([^"']+)["']/g)].map(m=>m[1])}));}
+ symbols(){return this.files.map(f=>{const requires=[],remotes=[],attributes=[];for(const m of f.text.matchAll(/require\s*\(([^)]+)\)/g))requires.push(m[1]);for(const m of f.text.matchAll(/ensureRemote\s*\(\s*["']([^"']+)["']\s*\)/g))remotes.push(m[1]);for(const m of f.text.matchAll(/SetAttribute\s*\(\s*["']([^"']+)["']/g))attributes.push(m[1]);return{path:f.path,requires,remotes,attributes};});}
 }
 
 class ReferenceEngine{
