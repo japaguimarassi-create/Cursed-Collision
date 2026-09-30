@@ -25,7 +25,8 @@ function Service:Init(registry,remotes)
         self.lastRequest[player]=now
         if action=="Catalog" then self:SendCatalog(player)
         elseif action=="Purchase" then self:Purchase(player,itemId)
-        elseif action=="Equip" then self:Equip(player,itemId)
+        elseif action=="Equip" then self:EquipSkin(player,itemId)
+        elseif action=="EquipEcho" then self:EquipEcho(player,itemId)
         end
     end)
 
@@ -35,7 +36,9 @@ end
 function Service:SendCatalog(player:Player)
     local items={}
     for itemId,item in pairs(Catalog.Items) do
-        table.insert(items,{ItemId=itemId,Category=item.Category,Price=item.Price,DisplayName=item.DisplayName,Description=item.Description,Owned=self.inventory:Owns(player,itemId)})
+        table.insert(items,{ItemId=itemId,Category=item.Category,Price=item.Price,DisplayName=item.DisplayName,Description=item.Description,Owned=self.inventory:Owns(player,itemId),Equipped=(
+            item.Category=="Skin" and player:GetAttribute("EquippedSkin")==itemId)
+            or (item.Category=="Echo" and player:GetAttribute("EquippedEcho")==itemId)})
     end
     table.sort(items,function(a,b) return a.ItemId<b.ItemId end)
     self.remote:FireClient(player,"Catalog",items,player:GetAttribute("Credits") or 0)
@@ -63,8 +66,7 @@ function Service:Purchase(player:Player,itemId)
     self.remote:FireClient(player,"Purchased",itemId)
 end
 
-function Service:Equip(player:Player,itemId)
-    if type(itemId)~="string" then return end
+function Service:EquipSkin(player:Player,itemId:string)
     local item=Catalog.Items[itemId]
     if not item or item.Category~="Skin" then return end
     if self.inventory:EquipSkin(player,itemId) then
@@ -73,13 +75,14 @@ function Service:Equip(player:Player,itemId)
 end
 
 function Service:EquipEcho(player:Player,itemId:string)
+    if type(itemId)~="string" then return end
     local item=Catalog.Items[itemId]
-    if not item or item.Category~="Echo" or not self.inventory:Owns(player,itemId) then return false end
-    return self.players:SetEquippedEcho(player,itemId)
-end
-
-function Service:Destroy()
-    for player in pairs(self.lastRequest) do self.lastRequest[player]=nil end
+    if not item or item.Category~="Echo" then return end
+    if not self.inventory:Owns(player,itemId) then return end
+    if self.players:SetEquippedEcho(player,itemId) then
+        self.remote:FireClient(player,"EquippedEcho",itemId)
+        self:SendCatalog(player)
+    end
 end
 
 return Service
