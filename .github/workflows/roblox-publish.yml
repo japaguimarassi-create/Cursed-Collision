@@ -2,12 +2,11 @@ name: Collision Battlestar Roblox Publisher
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Confirm publication to the configured Roblox place"
+        description: "Confirm publication from main to the configured production place"
         required: true
         type: boolean
         default: false
@@ -21,7 +20,7 @@ concurrency:
 
 jobs:
   publish:
-    if: ${{ github.event_name == 'push' || inputs.confirm == true }}
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.confirm == true)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -29,10 +28,18 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
       - name: Install Roblox toolchain
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
+      - name: Run LuaSmith tests
+        run: npm test
+      - name: Run Luau unit tests
+        run: luau tools/tests/run.luau
       - name: Validate source tree
         run: python3 tools/validate_project.py
       - name: Build place
@@ -42,6 +49,7 @@ jobs:
           mkdir -p build
           rojo build default.project.json --output build/CollisionBattlestar.rbxl
           test -s build/CollisionBattlestar.rbxl
+          stat -c "%s bytes" build/CollisionBattlestar.rbxl
       - name: Publish
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
@@ -50,6 +58,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "${ROBLOX_API_KEY}"
+          test "${GITHUB_REF}" = "refs/heads/main"
           endpoint="https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published"
           code="$(curl --silent --show-error --location --request POST --url "${endpoint}" --header "x-api-key: ${ROBLOX_API_KEY}" --header "Content-Type: application/octet-stream" --data-binary "@build/CollisionBattlestar.rbxl" --output build/publish-response.json --write-out "%{http_code}")"
           cat build/publish-response.json
