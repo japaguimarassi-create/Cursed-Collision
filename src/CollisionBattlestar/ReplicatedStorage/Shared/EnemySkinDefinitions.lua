@@ -26,7 +26,9 @@ function Definitions.themeColors(themeId:string,tier:string):({number},{number},
 end
 function Definitions.make(themeId:string,tier:string,index:number):Profile
     assert(themes[themeId],"unknown theme "..themeId)
-    assert(table.find(tiers,tier)~=nil,"unknown tier "..tier)
+    local tierValid=false
+    for _,value in ipairs(tiers) do if value==tier then tierValid=true break end end
+    assert(tierValid,"unknown tier "..tier)
     local p,s,a=Definitions.themeColors(themeId,tier)
     return {ProfileId=("%s_%s_%d"):format(themeId,tier,index),ThemeId=themeId,Tier=tier,PrimaryColor=p,SecondaryColor=s,AccentColor=a,BodyVariant=((index-1)%3)+1,HeadVariant=((index-1)%3)+1,GearVariant=((index-1)%4)+1,AccessoryVariant=((index-1)%3)+1,MaterialVariant=((index-1)%3)+1}
 end
