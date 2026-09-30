@@ -5,34 +5,25 @@ local CompanionDefinitions=require(game:GetService("ReplicatedStorage"):WaitForC
 local Brain={}
 Brain.__index=Brain
 
-local function nearestEnemy(origin:Vector3): (Model?,number)
+local function enemyCandidates(origin:Vector3,owner:Player,mode:string):(Model?,number)
     local folder=workspace:FindFirstChild("Enemies")
     local best,distance=nil,math.huge
     if not folder then return nil,distance end
+    local ownerRoot=owner.Character and owner.Character:FindFirstChild("HumanoidRootPart")
     for _,model in ipairs(folder:GetChildren()) do
         if model:IsA("Model") and model:GetAttribute("Enemy")==true then
             local humanoid=model:FindFirstChildOfClass("Humanoid")
             local root=model:FindFirstChild("HumanoidRootPart")
             if humanoid and humanoid.Health>0 and root and root:IsA("BasePart") then
                 local d=(root.Position-origin).Magnitude
-                if d<distance then best,distance=model,d end
-            end
-        end
-    end
-    return best,distance
-end
-
-local function eliteTarget(origin:Vector3): (Model?,number)
-    local folder=workspace:FindFirstChild("Enemies")
-    local best,distance=nil,math.huge
-    if not folder then return nil,distance end
-    for _,model in ipairs(folder:GetChildren()) do
-        if model:IsA("Model") and model:GetAttribute("Enemy")==true and model:GetAttribute("Tier")=="Elite" then
-            local humanoid=model:FindFirstChildOfClass("Humanoid")
-            local root=model:FindFirstChild("HumanoidRootPart")
-            if humanoid and humanoid.Health>0 and root and root:IsA("BasePart") then
-                local d=(root.Position-origin).Magnitude
-                if d<distance then best,distance=model,d end
+                local valid=true
+                if mode=="Elite" then
+                    valid=model:GetAttribute("Tier")=="Elite"
+                elseif mode=="Protect" then
+                    local targetId=humanoid:GetAttribute("LastTargetUserId")
+                    valid=targetId==owner.UserId or (ownerRoot and d<12) or false
+                end
+                if valid and d<distance then best,distance=model,d end
             end
         end
     end
@@ -50,7 +41,10 @@ end
 
 function Brain.new(model:Model,owner:Player,classId:string)
     local def=CompanionDefinitions.Classes[classId]
-    return setmetatable({model=model,owner=owner,classId=classId,definition=def,nextAttack=0,nextHeal=0,state="Follow"},Brain)
+    return setmetatable({
+        model=model,owner=owner,classId=classId,definition=def,
+        nextAttack=0,nextHeal=0,state="Follow"
+    },Brain)
 end
 
 function Brain:Update(now:number):boolean
@@ -61,9 +55,7 @@ function Brain:Update(now:number):boolean
     local character=owner.Character
     local ownerHumanoid=character and character:FindFirstChildOfClass("Humanoid")
     local ownerRoot=character and character:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not root or not ownerRoot or not ownerHumanoid or ownerHumanoid.Health<=0 then
-        return true
-    end
+    if not humanoid or not root or not ownerRoot or not ownerHumanoid or ownerHumanoid.Health<=0 then return true end
 
     local followDistance=(root.Position-ownerRoot.Position).Magnitude
     if followDistance>28 then
@@ -79,17 +71,27 @@ function Brain:Update(now:number):boolean
         self.state="Support"
     end
 
-    local target,distance=if self.classId=="Striker" then eliteTarget(root.Position) else nearestEnemy(root.Position)
+    local target,distance
+    if self.classId=="Striker" then
+        target,distance=enemyCandidates(root.Position,owner,"Elite")
+        if not target then target,distance=enemyCandidates(root.Position,owner,"Any") end
+    elseif self.classId=="Vanguard" or self.classId=="Guardian" then
+        target,distance=enemyCandidates(root.Position,owner,"Protect")
+        if not target then target,distance=enemyCandidates(root.Position,owner,"Any") end
+    else
+        target,distance=enemyCandidates(root.Position,owner,"Any")
+    end
+
     if target and distance<=def.Range then
         local targetRoot=target:FindFirstChild("HumanoidRootPart")
         local targetHumanoid=target:FindFirstChildOfClass("Humanoid")
         if targetRoot and targetHumanoid and now>=self.nextAttack and hasLineOfSight(root.Position,targetRoot,model) then
             self.nextAttack=now+def.Cooldown
+            targetHumanoid:SetAttribute("LastAttackerUserId",owner.UserId)
+            targetHumanoid:SetAttribute("LastAttackerAt",workspace:GetServerTimeNow())
             targetHumanoid:TakeDamage(def.Damage)
             local delta=targetRoot.Position-root.Position
-            if delta.Magnitude>0.05 then
-                targetRoot.AssemblyLinearVelocity=delta.Unit*15+Vector3.new(0,2,0)
-            end
+            if delta.Magnitude>0.05 then targetRoot.AssemblyLinearVelocity=delta.Unit*15+Vector3.new(0,2,0) end
             self.state="Attack"
         elseif targetRoot then
             local delta=root.Position-targetRoot.Position
@@ -97,10 +99,7 @@ function Brain:Update(now:number):boolean
             humanoid:MoveTo(targetRoot.Position+offset)
             self.state="Acquire"
         end
-    elseif followDistance<=8 then
-        self.state="Follow"
     end
-
     return true
 end
 
