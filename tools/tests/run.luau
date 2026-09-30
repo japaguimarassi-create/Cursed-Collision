@@ -8,6 +8,9 @@ type Case = {
 }
 
 local cases: {Case} = {
+    {name = "CleanRulesSpec", run = function()
+        require("./CleanRulesSpec")()
+    end},
     {name = "CombatRulesSpec", run = function()
         require("./CombatRulesSpec")()
     end},

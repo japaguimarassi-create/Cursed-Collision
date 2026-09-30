@@ -1,4 +1,4 @@
-name: Collision Battlestar Roblox Publisher
+name: Collision Battlestar Production Publisher
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Confirm publication from main to the configured production place"
+        description: "Confirm production publication from main"
         required: true
         type: boolean
         default: false
@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: collision-battlestar-publish
+  group: collision-battlestar-production
   cancel-in-progress: false
 
 jobs:
@@ -26,31 +26,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version: 22
       - name: Install Roblox toolchain
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
-      - name: Run LuaSmith tests
-        run: npm test
-      - name: Run Luau unit tests
+      - name: Run clean Luau tests
         run: luau tools/tests/run.luau
-      - name: Validate source tree
+      - name: Validate clean runtime
         run: python3 tools/validate_project.py
-      - name: Build place
+      - name: Build Roblox place
         run: |
           set -euo pipefail
           rm -rf build
           mkdir -p build
           rojo build default.project.json --output build/CollisionBattlestar.rbxl
           test -s build/CollisionBattlestar.rbxl
-          stat -c "%s bytes" build/CollisionBattlestar.rbxl
-      - name: Publish
+      - name: Publish production place
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
           UNIVERSE_ID: "5290480963"
