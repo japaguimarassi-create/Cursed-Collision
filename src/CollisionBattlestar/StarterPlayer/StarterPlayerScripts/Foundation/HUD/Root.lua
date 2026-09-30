@@ -119,8 +119,8 @@ function Root.Create(player: Player)
     label(panel, "Controls", "M1: Left Click / R2     Dash: Q / B", UDim2.fromOffset(280, 34), UDim2.fromOffset(14, 126), Enum.Font.GothamBold, Color3.fromRGB(100, 221, 255))
     label(panel, "Upgrade", "Each upgrade adds +5 M1 damage.", UDim2.fromOffset(280, 26), UDim2.fromOffset(14, 157), Enum.Font.Gotham, Color3.fromRGB(165, 176, 196))
 
-    local m1 = button(gui, "M1", "M1", UDim2.fromOffset(90, 90), UDim2.new(1, -206, 1, -126), Color3.fromRGB(42, 52, 68))
-    local dash = button(gui, "Dash", "DASH", UDim2.fromOffset(96, 70), UDim2.new(1, -104, 1, -104), Color3.fromRGB(49, 68, 88))
+    local m1 = button(gui, "M1", "M1", UDim2.fromOffset(90, 90), UDim2.new(1, -206, 1, -156), Color3.fromRGB(42, 52, 68))
+    local dash = button(gui, "Dash", "DASH", UDim2.fromOffset(96, 70), UDim2.new(1, -104, 1, -126), Color3.fromRGB(49, 68, 88))
 
     local callbacks = {
         attack = function() end,
