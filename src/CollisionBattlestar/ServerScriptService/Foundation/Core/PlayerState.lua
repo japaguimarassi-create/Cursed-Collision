@@ -15,6 +15,15 @@ function Service:Init(registry)
     self.persistence=registry:Get("Persistence")
 end
 
+local function configureCharacter(player:Player,character:Model)
+    local humanoid=character:FindFirstChildOfClass("Humanoid") or character:WaitForChild("Humanoid",10)
+    if humanoid then
+        humanoid.MaxHealth=Constants.Combat.PlayerMaxHealth
+        humanoid.Health=humanoid.MaxHealth
+        player:SetAttribute("CombatHealth",humanoid.Health)
+    end
+end
+
 function Service:BindPlayer(player:Player)
     local profile,loaded=self.persistence:Load(player)
     if not player.Parent then return end
@@ -44,14 +53,8 @@ function Service:BindPlayer(player:Player)
     player:SetAttribute("Zone","PvE")
     player:SetAttribute("CombatHealth",Constants.Combat.PlayerMaxHealth)
 
-    player.CharacterAdded:Connect(function(character)
-        local humanoid=character:WaitForChild("Humanoid",10)
-        if humanoid then
-            humanoid.MaxHealth=Constants.Combat.PlayerMaxHealth
-            humanoid.Health=humanoid.MaxHealth
-            player:SetAttribute("CombatHealth",humanoid.Health)
-        end
-    end)
+    player.CharacterAdded:Connect(function(character) configureCharacter(player,character) end)
+    if player.Character then configureCharacter(player,player.Character) end
 end
 
 function Service:Get(player:Player) return self.states[player] end
@@ -146,7 +149,7 @@ end
 
 function Service:SetEquippedEcho(player:Player,itemId:string):boolean
     local state=self.states[player]
-    if not state then return false end
+    if not state or not state.OwnedItems[itemId] then return false end
     state.EquippedEcho=itemId
     player:SetAttribute("EquippedEcho",itemId)
     self:Dirty(player)
