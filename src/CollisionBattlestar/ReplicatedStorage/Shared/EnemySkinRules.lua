@@ -21,8 +21,9 @@ local function sameColor(a:{number},b:{number}):boolean return a[1]==b[1] and a[
 function Rules.isValidProfile(profile):boolean
     if type(profile)~="table" or type(profile.ProfileId)~="string" or profile.ProfileId=="" then return false end
     if type(profile.ThemeId)~="string" or not validTiers[profile.Tier] then return false end
-    local validTheme=false
-    for _,id in ipairs(Definitions.themeIds()) do if id==profile.ThemeId then validTheme=true break end end
+    local validTheme = profile.ThemeId == "Urban" or profile.ThemeId == "Tactical" or profile.ThemeId == "Industrial"
+        or profile.ThemeId == "Neon" or profile.ThemeId == "Street" or profile.ThemeId == "Corrupted"
+        or profile.ThemeId == "Arctic" or profile.ThemeId == "Desert"
     if not validTheme then return false end
     for _,key in ipairs({"PrimaryColor","SecondaryColor","AccentColor"}) do
         local c=profile[key]
