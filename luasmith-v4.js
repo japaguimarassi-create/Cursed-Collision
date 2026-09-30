@@ -41,7 +41,7 @@ const SEED=[
 
 function dirs(){fs.mkdirSync(path.dirname(AUDIT),{recursive:true});fs.mkdirSync(BACKUPS,{recursive:true});fs.mkdirSync(path.dirname(REFS),{recursive:true});}
 function read(p){try{return fs.readFileSync(p,"utf8");}catch{return null;}}
-function normalize(p){return String(p||"").replaceAll("\\\\","/").replace(/^\\/+/, "");}
+function normalize(p){return String(p||"").split("\\").join("/").replace(/^\/+/, "");}
 function sensitive(p){return normalize(p).toLowerCase().split("/").some(x=>SENSITIVE.has(x)||x.includes("password")||x.includes("credential"));}
 function allowed(p){const n=normalize(p);return !!n&&!n.split("/").includes("..")&&!sensitive(n)&&(ALLOWED_ROOTS.has(n)||ALLOWED_PREFIXES.some(x=>n.startsWith(x)));}
 function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return(h>>>0).toString(16);}
