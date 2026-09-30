@@ -1,5 +1,5 @@
 --!strict
-local Definitions=require(script.Parent:WaitForChild("EnemySkinDefinitions"))
+local Definitions = if script then require(script.Parent:WaitForChild("EnemySkinDefinitions")) else require("./EnemySkinDefinitions")
 local Rules={}
 local validTiers={Tier1=true,Tier2=true,Tier3=true,Elite=true}
 local function sameColor(a:{number},b:{number}):boolean return a[1]==b[1] and a[2]==b[2] and a[3]==b[3] end
