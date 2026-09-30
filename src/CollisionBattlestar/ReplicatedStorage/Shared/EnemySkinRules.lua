@@ -2,7 +2,7 @@
 local Definitions
 do
     local loaded = false
-    if script then
+    if typeof(script) == "Instance" then
         local ok, candidate = pcall(function()
             return require(script.Parent:WaitForChild("EnemySkinDefinitions"))
         end)
