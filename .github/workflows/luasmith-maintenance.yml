@@ -1,0 +1,55 @@
+name: LuaSmith Scheduled Maintenance
+
+on:
+  schedule:
+    - cron: "30 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  research-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install Roblox toolchain
+        uses: paradoxum-games/setup-rokit@v3
+        with:
+          cache: true
+      - name: Refresh reference corpus
+        run: node luasmith-v4.js --sync-refs 24
+      - name: Run LuaSmith tests
+        run: npm test
+      - name: Validate repository
+        run: python3 tools/validate_project.py
+      - name: Validate game and build
+        run: |
+          set -euo pipefail
+          luau tools/tests/run.luau
+          python3 tools/tests/test_map_layout.py
+          rm -rf build
+          mkdir -p build
+          rojo build default.project.json --output build/CollisionBattlestar.rbxl
+          test -s build/CollisionBattlestar.rbxl
+      - name: Open maintenance PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/luasmith-weekly-maintenance
+          delete-branch: true
+          title: "chore: LuaSmith weekly reference maintenance"
+          commit-message: "chore: refresh LuaSmith reference corpus"
+          body: |
+            Automated reference refresh and validation.
+            This workflow never publishes the production Roblox place.
+          labels: |
+            maintenance
+            automated

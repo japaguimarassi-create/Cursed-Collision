@@ -1,0 +1,22 @@
+{
+  "name": "luasmith",
+  "version": "4.0.0",
+  "description": "LuaSmith 4 repository-aware engineering agent for Luau and Roblox",
+  "type": "module",
+  "main": "luasmith-v4.js",
+  "bin": {
+    "luasmith": "luasmith-v4.js"
+  },
+  "scripts": {
+    "dev": "node luasmith-v4.js",
+    "server": "node luasmith-v4.js --web 3000",
+    "ask": "node luasmith-v4.js",
+    "validate": "node luasmith-v4.js --validate",
+    "test": "node --test tests/luasmith-v4.test.js"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "license": "MIT"
+}

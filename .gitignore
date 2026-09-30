@@ -1,7 +1,7 @@
+.env
+.env.*
+node_modules/
 build/
-*.rbxl
-*.rbxlx
+.cb-ai/
 __pycache__/
 *.pyc
-.cb-ai/
-.cb-ai.json

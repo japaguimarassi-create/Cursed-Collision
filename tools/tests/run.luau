@@ -32,6 +32,27 @@ local cases: {Case} = {
     {name = "HUDPlatformSpec", run = function()
         require("./HUDPlatformSpec")()
     end},
+    {name = "FriendRulesSpec", run = function()
+        require("./FriendRulesSpec")()
+    end},
+    {name = "CompanionRulesSpec", run = function()
+        require("./CompanionRulesSpec")()
+    end},
+    {name = "EnemySkinRulesSpec", run = function()
+        require("./EnemySkinRulesSpec")()
+    end},
+    {name = "ShopRulesSpec", run = function()
+        require("./ShopRulesSpec")()
+    end},
+    {name = "InventoryRulesSpec", run = function()
+        require("./InventoryRulesSpec")()
+    end},
+    {name = "ProgressionRulesSpec", run = function()
+        require("./ProgressionRulesSpec")()
+    end},
+    {name = "AnalyticsRulesSpec", run = function()
+        require("./AnalyticsRulesSpec")()
+    end},
 }
 
 local passed = 0
