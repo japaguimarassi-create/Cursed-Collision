@@ -26,6 +26,12 @@ local cases: {Case} = {
     {name = "HUDSpec", run = function()
         require("./HUDSpec")()
     end},
+    {name = "HUDLayoutRulesSpec", run = function()
+        require("./HUDLayoutRulesSpec")()
+    end},
+    {name = "HUDPlatformSpec", run = function()
+        require("./HUDPlatformSpec")()
+    end},
 }
 
 local passed = 0
