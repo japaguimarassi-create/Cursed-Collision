@@ -681,7 +681,7 @@ function Root:_applyResponsiveLayout()
     local mobile = metrics.TouchControls
     local compact = mobile and viewport.X < 500
     if compact then
-        self.HealthValue.Size = UDim2.fromOffset(math.max(78, math.floor(metrics.StatsWidth * 0.48)), 24)
+        self.HealthValue.Size = UDim2.fromOffset(math.max(64, math.floor(metrics.StatsWidth * 0.46)), 24)
         self.HealthValue.Position = UDim2.fromOffset(12, 23)
         self.CreditsTitle.Position = UDim2.fromOffset(math.floor(metrics.StatsWidth * 0.52), 7)
         self.CreditsTitle.Size = UDim2.fromOffset(math.max(58, metrics.StatsWidth - math.floor(metrics.StatsWidth * 0.52) - 8), 18)
@@ -740,7 +740,7 @@ function Root:_applyResponsiveLayout()
     self.M1Button.Size = UDim2.fromOffset(m1Size, m1Size)
     self.M1Button.Position = UDim2.new(1, -m1Size, 1, -m1Size)
 
-    self.DashButton.Size = UDim2.fromOffset(math.max(78, math.floor(m1Size * 0.96)), 58)
+    self.DashButton.Size = UDim2.fromOffset(metrics.DashWidth, 58)
     self.DashButton.Position = UDim2.fromOffset(8, 0)
 
     local toastWidth = math.min(360, math.max(220, viewport.X - metrics.Edge * 2))
