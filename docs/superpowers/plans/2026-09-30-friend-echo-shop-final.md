@@ -4,7 +4,7 @@
 
 **Goal:** Build the Friend Echo social-companion foundation, direct-purchase shop/inventory foundation, and their mobile-first HUD integration on top of the verified Collision Battlestar PvE core.
 
-**Architecture:** The server owns friend eligibility, Echo loadouts, AI, targets, combat effects, catalog prices, ownership and purchases. The client owns presentation, input and UI state. Pure rules live in Shared modules; Roblox-dependent services remain thin and focused.
+**Architecture:** The server owns friend eligibility, Echo loadouts, AI, targets, combat effects, catalog prices, ownership and purchases. The client owns presentation, input, UI state and Roblox invite prompting. Pure rules live in Shared modules; Roblox-dependent services remain thin and focused.
 
 **Tech Stack:** Luau, Roblox Players/SocialService/MarketplaceService APIs where applicable, RemoteEvents, Humanoid/PathfindingService, Rojo, Luau unit tests, Python source/layout validation, GitHub Actions.
 
@@ -17,11 +17,13 @@
 - One active Friend Echo per player in this phase.
 - Four initial classes: Vanguard, Striker, Guardian, Support.
 - Identity, class, cosmetics and power are separate concepts.
-- A real friend joining the server disables the corresponding owner's Echo.
+- A real friend joining the server disables every Echo representing that friend UserId for its respective owner.
 - Server authority decides eligibility, target, damage, price, ownership, rewards and progression.
+- Roblox SocialService invite prompts execute on the client after capability checks; the server only validates any received join/launch context.
 - No paid random items/gacha in this phase.
 - Shop is separated into Catalog, Inventory and Equipment.
-- Quick Shop is contextual; Full Shop is an overlay.
+- Quick Shop is available only in safe phases; Full Shop is an overlay.
+- Credits purchases are atomic from the player's perspective: a failed grant must not consume currency.
 - Pure rules must be testable without Roblox runtime objects.
 - Do not reintroduce legacy runtime loaders/watchdogs or duplicate HUD systems.
 - Keep the existing server-authoritative M1/Dash/wave core intact unless a task explicitly requires an interface change.
@@ -29,11 +31,11 @@
 
 ## Review Focus
 
-- Invalid or spoofed FriendUserId must never create an Echo or reveal private friend state. Test: rejects a non-friend and self-selection.
-- Friend avatar resolution failure must not break the wave. Test: fallback profile is selected and Echo remains spawnable.
-- An Echo must not attack through walls, exceed combat range/cooldown, damage allies or grant itself rewards. Test: class actor requests pass through shared combat validation.
-- Client-supplied commerce price or reward must never be trusted. Test: server resolves ItemId and authoritative price and rejects modified payloads.
-- UI must remain usable on small mobile screens and must not duplicate after respawn. Test: HUD contract plus single-root creation and safe-area layout rules.
+- Invalid or spoofed FriendUserId must never create an Echo or expose non-public account data. Test: rejects a non-friend and self-selection, with cached friend membership checked server-side.
+- Friend avatar resolution failure must not break the wave. Test: safe fallback profile is returned and Factory can still construct an Echo.
+- An Echo must not attack through walls, exceed combat range/cooldown, damage allies or create an independent reward identity. Test: companion actor requests use the same server combat legality checks.
+- Client-supplied commerce price/reward or repeated purchase requests must never be trusted. Test: server resolves ItemId/price and a simulated grant failure leaves Credits unchanged.
+- UI must remain usable on small mobile screens and must not duplicate after respawn. Test: HUD contract, single-root ownership, safe-area configuration and contextual Quick Shop visibility.
 
 ---
 
@@ -53,20 +55,20 @@
 **Interfaces:**
 - Produces FriendRules.isEligible(requestingUserId, friendUserId, friendIds) -> boolean.
 - Produces FriendRules.classIsValid(classId) -> boolean.
-- Produces CompanionDefinitions for Vanguard, Striker, Guardian and Support.
+- Produces CompanionDefinitions for Vanguard, Striker, Guardian and Support with bounded combat/support parameters.
 - Produces ShopRules.canPurchase(credits, price, owned) -> boolean.
 - Produces ShopRules.price(itemId, catalog) -> number|nil.
 - Produces InventoryRules.canEquip(itemId, owned) -> boolean.
 
 - [ ] **Step 1: Write the failing tests**
-Test self-selection rejection, non-friend rejection, valid friend acceptance, invalid class rejection, server price lookup, insufficient credits, duplicate ownership rejection and equip validity.
+Test self-selection rejection, non-friend rejection, valid friend acceptance, invalid class rejection, authoritative price lookup, insufficient Credits, duplicate ownership rejection and equip validity. Include Support action bounds and anti-repeat visual-profile policy.
 
 - [ ] **Step 2: Run tests to verify RED**
 Run: `luau tools/tests/run.luau`
 Expected: the new specs fail because the new rule modules are not present.
 
 - [ ] **Step 3: Implement the shared rule modules**
-Keep them pure and Roblox-independent. Catalog entries contain stable ItemId, Category, PriceType, CreditsPrice and requirements.
+Keep them pure and Roblox-independent. Catalog entries contain stable ItemId, Category, PriceType, CreditsPrice and requirements. CompanionDefinitions separate visual identity from class behavior.
 
 - [ ] **Step 4: Run tests to verify GREEN**
 Run: `luau tools/tests/run.luau`
@@ -75,7 +77,7 @@ Expected: all existing and new tests pass.
 - [ ] **Step 5: Commit**
 `git add ... && git commit -m "feat: add friend echo and shop rules"`
 
-### Task 2: Friend Resolver and Safe Avatar Profiles
+### Task 2: Friend Resolver, Cache and Safe Avatar Profiles
 
 **Files:**
 - Create: src/CollisionBattlestar/ServerScriptService/Foundation/Friends/Service.lua
@@ -87,18 +89,19 @@ Expected: all existing and new tests pass.
 **Interfaces:**
 - FriendService:IsFriend(player, friendUserId) -> boolean.
 - FriendService:ResolveFriends(player) -> {FriendProfile}.
+- FriendService cache refreshes only when stale or explicitly requested, never per-frame.
 - AvatarResolver:Resolve(friendUserId, classId) -> AvatarResult.
 - VisualProfile.fallback(classId, variantSeed) -> Profile.
 
 - [ ] **Step 1: Write failing tests**
-Cover valid/invalid friend IDs, self rejection, deterministic fallback profile shape and the guarantee that avatar failure still returns a spawnable fallback.
+Cover valid/invalid friend IDs, self rejection, cached membership, stale-cache refresh behavior at the rule level, deterministic fallback profile shape and the guarantee that avatar failure still returns a spawnable fallback.
 
 - [ ] **Step 2: Run RED**
 Run: `luau tools/tests/run.luau`
 Expected: the new resolution tests fail because the modules do not exist.
 
 - [ ] **Step 3: Implement**
-Use Roblox friend/Avatar APIs only inside the service/resolver boundary. Never use avatar appearance to choose combat stats. Sanitize API failures into a game-owned fallback visual profile.
+Use Players:GetFriendsAsync and avatar APIs only inside the service/resolver boundary. Wrap network-dependent calls safely. Cache public friend-profile data for a bounded interval. Never use avatar appearance to choose combat stats.
 
 - [ ] **Step 4: Run GREEN**
 Run: `luau tools/tests/run.luau`
@@ -123,14 +126,14 @@ Expected: full Luau suite passes.
 - CompanionService:Despawn(player, reason).
 
 - [ ] **Step 1: Write failing tests**
-Cover class target priorities, valid state transitions, owner-safe positioning, one active Echo, and disabling an Echo when its represented friend is present.
+Cover class target priorities, valid state transitions, owner-safe positioning, one active Echo, and disabling all matching Echoes when the represented friend is present.
 
 - [ ] **Step 2: Run RED**
 Run: `luau tools/tests/run.luau`
 Expected: new companion tests fail on missing modules/behavior.
 
 - [ ] **Step 3: Implement**
-Use bounded AI updates. The brain must support Follow, Acquire, Position, Attack, Protect, Support, Retreat, Recover, Stunned and Disabled. Pathfinding must recover from blocked paths rather than repeat a dead route.
+Use bounded AI updates. The brain must support Follow, Acquire, Position, Attack, Protect, Support, Retreat, Recover, Stunned and Disabled. Pathfinding must recover from blocked paths rather than repeat a dead route. Factory must use non-blocking ally geometry so several actors do not physically stack.
 
 - [ ] **Step 4: Run GREEN**
 Run: `luau tools/tests/run.luau`
@@ -139,28 +142,28 @@ Expected: companion tests and existing suite pass.
 - [ ] **Step 5: Commit**
 `git add ... && git commit -m "feat: add friend echo ai and spawning"`
 
-### Task 4: Shared Combat Integration and Social Invite
+### Task 4: Shared Combat Integration and Client Invite Prompt
 
 **Files:**
 - Modify: src/CollisionBattlestar/ServerScriptService/Foundation/Combat/Service.lua
-- Create: src/CollisionBattlestar/ServerScriptService/Foundation/Friends/SocialService.lua
+- Create: src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Foundation/SocialInvite.lua
 - Create: src/CollisionBattlestar/ReplicatedStorage/Shared/NetworkRules.lua
 - Create: tools/tests/CompanionCombatSpec.luau
 
 **Interfaces:**
 - CompanionCombat actor requests use the existing server combat validation path.
-- SocialService:CanInvite(player) -> boolean.
-- SocialService:PromptInvite(player).
+- SocialInvite.CanInvite(player) -> boolean.
+- SocialInvite.PromptInvite(player, friendUserId?) -> boolean.
 
 - [ ] **Step 1: Write failing tests**
-Test that an Echo cannot hit invalid targets, cannot damage allies, cannot bypass cooldown/range/LOS rules and cannot generate an independent reward identity.
+Test that an Echo cannot hit invalid targets, cannot damage allies, cannot bypass cooldown/range/LOS rules and cannot generate an independent reward identity. Test network action payload boundaries for summon/command operations.
 
 - [ ] **Step 2: Run RED**
 Run: `luau tools/tests/run.luau`
 Expected: companion-combat tests fail before integration.
 
 - [ ] **Step 3: Implement**
-Refactor only enough of CombatService to accept a server-owned actor context without giving the Echo a privileged path. Add SocialService capability checks and invite dispatch on the client-facing edge.
+Refactor only enough of CombatService to accept a server-owned actor context without giving the Echo a privileged path. Implement SocialInvite as a client-only wrapper around SocialService:CanSendGameInviteAsync and PromptGameInvite. The server must never attempt to display the invite prompt.
 
 - [ ] **Step 4: Run GREEN**
 Run: `luau tools/tests/run.luau`
@@ -169,7 +172,7 @@ Expected: complete suite passes.
 - [ ] **Step 5: Commit**
 `git add ... && git commit -m "feat: integrate friend echoes with combat and invites"`
 
-### Task 5: Inventory, Catalog and Credits Shop Service
+### Task 5: Inventory, Catalog and Atomic Credits Shop Service
 
 **Files:**
 - Create: src/CollisionBattlestar/ServerScriptService/Foundation/Shop/Service.lua
@@ -185,14 +188,14 @@ Expected: complete suite passes.
 - ShopService:PurchaseCreditsItem(player, itemId) -> PurchaseResult.
 
 - [ ] **Step 1: Write failing tests**
-Test known-price purchase, insufficient Credits, duplicate ownership, unknown ItemId, malformed ItemId and client price tampering.
+Test known-price purchase, insufficient Credits, duplicate ownership, unknown ItemId, malformed ItemId, client price tampering, and a simulated grant failure that must leave the original Credits balance unchanged.
 
 - [ ] **Step 2: Run RED**
 Run: `luau tools/tests/run.luau`
 Expected: new inventory/shop tests fail before implementation.
 
 - [ ] **Step 3: Implement**
-Use ItemId as the only client-supplied commerce identifier. Resolve all prices, requirements and rewards server-side. Inventory remains plain serializable data.
+Use ItemId as the only client-supplied commerce identifier. Resolve all prices, requirements and rewards server-side. Perform validation before mutation and commit currency+ownership as one logical transaction.
 
 - [ ] **Step 4: Run GREEN**
 Run: `luau tools/tests/run.luau`
@@ -201,7 +204,7 @@ Expected: all tests pass.
 - [ ] **Step 5: Commit**
 `git add ... && git commit -m "feat: add server-authoritative shop inventory"`
 
-### Task 6: Quick Shop and Full Shop HUD
+### Task 6: Quick Shop, Full Shop, Friend Panel and HUD
 
 **Files:**
 - Create: src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Foundation/HUD/Shop.lua
@@ -218,14 +221,14 @@ Expected: all tests pass.
 - Notifications.Push(kind, payload).
 
 - [ ] **Step 1: Write failing tests**
-Cover the required HUD elements, unique root ownership, shop categories, owned/equipped visual states, purchase feedback and contextual Echo information.
+Cover the required HUD elements, unique root ownership, shop categories, friend/role selection states, owned/equipped visual states, purchase feedback, contextual Echo information and Quick Shop availability only in Intermission/Cleared phases.
 
 - [ ] **Step 2: Run RED**
 Run: `luau tools/tests/run.luau`
 Expected: new HUD contract assertions fail for missing social/shop elements.
 
 - [ ] **Step 3: Implement**
-Use CoreUISafeInsets, responsive layouts, ScrollingFrame/UIGridLayout for catalog content, and one client bootstrap. Do not place game logic inside UI modules.
+Use CoreUISafeInsets, responsive layouts, ScrollingFrame/UIGridLayout for catalog content, and one client bootstrap. Do not place game logic inside UI modules. Keep the Full Shop modal and Quick Shop compact. Keep combat buttons outside native mobile control areas.
 
 - [ ] **Step 4: Run GREEN**
 Run: `luau tools/tests/run.luau`
@@ -234,7 +237,7 @@ Expected: all unit tests pass.
 - [ ] **Step 5: Commit**
 `git add ... && git commit -m "feat: add mobile friend and shop hud"`
 
-### Task 7: Commerce Networking and Remote Validation
+### Task 7: Commerce and Friend Action Networking Security
 
 **Files:**
 - Modify: src/CollisionBattlestar/ServerScriptService/Foundation/Bootstrap.server.lua
@@ -242,18 +245,19 @@ Expected: all unit tests pass.
 - Create: tools/tests/CommerceSecuritySpec.luau
 
 **Interfaces:**
-- Commerce RemoteEvent accepts only a whitelisted action shape.
+- Commerce RemoteEvent accepts only a whitelist such as PurchaseCreditsItem, EquipItem and UnequipItem.
+- Action RemoteEvent accepts only the existing combat actions plus explicitly defined friend/companion actions.
 - Security service exposes bounded request/rate validation for commerce and friend actions.
 
 - [ ] **Step 1: Write failing tests**
-Cover unknown action, wrong payload type, missing ItemId, oversized ItemId, repeated purchase spam, non-friend UserId and invalid class.
+Cover unknown action, wrong payload type, missing ItemId, oversized ItemId, repeated purchase spam, non-friend UserId, invalid class and summon requests when the player already has an Echo.
 
 - [ ] **Step 2: Run RED**
 Run: `luau tools/tests/run.luau`
-Expected: commerce security tests fail before hardened validation exists.
+Expected: commerce/security tests fail before hardened validation exists.
 
 - [ ] **Step 3: Implement**
-Add Commerce remote creation, strict payload validation and rate limiting while preserving the existing Action/State/FX responsibilities.
+Add Commerce remote creation, strict payload validation and rate limiting while preserving Action/State/FX responsibilities. Do not accept client-provided prices, rewards or ownership states.
 
 - [ ] **Step 4: Run GREEN**
 Run: `luau tools/tests/run.luau`
@@ -274,7 +278,7 @@ Expected: complete suite passes.
 - ProfileSchema.sanitize(profile) -> sanitized profile.
 
 - [ ] **Step 1: Write failing tests**
-Cover default profile shape, unknown field removal and stable serialization of Credits, inventory, equipment, Echo loadout and upgrades.
+Cover default profile shape, unknown field removal and stable serialization of Credits, inventory, equipment, Echo loadout, Bond/Level and upgrades.
 
 - [ ] **Step 2: Run RED**
 Run: `luau tools/tests/run.luau`
@@ -298,10 +302,10 @@ Expected: complete suite passes.
 - Modify: docs/FRIEND_ECHO_SHOP_RESEARCH_2026-09-30.md
 
 **Interfaces:**
-- Validation must require all social/shop runtime modules and exactly the intended bootstrap path.
+- Validation must require all social/shop runtime modules, new HUD modules, ProfileSchema and exactly the intended bootstrap path.
 
 - [ ] **Step 1: Write failing validation gates**
-Require Friends/Companions/Shop files, Commerce remote, the new HUD modules and profile schema.
+Require Friends/Companions/Shop files, Commerce remote, client SocialInvite, new HUD modules and ProfileSchema.
 
 - [ ] **Step 2: Run RED**
 Run: `python3 tools/validate_project.py`
