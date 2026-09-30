@@ -674,12 +674,26 @@ function Root:_applyResponsiveLayout()
     local metrics = LayoutRules.get(viewport.X, viewport.Y, self.Touch)
 
     self.PlayerStatus.Size = UDim2.fromOffset(metrics.StatsWidth, 96)
-    self.PlayerStatus.Position = UDim2.fromOffset(metrics.Edge, metrics.Edge)
+    self.PlayerStatus.Position = UDim2.new(0, metrics.Edge, 1, -metrics.BottomClearance)
     self.HealthFill.Parent.Size = UDim2.fromOffset(metrics.StatsWidth - 24, 10)
 
     local mobile = metrics.TouchControls
-    local topRightWidth = if mobile then 196 else 252
+    local navMenuWidth = if mobile then 64 else 82
+    local navEchoWidth = if mobile then 62 else 78
+    local navShopWidth = if mobile then 62 else 78
+    local navGap = if mobile then 6 else 8
+    local topRightWidth = navMenuWidth + navEchoWidth + navShopWidth + navGap * 2
     self.Navigation.Size = UDim2.fromOffset(topRightWidth, 48)
+    self.MenuButton.Size = UDim2.fromOffset(navMenuWidth, 44)
+    self.CompanionButton.Size = UDim2.fromOffset(navEchoWidth, 44)
+    self.ShopButton.Size = UDim2.fromOffset(navShopWidth, 44)
+    self.MenuButton.TextSize = if mobile then 10 else 12
+    self.CompanionButton.TextSize = if mobile then 10 else 12
+    self.ShopButton.TextSize = if mobile then 10 else 12
+    local navigationLayout = self.Navigation:FindFirstChildOfClass("UIListLayout")
+    if navigationLayout then
+        navigationLayout.Padding = UDim.new(0, navGap)
+    end
     self.Navigation.Position = UDim2.new(1, -topRightWidth - metrics.Edge, 0, metrics.Edge)
 
     local waveWidth = if mobile then math.min(292, viewport.X * 0.72) else 292
@@ -688,7 +702,9 @@ function Root:_applyResponsiveLayout()
 
     self.EliteBanner.Position = UDim2.new(0.5, -135, 0, metrics.Edge + 80)
 
-    self.MenuPanel.Position = UDim2.new(1, -358, 0, metrics.Edge + 52)
+    local menuWidth = math.min(340, math.max(260, viewport.X - metrics.Edge * 2))
+    self.MenuPanel.Size = UDim2.fromOffset(menuWidth, 248)
+    self.MenuPanel.Position = UDim2.new(1, -menuWidth - metrics.Edge, 0, metrics.Edge + 52)
 
     self.CombatControls.Size = UDim2.fromOffset(206, if mobile then 242 else 210)
     self.CombatControls.Position = UDim2.new(
@@ -705,6 +721,8 @@ function Root:_applyResponsiveLayout()
     self.DashButton.Size = UDim2.fromOffset(math.max(78, math.floor(m1Size * 0.96)), 58)
     self.DashButton.Position = UDim2.fromOffset(8, 0)
 
+    local toastWidth = math.min(360, math.max(220, viewport.X - metrics.Edge * 2))
+    self.ToastHolder.Size = UDim2.fromOffset(toastWidth, 58)
     self.ToastHolder.Position = UDim2.new(
         0.5,
         0,
