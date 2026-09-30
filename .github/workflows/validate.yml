@@ -13,20 +13,34 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
       - name: Install Roblox toolchain
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
+
+      - name: Run LuaSmith tests
+        run: npm test
+
       - name: Run Luau unit tests
         run: luau tools/tests/run.luau
+
       - name: Run map layout test
         run: python3 tools/tests/test_map_layout.py
+
       - name: Validate source tree
         run: python3 tools/validate_project.py
+
       - name: Build place
         run: |
           set -euo pipefail
