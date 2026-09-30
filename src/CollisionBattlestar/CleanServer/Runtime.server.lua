@@ -149,10 +149,6 @@ local function loadProfile(player)
     if success then
         profiles[player] = migrate(data)
         persistenceReady[player] = true
-        if player.Character then
-            applySkin(player, player.Character)
-        end
-        sync(player)
     else
         persistenceReady[player] = false
         warn("[CollisionBattlestar] Data load failed for " .. player.Name)
@@ -1197,6 +1193,9 @@ local function initializePlayer(player)
         loadProfile(player)
         if player.Parent then
             player:SetAttribute("CBS_DataReady", true)
+            if player.Character then
+                applySkin(player, player.Character)
+            end
             sync(player)
         end
     end)
