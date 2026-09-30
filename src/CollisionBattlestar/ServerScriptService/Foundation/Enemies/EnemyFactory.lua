@@ -2,6 +2,7 @@
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Constants = require(Shared:WaitForChild("Constants"))
+local SkinFactory = require(script.Parent:WaitForChild("SkinFactory"))
 
 local Factory = {}
 
@@ -28,7 +29,7 @@ local function bodyPart(model: Model, root: BasePart, name: string, size: Vector
     return part
 end
 
-function Factory.Create(tier: string, spawnCFrame: CFrame): Model
+function Factory.Create(tier: string, spawnCFrame: CFrame, skinProfile?): Model
     local stats = Constants.Enemies[tier]
     assert(stats, "Unknown enemy tier: " .. tier)
 
@@ -45,6 +46,7 @@ function Factory.Create(tier: string, spawnCFrame: CFrame): Model
     root.Anchored = false
     root.CanCollide = false
     root.CanTouch = false
+    root.CanQuery = false
     root.Parent = model
     model.PrimaryPart = root
 
@@ -56,7 +58,7 @@ function Factory.Create(tier: string, spawnCFrame: CFrame): Model
     humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
     humanoid.Parent = model
 
-    local baseColor = if tier == "Elite" then Color3.fromRGB(194, 44, 58)
+    local baseColor = if tier == "Elite" then Color3.fromRGB(210, 38, 52)
         elseif tier == "Tier3" then Color3.fromRGB(140, 70, 205)
         elseif tier == "Tier2" then Color3.fromRGB(65, 150, 220)
         else Color3.fromRGB(92, 106, 125)
@@ -94,6 +96,10 @@ function Factory.Create(tier: string, spawnCFrame: CFrame): Model
         highlight.OutlineColor = Color3.fromRGB(255, 220, 220)
         highlight.DepthMode = Enum.HighlightDepthMode.Occluded
         highlight.Parent = model
+    end
+
+    if skinProfile then
+        SkinFactory.Apply(model, skinProfile)
     end
 
     model.Parent = workspace:WaitForChild("Enemies")
