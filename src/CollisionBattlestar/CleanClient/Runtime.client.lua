@@ -4,7 +4,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("CBS_Remotes", 15)
@@ -389,34 +388,84 @@ local function resize()
     if not camera then
         return
     end
-    local width = camera.ViewportSize.X
-    local compact = UserInputService.TouchEnabled and width < 520
-    header.Size = UDim2.fromOffset(compact and 220 or 310, 86)
-    wavePanel.Size = UDim2.fromOffset(compact and 250 or 300, 72)
-    center.Size = UDim2.fromOffset(math.min(430, math.max(270, width - 24)), 470)
-    actionBar.Size = UDim2.fromOffset(compact and 224 or 230, compact and 112 or 104)
-    attackButton.Size = UDim2.fromOffset(compact and 112 or 118, compact and 104 or 96)
-    attackButton.Position = UDim2.fromOffset(compact and 108 or 112, 0)
-    dashButton.Size = UDim2.fromOffset(compact and 94 or 98, 52)
+
+    local viewport = camera.ViewportSize
+    local width = viewport.X
+    local height = viewport.Y
+    local compact = UserInputService.TouchEnabled and width < 600
+    local veryNarrow = compact and width < 380
+
     if compact then
-        nav.Position = UDim2.new(1, -206, 0, 12)
-        nav.Size = UDim2.fromOffset(198, 44)
+        local headerWidth = math.clamp(width * 0.42, 132, 164)
+        local navWidth = math.clamp(width * 0.44, 140, 176)
+        local navGap = 5
+        local navButtonWidth = math.max(40, math.floor((navWidth - navGap * 2) / 3))
+
+        header.Size = UDim2.fromOffset(headerWidth, 86)
+        header.Position = UDim2.fromOffset(10, 10)
+
+        nav.Size = UDim2.fromOffset(navWidth, 42)
+        nav.Position = if veryNarrow
+            then UDim2.new(1, -navWidth - 10, 0, 100)
+            else UDim2.new(1, -navWidth - 10, 0, 10)
+
         for _, child in ipairs(nav:GetChildren()) do
             if child:IsA("TextButton") then
-                child.Size = UDim2.fromOffset(60, 42)
-                child.TextSize = 10
+                child.Size = UDim2.fromOffset(navButtonWidth, 40)
+                child.TextSize = if veryNarrow then 9 else 10
             end
         end
-        header.Position = UDim2.fromOffset(10, 10)
+
+        local waveTop = if veryNarrow then 100 else 62
+        if veryNarrow then
+            waveTop = 150
+        end
+
+        local waveWidth = math.max(250, math.min(300, width - 24))
+        wavePanel.Size = UDim2.fromOffset(waveWidth, 72)
+        wavePanel.Position = UDim2.new(0.5, 0, 0, waveTop)
+
+        elite.Position = UDim2.new(0.5, 0, 0, waveTop + 80)
+
+        local centerHeight = math.min(470, math.max(330, height - 88))
+        center.Size = UDim2.fromOffset(math.max(270, width - 24), centerHeight)
+
+        actionBar.Size = UDim2.fromOffset(math.min(224, width - 24), 112)
+        attackButton.Size = UDim2.fromOffset(math.min(112, math.max(98, width * 0.3)), 104)
+        attackButton.Position = UDim2.new(1, -attackButton.Size.X.Offset, 0, 0)
+        dashButton.Size = UDim2.fromOffset(math.min(94, math.max(78, width * 0.26)), 52)
+
+        connecting.Position = UDim2.new(0.5, 0, 0, waveTop + 130)
+        connecting.Size = UDim2.fromOffset(math.max(220, width - 24), 42)
+
+        if veryNarrow then
+            nav.Position = UDim2.new(1, -navWidth - 10, 0, 100)
+            wavePanel.Position = UDim2.new(0.5, 0, 0, 154)
+            elite.Position = UDim2.new(0.5, 0, 0, 234)
+            connecting.Position = UDim2.new(0.5, 0, 0, 278)
+        end
     else
-        nav.Position = UDim2.new(1, -222, 0, 12)
+        header.Size = UDim2.fromOffset(310, 86)
         header.Position = UDim2.fromOffset(14, 12)
+        nav.Position = UDim2.new(1, -222, 0, 12)
+        nav.Size = UDim2.fromOffset(208, 44)
         for _, child in ipairs(nav:GetChildren()) do
             if child:IsA("TextButton") then
                 child.Size = UDim2.fromOffset(64, 42)
                 child.TextSize = 13
             end
         end
+
+        wavePanel.Size = UDim2.fromOffset(300, 72)
+        wavePanel.Position = UDim2.new(0.5, 0, 0, 14)
+        elite.Position = UDim2.new(0.5, 0, 0, 92)
+        center.Size = UDim2.fromOffset(math.min(430, math.max(270, width - 24)), 470)
+        connecting.Position = UDim2.new(0.5, 0, 0, 174)
+        connecting.Size = UDim2.fromOffset(420, 42)
+        actionBar.Size = UDim2.fromOffset(230, 104)
+        attackButton.Size = UDim2.fromOffset(118, 96)
+        attackButton.Position = UDim2.fromOffset(112, 0)
+        dashButton.Size = UDim2.fromOffset(98, 52)
     end
 end
 
