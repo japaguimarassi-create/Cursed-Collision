@@ -3,13 +3,25 @@
 return function()
     local HUDContract = require("../../src/CollisionBattlestar/ReplicatedStorage/Shared/HUDContract")
 
-    assert(HUDContract.required("Health"))
-    assert(HUDContract.required("Credits"))
-    assert(HUDContract.required("Wave"))
-    assert(HUDContract.required("Enemies"))
-    assert(HUDContract.required("Elite"))
-    assert(HUDContract.required("M1"))
-    assert(HUDContract.required("Dash"))
-    assert(HUDContract.required("Menu"))
-    assert(HUDContract.count() == 8)
+    local required = {
+        "Health",
+        "Credits",
+        "Wave",
+        "Enemies",
+        "Elite",
+        "Phase",
+        "M1",
+        "Dash",
+        "Menu",
+        "Shop",
+        "Companion",
+        "Notifications",
+    }
+
+    for _, name in ipairs(required) do
+        assert(HUDContract.required(name))
+    end
+
+    assert(HUDContract.count() == #required)
+    assert(not HUDContract.required("LegacyPing"))
 end
