@@ -1,6 +1,7 @@
 --!strict
 
 local Players = game:GetService("Players")
+local Navigation = require(script.Parent.Navigation)
 
 local EnemyBrain = {}
 EnemyBrain.__index = EnemyBrain
@@ -14,6 +15,7 @@ function EnemyBrain.new(model: Model, humanoid: Humanoid, root: BasePart, defini
         damageCallback = damageCallback,
         running = false,
         nextAttackAt = 0,
+        navigation = Navigation.new(root),
     }, EnemyBrain)
 end
 
@@ -49,7 +51,8 @@ function EnemyBrain:MoveToward(targetRoot: BasePart, distance: number)
         return
     end
 
-    local offset = targetRoot.Position - self.root.Position
+    local destination = self.navigation:GetNextPosition(targetRoot.Position, os.clock())
+    local offset = destination - self.root.Position
     local horizontal = Vector3.new(offset.X, 0, offset.Z)
 
     if horizontal.Magnitude < 0.1 then
@@ -105,6 +108,7 @@ end
 
 function EnemyBrain:Stop()
     self.running = false
+    self.navigation:Destroy()
 end
 
 return EnemyBrain
