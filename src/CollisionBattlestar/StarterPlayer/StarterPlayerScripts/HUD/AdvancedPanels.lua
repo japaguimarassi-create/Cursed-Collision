@@ -68,14 +68,23 @@ function AdvancedPanels.new(hud, remotes, socialInvite)
 
     local root = hud.root
 
-    self.shopButton = button(root, "ShopButton", "SHOP", UDim2.fromOffset(112, 54))
-    self.shopButton.Position = UDim2.new(0, 146, 1, -70)
+    local utilityBar = Instance.new("Frame")
+    utilityBar.Name = "UtilityBar"
+    utilityBar.Size = UDim2.fromOffset(300, 46)
+    utilityBar.Position = UDim2.new(0, 16, 1, -122)
+    utilityBar.BackgroundTransparency = 1
+    utilityBar.Parent = root
 
-    self.companionButton = button(root, "CompanionButton", "ECHO", UDim2.fromOffset(112, 54))
-    self.companionButton.Position = UDim2.new(0, 266, 1, -70)
+    local utilityLayout = Instance.new("UIListLayout")
+    utilityLayout.FillDirection = Enum.FillDirection.Horizontal
+    utilityLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    utilityLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    utilityLayout.Padding = UDim.new(0, 6)
+    utilityLayout.Parent = utilityBar
 
-    self.inviteButton = button(root, "InviteButton", "INVITE", UDim2.fromOffset(112, 54))
-    self.inviteButton.Position = UDim2.new(0, 386, 1, -70)
+    self.shopButton = button(utilityBar, "ShopButton", "SHOP", UDim2.fromOffset(96, 44))
+    self.companionButton = button(utilityBar, "CompanionButton", "ECHO", UDim2.fromOffset(96, 44))
+    self.inviteButton = button(utilityBar, "InviteButton", "INVITE", UDim2.fromOffset(96, 44))
 
     self.shopPanel = self:BuildShopPanel(root)
     self.companionPanel = self:BuildCompanionPanel(root)
@@ -260,15 +269,15 @@ function AdvancedPanels:BuildCompanionPanel(root: Frame)
 
     self.friendScroll = scroll
 
-    local refresh = button(panel, "RefreshFriends", "REFRESH", UDim2.fromOffset(110, 42))
-    refresh.Position = UDim2.new(1, -124, 0, 58)
+    local refresh = button(panel, "RefreshFriends", "REFRESH", UDim2.fromOffset(96, 42))
+    refresh.Position = UDim2.new(1, -110, 0, 58)
     refresh.Activated:Connect(function()
         self.remotes.Companion:FireServer({
             action = "ListFriends",
         })
     end)
 
-    local unsummon = button(panel, "Unsummon", "UNSUMMON", UDim2.fromOffset(110, 42))
+    local unsummon = button(panel, "Unsummon", "UNSUMMON", UDim2.fromOffset(96, 42))
     unsummon.Position = UDim2.new(0, 14, 0, 58)
     unsummon.Activated:Connect(function()
         self.remotes.Companion:FireServer({
