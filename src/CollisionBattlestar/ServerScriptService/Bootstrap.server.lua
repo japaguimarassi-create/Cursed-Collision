@@ -18,6 +18,7 @@ local RecoveryService = require(script.Parent.Progression.RecoveryService)
 local MissionService = require(script.Parent.Missions.Service)
 local AnalyticsService = require(script.Parent.Analytics.Service)
 local TestLabService = require(script.Parent.Admin.TestLabService)
+local MonetizationService = require(script.Parent.Monetization.Service)
 local WorldService = require(script.Parent.World.Service)
 local SecurityService = require(script.Parent.Security.Service)
 local EconomyService = require(script.Parent.Economy.Service)
@@ -71,6 +72,7 @@ local recoveryService = RecoveryService.new(playerState)
 local missionService = MissionService.new(playerState, enemyService, runtimeState, remotes)
 local analyticsService = AnalyticsService.new()
 local testLabService = TestLabService.new(playerState, enemyService, waveService, worldService, pvpService, remotes)
+local monetizationService = MonetizationService.new()
 local combatService = CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes, pvpService)
 local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService)
 local friendService = FriendService.new()
@@ -91,6 +93,7 @@ registry:Register("PvP", pvpService)
 registry:Register("Missions", missionService)
 registry:Register("Analytics", analyticsService)
 registry:Register("TestLab", testLabService)
+registry:Register("Monetization", monetizationService)
 registry:Register("Friends", friendService)
 registry:Register("Inventory", inventoryService)
 registry:Register("Companions", companionService)
@@ -140,6 +143,7 @@ registry:StartInOrder({
     "Missions",
     "Analytics",
     "TestLab",
+    "Monetization",
     "Waves",
 })
 
