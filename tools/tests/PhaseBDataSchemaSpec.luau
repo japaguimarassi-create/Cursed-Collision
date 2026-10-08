@@ -59,7 +59,7 @@ return function()
     })
 
     assert(hostile.Credits == 0)
-    assert(hostile.PowerLevel == 1000)
+    assert(hostile.PowerLevel == 1)
     assert(hostile.Upgrades.Damage == 100)
     assert(hostile.Upgrades.MaxHealth == 0)
     assert(hostile.Inventory.Owned.Valid == true)
