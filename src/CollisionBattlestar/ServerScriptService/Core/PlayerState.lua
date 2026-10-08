@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local CombatRules = require(ReplicatedStorage.Shared.CombatRules)
 local DataSchema = require(ReplicatedStorage.Shared.DataSchema)
+local ProgressionRules = require(ReplicatedStorage.Shared.ProgressionRules)
 
 local PlayerState = {}
 PlayerState.__index = PlayerState
@@ -266,8 +267,9 @@ function PlayerState:CanDash(player: Player, now: number)
         return false
     end
 
-    local cooldownReduction = math.min(self:GetUpgradeLevel(player, "Dash") * 0.04, 0.35)
-    local cooldown = Config.Combat.DashCooldown * (1 - cooldownReduction)
+    local cooldown = Config.Combat.DashCooldown * ProgressionRules.dashCooldownMultiplier(
+        self:GetUpgradeLevel(player, "Dash")
+    )
 
     if now - state.lastDashAt < cooldown then
         return false
