@@ -2,10 +2,11 @@
 
 local Players = game:GetService("Players")
 
-local Constants = require(script.Parent.ReplicatedStorage.Shared.Constants)
-local PhysicsRules = require(script.Parent.ReplicatedStorage.Shared.PhysicsRules)
-local Data = require(script.Parent.ReplicatedStorage.Shared.Data)
-local Rules = require(script.Parent.ReplicatedStorage.Shared.Rules)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Constants = require(ReplicatedStorage.Shared.Constants)
+local PhysicsRules = require(ReplicatedStorage.Shared.PhysicsRules)
+local Data = require(ReplicatedStorage.Shared.Data)
+local Rules = require(ReplicatedStorage.Shared.Rules)
 
 local PlayerService = {}
 PlayerService.__index = PlayerService
