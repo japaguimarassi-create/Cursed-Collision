@@ -83,6 +83,12 @@ function PlayerState:AddPlayer(player: Player)
     player:SetAttribute("CBS_Credits", state.credits)
     player:SetAttribute("CBS_PowerLevel", state.powerLevel)
     player:SetAttribute("CBS_Kills", state.kills)
+    for _, upgradeId in ipairs({"Damage", "MaxHealth", "Dash", "Critical", "Recovery"}) do
+        player:SetAttribute(
+            "CBS_" .. upgradeId .. "Level",
+            state.profile.Upgrades[upgradeId] or 0
+        )
+    end
     player:SetAttribute("CBS_PlayerStateReady", true)
 
     local function onCharacter(character: Model)
@@ -174,6 +180,10 @@ function PlayerState:ApplyCharacterStats(player: Player, character: Model)
     humanoid.WalkSpeed = speed
 
     player:SetAttribute("CBS_RecoveryLevel", recoveryLevel)
+    player:SetAttribute("CBS_DamageLevel", self:GetUpgradeLevel(player, "Damage"))
+    player:SetAttribute("CBS_MaxHealthLevel", healthLevel)
+    player:SetAttribute("CBS_DashLevel", speedLevel)
+    player:SetAttribute("CBS_CriticalLevel", self:GetUpgradeLevel(player, "Critical"))
 end
 
 function PlayerState:AddCredits(player: Player, amount: number)
