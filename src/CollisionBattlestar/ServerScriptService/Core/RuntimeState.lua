@@ -15,6 +15,7 @@ function RuntimeState.new()
         eliteAlive = false,
         bossId = nil,
         eventId = nil,
+        lastCompletedWave = 0,
         intermissionEndsAt = 0,
     }, RuntimeState)
 end
@@ -59,6 +60,7 @@ function RuntimeState:Snapshot()
         eliteAlive = self.eliteAlive,
         bossId = self.bossId,
         eventId = self.eventId,
+        lastCompletedWave = self.lastCompletedWave,
         intermissionEndsAt = self.intermissionEndsAt,
     }
 end
