@@ -127,6 +127,11 @@ end
 
 function WaveService:SpawnWave(profile)
     local points = self.worldService:GetEnemySpawnPoints()
+    if #points == 0 then
+        warn("No enemy spawn points available")
+        return
+    end
+
     local totalIndex = 0
 
     local function spawnType(enemyId: string, amount: number)
