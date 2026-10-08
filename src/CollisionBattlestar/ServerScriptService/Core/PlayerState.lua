@@ -169,7 +169,9 @@ function PlayerState:RecoverCharacters(worldService)
             self:ResetCombatLocks(player)
 
             if worldService
+                and worldService.world
                 and type(worldService.IsInsideArena) == "function"
+                and type(worldService.GetPlayerSpawnCFrame) == "function"
                 and not worldService:IsInsideArena(root.Position) then
 
                 local spawnCFrame = worldService:GetPlayerSpawnCFrame()
