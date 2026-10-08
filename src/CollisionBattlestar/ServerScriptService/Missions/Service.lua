@@ -109,6 +109,7 @@ function MissionService:AddProgress(player: Player, missionId: string, amount: n
         self.remotes.Mission:FireClient(player, "Completed", {
             missionId = missionId,
             reward = definition.Reward,
+            snapshot = self:GetSnapshot(player),
         })
     end
 
