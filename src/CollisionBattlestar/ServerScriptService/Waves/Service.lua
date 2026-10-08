@@ -101,6 +101,7 @@ function WaveService:RunLoop()
             self.economyService:RewardWaveClear(
                 rewardMultiplier
             )
+            self.runtimeState:Set("lastCompletedWave", self.wave)
         else
             self.skipNextReward = false
         end
@@ -114,6 +115,7 @@ function WaveService:RunLoop()
             eliteAlive = false,
             bossId = nil,
             eventId = nil,
+            lastCompletedWave = self.runtimeState.lastCompletedWave,
             intermissionEndsAt = endAt,
         })
 
