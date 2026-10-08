@@ -16,6 +16,8 @@ local ShopService = require(script.Parent.Shop.Service)
 local PvPService = require(script.Parent.PvP.Service)
 local RecoveryService = require(script.Parent.Progression.RecoveryService)
 local MissionService = require(script.Parent.Missions.Service)
+local AnalyticsService = require(script.Parent.Analytics.Service)
+local TestLabService = require(script.Parent.Admin.TestLabService)
 local WorldService = require(script.Parent.World.Service)
 local SecurityService = require(script.Parent.Security.Service)
 local EconomyService = require(script.Parent.Economy.Service)
@@ -51,6 +53,7 @@ local remotes = {
     Companion = getOrCreateRemote(remotesFolder, "RemoteEvent", "Companion"),
     PvP = getOrCreateRemote(remotesFolder, "RemoteEvent", "PvP"),
     Mission = getOrCreateRemote(remotesFolder, "RemoteEvent", "Mission"),
+    Admin = getOrCreateRemote(remotesFolder, "RemoteEvent", "Admin"),
 }
 
 local runtimeState = RuntimeState.new()
@@ -66,6 +69,8 @@ local enemyService = EnemyService.new(runtimeState, worldService, economyService
 local pvpService = PvPService.new(playerState, economyService, remotes)
 local recoveryService = RecoveryService.new(playerState)
 local missionService = MissionService.new(playerState, enemyService, runtimeState, remotes)
+local analyticsService = AnalyticsService.new()
+local testLabService = TestLabService.new(playerState, enemyService, waveService, worldService, pvpService, remotes)
 local combatService = CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes, pvpService)
 local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService)
 local friendService = FriendService.new()
@@ -84,6 +89,8 @@ registry:Register("Enemies", enemyService)
 registry:Register("Combat", combatService)
 registry:Register("PvP", pvpService)
 registry:Register("Missions", missionService)
+registry:Register("Analytics", analyticsService)
+registry:Register("TestLab", testLabService)
 registry:Register("Friends", friendService)
 registry:Register("Inventory", inventoryService)
 registry:Register("Companions", companionService)
@@ -131,6 +138,8 @@ registry:StartInOrder({
     "Companions",
     "Shop",
     "Missions",
+    "Analytics",
+    "TestLab",
     "Waves",
 })
 
