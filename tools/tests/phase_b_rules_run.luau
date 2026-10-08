@@ -10,6 +10,8 @@ local suites = {
     require("./PhaseBShopRulesSpec"),
     require("./PhaseBCommerceSpec"),
     require("./PhaseBPvPRulesSpec"),
+    require("./PhaseBMissionRulesSpec"),
+    require("./PhaseBContentRulesSpec"),
 }
 
 for index, suite in ipairs(suites) do
