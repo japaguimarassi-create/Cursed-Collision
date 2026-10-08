@@ -395,6 +395,7 @@ function PlayerState:GetPersistentProfile(player: Player)
     state.profile.Credits = state.credits
     state.profile.PowerLevel = state.powerLevel
     state.profile.Kills = state.kills
+    state.profile.Score = state.score
 
     return DataSchema.Sanitize(state.profile)
 end
