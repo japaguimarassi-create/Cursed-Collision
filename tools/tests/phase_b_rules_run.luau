@@ -12,6 +12,7 @@ local suites = {
     require("./PhaseBPvPRulesSpec"),
     require("./PhaseBMissionRulesSpec"),
     require("./PhaseBContentRulesSpec"),
+    require("./PhaseCSystemsSpec"),
 }
 
 for index, suite in ipairs(suites) do
