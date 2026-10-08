@@ -12,6 +12,8 @@ required = [
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Constants.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Definitions.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Config.lua",
+    "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/LevelRules.lua",
+    "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/PhysicsRules.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/CombatRules.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/DataSchema.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/PersistenceRules.lua",
@@ -37,6 +39,7 @@ required = [
     "src/CollisionBattlestar/ServerScriptService/AI/Kernel.lua",
     "src/CollisionBattlestar/ServerScriptService/Core/ServiceRegistry.lua",
     "src/CollisionBattlestar/ServerScriptService/Core/RuntimeState.lua",
+    "src/CollisionBattlestar/ServerScriptService/Stats/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Core/PlayerState.lua",
     "src/CollisionBattlestar/ServerScriptService/Persistence/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Progression/Service.lua",
@@ -75,6 +78,7 @@ required = [
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/Root.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/AdvancedPanels.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/CombatFX/Service.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Audio/Service.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Camera/Service.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/SocialInvite/Service.lua",
     "tools/tests/PhaseASharedSpec.luau",
@@ -88,6 +92,7 @@ required = [
     "tools/tests/PhaseBPvPRulesSpec.luau",
     "tools/tests/PhaseBMissionRulesSpec.luau",
     "tools/tests/PhaseBContentRulesSpec.luau",
+    "tools/tests/PhaseCSystemsSpec.luau",
     "tools/tests/phase_b_rules_run.luau",
 ]
 
@@ -120,6 +125,16 @@ if tree.get("StarterPlayer", {}).get("StarterPlayerScripts", {}).get("$path") !=
 runtime_root = ROOT / "src/CollisionBattlestar"
 lua_files = list(runtime_root.rglob("*.lua"))
 
+for forbidden in [
+    runtime_root / "CleanClient",
+    runtime_root / "CleanServer",
+    runtime_root / "ServerScriptService" / "Foundation",
+    runtime_root / "StarterPlayer" / "StarterPlayerScripts" / "Foundation",
+    runtime_root / "ReplicatedStorage",
+]:
+    if forbidden.exists():
+        raise SystemExit("Legacy runtime tree must not exist: " + str(forbidden))
+
 for path in lua_files:
     source = path.read_text(encoding="utf-8")
     if any(marker in source for marker in ("<<<<<<<", "=======", ">>>>>>>")):
@@ -130,6 +145,10 @@ for path in lua_files:
         raise SystemExit("Placeholder TODO found in " + str(path))
 
 server = (ROOT / "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua").read_text(encoding="utf-8")
+stats = (ROOT / "src/CollisionBattlestar/ServerScriptService/Stats/Service.lua").read_text(encoding="utf-8")
+physics = (ROOT / "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/PhysicsRules.lua").read_text(encoding="utf-8")
+audio = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Audio/Service.lua").read_text(encoding="utf-8")
+vfx = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/CombatFX/Service.lua").read_text(encoding="utf-8")
 combat = (ROOT / "src/CollisionBattlestar/ServerScriptService/Combat/Service.lua").read_text(encoding="utf-8")
 client = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientBootstrap.client.lua").read_text(encoding="utf-8")
 guard = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/RuntimeGuard.client.lua").read_text(encoding="utf-8")
@@ -235,6 +254,22 @@ for token in ["Unsummon", "friend_present", "friendUserId", "CBS_EchoOwnerUserId
 for token in ["IsInsideZone", "Join", "Leave", "CBS_PvP"]:
     if token not in pvp:
         raise SystemExit("PvP contract missing: " + token)
+
+for token in ["GetOrderedDataStore", "AddScore", "leaderstats", "LevelRules"]:
+    if token not in stats:
+        raise SystemExit("Stats contract missing: " + token)
+
+for token in ["CustomPhysicalProperties", "Enemy", "Character", "Cover"]:
+    if token not in physics:
+        raise SystemExit("Physics contract missing: " + token)
+
+for token in ["SoundService", "StartMusic", "Hit", "Boss", "Wave"]:
+    if token not in audio:
+        raise SystemExit("Audio contract missing: " + token)
+
+for token in ["makeBurst", "makeRing", "EnemyDefeated", "WaveStart", "PvPHit"]:
+    if token not in vfx:
+        raise SystemExit("VFX contract missing: " + token)
 
 if "ProcessReceipt" not in monetization:
     raise SystemExit("Monetization receipt contract missing")
