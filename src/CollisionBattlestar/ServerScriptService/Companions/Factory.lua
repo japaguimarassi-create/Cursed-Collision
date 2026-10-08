@@ -3,6 +3,7 @@
 local AvatarResolver = require(script.Parent.AvatarResolver)
 local VisualProfiles = require(script.Parent.VisualProfile)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PhysicsRules = require(ReplicatedStorage.Shared.PhysicsRules)
 
 local CompanionFactory = {}
 
@@ -78,6 +79,7 @@ local function sanitizeModel(model: Model)
             descendant.CanTouch = false
             descendant.CastShadow = false
             descendant.Massless = true
+            PhysicsRules.apply(descendant, PhysicsRules.Echo)
             descendant:SetNetworkOwner(nil)
         end
     end
