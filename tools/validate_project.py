@@ -180,6 +180,8 @@ for token in ["AIConfig", "Register", "Unregister", "SetWave", "HealthCheck", "G
 if "while self.running" in enemy_brain:
     raise SystemExit("EnemyBrain must be scheduler-driven by AI kernel")
 
+for token in [
+    'action == "Attack"',
     'action == "Dash"',
     "GetPartBoundsInBox",
     "ValidateAttackTarget",
@@ -188,6 +190,7 @@ if "while self.running" in enemy_brain:
 ]:
     if token not in combat:
         raise SystemExit("Combat contract missing: " + token)
+
 
 for token in ["UpdateAsync", "GenerateGUID", "SaveAndRelease", "PLAYER_SESSION_LOCKED", "AUTOSAVE_INTERVAL"]:
     if token not in persistence:
