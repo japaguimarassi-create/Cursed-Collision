@@ -28,7 +28,6 @@ function MissionService:Start()
 
     self.running = true
 
-    self.enemyService:GetDefeatedEvent()
     self.defeatConnection = self.enemyService:GetDefeatedEvent():Connect(function(_, isElite)
         for _, player in ipairs(Players:GetPlayers()) do
             if isElite then
@@ -64,6 +63,12 @@ function MissionService:Start()
 
     self.playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
         self.lastCredits[player] = nil
+    end)
+
+    self.remotes.Mission.OnServerEvent:Connect(function(player, request)
+        if type(request) == "table" and request.action == "Snapshot" then
+            self:Publish(player)
+        end
     end)
 end
 
