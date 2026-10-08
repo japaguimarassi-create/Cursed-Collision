@@ -195,6 +195,18 @@ function PvPService:Leave(player: Player)
     return true, "left"
 end
 
+function PvPService:ResetRuntime()
+    for player in pairs(self.participants) do
+        if player.Parent then
+            player:SetAttribute("CBS_PvP", false)
+            player:SetAttribute("CBS_LastPvPKillerUserId", nil)
+        end
+    end
+
+    table.clear(self.participants)
+    table.clear(self.requests)
+end
+
 function PvPService:GetAvailableDashDistance(position: Vector3, direction: Vector3, maximum: number)
     local limitX = if direction.X > 0
         then (70 - position.X) / direction.X
