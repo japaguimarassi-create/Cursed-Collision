@@ -169,7 +169,7 @@ kernel = (ROOT / "src/CollisionBattlestar/ServerScriptService/Core/MechanicsKern
 ai_kernel = (ROOT / "src/CollisionBattlestar/ServerScriptService/AI/Kernel.lua").read_text(encoding="utf-8")
 enemy_brain = (ROOT / "src/CollisionBattlestar/ServerScriptService/Enemies/EnemyBrain.lua").read_text(encoding="utf-8")
 
-for token in ["ReloadAll", "CaptureSnapshot", "HealthCheck", "ReportFailure", "RuntimeReloadStarted", "RuntimeReloaded"]:
+for token in ["ReloadAll", "CaptureSnapshot", "HealthCheck", "ReportFailure", "RuntimeReloadStarted", "RuntimeReloaded", "function MechanicsKernel:Start()"]:
     if token not in kernel:
         raise SystemExit("Mechanics kernel contract missing: " + token)
 
