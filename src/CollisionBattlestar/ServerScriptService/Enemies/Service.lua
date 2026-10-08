@@ -4,6 +4,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Definitions = require(ReplicatedStorage.Shared.Definitions)
+local EnemySkinDefinitions = require(ReplicatedStorage.Shared.EnemySkinDefinitions)
+local EnemySkinRules = require(ReplicatedStorage.Shared.EnemySkinRules)
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local EnemyFactory = require(script.Parent.EnemyFactory)
 local EnemyBrain = require(script.Parent.EnemyBrain)
@@ -19,6 +21,8 @@ function EnemyService.new(runtimeState, worldService, economyService)
         active = {} :: {[Model]: any},
         defeated = Instance.new("BindableEvent"),
         serial = 0,
+        waveThemeId = "Urban",
+        previousSkinByTier = {},
     }, EnemyService)
 end
 
@@ -78,6 +82,15 @@ function EnemyService:DamagePlayer(player: Player, amount: number, source: Model
     return true
 end
 
+function EnemyService:SetWaveTheme(themeId: string)
+    if EnemySkinDefinitions.Themes[themeId] then
+        self.waveThemeId = themeId
+    else
+        self.waveThemeId = "Urban"
+    end
+    self.previousSkinByTier = {}
+end
+
 function EnemyService:Spawn(enemyId: string, wave: number, spawnCFrame: CFrame)
     local definition = Definitions.Enemies[enemyId]
     if not definition then
@@ -88,7 +101,21 @@ function EnemyService:Spawn(enemyId: string, wave: number, spawnCFrame: CFrame)
         return nil
     end
 
-    local model, humanoid, root = EnemyFactory.Create(definition, spawnCFrame, wave)
+    local selfSeed = self.serial + 1
+    local previous = self.previousSkinByTier[definition.Tier]
+    local skinProfile = EnemySkinRules.pick(
+        self.waveThemeId,
+        definition.Tier,
+        selfSeed,
+        previous,
+        EnemySkinDefinitions
+    )
+
+    if skinProfile then
+        self.previousSkinByTier[definition.Tier] = skinProfile.ProfileId
+    end
+
+    local model, humanoid, root = EnemyFactory.Create(definition, spawnCFrame, wave, skinProfile)
     if not model or not humanoid or not root then
         return nil
     end
