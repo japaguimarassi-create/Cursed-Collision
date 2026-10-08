@@ -20,6 +20,7 @@ type State = {
     comboStep: number,
     lastComboAt: number,
     kills: number,
+    score: number,
 }
 
 local UPGRADE_IDS = {
@@ -97,6 +98,7 @@ function PlayerState:AddPlayer(player: Player)
         comboStep = 0,
         lastComboAt = -math.huge,
         kills = profile.Kills,
+        score = profile.Score,
     }
 
     self.states[player] = state
@@ -104,6 +106,7 @@ function PlayerState:AddPlayer(player: Player)
     player:SetAttribute("CBS_Credits", state.credits)
     player:SetAttribute("CBS_PowerLevel", state.powerLevel)
     player:SetAttribute("CBS_Kills", state.kills)
+    player:SetAttribute("CBS_Score", state.score)
 
     for _, upgradeId in ipairs(UPGRADE_IDS) do
         player:SetAttribute(
@@ -256,6 +259,28 @@ function PlayerState:ApplyCharacterStats(player: Player, character: Model)
     player:SetAttribute("CBS_DashLevel", dashLevel)
     player:SetAttribute("CBS_CriticalLevel", self:GetUpgradeLevel(player, "Critical"))
     player:SetAttribute("CBS_RecoveryLevel", self:GetUpgradeLevel(player, "Recovery"))
+end
+
+function PlayerState:GetScore(player: Player)
+    local state = self.states[player]
+    return state and state.score or 0
+end
+
+function PlayerState:AddScore(player: Player, amount: number)
+    local state = self.states[player]
+    if not state or not player.Parent then
+        return false
+    end
+
+    local gained = math.floor(tonumber(amount) or 0)
+    if gained <= 0 then
+        return false
+    end
+
+    state.score = math.min(2^53, state.score + gained)
+    state.profile.Score = state.score
+    player:SetAttribute("CBS_Score", state.score)
+    return true
 end
 
 function PlayerState:AddCredits(player: Player, amount: number)
