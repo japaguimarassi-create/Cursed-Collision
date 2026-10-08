@@ -32,11 +32,13 @@ function EnemyBrain:FindTarget()
 
             if playerHumanoid and playerRoot and playerHumanoid.Health > 0 and playerRoot:IsA("BasePart")
                 and player:GetAttribute("CBS_PvP") ~= true then
-                local distance = (playerRoot.Position - self.root.Position).Magnitude
-                if distance < closestDistance then
+                if self.callbacks.canTargetPlayer(player, playerRoot) then
+                    local distance = (playerRoot.Position - self.root.Position).Magnitude
+                    if distance < closestDistance then
                     closestPlayer = player
                     closestRoot = playerRoot
-                    closestDistance = distance
+                        closestDistance = distance
+                    end
                 end
             else
                 self.model:SetAttribute("CBS_TargetUserId", nil)
