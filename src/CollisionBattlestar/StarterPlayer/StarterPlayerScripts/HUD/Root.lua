@@ -206,6 +206,10 @@ function HUD:BindState()
     self.stateConnection = self.remotes.State.OnClientEvent:Connect(function(kind, payload)
         if kind == "Snapshot" then
             self:SetSnapshot(payload)
+        elseif kind == "BootError" then
+            local message = type(payload) == "table" and tostring(payload.message or "server boot failure") or "server boot failure"
+            self.status.Text = "SERVER ERROR: " .. message
+            self.status.TextColor3 = Color3.fromRGB(255, 100, 100)
         elseif kind == "UpgradeResult" then
             if payload.success then
                 self.status.Text = "UPGRADE COMPLETE"
