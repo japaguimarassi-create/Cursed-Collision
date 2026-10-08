@@ -1,6 +1,5 @@
 --!strict
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Classes = require(ReplicatedStorage.Shared.CompanionDefinitions)
@@ -13,7 +12,7 @@ EchoBrain.__index = EchoBrain
 local THINK_INTERVAL = 0.25
 local FOLLOW_DISTANCE = 7
 local LEASH_DISTANCE = 32
-local RETREAT_DISTANCE = 38
+local RETREAT_DISTANCE = 44
 
 function EchoBrain.new(owner: Player, model: Model, humanoid: Humanoid, root: BasePart, classId: string, level: number, callbacks)
     return setmetatable({
@@ -31,6 +30,7 @@ function EchoBrain.new(owner: Player, model: Model, humanoid: Humanoid, root: Ba
         nextAttackAt = 0,
         nextHealAt = 0,
         nextThinkAt = 0,
+        nextTargetScanAt = 0,
         navigation = Navigation.new(root),
     }, EchoBrain)
 end
@@ -62,36 +62,30 @@ function EchoBrain:IsOwnerAlive()
     return true, humanoid, root
 end
 
-function EchoBrain:FindTarget()
-    local ownerAlive, _, ownerRoot = self:IsOwnerAlive()
-    if not ownerAlive or not ownerRoot then
-        return nil
-    end
-
+function EchoBrain:FindTarget(ownerRoot: BasePart)
+    local candidates = self.callbacks.getTargets(self.root.Position, 55)
     local best = nil
     local bestScore = -math.huge
 
-    for _, descendant in ipairs(workspace:GetDescendants()) do
-        if descendant:IsA("Model") and descendant:GetAttribute("CBS_Enemy") == true then
-            local humanoid = descendant:FindFirstChildOfClass("Humanoid")
-            local root = descendant:FindFirstChild("HumanoidRootPart")
+    for _, candidate in ipairs(candidates) do
+        local targetHumanoid = candidate:FindFirstChildOfClass("Humanoid")
+        local targetRoot = candidate:FindFirstChild("HumanoidRootPart")
 
-            if humanoid and root and humanoid.Health > 0 and root:IsA("BasePart") then
-                local distance = (root.Position - self.root.Position).Magnitude
-                if distance <= 55 then
-                    local score = Rules.targetScore(self.classId, {
-                        Distance = distance,
-                        MaxHealth = humanoid.MaxHealth,
-                        IsElite = descendant:GetAttribute("CBS_Elite") == true,
-                        ThreatensOwner = descendant:GetAttribute("CBS_TargetUserId") == self.owner.UserId,
-                        NearOwner = (root.Position - ownerRoot.Position).Magnitude <= 9,
-                    })
+        if targetHumanoid and targetRoot and targetHumanoid.Health > 0 and targetRoot:IsA("BasePart") then
+            local distance = (targetRoot.Position - self.root.Position).Magnitude
+            local ownerDistance = (targetRoot.Position - ownerRoot.Position).Magnitude
 
-                    if score > bestScore then
-                        bestScore = score
-                        best = descendant
-                    end
-                end
+            local score = Rules.targetScore(self.classId, {
+                Distance = distance,
+                MaxHealth = targetHumanoid.MaxHealth,
+                IsElite = candidate:GetAttribute("CBS_Elite") == true,
+                ThreatensOwner = candidate:GetAttribute("CBS_TargetUserId") == self.owner.UserId,
+                NearOwner = ownerDistance <= 9,
+            })
+
+            if score > bestScore then
+                bestScore = score
+                best = candidate
             end
         end
     end
@@ -108,10 +102,6 @@ function EchoBrain:TrySupport(ownerHumanoid: Humanoid, ownerRoot: BasePart, now:
         return false
     end
 
-    if now < self.nextHealAt then
-        return false
-    end
-
     if (ownerRoot.Position - self.root.Position).Magnitude > self.class.HealRange then
         self:SetState("Support")
         local destination = ownerRoot.Position - ownerRoot.CFrame.LookVector * self.class.PreferredDistance
@@ -120,19 +110,26 @@ function EchoBrain:TrySupport(ownerHumanoid: Humanoid, ownerRoot: BasePart, now:
         return true
     end
 
-    local levelScale = 1 + (self.level - 1) * 0.04
-    local configuredAmount = self.class.HealAmount * levelScale
-    local amount = Rules.healAmount(ownerHumanoid.Health, ownerHumanoid.MaxHealth, configuredAmount)
-
-    if amount > 0 then
-        ownerHumanoid.Health = math.min(ownerHumanoid.MaxHealth, ownerHumanoid.Health + amount)
-        self.nextHealAt = now + self.class.HealCooldown
-        self.callbacks.onHeal(self.owner, amount, self.root.Position)
-        self:SetState("Support")
-        return true
+    if now < self.nextHealAt then
+        return false
     end
 
-    return false
+    local levelScale = 1 + (self.level - 1) * 0.04
+    local amount = Rules.healAmount(
+        ownerHumanoid.Health,
+        ownerHumanoid.MaxHealth,
+        self.class.HealAmount * levelScale
+    )
+
+    if amount <= 0 then
+        return false
+    end
+
+    ownerHumanoid.Health = math.min(ownerHumanoid.MaxHealth, ownerHumanoid.Health + amount)
+    self.nextHealAt = now + self.class.HealCooldown
+    self.callbacks.onHeal(self.owner, amount, self.root.Position)
+    self:SetState("Support")
+    return true
 end
 
 function EchoBrain:MoveToward(position: Vector3)
@@ -144,17 +141,16 @@ function EchoBrain:MoveToward(position: Vector3)
     end
 
     local direction = horizontal.Unit
-    local speed = self.class.Speed
-    local targetVelocity = direction * speed
+    local velocity = direction * self.class.Speed
     local currentY = math.clamp(self.root.AssemblyLinearVelocity.Y, -45, 20)
 
     self.root.CFrame = CFrame.lookAt(self.root.Position, self.root.Position + direction)
-    self.root.AssemblyLinearVelocity = Vector3.new(targetVelocity.X, currentY, targetVelocity.Z)
+    self.root.AssemblyLinearVelocity = Vector3.new(velocity.X, currentY, velocity.Z)
 end
 
-function EchoBrain:MoveAroundOwner(ownerRoot: BasePart)
-    local desired = ownerRoot.Position - ownerRoot.CFrame.LookVector * self.class.PreferredDistance
-    local waypoint = self.navigation:GetNextPosition(desired, os.clock())
+function EchoBrain:MoveBehindOwner(ownerRoot: BasePart, now: number)
+    local destination = ownerRoot.Position - ownerRoot.CFrame.LookVector * FOLLOW_DISTANCE
+    local waypoint = self.navigation:GetNextPosition(destination, now)
     self:MoveToward(waypoint)
 end
 
@@ -186,13 +182,13 @@ function EchoBrain:TryAttack(target: Model, now: number)
         self.class.AttackRange
     )
 
-    if ok then
-        self.nextAttackAt = now + self.class.AttackCooldown
-        self:SetState("Attack")
-        return true
+    if not ok then
+        return false
     end
 
-    return false
+    self.nextAttackAt = now + self.class.AttackCooldown
+    self:SetState("Attack")
+    return true
 end
 
 function EchoBrain:Think()
@@ -201,22 +197,27 @@ function EchoBrain:Think()
 
     if not ownerAlive or not ownerRoot or not ownerHumanoid then
         self:SetState("Retreat")
+        self.target = nil
+        return
+    end
+
+    if ownerRoot:GetAttribute("CBS_PvP") == true then
+        self:SetState("Disabled")
+        self.target = nil
         return
     end
 
     local ownerDistance = (ownerRoot.Position - self.root.Position).Magnitude
 
     if ownerDistance >= RETREAT_DISTANCE then
-        self:SetState("Recover")
-        self.root.CFrame = ownerRoot.CFrame + ownerRoot.CFrame.LookVector * -FOLLOW_DISTANCE + Vector3.new(0, 1, 0)
-        self.navigation:Destroy()
-        self.navigation = Navigation.new(self.root)
+        self:SetState("Retreat")
+        self:MoveBehindOwner(ownerRoot, now)
         return
     end
 
     if ownerDistance >= LEASH_DISTANCE then
         self:SetState("Retreat")
-        self:MoveAroundOwner(ownerRoot)
+        self:MoveBehindOwner(ownerRoot, now)
         return
     end
 
@@ -224,13 +225,12 @@ function EchoBrain:Think()
         return
     end
 
-    local target = self.target
-
-    if not target or not target.Parent or target:GetAttribute("CBS_Enemy") ~= true then
-        self:SetState("Acquire")
-        target = self:FindTarget()
-        self.target = target
+    if now >= self.nextTargetScanAt then
+        self.nextTargetScanAt = now + 0.5
+        self.target = self:FindTarget(ownerRoot)
     end
+
+    local target = self.target
 
     if target then
         local targetRoot = target:FindFirstChild("HumanoidRootPart")
@@ -243,14 +243,18 @@ function EchoBrain:Think()
                 self:SetState(self.classId == "Guardian" and "Protect" or "Position")
                 self:TryAttack(target, now)
             else
-                local positionState = "Position"
-                if self.classId == "Guardian" or self.classId == "Vanguard" then
-                    positionState = "Protect"
-                end
+                local positionState = (self.classId == "Guardian" or self.classId == "Vanguard")
+                    and "Protect"
+                    or "Position"
+
                 self:SetState(positionState)
-                local desired = targetRoot.Position - (targetRoot.Position - self.root.Position).Unit * self.class.PreferredDistance
-                local waypoint = self.navigation:GetNextPosition(desired, now)
-                self:MoveToward(waypoint)
+
+                local towardTarget = targetRoot.Position - self.root.Position
+                if towardTarget.Magnitude > 0.1 then
+                    local desired = targetRoot.Position - towardTarget.Unit * self.class.PreferredDistance
+                    local waypoint = self.navigation:GetNextPosition(desired, now)
+                    self:MoveToward(waypoint)
+                end
             end
 
             return
@@ -260,7 +264,7 @@ function EchoBrain:Think()
     end
 
     self:SetState("Follow")
-    self:MoveAroundOwner(ownerRoot)
+    self:MoveBehindOwner(ownerRoot, now)
 end
 
 function EchoBrain:Start()
@@ -288,11 +292,12 @@ function EchoBrain:Start()
 end
 
 function EchoBrain:Disable(reason: string)
+    self.target = nil
     self:SetState("Disabled")
     self.model:SetAttribute("CBS_EchoDisabledReason", reason)
+    self.model:SetAttribute("CBS_EchoDisabled", true)
     self.running = false
-    self.humanoid.Health = math.max(self.humanoid.Health, 1)
-    self.humanoid.PlatformStand = true
+    self.humanoid.AssemblyLinearVelocity = Vector3.zero
 end
 
 function EchoBrain:Stop()
