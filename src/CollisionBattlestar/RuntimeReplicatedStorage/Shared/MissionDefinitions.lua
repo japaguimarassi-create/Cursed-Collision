@@ -22,6 +22,13 @@ local Missions = {
         Reward = 250,
         Metric = "CreditsEarned",
     },
+    BossHunter = {
+        Id = "BossHunter",
+        DisplayName = "Boss Hunter",
+        Goal = 3,
+        Reward = 500,
+        Metric = "BossKills",
+    },
 }
 
 return table.freeze(Missions)
