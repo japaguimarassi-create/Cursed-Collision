@@ -240,7 +240,7 @@ function MechanicsKernel:HealthCheck()
     return true
 end
 
-function MechanicsKernel:Startt()
+function MechanicsKernel:Start()
     if self.running then
         return
     end
