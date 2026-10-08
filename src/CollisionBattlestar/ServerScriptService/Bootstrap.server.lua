@@ -480,6 +480,15 @@ else
             return
         end
 
+        if request.action == "RequestRanking" then
+            local rows, scope = statsService:GetTop(10)
+            remotes.State:FireClient(player, "Ranking", {
+                rows = rows,
+                scope = scope,
+            })
+            return
+        end
+
         if request.action == "Upgrade" then
             local success, value = progressionService:Purchase(player, request.upgradeId or "Damage")
             remotes.State:FireClient(player, "UpgradeResult", {
