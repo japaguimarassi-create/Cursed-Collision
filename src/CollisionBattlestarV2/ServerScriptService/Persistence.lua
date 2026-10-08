@@ -4,7 +4,7 @@ local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 
-local Data = require(script.Parent.Parent.ReplicatedStorage.Shared.Data)
+local Data = require(game:GetService("ReplicatedStorage").Shared.Data)
 
 local STORE_NAME = "CBS2_PlayerProfiles_v1"
 local LOCK_SECONDS = 120
