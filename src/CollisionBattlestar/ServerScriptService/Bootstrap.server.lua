@@ -280,7 +280,7 @@ else
     local economyService = EconomyService.new(playerState)
     local enemyService = EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel, remotes)
     local statsService = modules.Stats.new(playerState, runtimeState, enemyService)
-    local pvpService = PvPService.new(playerState, economyService, worldService, remotes)
+    local pvpService = PvPService.new(playerState, economyService, worldService, remotes, statsService)
     local combatService = CombatService.new(
         runtimeState,
         playerState,
