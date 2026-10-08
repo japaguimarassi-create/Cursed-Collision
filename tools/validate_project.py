@@ -67,6 +67,7 @@ required = [
     "src/CollisionBattlestar/ServerScriptService/Monetization/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/PvP/ArenaBuilder.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientBootstrap.client.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientRemotes.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Input/Service.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/Root.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/AdvancedPanels.lua",
@@ -166,7 +167,7 @@ for token in [
     if token not in combat:
         raise SystemExit("Combat contract missing: " + token)
 
-for token in ["UpdateAsync", "GenerateGUID", "SaveAndRelease", "PLAYER_SESSION_LOCKED"]:
+for token in ["UpdateAsync", "GenerateGUID", "SaveAndRelease", "PLAYER_SESSION_LOCKED", "AUTOSAVE_INTERVAL"]:
     if token not in persistence:
         raise SystemExit("Persistence contract missing: " + token)
 
