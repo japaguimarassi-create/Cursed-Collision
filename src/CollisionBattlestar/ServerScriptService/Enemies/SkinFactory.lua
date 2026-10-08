@@ -99,15 +99,6 @@ function SkinFactory.Apply(model: Model, profile)
         addGear(model, "SkinCrown", Vector3.new(1.5, 0.3, 1.5), Vector3.new(0, 5.0, 0), accent, Enum.Material.Neon)
     end
 
-    addGear(
-        model,
-        "SkinAccent",
-        Vector3.new(math.max(0.5, 2.8 - tier * 0.2), 0.3, 1.9),
-        Vector3.new(0, 1.2 + tier * 0.15, -1.05),
-        tier == 4 and Color3.fromRGB(255, 45, 55) or accent,
-        Enum.Material.Neon
-    )
-
     model:SetAttribute("CBS_SkinProfileId", profile.ProfileId)
     model:SetAttribute("CBS_SkinThemeId", profile.ThemeId)
 
