@@ -7,6 +7,7 @@ local Constants = require(ReplicatedStorage.Shared.Constants)
 local Registry = require(script.Parent.Core.ServiceRegistry)
 local RuntimeState = require(script.Parent.Core.RuntimeState)
 local PlayerState = require(script.Parent.Core.PlayerState)
+local PersistenceService = require(script.Parent.Persistence.Service)
 local WorldService = require(script.Parent.World.Service)
 local SecurityService = require(script.Parent.Security.Service)
 local EconomyService = require(script.Parent.Economy.Service)
@@ -41,7 +42,8 @@ local remotes = {
 }
 
 local runtimeState = RuntimeState.new()
-local playerState = PlayerState.new()
+local persistenceService = PersistenceService.new()
+local playerState = PlayerState.new(persistenceService)
 local registry = Registry.new()
 
 local worldService = WorldService.new(runtimeState)
@@ -51,6 +53,7 @@ local enemyService = EnemyService.new(runtimeState, worldService, economyService
 local combatService = CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes)
 local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService)
 
+registry:Register("Persistence", persistenceService)
 registry:Register("PlayerState", playerState)
 registry:Register("World", worldService)
 registry:Register("Security", securityService)
@@ -83,6 +86,7 @@ remotes.State.OnServerEvent:Connect(function(player, request)
 end)
 
 registry:StartInOrder({
+    "Persistence",
     "PlayerState",
     "World",
     "Security",
