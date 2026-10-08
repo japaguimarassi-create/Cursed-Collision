@@ -6,14 +6,14 @@
       "$properties": {
         "StreamingEnabled": false,
         "Gravity": 196.2,
-        "FallenPartsDestroyHeight": -80
+        "FallenPartsDestroyHeight": -100
       }
     },
     "ReplicatedStorage": {
-      "$path": "src/CollisionBattlestar/ReplicatedStorage"
+      "$path": "src/CollisionBattlestarV2/ReplicatedStorage"
     },
     "ServerScriptService": {
-      "$path": "src/CollisionBattlestar/CleanServer"
+      "$path": "src/CollisionBattlestarV2/ServerScriptService"
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
@@ -21,7 +21,7 @@
         "EnableMouseLockOption": true
       },
       "StarterPlayerScripts": {
-        "$path": "src/CollisionBattlestar/CleanClient"
+        "$path": "src/CollisionBattlestarV2/StarterPlayer/StarterPlayerScripts"
       }
     }
   }
