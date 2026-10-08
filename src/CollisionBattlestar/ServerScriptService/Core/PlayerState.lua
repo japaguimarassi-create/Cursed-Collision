@@ -38,7 +38,7 @@ function PlayerState.new(persistenceService)
 end
 
 function PlayerState:Start()
-    Players.CharacterAutoLoads = false
+    Players.CharacterAutoLoads = true
 
     Players.PlayerAdded:Connect(function(player)
         task.spawn(function()
@@ -66,20 +66,8 @@ function PlayerState:BindCharacter(player: Player, character: Model)
     end
 
     humanoid.Died:Connect(function()
-        task.delay(2, function()
-            if not player.Parent or player.Character ~= character then
-                return
-            end
-
-            local ok = pcall(function()
-                player:LoadCharacter()
-            end)
-
-            if not ok and player.Parent then
-                player:Kick("Character respawn failed safely.")
-            end
-        end)
-    end)
+        self:ResetCombatLocks(player)
+    end)nd)
 end
 
 function PlayerState:AddPlayer(player: Player)
@@ -249,6 +237,18 @@ end
 
 function PlayerState:AddPvPKill(player: Player)
     return self:MarkKill(player)
+end
+
+function PlayerState:ResetCombatLocks(player: Player)
+    local state = self.states[player]
+    if not state then
+        return
+    end
+
+    state.lastAttackAt = -math.huge
+    state.lastDashAt = -math.huge
+    state.comboStep = 0
+    state.lastComboAt = -math.huge
 end
 
 function PlayerState:MarkAttack(player: Player, now: number)
