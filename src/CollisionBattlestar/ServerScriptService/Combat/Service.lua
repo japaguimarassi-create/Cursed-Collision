@@ -4,15 +4,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local Config = require(ReplicatedStorage.Shared.Config)
+local CombatRules = require(ReplicatedStorage.Shared.CombatRules)
 
 local CombatService = {}
 CombatService.__index = CombatService
-
-local ComboMultipliers = {
-    [1] = 1,
-    [2] = 1.08,
-    [3] = 1.2,
-}
 
 function CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes)
     return setmetatable({
@@ -90,7 +85,7 @@ function CombatService:HandleAttack(player: Player)
 
     local seen = {}
     local damage = 12 + (self:GetPowerLevel(player) - 1) * 3
-    damage *= ComboMultipliers[combo] or 1
+    damage *= CombatRules.comboMultiplier(combo)
 
     for _, part in ipairs(parts) do
         local model = part:FindFirstAncestorOfClass("Model")
