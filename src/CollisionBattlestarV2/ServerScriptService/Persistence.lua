@@ -155,7 +155,7 @@ function Persistence:Start()
     task.spawn(function()
         while self.running do
             for player, session in pairs(self.sessions) do
-                if player.Parent and session.dirty and os.clock() - session.lastSave >= SAVE_INTERVAL then
+                if player.Parent and os.clock() - session.lastSave >= SAVE_INTERVAL then
                     self:Save(player, false)
                 end
             end
