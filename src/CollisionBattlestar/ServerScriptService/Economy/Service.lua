@@ -30,9 +30,12 @@ function EconomyService:RewardEnemyDefeat(player: Player, amount: number)
     return true
 end
 
-function EconomyService:RewardWaveClear()
+function EconomyService:RewardWaveClear(multiplier: number?)
+    local safeMultiplier = math.max(0, tonumber(multiplier) or 1)
+    local reward = math.floor(Config.Economy.WaveClearReward * safeMultiplier)
+
     for _, player in ipairs(Players:GetPlayers()) do
-        self.playerState:AddCredits(player, Config.Economy.WaveClearReward)
+        self.playerState:AddCredits(player, reward)
     end
 end
 
