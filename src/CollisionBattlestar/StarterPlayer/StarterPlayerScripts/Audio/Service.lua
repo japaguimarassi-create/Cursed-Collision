@@ -8,6 +8,11 @@ AudioService.__index = AudioService
 
 local AUDIO_FOLDER_NAME = "CollisionBattlestarAudio"
 
+local DEFAULT_SOUND_IDS = {
+    Hit = "rbxassetid://9075325599",
+    Click = "rbxassetid://82845990304289",
+}
+
 local function findSound(folder: Instance?, name: string)
     if not folder then
         return nil
@@ -27,12 +32,34 @@ function AudioService.new(remotes)
         running = false,
         connection = nil,
         stateConnection = nil,
+        buttonConnections = {},
+        guiAddedConnection = nil,
         music = nil,
     }, AudioService)
 end
 
 function AudioService:GetFolder()
-    return SoundService:FindFirstChild(AUDIO_FOLDER_NAME)
+    local folder = SoundService:FindFirstChild(AUDIO_FOLDER_NAME)
+
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = AUDIO_FOLDER_NAME
+        folder.Parent = SoundService
+    end
+
+    for name, soundId in pairs(DEFAULT_SOUND_IDS) do
+        local sound = folder:FindFirstChild(name)
+
+        if not sound then
+            sound = Instance.new("Sound")
+            sound.Name = name
+            sound.SoundId = soundId
+            sound.Volume = name == "Hit" and 0.24 or 0.16
+            sound.Parent = folder
+        end
+    end
+
+    return folder
 end
 
 function AudioService:Play(name: string)
@@ -79,6 +106,26 @@ function AudioService:Start()
     self.running = true
     self:StartMusic()
 
+    local function bindButton(instance)
+        if not instance:IsA("GuiButton") then
+            return
+        end
+
+        if self.buttonConnections[instance] then
+            return
+        end
+
+        self.buttonConnections[instance] = instance.Activated:Connect(function()
+            self:Play("Click")
+        end)
+    end
+
+    for _, descendant in ipairs(game:GetService("Players").LocalPlayer.PlayerGui:GetDescendants()) do
+        bindButton(descendant)
+    end
+
+    self.guiAddedConnection = game:GetService("Players").LocalPlayer.PlayerGui.DescendantAdded:Connect(bindButton)
+
     self.connection = self.remotes.FX.OnClientEvent:Connect(function(kind)
         if kind == "Hit" then
             self:Play("Hit")
@@ -117,6 +164,16 @@ function AudioService:Stop()
     if self.stateConnection then
         self.stateConnection:Disconnect()
         self.stateConnection = nil
+    end
+
+    if self.guiAddedConnection then
+        self.guiAddedConnection:Disconnect()
+        self.guiAddedConnection = nil
+    end
+
+    for instance, connection in pairs(self.buttonConnections) do
+        connection:Disconnect()
+        self.buttonConnections[instance] = nil
     end
 
     if self.music then
