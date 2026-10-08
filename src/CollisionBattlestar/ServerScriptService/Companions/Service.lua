@@ -34,10 +34,20 @@ function CompanionService:Start()
 
     Players.PlayerAdded:Connect(function(player)
         self:DisableEchoesRepresenting(player.UserId)
+        player:GetAttributeChangedSignal("CBS_PvP"):Connect(function()
+            if player:GetAttribute("CBS_PvP") == true then
+                self:Unsummon(player, "entered_pvp")
+            end
+        end)
     end)
 
     for _, player in ipairs(Players:GetPlayers()) do
         self:DisableEchoesRepresenting(player.UserId)
+        player:GetAttributeChangedSignal("CBS_PvP"):Connect(function()
+            if player:GetAttribute("CBS_PvP") == true then
+                self:Unsummon(player, "entered_pvp")
+            end
+        end)
     end
 
     self.remotes.Companion.OnServerEvent:Connect(function(player, request)
