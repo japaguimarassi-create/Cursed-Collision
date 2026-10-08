@@ -56,6 +56,7 @@ function EconomyService:RewardWaveClear(multiplier: number?)
     for _, player in ipairs(Players:GetPlayers()) do
         if player:GetAttribute("CBS_PvP") ~= true then
             self.playerState:AddCredits(player, reward)
+            self.playerState:MarkWaveComplete(player)
         end
     end
 end
