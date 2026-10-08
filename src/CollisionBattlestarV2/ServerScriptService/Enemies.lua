@@ -218,9 +218,8 @@ function Enemies:TakeDamage(player: Player, model: Model, amount: number, critic
         return false
     end
 
-    humanoid:TakeDamage(math.max(0, math.floor(amount)))
-
     model:SetAttribute("CBS2_LastHitUserId", player.UserId)
+    humanoid:TakeDamage(math.max(0, math.floor(amount)))
 
     if critical then
         self.remotes.FX:FireAllClients("Critical", {
