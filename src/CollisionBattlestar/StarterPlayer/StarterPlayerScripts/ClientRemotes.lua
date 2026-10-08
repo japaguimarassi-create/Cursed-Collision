@@ -23,11 +23,11 @@ function ClientBootstrap.WaitForRemotes()
         Combat = waitForRemote(folder, Constants.CombatRemote, 6),
         State = waitForRemote(folder, Constants.StateRemote, 6),
         FX = waitForRemote(folder, Constants.FXRemote, 6),
-        Commerce = waitForRemote(folder, "Commerce", 6),
-        Companion = waitForRemote(folder, "Companion", 6),
-        PvP = waitForRemote(folder, "PvP", 6),
-        Mission = waitForRemote(folder, "Mission", 6),
-        Admin = waitForRemote(folder, "Admin", 6),
+        Commerce = waitForRemote(folder, Constants.CommerceRemote, 6),
+        Companion = waitForRemote(folder, Constants.CompanionRemote, 6),
+        PvP = waitForRemote(folder, Constants.PvPRemote, 6),
+        Mission = waitForRemote(folder, Constants.MissionRemote, 6),
+        Admin = waitForRemote(folder, Constants.AdminRemote, 6),
     }
 
     for _, remote in pairs(remotes) do
