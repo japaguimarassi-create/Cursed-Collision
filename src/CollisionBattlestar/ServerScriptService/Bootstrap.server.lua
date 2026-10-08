@@ -247,6 +247,7 @@ local modulesOk, modules = pcall(function()
         Persistence = requireModule(script.Parent.Persistence.Service, "PersistenceService"),
         PlayerState = requireModule(script.Parent.Core.PlayerState, "PlayerState"),
         Progression = requireModule(script.Parent.Progression.Service, "ProgressionService"),
+        Stats = requireModule(script.Parent.Stats.Service, "StatsService"),
         Recovery = requireModule(script.Parent.Progression.RecoveryService, "RecoveryService"),
         Security = requireModule(script.Parent.Security.Service, "SecurityService"),
         Economy = requireModule(script.Parent.Economy.Service, "EconomyService"),
@@ -274,6 +275,7 @@ else
     local persistenceService = PersistenceService.new()
     local playerState = PlayerState.new(persistenceService)
     local progressionService = ProgressionService.new(playerState, runtimeState)
+    local statsService = modules.Stats.new(playerState, runtimeState, enemyService)
     local recoveryService = RecoveryService.new(playerState)
     local securityService = SecurityService.new(worldService, playerState)
     local economyService = EconomyService.new(playerState)
@@ -294,6 +296,7 @@ else
     registry:Register("Persistence", persistenceService)
     registry:Register("PlayerState", playerState)
     registry:Register("Progression", progressionService)
+    registry:Register("Stats", statsService)
     registry:Register("Recovery", recoveryService)
     registry:Register("World", worldService)
     registry:Register("Security", securityService)
@@ -305,6 +308,7 @@ else
 
     mechanicsKernel:Register("World", worldService)
     mechanicsKernel:Register("PlayerState", playerState)
+    mechanicsKernel:Register("Stats", statsService)
     mechanicsKernel:Register("Enemies", enemyService)
     mechanicsKernel:Register("Combat", combatService)
     mechanicsKernel:Register("PvP", pvpService)
@@ -315,6 +319,7 @@ else
             "Persistence",
             "PlayerState",
             "Progression",
+            "Stats",
             "Recovery",
             "Security",
             "Economy",
