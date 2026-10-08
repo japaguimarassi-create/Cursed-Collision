@@ -194,6 +194,32 @@ function PvPService:Leave(player: Player)
     return true, "left"
 end
 
+function PvPService:GetAvailableDashDistance(position: Vector3, direction: Vector3, maximum: number)
+    local limitX = if direction.X > 0
+        then (70 - position.X) / direction.X
+        elseif direction.X < 0
+        then (-70 - position.X) / direction.X
+        else math.huge
+
+    local limitZ = if direction.Z > 0
+        then (242 - position.Z) / direction.Z
+        elseif direction.Z < 0
+        then (138 - position.Z) / direction.Z
+        else math.huge
+
+    local available = math.huge
+
+    if limitX > 0 then
+        available = math.min(available, limitX)
+    end
+
+    if limitZ > 0 then
+        available = math.min(available, limitZ)
+    end
+
+    return math.max(0, math.min(maximum, available))
+end
+
 function PvPService:IsParticipant(player: Player)
     return self.participants[player] == true
 end
