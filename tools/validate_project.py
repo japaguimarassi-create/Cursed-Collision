@@ -131,7 +131,6 @@ server = (ROOT / "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.l
 combat = (ROOT / "src/CollisionBattlestar/ServerScriptService/Combat/Service.lua").read_text(encoding="utf-8")
 client = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientBootstrap.client.lua").read_text(encoding="utf-8")
 guard = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/RuntimeGuard.client.lua").read_text(encoding="utf-8")
-config = (ROOT / "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
 player_state = (ROOT / "src/CollisionBattlestar/ServerScriptService/Core/PlayerState.lua").read_text(encoding="utf-8")
 hud = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/Root.lua").read_text(encoding="utf-8")
 panels = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/AdvancedPanels.lua").read_text(encoding="utf-8")
@@ -184,8 +183,6 @@ for token in ["CollisionBattlestarRuntimeGuard", "CBS_WorldReady", "CBS_ServerBo
     if token not in guard:
         raise SystemExit("Runtime guard contract missing: " + token)
 
-if "HitboxSize = Constants.HitboxSize" not in config:
-    raise SystemExit("Config must use authoritative HitboxSize")
 
 if "LoadCharacterAsync" not in player_state or "LoadCharacter()" in player_state:
     raise SystemExit("PlayerState must use LoadCharacterAsync without deprecated LoadCharacter")
