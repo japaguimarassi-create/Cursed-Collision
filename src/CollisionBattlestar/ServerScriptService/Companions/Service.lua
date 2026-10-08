@@ -261,9 +261,15 @@ function CompanionService:DisableEchoesRepresenting(friendUserId: number)
         if active.friendUserId == friendUserId then
             active.brain:Disable("friend_present")
             owner:SetAttribute("CBS_EchoDisabled", true)
+
             if active.model then
                 active.model:SetAttribute("CBS_EchoDisabled", true)
             end
+
+            self.remotes.Companion:FireClient(owner, "State", {
+                snapshot = self:GetSnapshot(owner),
+                reason = "friend_present",
+            })
         end
     end
 end
