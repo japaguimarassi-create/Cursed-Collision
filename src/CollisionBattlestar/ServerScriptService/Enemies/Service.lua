@@ -18,7 +18,7 @@ local EnemyService = {}
 EnemyService.__index = EnemyService
 
 function EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel)
-    return setmetatable({
+    local self = setmetatable({
         runtimeState = runtimeState,
         worldService = worldService,
         economyService = economyService,
@@ -30,12 +30,16 @@ function EnemyService.new(runtimeState, worldService, economyService, mechanicsK
         waveBoss = nil,
         waveEvent = nil,
         mechanicsKernel = mechanicsKernel,
-        aiKernel = AIKernel.new(function(label, err)
-            if self and self.mechanicsKernel then
-                self.mechanicsKernel:ReportFailure(label, err)
-            end
-        end),
+        aiKernel = nil,
     }, EnemyService)
+
+    self.aiKernel = AIKernel.new(function(label, err)
+        if self.mechanicsKernel then
+            self.mechanicsKernel:ReportFailure(label, err)
+        end
+    end)
+
+    return self
 end
 
 function EnemyService:Start()
