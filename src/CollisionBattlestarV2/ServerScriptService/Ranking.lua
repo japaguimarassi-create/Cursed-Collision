@@ -27,13 +27,13 @@ function Ranking.new(playerService, remotes)
     }, Ranking)
 end
 
-function Ranking:Write(player: Player)
-    if not self.store or not player.Parent then
+function Ranking:Write(player: Player, force: boolean?)
+    if not self.store then
         return
     end
 
     local now = os.clock()
-    if now - (self.lastWrite[player] or -math.huge) < 60 then
+    if not force and now - (self.lastWrite[player] or -math.huge) < 60 then
         return
     end
 
@@ -117,7 +117,7 @@ function Ranking:Start()
     self.running = true
 
     for _, player in ipairs(Players:GetPlayers()) do
-        self:Write(player)
+        self:Write(player, true)
     end
 
     table.insert(self.connections, Players.PlayerRemoving:Connect(function(player)
