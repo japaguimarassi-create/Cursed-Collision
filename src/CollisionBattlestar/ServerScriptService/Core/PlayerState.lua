@@ -2,7 +2,9 @@
 
 local Players = game:GetService("Players")
 
-local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Config = require(ReplicatedStorage.Shared.Config)
+local CombatRules = require(ReplicatedStorage.Shared.CombatRules)
 
 local PlayerState = {}
 PlayerState.__index = PlayerState
@@ -141,9 +143,19 @@ function PlayerState:MarkAttack(player: Player, now: number)
     end
 
     if now - state.lastComboAt > Config.Combat.ComboResetWindow then
-        state.comboStep = 1
+        state.comboStep = CombatRules.nextCombo(
+            state.comboStep,
+            math.huge,
+            Config.Combat.ComboResetWindow,
+            Config.Combat.ComboSteps
+        )
     else
-        state.comboStep = (state.comboStep % Config.Combat.ComboSteps) + 1
+        state.comboStep = CombatRules.nextCombo(
+            state.comboStep,
+            now - state.lastComboAt,
+            Config.Combat.ComboResetWindow,
+            Config.Combat.ComboSteps
+        )
     end
 
     state.lastAttackAt = now
