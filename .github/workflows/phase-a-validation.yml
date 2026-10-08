@@ -1,0 +1,37 @@
+name: Collision Battlestar Phase B Validation
+
+on:
+  push:
+    branches:
+      - "rebuild/collision-battlestar-phase-b-*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: collision-battlestar-phase-b
+  cancel-in-progress: true
+
+jobs:
+  phase-b:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Roblox toolchain
+        uses: paradoxum-games/setup-rokit@v3
+        with:
+          cache: true
+      - name: Run Phase B rules
+        run: luau tools/tests/phase_b_rules_run.luau
+      - name: Validate Phase B structure
+        run: python3 tools/validate_project.py
+      - name: Build Phase B place
+        run: |
+          set -euo pipefail
+          rm -rf build
+          mkdir -p build
+          rojo build default.project.json --output build/CollisionBattlestar.rbxl
+          test -s build/CollisionBattlestar.rbxl
