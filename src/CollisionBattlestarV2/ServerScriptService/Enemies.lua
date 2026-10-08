@@ -133,6 +133,8 @@ function Enemies:Spawn(id: string)
         connection = nil,
     }
 
+    root:SetNetworkOwner(nil)
+
     self.active[model] = record
 
     record.connection = humanoid.Died:Connect(function()
