@@ -201,7 +201,7 @@ function EchoBrain:Think()
         return
     end
 
-    if ownerRoot:GetAttribute("CBS_PvP") == true then
+    if self.owner:GetAttribute("CBS_PvP") == true then
         self:SetState("Disabled")
         self.target = nil
         return
