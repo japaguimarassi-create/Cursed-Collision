@@ -2,6 +2,8 @@
 
 local EnemyFactory = {}
 
+local serial = 0
+
 local TierColors = {
     [1] = Color3.fromRGB(95, 110, 130),
     [2] = Color3.fromRGB(120, 95, 65),
@@ -26,12 +28,14 @@ end
 
 function EnemyFactory.Create(definition, spawnCFrame: CFrame, wave: number)
     local model = Instance.new("Model")
-    model.Name = "Enemy_" .. definition.Id .. "_" .. tostring(math.random(100000, 999999))
+    serial += 1
+    model.Name = "Enemy_" .. definition.Id .. "_" .. tostring(serial)
     model:SetAttribute("CBS_Enemy", true)
     model:SetAttribute("CBS_EnemyId", definition.Id)
     model:SetAttribute("CBS_Elite", definition.IsElite)
     model:SetAttribute("CBS_Wave", wave)
     model:SetAttribute("CBS_Reward", definition.Reward)
+    model:SetAttribute("CBS_KnockbackResistance", definition.KnockbackResistance)
 
     local color = TierColors[definition.Tier] or TierColors[1]
 
