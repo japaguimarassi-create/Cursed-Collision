@@ -30,6 +30,34 @@ local function pulse(position: Vector3, size: number, duration: number, color: C
     Debris:AddItem(p, duration + 0.05)
 end
 
+local function smoke(position: Vector3, size: number)
+    local part = Instance.new("Part")
+    part.Name = "CBS2_Smoke"
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = false
+    part.CastShadow = false
+    part.Transparency = 1
+    part.Position = position
+    part.Parent = workspace
+
+    local emitter = Instance.new("Smoke")
+    emitter.Color = Color3.fromRGB(75, 80, 92)
+    emitter.Opacity = 0.18
+    emitter.Size = size
+    emitter.RiseVelocity = 3
+    emitter.Parent = part
+
+    task.delay(0.28, function()
+        if emitter.Parent then
+            emitter.Enabled = false
+        end
+    end)
+
+    Debris:AddItem(part, 0.55)
+end
+
 local function sparks(position: Vector3, count: number, color: Color3)
     local directions = {
         Vector3.xAxis,
@@ -91,6 +119,7 @@ function FX:Start()
             pulse(position, 2.2, 0.16, Color3.fromRGB(255, 215, 90))
             sparks(position, 5, Color3.fromRGB(255, 220, 110))
         elseif kind == "Defeat" then
+            smoke(position, payload.boss and 6 or payload.elite and 4 or 2.5)
             local boss = payload.boss == true
             pulse(position, boss and 7 or payload.elite and 4 or 2.5, boss and 0.35 or 0.18, boss and Color3.fromRGB(255, 70, 80) or Color3.fromRGB(125, 190, 255))
             sparks(position, boss and 8 or 4, boss and Color3.fromRGB(255, 100, 100) or Color3.fromRGB(130, 200, 255))
