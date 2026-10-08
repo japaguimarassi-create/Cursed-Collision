@@ -91,6 +91,17 @@ end
 
 bootGui:Destroy()
 
+remotes.State.OnClientEvent:Connect(function(kind)
+    if kind == "RuntimeReloadStarted" then
+        hud:SetControlsEnabled(false)
+    elseif kind == "RuntimeReloaded" then
+        hud:SetControlsEnabled(true)
+        remotes.State:FireServer({
+            action = "RequestState",
+        })
+    end
+end)
+
 local function startOptional(modulePath: Instance, constructorName: string, ...)
     local ok, module = pcall(require, modulePath)
     if not ok then
