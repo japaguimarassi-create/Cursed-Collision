@@ -142,11 +142,11 @@ monetization = (ROOT / "src/CollisionBattlestar/ServerScriptService/Monetization
 
 for token in [
     '"RemoteEvent"',
-    "getConstant(\"CommerceRemote\")",
-    "getConstant(\"CompanionRemote\")",
-    "getConstant(\"PvPRemote\")",
-    "getConstant(\"MissionRemote\")",
-    "getConstant(\"AdminRemote\")",
+    "constant(\"CommerceRemote\")",
+    "constant(\"CompanionRemote\")",
+    "constant(\"PvPRemote\")",
+    "constant(\"MissionRemote\")",
+    "constant(\"AdminRemote\")",
     "CharacterAutoLoads = true",
     "requireModule",
     "Persistence",
