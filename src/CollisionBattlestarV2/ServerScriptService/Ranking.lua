@@ -148,6 +148,7 @@ end
 
 function Ranking:Stop()
     self.running = false
+    table.clear(self.requestAt)
     for _, connection in ipairs(self.connections) do
         connection:Disconnect()
     end
