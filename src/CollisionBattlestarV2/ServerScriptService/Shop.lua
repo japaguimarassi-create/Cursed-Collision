@@ -13,6 +13,7 @@ function Shop.new(players, remotes, runtimeState)
         remotes = remotes,
         state = runtimeState,
         connections = {},
+        lastRequest = {},
     }, Shop)
 end
 
@@ -49,6 +50,11 @@ function Shop:Catalog(player: Player)
 end
 
 function Shop:Handle(player: Player, request: any)
+    local now = os.clock()
+    if now - (self.lastRequest[player] or -math.huge) < 0.35 then
+        return
+    end
+    self.lastRequest[player] = now
     if type(request) ~= "table" then
         return
     end
@@ -123,6 +129,7 @@ function Shop:Start()
 end
 
 function Shop:Stop()
+    table.clear(self.lastRequest)
     for _, connection in ipairs(self.connections) do
         connection:Disconnect()
     end
