@@ -133,6 +133,46 @@ function PlayerState:AddPlayer(player: Player)
     end
 end
 
+function PlayerState:RecoverCharacters(worldService)
+    for _, player in ipairs(Players:GetPlayers()) do
+        task.spawn(function()
+            if not player.Parent or not self.states[player] then
+                return
+            end
+
+            local character = player.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+
+            if not humanoid or not root or not root:IsA("BasePart") or humanoid.Health <= 0 then
+                local ok = pcall(function()
+                    player:LoadCharacterAsync()
+                end)
+
+                if not ok and player.Parent then
+                    warn(("Collision Battlestar character recovery failed for %s"):format(player.Name))
+                end
+
+                return
+            end
+
+            self:ResetCombatLocks(player)
+
+            if worldService
+                and type(worldService.IsInsideArena) == "function"
+                and not worldService:IsInsideArena(root.Position) then
+
+                local spawnCFrame = worldService:GetPlayerSpawnCFrame()
+                root.CFrame = spawnCFrame
+                root.AssemblyLinearVelocity = Vector3.zero
+            end
+
+            player:SetAttribute("CBS_PvP", false)
+            player:SetAttribute("CBS_EchoDisabled", false)
+        end)
+    end
+end
+
 function PlayerState:Get(player: Player): State?
     return self.states[player]
 end
