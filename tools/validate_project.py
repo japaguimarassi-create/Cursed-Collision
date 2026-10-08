@@ -182,7 +182,7 @@ for token in ["ShopButton", "CompanionButton", "MissionButton", "PvPButton", "In
     if token not in panels:
         raise SystemExit("Advanced HUD contract missing: " + token)
 
-for token in ["Unsummon", "friend_present", "CBS_EchoFriendUserId"]:
+for token in ["Unsummon", "friend_present", "friendUserId", "CBS_EchoOwnerUserId"]:
     if token not in companion:
         raise SystemExit("Companion contract missing: " + token)
 
