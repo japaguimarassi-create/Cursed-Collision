@@ -307,6 +307,18 @@ function CompanionService:Unsummon(player: Player, reason: string)
     return true, reason
 end
 
+function CompanionService:ReloadRuntime(reason: string)
+    local owners = {}
+
+    for owner in pairs(self.active) do
+        table.insert(owners, owner)
+    end
+
+    for _, owner in ipairs(owners) do
+        self:Unsummon(owner, reason or "runtime_reload")
+    end
+end
+
 function CompanionService:GetSnapshot(player: Player)
     local active = self.active[player]
     if not active then
