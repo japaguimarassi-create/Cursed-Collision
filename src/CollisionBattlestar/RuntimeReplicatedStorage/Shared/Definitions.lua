@@ -1,5 +1,16 @@
 --!strict
 
+local Themes = {
+    "Urban",
+    "Tactical",
+    "Industrial",
+    "Neon",
+    "Street",
+    "Corrupted",
+    "Arctic",
+    "Desert",
+}
+
 local Enemies = table.freeze({
     Grunt = table.freeze({
         Id = "Grunt",
@@ -100,8 +111,11 @@ local function buildWave(wave: number, maxActiveEnemies: number)
         maxActiveEnemies
     )
 
+    local themeId = Themes[((safeWave - 1) % #Themes) + 1]
+
     return table.freeze({
         Number = safeWave,
+        ThemeId = themeId,
         Grunt = grunt,
         Brute = brute,
         Stalker = stalker,
@@ -113,4 +127,5 @@ end
 return table.freeze({
     Enemies = Enemies,
     BuildWave = buildWave,
+    Themes = table.freeze(Themes),
 })
