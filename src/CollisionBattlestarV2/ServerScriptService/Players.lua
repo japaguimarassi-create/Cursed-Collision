@@ -322,7 +322,9 @@ function PlayerService:Start()
     end))
 
     table.insert(self.connections, Players.PlayerRemoving:Connect(function(player)
-        self.states[player] = nil
+        task.delay(2, function()
+            self.states[player] = nil
+        end)
     end))
 
     for _, player in ipairs(Players:GetPlayers()) do
