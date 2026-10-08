@@ -16,6 +16,8 @@ function WaveService.new(runtimeState, worldService, enemyService, economyServic
         economyService = economyService,
         running = false,
         wave = 0,
+        forceAdvance = false,
+        skipNextReward = false,
         defeatConnection = nil,
     }, WaveService)
 end
@@ -56,7 +58,7 @@ function WaveService:RunLoop()
 
         self:SpawnWave(profile)
 
-        while self.running and self.enemyService:GetActiveCount() > 0 do
+        while self.running and self.enemyService:GetActiveCount() > 0 and not self.forceAdvance do
             task.wait(0.25)
             self.runtimeState:SetMany({
                 enemiesAlive = self.enemyService:GetActiveCount(),
@@ -68,7 +70,19 @@ function WaveService:RunLoop()
             break
         end
 
-        self.economyService:RewardWaveClear()
+        local forced = self.forceAdvance
+        self.forceAdvance = false
+
+        if forced then
+            self.skipNextReward = true
+            self.enemyService:ClearAll()
+        end
+
+        if not self.skipNextReward then
+            self.economyService:RewardWaveClear()
+        else
+            self.skipNextReward = false
+        end
 
         local endAt = os.clock() + Constants.WaveIntermission
         self.runtimeState:SetMany({
@@ -119,6 +133,22 @@ function WaveService:SpawnWave(profile)
         enemiesAlive = self.enemyService:GetActiveCount(),
         eliteAlive = self.enemyService:IsEliteAlive(),
     })
+end
+
+function WaveService:RequestNextWave()
+    if not self.running then
+        return false
+    end
+
+    self.forceAdvance = true
+
+    if self.runtimeState.phase == "Intermission" then
+        self.runtimeState:Set("intermissionEndsAt", 0)
+    else
+        self.enemyService:ClearAll()
+    end
+
+    return true
 end
 
 function WaveService:Stop()
