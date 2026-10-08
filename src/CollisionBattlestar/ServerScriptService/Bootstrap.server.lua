@@ -277,7 +277,7 @@ else
     local recoveryService = RecoveryService.new(playerState)
     local securityService = SecurityService.new(worldService, playerState)
     local economyService = EconomyService.new(playerState)
-    local enemyService = EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel)
+    local enemyService = EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel, remotes)
     local pvpService = PvPService.new(playerState, economyService, worldService, remotes)
     local combatService = CombatService.new(
         runtimeState,
@@ -289,7 +289,7 @@ else
         pvpService,
         mechanicsKernel
     )
-    local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService, mechanicsKernel)
+    local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService, mechanicsKernel, remotes)
 
     registry:Register("Persistence", persistenceService)
     registry:Register("PlayerState", playerState)
