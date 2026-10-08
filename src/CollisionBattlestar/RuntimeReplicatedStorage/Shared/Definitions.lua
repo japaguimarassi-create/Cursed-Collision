@@ -1,5 +1,7 @@
 --!strict
 
+local Constants = require(script.Parent.Constants)
+
 local Enemies = table.freeze({
     Grunt = table.freeze({
         Id = "Grunt",
@@ -63,23 +65,45 @@ local WaveProfiles = {
     [5] = {grunt = 7, brute = 3, stalker = 1},
 }
 
+local function capWave(grunt: number, brute: number, stalker: number)
+    local maxNonElite = math.max(0, Constants.MaxActiveEnemies - 1)
+    local overflow = math.max(0, grunt + brute + stalker - maxNonElite)
+
+    local reduce = math.min(overflow, grunt)
+    grunt -= reduce
+    overflow -= reduce
+
+    reduce = math.min(overflow, brute)
+    brute -= reduce
+    overflow -= reduce
+
+    reduce = math.min(overflow, stalker)
+    stalker -= reduce
+
+    return grunt, brute, stalker
+end
+
 local function buildWave(wave: number)
     local safeWave = math.max(1, math.floor(wave))
-    local profile = WaveProfiles[safeWave] or {
-        grunt = math.min(10 + math.floor(safeWave * 0.7), 14),
-        brute = math.min(math.floor(safeWave * 0.55), 6),
-        stalker = math.min(math.floor(math.max(0, safeWave - 2) * 0.45), 5),
-    }
+    local profile = WaveProfiles[safeWave]
 
-    local enemyCount = profile.grunt + profile.brute + profile.stalker + 1
+    if not profile then
+        profile = {
+            grunt = math.min(10 + math.floor(safeWave * 0.7), 14),
+            brute = math.min(math.floor(safeWave * 0.55), 6),
+            stalker = math.min(math.floor(math.max(0, safeWave - 2) * 0.45), 5),
+        }
+    end
+
+    local grunt, brute, stalker = capWave(profile.grunt, profile.brute, profile.stalker)
 
     return table.freeze({
         Number = safeWave,
-        Grunt = profile.grunt,
-        Brute = profile.brute,
-        Stalker = profile.stalker,
+        Grunt = grunt,
+        Brute = brute,
+        Stalker = stalker,
         Elite = 1,
-        Total = enemyCount,
+        Total = grunt + brute + stalker + 1,
     })
 end
 
