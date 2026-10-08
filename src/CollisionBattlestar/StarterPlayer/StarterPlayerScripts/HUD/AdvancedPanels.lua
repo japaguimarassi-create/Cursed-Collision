@@ -435,7 +435,7 @@ function AdvancedPanels:RefreshFriends(friends)
 end
 
 function AdvancedPanels:BuildMissionPanel(root: Frame)
-    local panel = self:CreateOverlay(root, "MissionOverlay", "MISSIONS", 520, 360)
+    local panel = self:CreateOverlay(root, "MissionOverlay", "CHALLENGES", 520, 360)
 
     local scroll = Instance.new("ScrollingFrame")
     scroll.Name = "List"
