@@ -16,6 +16,7 @@ function PvP.new(world, score, remotes)
         participants = {},
         connections = {},
         characterConnections = {},
+        requestAt = {},
     }, PvP)
 end
 
