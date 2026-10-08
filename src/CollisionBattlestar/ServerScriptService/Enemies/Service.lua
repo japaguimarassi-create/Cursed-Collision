@@ -320,9 +320,7 @@ function EnemyService:HandleDeath(model: Model)
 
     self.active[model] = nil
 
-    if record.brain then
-        record.brain:Stop()
-    end
+    self.aiKernel:Unregister(model)
 
     if record.diedConnection then
         record.diedConnection:Disconnect()
