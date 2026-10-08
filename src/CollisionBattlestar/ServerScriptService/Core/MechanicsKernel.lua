@@ -2,13 +2,15 @@
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Config = require(ReplicatedStorage.Shared.Config)
 
 local MechanicsKernel = {}
 MechanicsKernel.__index = MechanicsKernel
 
-local HEARTBEAT_INTERVAL = 3
-local RECOVERY_COOLDOWN = 4
-local MAX_RECOVERY_FAILURES = 3
+local HEARTBEAT_INTERVAL = Config.Runtime.HealthCheckInterval
+local RECOVERY_COOLDOWN = Config.Runtime.RecoveryCooldown
+local MAX_RECOVERY_FAILURES = Config.Runtime.MaxRecoveryFailures
 
 function MechanicsKernel.new(runtimeState, remotes)
     return setmetatable({
