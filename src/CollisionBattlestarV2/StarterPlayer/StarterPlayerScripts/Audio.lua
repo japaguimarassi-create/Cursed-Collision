@@ -6,14 +6,15 @@ local Audio = {}
 Audio.__index = Audio
 
 local IDS = {
-    Hit = "",
+    Hit = "rbxassetid://9075325599",
     Critical = "",
     Dash = "",
     Defeat = "",
     Boss = "",
     Wave = "",
     LevelUp = "",
-    Click = "",
+    Click = "rbxassetid://82845990304289",
+    Music = "",
 }
 
 function Audio.new(remotes)
@@ -21,6 +22,7 @@ function Audio.new(remotes)
         remotes = remotes,
         connection = nil,
         stateConnection = nil,
+        guiConnection = nil,
         sounds = {},
     }, Audio)
 end
@@ -50,6 +52,34 @@ function Audio:Prepare()
     return folder
 end
 
+function Audio:BindGui()
+    local player = game:GetService("Players").LocalPlayer
+    local gui = player:FindFirstChildOfClass("PlayerGui")
+    if not gui then
+        return
+    end
+
+    if self.guiConnection then
+        self.guiConnection:Disconnect()
+    end
+
+    self.guiConnection = gui.DescendantAdded:Connect(function(instance)
+        if instance:IsA("GuiButton") then
+            instance.Activated:Connect(function()
+                self:Play("Click")
+            end)
+        end
+    end)
+
+    for _, instance in ipairs(gui:GetDescendants()) do
+        if instance:IsA("GuiButton") then
+            instance.Activated:Connect(function()
+                self:Play("Click")
+            end)
+        end
+    end
+end
+
 function Audio:Play(name: string)
     local sound = self.sounds[name]
     if sound then
@@ -60,6 +90,13 @@ end
 
 function Audio:Start()
     self:Prepare()
+    self:BindGui()
+
+    local music = self.sounds.Music
+    if music then
+        music.Looped = true
+        music:Play()
+    end
 
     self.connection = self.remotes.FX.OnClientEvent:Connect(function(kind)
         local sound = ({
@@ -84,6 +121,11 @@ function Audio:Start()
 end
 
 function Audio:Stop()
+    if self.guiConnection then
+        self.guiConnection:Disconnect()
+        self.guiConnection = nil
+    end
+
     if self.connection then
         self.connection:Disconnect()
         self.connection = nil
