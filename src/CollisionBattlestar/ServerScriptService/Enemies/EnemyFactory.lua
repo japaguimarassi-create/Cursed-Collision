@@ -5,6 +5,8 @@ local EnemyFactory = {}
 local serial = 0
 
 local SkinFactory = require(script.Parent.SkinFactory)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PhysicsRules = require(ReplicatedStorage.Shared.PhysicsRules)
 
 local TierColors = {
     [1] = Color3.fromRGB(95, 110, 130),
@@ -25,6 +27,7 @@ local function makePart(parent: Model, name: string, size: Vector3, cframe: CFra
     part.BottomSurface = Enum.SurfaceType.Smooth
     part.Massless = false
     part.CastShadow = false
+    PhysicsRules.apply(part, PhysicsRules.Enemy)
     part.Parent = parent
     return part
 end
