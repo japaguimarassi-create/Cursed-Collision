@@ -67,17 +67,15 @@ function PlayerState:AddPlayer(player: Player)
         return
     end
 
-    local normalized = DataSchema.Sanitize(profile)
-
     local state: State = {
-        profile = normalized,
-        credits = normalized.Credits,
-        powerLevel = normalized.PowerLevel,
+        profile = profile,
+        credits = profile.Credits,
+        powerLevel = profile.PowerLevel,
         lastAttackAt = -math.huge,
         lastDashAt = -math.huge,
         comboStep = 0,
         lastComboAt = -math.huge,
-        kills = normalized.Kills,
+        kills = profile.Kills,
     }
 
     self.states[player] = state
