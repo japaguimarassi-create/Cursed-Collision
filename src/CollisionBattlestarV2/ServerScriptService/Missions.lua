@@ -83,6 +83,10 @@ function Missions:Start()
 end
 
 function Missions:Stop()
+    if self.creditConnection then
+        self.creditConnection:Disconnect()
+        self.creditConnection = nil
+    end
 end
 
 function Missions:Reload()
