@@ -30,7 +30,11 @@ function MissionService:Start()
 
     self.running = true
 
-    self.defeatConnection = self.enemyService:GetDefeatedEvent():Connect(function(_, isElite)
+    self.defeatConnection = self.enemyService:GetDefeatedEvent():Connect(function(_, isElite, _, _, isTestSpawn)
+        if isTestSpawn then
+            return
+        end
+
         for _, player in ipairs(Players:GetPlayers()) do
             if isElite then
                 self:AddProgress(player, "EliteBreaker", 1)
