@@ -12,13 +12,14 @@ local EventRules = require(ReplicatedStorage.Shared.WaveEventRules)
 local WaveService = {}
 WaveService.__index = WaveService
 
-function WaveService.new(runtimeState, worldService, enemyService, economyService, mechanicsKernel)
+function WaveService.new(runtimeState, worldService, enemyService, economyService, mechanicsKernel, remotes)
     return setmetatable({
         runtimeState = runtimeState,
         worldService = worldService,
         enemyService = enemyService,
         economyService = economyService,
         mechanicsKernel = mechanicsKernel,
+        remotes = remotes,
         running = false,
         wave = 0,
         forceAdvance = false,
@@ -94,6 +95,15 @@ function WaveService:RunOneWave(generation: number)
     self.enemyService:SetWaveBoss(boss)
     self.enemyService:SetWaveEvent(eventId)
     self.enemyService:SetWave(self.wave)
+
+    if self.remotes and self.remotes.FX then
+        self.remotes.FX:FireAllClients("WaveStart", {
+            position = Vector3.new(0, 1, 0),
+            wave = self.wave,
+            boss = boss and boss.Id or nil,
+            event = eventId,
+        })
+    end
 
     self.runtimeState:SetMany({
         phase = "Wave",
