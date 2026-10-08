@@ -22,16 +22,24 @@ function Registry:Get(name: string)
     return service
 end
 
-function Registry:StartAll()
-    for name, service in pairs(self.services) do
-        if type(service.Start) == "function" then
-            local ok, err = pcall(function()
-                service:Start()
-            end)
-            if not ok then
-                error(("service start failed [%s]: %s"):format(name, tostring(err)))
-            end
-        end
+function Registry:Start(name: string)
+    local service = self:Get(name)
+    if type(service.Start) ~= "function" then
+        return
+    end
+
+    local ok, err = pcall(function()
+        service:Start()
+    end)
+
+    if not ok then
+        error(("service start failed [%s]: %s"):format(name, tostring(err)))
+    end
+end
+
+function Registry:StartInOrder(names: {string})
+    for _, name in ipairs(names) do
+        self:Start(name)
     end
 end
 
