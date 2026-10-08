@@ -62,6 +62,37 @@ function SecurityService:NormalizeDashDirection(value: any): Vector3?
     return horizontal.Unit
 end
 
+function SecurityService:ValidateAttackTargetForActor(root: BasePart, targetModel: Model, maxDistance: number)
+    if not targetModel:IsDescendantOf(workspace) then
+        return false
+    end
+
+    if targetModel:GetAttribute("CBS_Enemy") ~= true then
+        return false
+    end
+
+    local targetRoot = targetModel:FindFirstChild("HumanoidRootPart")
+    local targetHumanoid = targetModel:FindFirstChildOfClass("Humanoid")
+
+    if not targetRoot or not targetHumanoid or not targetRoot:IsA("BasePart") or targetHumanoid.Health <= 0 then
+        return false
+    end
+
+    local offset = targetRoot.Position - root.Position
+    if offset.Magnitude > maxDistance then
+        return false
+    end
+
+    if offset.Magnitude > 0 then
+        local direction = offset.Unit
+        if root.CFrame.LookVector:Dot(direction) < 0.25 then
+            return false
+        end
+    end
+
+    return true, targetHumanoid, targetRoot
+end
+
 function SecurityService:ValidateAttackTarget(player: Player, targetModel: Model, root: BasePart)
     if not targetModel:IsDescendantOf(workspace) then
         return false
