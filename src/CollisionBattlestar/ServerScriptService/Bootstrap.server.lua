@@ -9,6 +9,10 @@ local RuntimeState = require(script.Parent.Core.RuntimeState)
 local PlayerState = require(script.Parent.Core.PlayerState)
 local PersistenceService = require(script.Parent.Persistence.Service)
 local ProgressionService = require(script.Parent.Progression.Service)
+local FriendService = require(script.Parent.Friends.Service)
+local CompanionService = require(script.Parent.Companions.Service)
+local InventoryService = require(script.Parent.Shop.InventoryService)
+local ShopService = require(script.Parent.Shop.Service)
 local WorldService = require(script.Parent.World.Service)
 local SecurityService = require(script.Parent.Security.Service)
 local EconomyService = require(script.Parent.Economy.Service)
@@ -46,6 +50,10 @@ local runtimeState = RuntimeState.new()
 local persistenceService = PersistenceService.new()
 local playerState = PlayerState.new(persistenceService)
 local progressionService = ProgressionService.new(playerState)
+local friendService = FriendService.new()
+local inventoryService = InventoryService.new(playerState)
+local companionService = CompanionService.new(playerState, friendService, securityService, remotes)
+local shopService = ShopService.new(runtimeState, playerState, progressionService, inventoryService, remotes)
 local registry = Registry.new()
 
 local worldService = WorldService.new(runtimeState)
@@ -58,6 +66,10 @@ local waveService = WaveService.new(runtimeState, worldService, enemyService, ec
 registry:Register("Persistence", persistenceService)
 registry:Register("PlayerState", playerState)
 registry:Register("Progression", progressionService)
+registry:Register("Friends", friendService)
+registry:Register("Inventory", inventoryService)
+registry:Register("Companions", companionService)
+registry:Register("Shop", shopService)
 registry:Register("World", worldService)
 registry:Register("Security", securityService)
 registry:Register("Economy", economyService)
@@ -97,8 +109,12 @@ registry:StartInOrder({
     "World",
     "Security",
     "Economy",
+    "Friends",
+    "Inventory",
     "Enemies",
     "Combat",
+    "Companions",
+    "Shop",
     "Waves",
 })
 
