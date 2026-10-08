@@ -12,7 +12,7 @@ return function()
     assert(BossRules.scale(100, 2.5) == 250)
 
     assert(EventRules.pick(4, false) == nil)
-    assert(EventRules.pick(5, false) == "RiftSurge")
+    assert(EventRules.pick(5, false) == "Overdrive")
     assert(EventRules.pick(15, false) == "CreditRush")
     assert(EventRules.pick(20, true) == nil)
     assert(EventDefinitions.Overdrive.SpeedMultiplier > 1)
