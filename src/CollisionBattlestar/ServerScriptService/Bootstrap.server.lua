@@ -44,16 +44,14 @@ local remotes = {
     Combat = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.CombatRemote),
     State = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.StateRemote),
     FX = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.FXRemote),
+    Commerce = getOrCreateRemote(remotesFolder, "RemoteEvent", "Commerce"),
+    Companion = getOrCreateRemote(remotesFolder, "RemoteEvent", "Companion"),
 }
 
 local runtimeState = RuntimeState.new()
 local persistenceService = PersistenceService.new()
 local playerState = PlayerState.new(persistenceService)
 local progressionService = ProgressionService.new(playerState)
-local friendService = FriendService.new()
-local inventoryService = InventoryService.new(playerState)
-local companionService = CompanionService.new(playerState, friendService, securityService, remotes)
-local shopService = ShopService.new(runtimeState, playerState, progressionService, inventoryService, remotes)
 local registry = Registry.new()
 
 local worldService = WorldService.new(runtimeState)
@@ -62,19 +60,23 @@ local economyService = EconomyService.new(playerState)
 local enemyService = EnemyService.new(runtimeState, worldService, economyService)
 local combatService = CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes)
 local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService)
+local friendService = FriendService.new()
+local inventoryService = InventoryService.new(playerState)
+local companionService = CompanionService.new(playerState, friendService, securityService, remotes)
+local shopService = ShopService.new(runtimeState, playerState, progressionService, inventoryService, remotes)
 
 registry:Register("Persistence", persistenceService)
 registry:Register("PlayerState", playerState)
 registry:Register("Progression", progressionService)
-registry:Register("Friends", friendService)
-registry:Register("Inventory", inventoryService)
-registry:Register("Companions", companionService)
-registry:Register("Shop", shopService)
 registry:Register("World", worldService)
 registry:Register("Security", securityService)
 registry:Register("Economy", economyService)
 registry:Register("Enemies", enemyService)
 registry:Register("Combat", combatService)
+registry:Register("Friends", friendService)
+registry:Register("Inventory", inventoryService)
+registry:Register("Companions", companionService)
+registry:Register("Shop", shopService)
 registry:Register("Waves", waveService)
 
 runtimeState:GetChangedEvent():Connect(function()
