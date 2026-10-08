@@ -209,13 +209,7 @@ function Heart:Reload(reason: string)
     self.running = false
     self:DisconnectWatchdog()
 
-    local reverse = {}
-
-    for index = #self.order, 1, -1 do
-        reverse[#reverse + 1] = self.order[index]
-    end
-
-    self:StopStartedServices(reverse)
+    self:StopStartedServices(self.order)
 
     local world = self.services.World
     local enemies = self.services.Enemies
