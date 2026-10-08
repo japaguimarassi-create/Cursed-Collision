@@ -31,6 +31,7 @@ local function defaultMissions()
         WaveHunter = {Progress = 0, Completed = false},
         EliteBreaker = {Progress = 0, Completed = false},
         CreditCollector = {Progress = 0, Completed = false},
+        BossHunter = {Progress = 0, Completed = false},
     }
 end
 
