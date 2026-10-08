@@ -32,8 +32,95 @@ function Echo:Remove(player: Player)
     player:SetAttribute("CBS_Echo", false)
 end
 
-function Echo:Summon(player: Player)
-    if player:GetAttribute("CBS_PvP") == true then
+function Echo:IsFriend(player: Player, friendUserId: number)
+    local ok, pages = pcall(function()
+        return Players:GetFriendsAsync(player.UserId)
+    end)
+
+    if not ok then
+        return false
+    end
+
+    for _ = 1, 3 do
+        for _, friend in ipairs(pages:GetCurrentPage()) do
+            if type(friend) == "table" and friend.Id == friendUserId then
+                return true
+            end
+        end
+
+        if pages.IsFinished then
+            break
+        end
+
+        local advanced = pcall(function()
+            pages:AdvanceToNextPageAsync()
+        end)
+
+        if not advanced then
+            break
+        end
+    end
+
+    return false
+end
+
+function Echo:Friends(player: Player)
+    local friends = {}
+
+    local ok, pages = pcall(function()
+        return Players:GetFriendsAsync(player.UserId)
+    end)
+
+    if not ok then
+        return friends
+    end
+
+    for _ = 1, 3 do
+        for _, friend in ipairs(pages:GetCurrentPage()) do
+            if type(friend) == "table" and type(friend.Id) == "number" then
+                friends[#friends + 1] = {
+                    id = friend.Id,
+                    name = type(friend.DisplayName) == "string" and friend.DisplayName or friend.Username or tostring(friend.Id),
+                }
+                if #friends >= 20 then
+                    return friends
+                end
+            end
+        end
+
+        if pages.IsFinished then
+            break
+        end
+
+        local advanced = pcall(function()
+            pages:AdvanceToNextPageAsync()
+        end)
+
+        if not advanced then
+            break
+        end
+    end
+
+    table.sort(friends, function(a, b)
+        return a.name < b.name
+    end)
+
+    return friends
+end
+
+function Echo:Summon(player: Player, friendUserId: any)
+    if player:GetAttribute("CBS_PvP") == true
+        or type(friendUserId) ~= "number"
+        or friendUserId <= 0 then
+        return
+    end
+
+    if self.requests[player] and os.clock() - self.requests[player] < 1.5 then
+        return
+    end
+    self.requests[player] = os.clock()
+
+    if not self:IsFriend(player, friendUserId) then
         return
     end
 
@@ -48,6 +135,7 @@ function Echo:Summon(player: Player)
     local model = Instance.new("Model")
     model.Name = "Echo"
     model:SetAttribute("CBS2_Echo", true)
+    model:SetAttribute("CBS2_EchoFriendUserId", friendUserId)
 
     local core = Instance.new("Part")
     core.Name = "Core"
@@ -55,18 +143,31 @@ function Echo:Summon(player: Player)
     core.Size = Vector3.new(2, 2, 2)
     core.Material = Enum.Material.Neon
     core.Color = Color3.fromRGB(100, 200, 255)
+    core.Anchored = true
     core.CanCollide = false
     core.CanTouch = false
     core.CanQuery = false
+    core.CastShadow = false
     core.CollisionGroup = "CBS_Echo"
     core.CFrame = root.CFrame * CFrame.new(3, 0, 3)
     core.Parent = model
 
-    local humanoid = Instance.new("Humanoid")
-    humanoid.MaxHealth = 80
-    humanoid.Health = 80
-    humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-    humanoid.Parent = model
+    local label = Instance.new("BillboardGui")
+    label.Name = "FriendName"
+    label.Size = UDim2.fromOffset(150, 28)
+    label.StudsOffset = Vector3.new(0, 2.3, 0)
+    label.AlwaysOnTop = true
+    label.MaxDistance = 55
+    label.Parent = core
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.fromScale(1, 1)
+    text.BackgroundTransparency = 1
+    text.Text = "FRIEND ECHO"
+    text.TextColor3 = Color3.fromRGB(175, 225, 255)
+    text.Font = Enum.Font.GothamBold
+    text.TextSize = 12
+    text.Parent = label
 
     model.PrimaryPart = core
     model.Parent = workspace
@@ -74,11 +175,13 @@ function Echo:Summon(player: Player)
     self.active[player] = {
         model = model,
         nextAttack = 0,
-        friendUserId = player.UserId,
+        friendUserId = friendUserId,
     }
 
     player:SetAttribute("CBS_Echo", true)
+    self.remotes.Echo:FireClient(player, "State", true)
 end
+
 
 function Echo:Tick(player, record, now)
     if not player.Parent or not record.model.Parent or player:GetAttribute("CBS_PvP") == true then
@@ -134,8 +237,10 @@ function Echo:Start()
             return
         end
 
-        if request.action == "Summon" then
-            self:Summon(player)
+        if request.action == "ListFriends" then
+            self.remotes.Echo:FireClient(player, "Friends", self:Friends(player))
+        elseif request.action == "Summon" then
+            self:Summon(player, request.friendUserId)
         elseif request.action == "Dismiss" then
             self:Remove(player)
         elseif request.action == "State" then
