@@ -1,7 +1,5 @@
 --!strict
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local ClientBootstrap = require(script.Parent.ClientRemotes)
 local HUD = require(script.Parent.HUD.Root)
 local InputService = require(script.Parent.Input.Service)
