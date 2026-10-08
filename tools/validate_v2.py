@@ -77,6 +77,7 @@ heart = (v2 / "ServerScriptService/Core/Heart.lua").read_text(encoding="utf-8")
 ai_heart = (v2 / "ServerScriptService/AI/Heart.lua").read_text(encoding="utf-8")
 combat = (v2 / "ServerScriptService/Combat.lua").read_text(encoding="utf-8")
 world = (v2 / "ServerScriptService/World.lua").read_text(encoding="utf-8")
+physics = (v2 / "ReplicatedStorage/Shared/PhysicsRules.lua").read_text(encoding="utf-8")
 persistence = (v2 / "ServerScriptService/Persistence.lua").read_text(encoding="utf-8")
 players = (v2 / "ServerScriptService/Players.lua").read_text(encoding="utf-8")
 main = (v2 / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
@@ -93,8 +94,11 @@ for token in ("MaxNPCs", "Register", "Unregister", "SetWave", "HealthCheck"):
 for token in ("GetPartBoundsInBox", "Raycast", "OnServerEvent", "TakeDamage"):
     assert token in combat
 
-for token in ("RegisterCollisionGroup", "CollisionGroupSetCollidable", "CustomPhysicalProperties"):
+for token in ("RegisterCollisionGroup", "CollisionGroupSetCollidable"):
     assert token in world
+
+for token in ("PhysicalProperties.new", "NPC", "Character"):
+    assert token in physics
 
 for token in ("UpdateAsync", "GenerateGUID", "GetDataStore"):
     assert token in persistence
