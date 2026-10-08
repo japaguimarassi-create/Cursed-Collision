@@ -199,9 +199,9 @@ function Heart:Reload(reason: string, _)
     local ok = self:Start()
     if ok then
         local waves = self.services.Waves
-        if waves and type(waves.Restart) == "function" then
+        if waves and type(waves.Resume) == "function" then
             pcall(function()
-                waves:Restart(resumeWave)
+                waves:Resume(resumeWave)
             end)
         end
     end
