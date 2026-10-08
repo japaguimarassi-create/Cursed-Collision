@@ -107,9 +107,11 @@ function World:Build()
 end
 
 function World:ConfigurePhysics()
-    Workspace:RegisterCollisionGroup("CBS_Player")
-    Workspace:RegisterCollisionGroup("CBS_NPC")
-    Workspace:RegisterCollisionGroup("CBS_Echo")
+    for _, name in ipairs({"CBS_Player", "CBS_NPC", "CBS_Echo"}) do
+        if not Workspace:IsCollisionGroupRegistered(name) then
+            Workspace:RegisterCollisionGroup(name)
+        end
+    end
 
     Workspace:CollisionGroupSetCollidable("CBS_Player", "CBS_Player", false)
     Workspace:CollisionGroupSetCollidable("CBS_Player", "CBS_NPC", true)
