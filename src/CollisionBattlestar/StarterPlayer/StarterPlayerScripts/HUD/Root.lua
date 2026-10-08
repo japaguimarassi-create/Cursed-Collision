@@ -236,6 +236,13 @@ function HUD:SetSnapshot(snapshot)
     self.waveLabel.Text = ("WAVE %d"):format(tonumber(snapshot.wave) or 0)
     self.enemiesLabel.Text = ("Enemies %d"):format(tonumber(snapshot.enemiesAlive) or 0)
     self.eliteLabel.Visible = snapshot.eliteAlive == true
+    if snapshot.bossId then
+        self.eliteLabel.Text = ("BOSS: %s"):format(tostring(snapshot.bossId))
+        self.eliteLabel.TextColor3 = Color3.fromRGB(255, 65, 75)
+    else
+        self.eliteLabel.Text = "ELITE ACTIVE"
+        self.eliteLabel.TextColor3 = Color3.fromRGB(255, 80, 90)
+    end
 
     local player = Players.LocalPlayer
     local credits = player:GetAttribute("CBS_Credits") or 0
@@ -248,7 +255,13 @@ function HUD:SetSnapshot(snapshot)
         self.status.Text = "NEXT WAVE IN A MOMENT"
         self.status.TextColor3 = Color3.fromRGB(190, 198, 214)
     elseif snapshot.phase == "Wave" then
-        self.status.Text = "FIGHT"
+        if snapshot.eventId then
+            self.status.Text = ("EVENT: %s"):format(tostring(snapshot.eventId))
+        elseif snapshot.bossId then
+            self.status.Text = ("BOSS WAVE: %s"):format(tostring(snapshot.bossId))
+        else
+            self.status.Text = "FIGHT"
+        end
         self.status.TextColor3 = Color3.fromRGB(240, 242, 248)
     elseif snapshot.phase == "Booting" then
         self.status.Text = "CONNECTING..."
