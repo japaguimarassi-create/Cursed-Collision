@@ -20,7 +20,32 @@ for _ = 1, 20 do
     task.wait(0.25)
 end
 
-local remotes = Network.ensure()
+local remotes = Network.wait(8)
+if not remotes then
+    task.wait(2)
+    remotes = Network.wait(8)
+end
+
+if not remotes then
+    local playerGui = player:WaitForChild("PlayerGui")
+    local message = Instance.new("ScreenGui")
+    message.Name = "CBS2_BootError"
+    message.ResetOnSpawn = false
+    message.Parent = playerGui
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, -30, 0, 60)
+    text.Position = UDim2.new(0, 15, 0.5, -30)
+    text.BackgroundTransparency = 0.15
+    text.BackgroundColor3 = Color3.fromRGB(20, 23, 30)
+    text.TextColor3 = Color3.fromRGB(255, 105, 105)
+    text.Text = "SERVER CONNECTION FAILED"
+    text.Font = Enum.Font.GothamBold
+    text.TextSize = 18
+    text.Parent = message
+    return
+end
+
 local hud = HUD.new(remotes)
 local fx = FX.new(remotes)
 local audio = Audio.new(remotes)
