@@ -171,7 +171,7 @@ for token in ["UpdateAsync", "GenerateGUID", "SaveAndRelease", "PLAYER_SESSION_L
     if token not in persistence:
         raise SystemExit("Persistence contract missing: " + token)
 
-for token in ["HUD.new", "InputService.new", "AdvancedPanels.new", "SocialInvite.new", "ClientRemotes.WaitForRemotes"]:
+for token in ["HUD.new", "InputService.new", "AdvancedPanels.new", "SocialInvite.new", "ClientBootstrap.WaitForRemotes"]:
     if token not in client:
         raise SystemExit("Client bootstrap contract missing: " + token)
 
