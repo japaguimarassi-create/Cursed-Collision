@@ -60,6 +60,7 @@ function Rules.aiProfile(wave: number)
         ThinkInterval = math.max(0.16, 0.28 - math.min(0.12, w * 0.0025)),
         Prediction = math.min(0.35, 0.05 + w * 0.004),
         Stickiness = math.min(0.36, 0.08 + w * 0.012),
+        TargetRefresh = 0.35,
     }
 end
 
