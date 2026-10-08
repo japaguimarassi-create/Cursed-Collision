@@ -9,10 +9,11 @@ local ArenaBuilder = require(script.Parent.ArenaBuilder)
 local PvPService = {}
 PvPService.__index = PvPService
 
-function PvPService.new(playerState, economyService, remotes)
+function PvPService.new(playerState, economyService, worldService, remotes)
     return setmetatable({
         playerState = playerState,
         economyService = economyService,
+        worldService = worldService,
         remotes = remotes,
         world = nil,
         participants = {} :: {[Player]: boolean},
@@ -129,7 +130,7 @@ function PvPService:WatchCharacter(player: Player, character: Model?)
         if type(killerUserId) == "number" then
             local killer = Players:GetPlayerByUserId(killerUserId)
             if killer and self.participants[killer] then
-                self.economyService:RewardEnemyDefeat(killer, 75)
+                self.economyService:RewardPvPKill(killer, 75)
             end
         end
 
@@ -187,7 +188,7 @@ function PvPService:Leave(player: Player)
     local root = character and character:FindFirstChild("HumanoidRootPart")
 
     if root and root:IsA("BasePart") then
-        root.CFrame = CFrame.new(0, 6, 0)
+        root.CFrame = self.worldService:GetPlayerSpawnCFrame()
         root.AssemblyLinearVelocity = Vector3.zero
     end
 
