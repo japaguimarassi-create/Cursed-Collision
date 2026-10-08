@@ -139,3 +139,36 @@ function SecurityService:GetStrikeCount(player: Player)
 end
 
 return SecurityService
+
+function SecurityService:ValidatePvPTarget(attacker: Player, target: Player, root: BasePart)
+    if not attacker or not target or attacker == target then
+        return false
+    end
+
+    if attacker:GetAttribute("CBS_PvP") ~= true or target:GetAttribute("CBS_PvP") ~= true then
+        return false
+    end
+
+    local character = target.Character
+    if not character then
+        return false
+    end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local targetRoot = character:FindFirstChild("HumanoidRootPart")
+
+    if not humanoid or not targetRoot or humanoid.Health <= 0 or not targetRoot:IsA("BasePart") then
+        return false
+    end
+
+    local offset = targetRoot.Position - root.Position
+    if offset.Magnitude > Constants.MaxAttackDistance then
+        return false
+    end
+
+    if offset.Magnitude > 0 and root.CFrame.LookVector:Dot(offset.Unit) < Constants.MaxAttackAngle then
+        return false
+    end
+
+    return true, humanoid, targetRoot
+end
