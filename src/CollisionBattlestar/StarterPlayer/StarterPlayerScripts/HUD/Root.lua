@@ -92,7 +92,7 @@ function HUD.new(remotes)
     root.BackgroundTransparency = 1
     root.Parent = gui
 
-    local topLeft = makePanel(root, "PlayerPanel", UDim2.fromOffset(250, 78), UDim2.fromOffset(16, 16))
+    local topLeft = makePanel(root, "PlayerPanel", UDim2.fromOffset(250, 96), UDim2.fromOffset(16, 16))
     local healthLabel = makeText(topLeft, "HealthLabel", "HP 100 / 100", UDim2.new(1, -28, 0, 24), UDim2.fromOffset(14, 10), 17)
 
     local healthTrack = Instance.new("Frame")
@@ -111,6 +111,33 @@ function HUD.new(remotes)
     healthFill.BorderSizePixel = 0
     healthFill.Parent = healthTrack
     addCorner(healthFill, 7)
+
+    local levelTrack = Instance.new("Frame")
+    levelTrack.Name = "LevelTrack"
+    levelTrack.Size = UDim2.new(1, -28, 0, 8)
+    levelTrack.Position = UDim2.fromOffset(14, 62)
+    levelTrack.BackgroundColor3 = Color3.fromRGB(50, 54, 66)
+    levelTrack.BorderSizePixel = 0
+    levelTrack.Parent = topLeft
+    addCorner(levelTrack, 4)
+
+    local levelFill = Instance.new("Frame")
+    levelFill.Name = "LevelFill"
+    levelFill.Size = UDim2.fromScale(0, 1)
+    levelFill.BackgroundColor3 = Color3.fromRGB(125, 120, 240)
+    levelFill.BorderSizePixel = 0
+    levelFill.Parent = levelTrack
+    addCorner(levelFill, 4)
+
+    local levelLabel = makeText(
+        topLeft,
+        "LevelLabel",
+        "LEVEL 1 • SCORE 0",
+        UDim2.new(1, -28, 0, 20),
+        UDim2.fromOffset(14, 72),
+        12
+    )
+    levelLabel.TextXAlignment = Enum.TextXAlignment.Center
 
     local wavePanel = makePanel(root, "WavePanel", UDim2.fromOffset(250, 88), UDim2.new(0.5, -125, 0, 16))
     local waveLabel = makeText(wavePanel, "WaveLabel", "WAVE 0", UDim2.new(1, -28, 0, 28), UDim2.fromOffset(14, 10), 21)
@@ -170,6 +197,8 @@ function HUD.new(remotes)
         enemiesLabel = enemiesLabel,
         eliteLabel = eliteLabel,
         creditsLabel = creditsLabel,
+        levelLabel = levelLabel,
+        levelFill = levelFill,
         status = status,
         menuPanel = menuPanel,
         powerLabel = powerLabel,
@@ -210,6 +239,11 @@ function HUD:BindState()
             local message = type(payload) == "table" and tostring(payload.message or "server boot failure") or "server boot failure"
             self.status.Text = "SERVER ERROR: " .. message
             self.status.TextColor3 = Color3.fromRGB(255, 100, 100)
+        elseif kind == "LevelUp" then
+            if type(payload) == "table" then
+                self.status.Text = ("LEVEL %d REACHED"):format(tonumber(payload.level) or 1)
+                self.status.TextColor3 = Color3.fromRGB(135, 125, 255)
+            end
         elseif kind == "UpgradeResult" then
             if payload.success then
                 self.status.Text = "UPGRADE COMPLETE"
@@ -248,6 +282,12 @@ function HUD:SetSnapshot(snapshot)
     local power = player:GetAttribute("CBS_PowerLevel") or 1
 
     self.creditsLabel.Text = ("CREDITS %d"):format(credits)
+    local score = tonumber(player:GetAttribute("CBS_Score")) or 0
+    local level = math.max(1, math.floor(tonumber(player:GetAttribute("CBS_Level")) or 1))
+    local progress = tonumber(player:GetAttribute("CBS_LevelProgress")) or 0
+    local required = math.max(1, tonumber(player:GetAttribute("CBS_LevelRequired")) or 1)
+    self.levelLabel.Text = ("LEVEL %d • SCORE %d"):format(level, score)
+    self.levelFill.Size = UDim2.fromScale(math.clamp(progress / required, 0, 1), 1)
     self.powerLabel.Text = ("POWER %d"):format(power)
 
     if snapshot.phase == "Intermission" then
@@ -313,6 +353,33 @@ function HUD:BindCharacter()
     player:GetAttributeChangedSignal("CBS_PowerLevel"):Connect(function()
         self.powerLabel.Text = ("POWER %d"):format(player:GetAttribute("CBS_PowerLevel") or 1)
     end)
+    player:GetAttributeChangedSignal("CBS_Score"):Connect(function()
+        local score = player:GetAttribute("CBS_Score") or 0
+        self.levelLabel.Text = ("LEVEL %d • SCORE %d"):format(
+            player:GetAttribute("CBS_Level") or 1,
+            score
+        )
+    end)
+
+    player:GetAttributeChangedSignal("CBS_Level"):Connect(function()
+        local level = player:GetAttribute("CBS_Level") or 1
+        local score = player:GetAttribute("CBS_Score") or 0
+        self.levelLabel.Text = ("LEVEL %d • SCORE %d"):format(level, score)
+    end)
+
+    local function updateLevelFill()
+        local progress = tonumber(player:GetAttribute("CBS_LevelProgress")) or 0
+        local required = math.max(1, tonumber(player:GetAttribute("CBS_LevelRequired")) or 1)
+        TweenService:Create(
+            self.levelFill,
+            TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Size = UDim2.fromScale(math.clamp(progress / required, 0, 1), 1)}
+        ):Play()
+    end
+
+    player:GetAttributeChangedSignal("CBS_LevelProgress"):Connect(updateLevelFill)
+    player:GetAttributeChangedSignal("CBS_LevelRequired"):Connect(updateLevelFill)
+    updateLevelFill()
 end
 
 function HUD:GetAttackButton()
