@@ -33,6 +33,8 @@ required = [
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/WaveEventDefinitions.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/WaveEventRules.lua",
     "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua",
+    "src/CollisionBattlestar/ServerScriptService/Core/MechanicsKernel.lua",
+    "src/CollisionBattlestar/ServerScriptService/AI/Kernel.lua",
     "src/CollisionBattlestar/ServerScriptService/Core/ServiceRegistry.lua",
     "src/CollisionBattlestar/ServerScriptService/Core/RuntimeState.lua",
     "src/CollisionBattlestar/ServerScriptService/Core/PlayerState.lua",
@@ -140,6 +142,9 @@ pvp = (ROOT / "src/CollisionBattlestar/ServerScriptService/PvP/Service.lua").rea
 monetization = (ROOT / "src/CollisionBattlestar/ServerScriptService/Monetization/Service.lua").read_text(encoding="utf-8")
 
 for token in [
+    "MechanicsKernel",
+    "mechanicsKernel:Start()",
+    "mechanicsKernel:Register",
     '"RemoteEvent"',
     "constant(\"CommerceRemote\")",
     "constant(\"CompanionRemote\")",
@@ -160,8 +165,21 @@ for token in [
     if token not in server:
         raise SystemExit("Bootstrap contract missing: " + token)
 
-for token in [
-    'action == "Attack"',
+kernel = (ROOT / "src/CollisionBattlestar/ServerScriptService/Core/MechanicsKernel.lua").read_text(encoding="utf-8")
+ai_kernel = (ROOT / "src/CollisionBattlestar/ServerScriptService/AI/Kernel.lua").read_text(encoding="utf-8")
+enemy_brain = (ROOT / "src/CollisionBattlestar/ServerScriptService/Enemies/EnemyBrain.lua").read_text(encoding="utf-8")
+
+for token in ["ReloadAll", "CaptureSnapshot", "HealthCheck", "ReportFailure", "RuntimeReloadStarted", "RuntimeReloaded"]:
+    if token not in kernel:
+        raise SystemExit("Mechanics kernel contract missing: " + token)
+
+for token in ["AIConfig", "Register", "Unregister", "SetWave", "HealthCheck", "GetSnapshot", "CBS_AILevel"]:
+    if token not in ai_kernel:
+        raise SystemExit("AI kernel contract missing: " + token)
+
+if "while self.running" in enemy_brain:
+    raise SystemExit("EnemyBrain must be scheduler-driven by AI kernel")
+
     'action == "Dash"',
     "GetPartBoundsInBox",
     "ValidateAttackTarget",
@@ -217,6 +235,11 @@ for token in ["IsInsideZone", "Join", "Leave", "CBS_PvP"]:
 
 if "ProcessReceipt" not in monetization:
     raise SystemExit("Monetization receipt contract missing")
+
+config = (ROOT / "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
+for token in ["Runtime", "HealthCheckInterval", "RecoveryCooldown", "MaxRecoveryFailures", "AI", "SchedulerInterval", "MaxNpcErrors"]:
+    if token not in config:
+        raise SystemExit("Kernel config contract missing: " + token)
 
 workflow = (ROOT / ".github/workflows/phase-a-validation.yml").read_text(encoding="utf-8")
 if "rebuild/collision-battlestar-phase-c-*" not in workflow:
