@@ -43,7 +43,7 @@ end
 function WaveService:RunLoop()
     while self.running do
         self.wave += 1
-        local profile = Definitions.BuildWave(self.wave)
+        local profile = Definitions.BuildWave(self.wave, Constants.MaxActiveEnemies)
 
         self.runtimeState:SetMany({
             phase = "Wave",
