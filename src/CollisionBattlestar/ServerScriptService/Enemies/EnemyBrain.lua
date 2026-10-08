@@ -5,18 +5,6 @@ local Players = game:GetService("Players")
 local EnemyBrain = {}
 EnemyBrain.__index = EnemyBrain
 
-local function getRoot(character: Model)
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if root and root:IsA("BasePart") then
-        return root
-    end
-    return nil
-end
-
-local function getHumanoid(character: Model)
-    return character:FindFirstChildOfClass("Humanoid")
-end
-
 function EnemyBrain.new(model: Model, humanoid: Humanoid, root: BasePart, definition, damageCallback)
     return setmetatable({
         model = model,
@@ -37,10 +25,10 @@ function EnemyBrain:FindTarget()
     for _, player in ipairs(Players:GetPlayers()) do
         local character = player.Character
         if character then
-            local playerHumanoid = getHumanoid(character)
-            local playerRoot = getRoot(character)
+            local playerHumanoid = character:FindFirstChildOfClass("Humanoid")
+            local playerRoot = character:FindFirstChild("HumanoidRootPart")
 
-            if playerHumanoid and playerRoot and playerHumanoid.Health > 0 then
+            if playerHumanoid and playerRoot and playerHumanoid.Health > 0 and playerRoot:IsA("BasePart") then
                 local distance = (playerRoot.Position - self.root.Position).Magnitude
                 if distance < closestDistance then
                     closestPlayer = player
@@ -52,6 +40,36 @@ function EnemyBrain:FindTarget()
     end
 
     return closestPlayer, closestRoot, closestDistance
+end
+
+function EnemyBrain:MoveToward(targetRoot: BasePart, distance: number)
+    if distance <= self.definition.AttackRange then
+        local current = self.root.AssemblyLinearVelocity
+        self.root.AssemblyLinearVelocity = Vector3.new(current.X * 0.35, current.Y, current.Z * 0.35)
+        return
+    end
+
+    local offset = targetRoot.Position - self.root.Position
+    local horizontal = Vector3.new(offset.X, 0, offset.Z)
+
+    if horizontal.Magnitude < 0.1 then
+        return
+    end
+
+    local direction = horizontal.Unit
+    local desiredVelocity = direction * self.definition.Speed
+    local currentVertical = math.clamp(self.root.AssemblyLinearVelocity.Y, -45, 20)
+
+    self.root.CFrame = CFrame.lookAt(
+        self.root.Position,
+        self.root.Position + direction
+    )
+
+    self.root.AssemblyLinearVelocity = Vector3.new(
+        desiredVelocity.X,
+        currentVertical,
+        desiredVelocity.Z
+    )
 end
 
 function EnemyBrain:Start()
@@ -66,16 +84,19 @@ function EnemyBrain:Start()
             local player, targetRoot, distance = self:FindTarget()
 
             if player and targetRoot then
-                self.humanoid:MoveTo(targetRoot.Position)
+                self:MoveToward(targetRoot, distance)
 
                 local now = os.clock()
                 if distance <= self.definition.AttackRange and now >= self.nextAttackAt then
                     self.nextAttackAt = now + self.definition.AttackCooldown
                     self.damageCallback(player, self.definition.Damage, self.model)
                 end
+            else
+                local current = self.root.AssemblyLinearVelocity
+                self.root.AssemblyLinearVelocity = Vector3.new(current.X * 0.35, current.Y, current.Z * 0.35)
             end
 
-            task.wait(0.3)
+            task.wait(0.2)
         end
 
         self.running = false
