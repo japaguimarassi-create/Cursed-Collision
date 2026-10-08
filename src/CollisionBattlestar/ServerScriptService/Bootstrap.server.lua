@@ -60,7 +60,7 @@ local remotes = {
 local runtimeState = RuntimeState.new()
 local persistenceService = PersistenceService.new()
 local playerState = PlayerState.new(persistenceService)
-local progressionService = ProgressionService.new(playerState)
+local progressionService = ProgressionService.new(playerState, runtimeState)
 local registry = Registry.new()
 
 local worldService = WorldService.new(runtimeState)
@@ -77,7 +77,7 @@ local monetizationService = MonetizationService.new()
 local combatService = CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes, pvpService)
 local friendService = FriendService.new()
 local inventoryService = InventoryService.new(playerState)
-local companionService = CompanionService.new(playerState, friendService, securityService, remotes)
+local companionService = CompanionService.new(playerState, friendService, securityService, remotes, enemyService)
 local shopService = ShopService.new(runtimeState, playerState, progressionService, inventoryService, remotes)
 
 registry:Register("Persistence", persistenceService)
