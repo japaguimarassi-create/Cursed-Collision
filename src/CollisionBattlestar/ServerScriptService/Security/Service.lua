@@ -42,7 +42,6 @@ function SecurityService:IsInsideArena(root: BasePart)
     return self.worldService:IsInsideArena(root.Position)
 end
 
-
 function SecurityService:NormalizeDashDirection(value: any): Vector3?
     if typeof(value) ~= "Vector3" then
         return nil
@@ -83,17 +82,18 @@ function SecurityService:ValidateAttackTargetForActor(root: BasePart, targetMode
         return false
     end
 
-    if offset.Magnitude > 0 then
-        local direction = offset.Unit
-        if root.CFrame.LookVector:Dot(direction) < 0.25 then
-            return false
-        end
+    if offset.Magnitude > 0 and root.CFrame.LookVector:Dot(offset.Unit) < Constants.MaxAttackAngle then
+        return false
     end
 
     return true, targetHumanoid, targetRoot
 end
 
 function SecurityService:ValidateAttackTarget(player: Player, targetModel: Model, root: BasePart)
+    if not self:IsInsideArena(root) then
+        return false
+    end
+
     if not targetModel:IsDescendantOf(workspace) then
         return false
     end
@@ -105,40 +105,21 @@ function SecurityService:ValidateAttackTarget(player: Player, targetModel: Model
     local targetRoot = targetModel:FindFirstChild("HumanoidRootPart")
     local targetHumanoid = targetModel:FindFirstChildOfClass("Humanoid")
 
-    if not targetRoot or not targetHumanoid or not targetRoot:IsA("BasePart") then
-        return false
-    end
-
-    if targetHumanoid.Health <= 0 then
+    if not targetRoot or not targetHumanoid or not targetRoot:IsA("BasePart") or targetHumanoid.Health <= 0 then
         return false
     end
 
     local offset = targetRoot.Position - root.Position
-    local distance = offset.Magnitude
-
-    if distance > Constants.MaxAttackDistance then
+    if offset.Magnitude > Constants.MaxAttackDistance then
         return false
     end
 
-    if distance > 0 then
-        local direction = offset.Unit
-        if root.CFrame.LookVector:Dot(direction) < Constants.MaxAttackAngle then
-            return false
-        end
+    if offset.Magnitude > 0 and root.CFrame.LookVector:Dot(offset.Unit) < Constants.MaxAttackAngle then
+        return false
     end
 
     return true, targetHumanoid, targetRoot
 end
-
-function SecurityService:RecordStrike(player: Player)
-    self.strikes[player] = (self.strikes[player] or 0) + 1
-end
-
-function SecurityService:GetStrikeCount(player: Player)
-    return self.strikes[player] or 0
-end
-
-return SecurityService
 
 function SecurityService:ValidatePvPTarget(attacker: Player, target: Player, root: BasePart)
     if not attacker or not target or attacker == target then
@@ -146,6 +127,10 @@ function SecurityService:ValidatePvPTarget(attacker: Player, target: Player, roo
     end
 
     if attacker:GetAttribute("CBS_PvP") ~= true or target:GetAttribute("CBS_PvP") ~= true then
+        return false
+    end
+
+    if self.worldService:IsInsideArena(root.Position) then
         return false
     end
 
@@ -172,3 +157,13 @@ function SecurityService:ValidatePvPTarget(attacker: Player, target: Player, roo
 
     return true, humanoid, targetRoot
 end
+
+function SecurityService:RecordStrike(player: Player)
+    self.strikes[player] = (self.strikes[player] or 0) + 1
+end
+
+function SecurityService:GetStrikeCount(player: Player)
+    return self.strikes[player] or 0
+end
+
+return SecurityService
