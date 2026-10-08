@@ -25,6 +25,7 @@ local Constants = table.freeze({
     HitboxWidth = 6,
     HitboxHeight = 5,
     HitboxDepth = 8,
+    HitboxSize = Vector3.new(6, 5, 8),
     KnockbackBase = 28,
     KnockbackVertical = 8,
     BaseHealth = 100,
