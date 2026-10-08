@@ -21,7 +21,6 @@ function WaveService.new(runtimeState, worldService, enemyService, economyServic
         running = false,
         wave = 0,
         forceAdvance = false,
-        skipNextReward = false,
         defeatConnection = nil,
     }, WaveService)
 end
@@ -49,9 +48,21 @@ end
 function WaveService:RunLoop()
     while self.running do
         self.wave += 1
-        local profile = Definitions.BuildWave(self.wave, Constants.MaxActiveEnemies)
-        local boss = BossRules.getForWave(self.wave, BossDefinitions)
-        local eventId = EventRules.pick(self.wave, boss ~= nil)
+
+        local profile = Definitions.BuildWave(
+            self.wave,
+            Constants.MaxActiveEnemies
+        )
+
+        local boss = BossRules.getForWave(
+            self.wave,
+            BossDefinitions
+        )
+
+        local eventId = EventRules.pick(
+            self.wave,
+            boss ~= nil
+        )
 
         self.enemyService:SetWaveTheme(profile.ThemeId)
         self.enemyService:SetWaveBoss(boss)
@@ -61,7 +72,7 @@ function WaveService:RunLoop()
             phase = "Wave",
             wave = self.wave,
             enemiesAlive = 0,
-            eliteAlive = true,
+            eliteAlive = false,
             bossId = boss and boss.Id or nil,
             eventId = eventId,
             intermissionEndsAt = 0,
@@ -69,12 +80,19 @@ function WaveService:RunLoop()
 
         self:SpawnWave(profile)
 
-        while self.running and self.enemyService:GetActiveCount() > 0 and not self.forceAdvance do
-            task.wait(0.25)
+        while self.running do
+            local alive = self.enemyService:GetActiveCount()
+
             self.runtimeState:SetMany({
-                enemiesAlive = self.enemyService:GetActiveCount(),
+                enemiesAlive = alive,
                 eliteAlive = self.enemyService:IsEliteAlive(),
             })
+
+            if alive <= 0 or self.forceAdvance then
+                break
+            end
+
+            task.wait(0.25)
         end
 
         if not self.running then
@@ -85,30 +103,30 @@ function WaveService:RunLoop()
         self.forceAdvance = false
 
         if forced then
-            self.skipNextReward = true
             self.enemyService:ClearAll()
-        end
-
-        if not self.skipNextReward then
-            local rewardMultiplier = 1
-            if self.enemyService.waveEvent then
-                rewardMultiplier *= math.max(1, self.enemyService.waveEvent.RewardMultiplier or 1)
-            end
-            if self.enemyService.waveBoss then
-                rewardMultiplier *= math.max(1, self.enemyService.waveBoss.RewardMultiplier or 1)
-            end
-
-            self.economyService:RewardWaveClear(
-                rewardMultiplier
-            )
-            self.runtimeState:Set("lastCompletedWave", self.wave)
         else
-            self.skipNextReward = false
+            local rewardMultiplier = 1
+
+            if self.enemyService.waveEvent then
+                rewardMultiplier *= math.max(
+                    1,
+                    self.enemyService.waveEvent.RewardMultiplier or 1
+                )
+            end
+
+            if self.enemyService.waveBoss then
+                rewardMultiplier *= math.max(
+                    1,
+                    self.enemyService.waveBoss.RewardMultiplier or 1
+                )
+            end
+
+            self.economyService:RewardWaveClear(rewardMultiplier)
+            self.runtimeState:Set("lastCompletedWave", self.wave)
         end
 
-        local endAt = self.forceAdvance
-            and os.clock()
-            or os.clock() + Constants.WaveIntermission
+        local endAt = os.clock() + Constants.WaveIntermission
+
         self.runtimeState:SetMany({
             phase = "Intermission",
             enemiesAlive = 0,
@@ -119,16 +137,25 @@ function WaveService:RunLoop()
             intermissionEndsAt = endAt,
         })
 
-        while self.running and not self.forceAdvance and os.clock() < endAt do
-            task.wait(0.25)
-        end
+        while self.running and os.clock() < endAt do
+            if self.forceAdvance then
+                self.forceAdvance = false
+                break
+            end
 
-        self.forceAdvance = false
+            self.runtimeState:Set(
+                "intermissionEndsAt",
+                endAt
+            )
+
+            task.wait(0.2)
+        end
     end
 end
 
 function WaveService:SpawnWave(profile)
     local points = self.worldService:GetEnemySpawnPoints()
+
     if #points == 0 then
         warn("No enemy spawn points available")
         return
@@ -143,7 +170,11 @@ function WaveService:SpawnWave(profile)
             end
 
             totalIndex += 1
-            local point = points[((totalIndex - 1) % #points) + 1]
+
+            local point = points[
+                ((totalIndex - 1) % #points) + 1
+            ]
+
             local offset = Vector3.new(
                 math.random(-3, 3),
                 0,
@@ -176,10 +207,13 @@ function WaveService:RequestNextWave()
 
     self.forceAdvance = true
 
-    if self.runtimeState.phase == "Intermission" then
-        self.runtimeState:Set("intermissionEndsAt", 0)
-    else
+    if self.runtimeState.phase ~= "Intermission" then
         self.enemyService:ClearAll()
+    else
+        self.runtimeState:Set(
+            "intermissionEndsAt",
+            os.clock()
+        )
     end
 
     return true
@@ -187,6 +221,7 @@ end
 
 function WaveService:Stop()
     self.running = false
+
     if self.defeatConnection then
         self.defeatConnection:Disconnect()
         self.defeatConnection = nil
