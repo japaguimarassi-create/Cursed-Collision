@@ -48,6 +48,26 @@ function EnemyService:GetActiveCount()
     return count
 end
 
+function EnemyService:GetTargetCandidates(origin: Vector3, radius: number)
+    local result = {}
+    local maxDistance = math.max(0, tonumber(radius) or 0)
+    local maxDistanceSquared = maxDistance * maxDistance
+
+    for model, record in pairs(self.active) do
+        if model.Parent and record.humanoid.Health > 0 then
+            local root = model:FindFirstChild("HumanoidRootPart")
+            if root and root:IsA("BasePart") then
+                local offset = root.Position - origin
+                if offset:Dot(offset) <= maxDistanceSquared then
+                    table.insert(result, model)
+                end
+            end
+        end
+    end
+
+    return result
+end
+
 function EnemyService:IsEliteAlive()
     for model, record in pairs(self.active) do
         if model.Parent and record.definition.IsElite and record.humanoid.Health > 0 then
