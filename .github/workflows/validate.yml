@@ -1,17 +1,18 @@
-name: Collision Battlestar Clean Runtime Validation
+name: Collision Battlestar V2 Validation
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  push:
+    branches:
+      - "rebuild/collision-battlestar-v2-*"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: collision-battlestar-clean-validation
+  group: collision-battlestar-v2
   cancel-in-progress: true
 
 jobs:
@@ -25,15 +26,15 @@ jobs:
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
-      - name: Run clean Luau tests
-        run: luau tools/tests/run.luau
-      - name: Validate clean runtime
-        run: python3 tools/validate_project.py
-      - name: Build Roblox place
+      - name: Run V2 tests
+        run: luau tools/tests/run_v2.luau
+      - name: Validate V2 architecture
+        run: python3 tools/validate_v2.py
+      - name: Build V2 Roblox place
         run: |
           set -euo pipefail
           rm -rf build
           mkdir -p build
-          rojo build default.project.json --output build/CollisionBattlestar.rbxl
-          test -s build/CollisionBattlestar.rbxl
-          stat -c "%s bytes" build/CollisionBattlestar.rbxl
+          rojo build default.project.json --output build/CollisionBattlestarV2.rbxl
+          test -s build/CollisionBattlestarV2.rbxl
+          stat -c "%s bytes" build/CollisionBattlestarV2.rbxl
