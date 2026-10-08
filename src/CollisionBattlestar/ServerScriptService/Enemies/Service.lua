@@ -169,15 +169,26 @@ end
 
 function EnemyService:ClearAll()
     local snapshot = {}
-    for model in pairs(self.active) do
-        table.insert(snapshot, model)
+    for model, record in pairs(self.active) do
+        table.insert(snapshot, {model = model, record = record})
     end
 
-    for _, model in ipairs(snapshot) do
+    for _, entry in ipairs(snapshot) do
+        local model = entry.model
+        local record = entry.record
+        self.active[model] = nil
+
+        if record.brain then
+            record.brain:Stop()
+        end
+
+        if record.diedConnection then
+            record.diedConnection:Disconnect()
+        end
+
         if model.Parent then
             model:Destroy()
         end
-        self:HandleDeath(model)
     end
 
     self.runtimeState:SetMany({
