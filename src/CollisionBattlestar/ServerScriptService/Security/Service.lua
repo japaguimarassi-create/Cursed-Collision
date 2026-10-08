@@ -12,10 +12,18 @@ function SecurityService.new(worldService, playerState)
         worldService = worldService,
         playerState = playerState,
         strikes = {} :: {[Player]: number},
+        connection = nil,
     }, SecurityService)
 end
 
 function SecurityService:Start()
+    if self.connection then
+        return
+    end
+
+    self.connection = game:GetService("Players").PlayerRemoving:Connect(function(player)
+        self.strikes[player] = nil
+    end)
 end
 
 function SecurityService:IsAliveCharacter(player: Player)
