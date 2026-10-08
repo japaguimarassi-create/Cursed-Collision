@@ -159,6 +159,7 @@ function AIHeart:Start()
 
                         if record.memory.errors >= Constants.AIErrorLimit then
                             local message = ("npc %s ai failure: %s"):format(model.Name, tostring(err))
+                            self.running = false
                             if self.onFatal then
                                 pcall(self.onFatal, "ai", message)
                             end
