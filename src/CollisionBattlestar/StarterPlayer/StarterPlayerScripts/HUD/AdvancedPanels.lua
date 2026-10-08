@@ -58,12 +58,14 @@ function AdvancedPanels.new(hud, remotes, socialInvite)
         missionOpen = false,
         pvpOpen = false,
         adminOpen = false,
+        rankingOpen = false,
         selectedFriend = nil,
         selectedClass = "Vanguard",
         friendRows = {},
         itemRows = {},
         missionRows = {},
         adminButtons = {},
+        rankingRows = {},
         connections = {},
     }, AdvancedPanels)
 
@@ -93,11 +95,13 @@ function AdvancedPanels.new(hud, remotes, socialInvite)
     self.missionButton = button(utilityBar, "MissionButton", "MISSIONS", UDim2.fromOffset(72, 44))
     self.pvpButton = button(utilityBar, "PvPButton", "PVP", UDim2.fromOffset(52, 44))
     self.inviteButton = button(utilityBar, "InviteButton", "INVITE", UDim2.fromOffset(60, 44))
+    self.rankButton = button(utilityBar, "RankButton", "RANK", UDim2.fromOffset(56, 44))
 
     self.missionPanel = self:BuildMissionPanel(root)
     self.shopPanel = self:BuildShopPanel(root)
     self.companionPanel = self:BuildCompanionPanel(root)
     self.pvpPanel = self:BuildPvPPanel(root)
+    self.rankingPanel = self:BuildRankingPanel(root)
 
     local localPlayer = game:GetService("Players").LocalPlayer
     if game.CreatorType == Enum.CreatorType.User
@@ -175,6 +179,11 @@ function AdvancedPanels:SetPanelOpen(name: string, open: boolean)
         if not open then
             self.adminPanel.Visible = false
         end
+    elseif name == "RankingOverlay" then
+        self.rankingOpen = open
+        if not open then
+            self.rankingPanel.Visible = false
+        end
     end
 end
 
@@ -185,6 +194,7 @@ function AdvancedPanels:CloseAll(except: string?)
         {"MissionOverlay", self.missionPanel},
         {"PvPOverlay", self.pvpPanel},
         {"AdminOverlay", self.adminPanel},
+        {"RankingOverlay", self.rankingPanel},
     }
 
     for _, data in ipairs(panels) do
@@ -204,6 +214,7 @@ function AdvancedPanels:Open(name: string)
         MissionOverlay = self.missionPanel,
         PvPOverlay = self.pvpPanel,
         AdminOverlay = self.adminPanel,
+        RankingOverlay = self.rankingPanel,
     })[name]
 
     if panel then
@@ -504,6 +515,86 @@ function AdvancedPanels:RefreshMissions(snapshot)
     end
 end
 
+function AdvancedPanels:BuildRankingPanel(root: Frame)
+    local panel = self:CreateOverlay(root, "RankingOverlay", "GLOBAL RANKING", 440, 390)
+
+    local scope = label(panel, "Scope", "LOADING...", UDim2.new(1, -28, 0, 26))
+    scope.Position = UDim2.fromOffset(14, 58)
+    scope.TextXAlignment = Enum.TextXAlignment.Center
+    scope.Font = Enum.Font.GothamBold
+    self.rankingScope = scope
+
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Name = "Entries"
+    scroll.Size = UDim2.new(1, -28, 1, -94)
+    scroll.Position = UDim2.fromOffset(14, 88)
+    scroll.BackgroundTransparency = 1
+    scroll.BorderSizePixel = 0
+    scroll.ScrollBarThickness = 5
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scroll.Parent = panel
+
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 7)
+    layout.Parent = scroll
+
+    self.rankingScroll = scroll
+    return panel
+end
+
+function AdvancedPanels:RefreshRanking(payload)
+    for _, row in ipairs(self.rankingRows) do
+        row:Destroy()
+    end
+
+    self.rankingRows = {}
+
+    if type(payload) ~= "table" then
+        self.rankingScope.Text = "RANKING UNAVAILABLE"
+        return
+    end
+
+    self.rankingScope.Text = payload.scope == "global" and "GLOBAL" or "THIS SERVER"
+
+    local rows = type(payload.rows) == "table" and payload.rows or {}
+
+    if #rows == 0 then
+        local empty = label(self.rankingScroll, "Empty", "No scored players yet.", UDim2.new(1, -8, 0, 48))
+        empty.TextXAlignment = Enum.TextXAlignment.Center
+        table.insert(self.rankingRows, empty)
+        return
+    end
+
+    for _, entry in ipairs(rows) do
+        local row = Instance.new("Frame")
+        row.Name = "Rank_" .. tostring(entry.rank or 0)
+        row.Size = UDim2.new(1, -8, 0, 52)
+        row.BackgroundColor3 = Color3.fromRGB(24, 28, 38)
+        row.BorderSizePixel = 0
+        row.Parent = self.rankingScroll
+        corner(row, 10)
+
+        local rank = label(row, "Rank", "#" .. tostring(entry.rank or "?"), UDim2.fromOffset(48, 52))
+        rank.Position = UDim2.fromOffset(10, 0)
+        rank.TextXAlignment = Enum.TextXAlignment.Center
+        rank.Font = Enum.Font.GothamBold
+
+        local name = label(row, "Name", tostring(entry.name or "Unknown"), UDim2.new(0.48, 0, 0, 24))
+        name.Position = UDim2.fromOffset(64, 4)
+        name.Font = Enum.Font.GothamBold
+        name.TextSize = 13
+
+        local info = label(row, "Info", ("LEVEL %d • %d SCORE"):format(
+            tonumber(entry.level) or 1,
+            tonumber(entry.score) or 0
+        ), UDim2.new(0.7, 0, 0, 20))
+        info.Position = UDim2.fromOffset(64, 27)
+        info.TextSize = 11
+
+        table.insert(self.rankingRows, row)
+    end
+end
+
 function AdvancedPanels:BuildPvPPanel(root: Frame)
     local panel = self:CreateOverlay(root, "PvPOverlay", "PVP ARENA", 380, 250)
 
@@ -613,6 +704,17 @@ function AdvancedPanels:Bind()
         self.socialInvite:Prompt()
     end))
 
+    table.insert(self.connections, self.rankButton.Activated:Connect(function()
+        if self.rankingOpen then
+            self:CloseAll()
+        else
+            self:Open("RankingOverlay")
+            self.remotes.State:FireServer({
+                action = "RequestRanking",
+            })
+        end
+    end))
+
     if self.adminButton then
         table.insert(self.connections, self.adminButton.Activated:Connect(function()
             if self.adminOpen then
@@ -630,6 +732,12 @@ function AdvancedPanels:Bind()
     self.pvpLeave.Activated:Connect(function()
         self.remotes.PvP:FireServer({action = "Leave"})
     end)
+
+    table.insert(self.connections, self.remotes.State.OnClientEvent:Connect(function(kind, payload)
+        if kind == "Ranking" then
+            self:RefreshRanking(payload)
+        end
+    end))
 
     table.insert(self.connections, self.remotes.Commerce.OnClientEvent:Connect(function(kind, payload)
         if kind == "Catalog" then
