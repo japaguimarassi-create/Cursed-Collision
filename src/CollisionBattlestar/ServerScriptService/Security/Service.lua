@@ -42,17 +42,6 @@ function SecurityService:IsInsideArena(root: BasePart)
     return self.worldService:IsInsideArena(root.Position)
 end
 
-function SecurityService:ValidateAction(player: Player, action: any)
-    if type(action) ~= "string" then
-        return false
-    end
-
-    if action ~= Constants.CombatRemote then
-        return false
-    end
-
-    return self:IsAliveCharacter(player)
-end
 
 function SecurityService:NormalizeDashDirection(value: any): Vector3?
     if typeof(value) ~= "Vector3" then
