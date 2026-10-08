@@ -113,6 +113,36 @@ function PlayerState:GetProfile(player: Player)
     return state and state.profile or nil
 end
 
+function PlayerState:TryNamedUpgrade(player: Player, upgradeId: string, definition, cost: number)
+    local state = self.states[player]
+    if not state then
+        return false, "state_unavailable"
+    end
+
+    local currentLevel = self:GetUpgradeLevel(player, upgradeId)
+
+    if currentLevel >= definition.MaxLevel then
+        return false, "max_level"
+    end
+
+    if state.credits < cost then
+        return false, "insufficient_credits"
+    end
+
+    state.credits -= cost
+    state.profile.Credits = state.credits
+    state.profile.Upgrades[upgradeId] = currentLevel + 1
+
+    player:SetAttribute("CBS_Credits", state.credits)
+    player:SetAttribute("CBS_" .. upgradeId .. "Level", currentLevel + 1)
+
+    if player.Character then
+        self:ApplyCharacterStats(player, player.Character)
+    end
+
+    return true, currentLevel + 1
+end
+
 function PlayerState:GetUpgradeLevel(player: Player, upgradeId: string)
     local state = self.states[player]
     if not state then
