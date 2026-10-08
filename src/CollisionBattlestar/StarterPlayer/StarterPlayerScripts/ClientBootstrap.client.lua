@@ -49,5 +49,3 @@ local camera = CameraService.new()
 camera:Start()
 combatFX:Start()
 input:Start()
-
-hud:SetControlsEnabled(false)
