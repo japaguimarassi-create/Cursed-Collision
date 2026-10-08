@@ -75,7 +75,15 @@ function Combat:Attack(player: Player)
     params.FilterDescendantsInstances = {character}
     params.MaxParts = 32
 
-    local parts = Workspace:GetPartBoundsInBox(boxCFrame, Constants.AttackBox, params)
+    local parts = Workspace:GetPartBoundsInBox(
+        boxCFrame,
+        Vector3.new(
+            Constants.AttackBoxWidth,
+            Constants.AttackBoxHeight,
+            Constants.AttackBoxDepth
+        ),
+        params
+    )
     local seen = {}
 
     for _, part in ipairs(parts) do
