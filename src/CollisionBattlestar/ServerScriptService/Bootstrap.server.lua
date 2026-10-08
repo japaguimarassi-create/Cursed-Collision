@@ -180,6 +180,9 @@ end
 local RuntimeState
 local runtimeState = requireModule(script.Parent.Core.RuntimeState, "RuntimeState").new()
 
+local MechanicsKernel = requireModule(script.Parent.Core.MechanicsKernel, "MechanicsKernel")
+local mechanicsKernel
+
 local worldService
 local worldOk, worldResult = pcall(function()
     local WorldService = requireModule(script.Parent.World.Service, "WorldService")
@@ -234,6 +237,8 @@ else
     failBoot("world bootstrap", worldResult)
 end
 
+mechanicsKernel = MechanicsKernel.new(runtimeState, remotes)
+
 local Registry = requireModule(script.Parent.Core.ServiceRegistry, "ServiceRegistry")
 local registry = Registry.new()
 
@@ -272,7 +277,7 @@ else
     local recoveryService = RecoveryService.new(playerState)
     local securityService = SecurityService.new(worldService, playerState)
     local economyService = EconomyService.new(playerState)
-    local enemyService = EnemyService.new(runtimeState, worldService, economyService)
+    local enemyService = EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel)
     local pvpService = PvPService.new(playerState, economyService, worldService, remotes)
     local combatService = CombatService.new(
         runtimeState,
@@ -281,9 +286,10 @@ else
         worldService,
         enemyService,
         remotes,
-        pvpService
+        pvpService,
+        mechanicsKernel
     )
-    local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService)
+    local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService, mechanicsKernel)
 
     registry:Register("Persistence", persistenceService)
     registry:Register("PlayerState", playerState)
@@ -296,6 +302,13 @@ else
     registry:Register("Combat", combatService)
     registry:Register("PvP", pvpService)
     registry:Register("Waves", waveService)
+
+    mechanicsKernel:Register("World", worldService)
+    mechanicsKernel:Register("PlayerState", playerState)
+    mechanicsKernel:Register("Enemies", enemyService)
+    mechanicsKernel:Register("Combat", combatService)
+    mechanicsKernel:Register("PvP", pvpService)
+    mechanicsKernel:Register("Waves", waveService)
 
     local coreStartOk, coreStartError = pcall(function()
         registry:StartInOrder({
@@ -314,6 +327,8 @@ else
 
     if not coreStartOk then
         failBoot("core service start", coreStartError)
+    else
+        mechanicsKernel:Start()
     end
 
     local function startOptional(name: string, factory)
@@ -326,6 +341,7 @@ else
 
         if service then
             registry:Register(name, service)
+            mechanicsKernel:Register(name, service)
 
             local started, startError = pcall(function()
                 registry:Start(name)
