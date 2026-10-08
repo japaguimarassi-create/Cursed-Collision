@@ -1,15 +1,17 @@
 --!strict
 
 local Players = game:GetService("Players")
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local Config = require(ReplicatedStorage.Shared.Config)
 local CombatRules = require(ReplicatedStorage.Shared.CombatRules)
+local DataSchema = require(ReplicatedStorage.Shared.DataSchema)
 
 local PlayerState = {}
 PlayerState.__index = PlayerState
 
 type State = {
+    profile: any,
     credits: number,
     powerLevel: number,
     lastAttackAt: number,
@@ -19,15 +21,20 @@ type State = {
     kills: number,
 }
 
-function PlayerState.new()
+function PlayerState.new(persistenceService)
     return setmetatable({
+        persistence = persistenceService,
         states = {} :: {[Player]: State},
     }, PlayerState)
 end
 
 function PlayerState:Start()
+    Players.CharacterAutoLoads = false
+
     Players.PlayerAdded:Connect(function(player)
-        self:AddPlayer(player)
+        task.spawn(function()
+            self:AddPlayer(player)
+        end)
     end)
 
     Players.PlayerRemoving:Connect(function(player)
@@ -35,41 +42,85 @@ function PlayerState:Start()
     end)
 
     for _, player in ipairs(Players:GetPlayers()) do
-        self:AddPlayer(player)
+        task.spawn(function()
+            self:AddPlayer(player)
+        end)
     end
 end
 
 function PlayerState:AddPlayer(player: Player)
-    if self.states[player] then
+    if self.states[player] or not player.Parent then
         return
     end
 
-    self.states[player] = {
-        credits = Config.Economy.BaseCredits,
-        powerLevel = 1,
+    local profile, err = self.persistence:Load(player)
+    if not profile then
+        warn(("Profile load failed for %s: %s"):format(player.Name, tostring(err)))
+        if player.Parent then
+            player:Kick("Your data could not be loaded safely. Please rejoin.")
+        end
+        return
+    end
+
+    if not player.Parent then
+        return
+    end
+
+    local normalized = DataSchema.Sanitize(profile)
+
+    local state: State = {
+        profile = normalized,
+        credits = normalized.Credits,
+        powerLevel = normalized.PowerLevel,
         lastAttackAt = -math.huge,
         lastDashAt = -math.huge,
         comboStep = 0,
         lastComboAt = -math.huge,
-        kills = 0,
+        kills = normalized.Kills,
     }
 
-    player:SetAttribute("CBS_Credits", 0)
-    player:SetAttribute("CBS_PowerLevel", 1)
-    player:SetAttribute("CBS_Kills", 0)
+    self.states[player] = state
+
+    player:SetAttribute("CBS_Credits", state.credits)
+    player:SetAttribute("CBS_PowerLevel", state.powerLevel)
+    player:SetAttribute("CBS_Kills", state.kills)
     player:SetAttribute("CBS_PlayerStateReady", true)
 
-    player.CharacterAdded:Connect(function(character)
+    local function onCharacter(character: Model)
         self:ApplyCharacterStats(player, character)
-    end)
+    end
+
+    player.CharacterAdded:Connect(onCharacter)
 
     if player.Character then
-        self:ApplyCharacterStats(player, player.Character)
+        onCharacter(player.Character)
+    else
+        local ok = pcall(function()
+            player:LoadCharacter()
+        end)
+        if not ok and player.Parent then
+            player:Kick("Character initialization failed safely.")
+        end
     end
 end
 
 function PlayerState:Get(player: Player): State?
     return self.states[player]
+end
+
+function PlayerState:GetProfile(player: Player)
+    local state = self.states[player]
+    return state and state.profile or nil
+end
+
+function PlayerState:GetUpgradeLevel(player: Player, upgradeId: string)
+    local state = self.states[player]
+    if not state then
+        return 0
+    end
+
+    local upgrades = state.profile.Upgrades
+    return upgrades[upgradeId] or 0
 end
 
 function PlayerState:ApplyCharacterStats(player: Player, character: Model)
@@ -83,9 +134,17 @@ function PlayerState:ApplyCharacterStats(player: Player, character: Model)
         return
     end
 
-    humanoid.MaxHealth = Config.Player.BaseHealth + (state.powerLevel - 1) * 10
-    humanoid.Health = humanoid.MaxHealth
-    humanoid.WalkSpeed = Config.Player.BaseWalkSpeed + (state.powerLevel - 1) * 0.75
+    local healthLevel = self:GetUpgradeLevel(player, "MaxHealth")
+    local speedLevel = self:GetUpgradeLevel(player, "Dash")
+    local recoveryLevel = self:GetUpgradeLevel(player, "Recovery")
+    local maxHealth = Config.Player.BaseHealth + (state.powerLevel - 1) * 10 + healthLevel * 15
+    local speed = Config.Player.BaseWalkSpeed + (state.powerLevel - 1) * 0.75 + speedLevel * 0.3
+
+    humanoid.MaxHealth = maxHealth
+    humanoid.Health = maxHealth
+    humanoid.WalkSpeed = speed
+
+    player:SetAttribute("CBS_RecoveryLevel", recoveryLevel)
 end
 
 function PlayerState:AddCredits(player: Player, amount: number)
@@ -94,18 +153,11 @@ function PlayerState:AddCredits(player: Player, amount: number)
         return false
     end
 
-    state.credits += math.floor(amount)
+    local gained = math.floor(amount)
+    state.credits += gained
+    state.profile.Credits = state.credits
     player:SetAttribute("CBS_Credits", state.credits)
     return true
-end
-
-function PlayerState:GetUpgradeCost(player: Player): number
-    local state = self.states[player]
-    if not state then
-        return math.huge
-    end
-
-    return math.floor(Config.Economy.UpgradeBaseCost * Config.Economy.UpgradeCostGrowth ^ (state.powerLevel - 1))
 end
 
 function PlayerState:TryUpgrade(player: Player)
@@ -121,6 +173,8 @@ function PlayerState:TryUpgrade(player: Player)
 
     state.credits -= cost
     state.powerLevel += 1
+    state.profile.Credits = state.credits
+    state.profile.PowerLevel = state.powerLevel
 
     player:SetAttribute("CBS_Credits", state.credits)
     player:SetAttribute("CBS_PowerLevel", state.powerLevel)
@@ -130,6 +184,18 @@ function PlayerState:TryUpgrade(player: Player)
     end
 
     return true, state.powerLevel
+end
+
+function PlayerState:GetUpgradeCost(player: Player): number
+    local state = self.states[player]
+    if not state then
+        return math.huge
+    end
+
+    return math.floor(
+        Config.Economy.UpgradeBaseCost
+            * Config.Economy.UpgradeCostGrowth ^ (state.powerLevel - 1)
+    )
 end
 
 function PlayerState:MarkAttack(player: Player, now: number)
@@ -170,7 +236,10 @@ function PlayerState:CanDash(player: Player, now: number)
         return false
     end
 
-    if now - state.lastDashAt < Config.Combat.DashCooldown then
+    local cooldownReduction = math.min(self:GetUpgradeLevel(player, "Dash") * 0.04, 0.35)
+    local cooldown = Config.Combat.DashCooldown * (1 - cooldownReduction)
+
+    if now - state.lastDashAt < cooldown then
         return false
     end
 
@@ -185,8 +254,32 @@ function PlayerState:MarkKill(player: Player)
     end
 
     state.kills += 1
+    state.profile.Kills = state.kills
     player:SetAttribute("CBS_Kills", state.kills)
     return true
+end
+
+function PlayerState:MarkWaveComplete(player: Player)
+    local state = self.states[player]
+    if not state then
+        return false
+    end
+
+    state.profile.TotalWaves += 1
+    return true
+end
+
+function PlayerState:GetPersistentProfile(player: Player)
+    local state = self.states[player]
+    if not state then
+        return nil
+    end
+
+    state.profile.Credits = state.credits
+    state.profile.PowerLevel = state.powerLevel
+    state.profile.Kills = state.kills
+
+    return DataSchema.Sanitize(state.profile)
 end
 
 return PlayerState
