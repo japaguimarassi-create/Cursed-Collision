@@ -3,6 +3,12 @@
 return function()
     local LevelRules = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/LevelRules")
     local Config = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Config")
+    local DataSchema = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/DataSchema")
+    local Missions = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/MissionDefinitions")
+
+    assert(DataSchema.CurrentVersion == 4)
+    assert(DataSchema.Sanitize({Score = 100}).Score == 100)
+    assert(Missions.BossHunter.Goal == 3)
 
     assert(LevelRules.levelForScore(0) == 1)
     assert(LevelRules.scoreForLevel(1) == 0)
