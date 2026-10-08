@@ -22,6 +22,7 @@ function Ranking.new(playerService, remotes)
         remotes = remotes,
         store = store,
         lastWrite = {},
+        requestAt = {},
         connections = {},
         running = false,
     }, Ranking)
