@@ -56,6 +56,9 @@ function Heart:Start()
             end)
             if not ok then
                 self.running = false
+                if self.recovering then
+                    return false
+                end
                 return self:Reload(("start.%s"):format(name), err)
             end
         end
