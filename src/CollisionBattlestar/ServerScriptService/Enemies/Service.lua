@@ -346,7 +346,9 @@ function EnemyService:HandleDeath(model: Model)
         record.definition.IsElite,
         position,
         record.definition.IsBoss == true,
-        model:GetAttribute("CBS_TestSpawn") == true
+        model:GetAttribute("CBS_TestSpawn") == true,
+        lastHitUserId,
+        record.definition.Reward
     )
 
     task.delay(0.2, function()
