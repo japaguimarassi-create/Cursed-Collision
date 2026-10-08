@@ -99,7 +99,10 @@ function AdvancedPanels.new(hud, remotes, socialInvite)
     self.companionPanel = self:BuildCompanionPanel(root)
     self.pvpPanel = self:BuildPvPPanel(root)
 
-    if game.CreatorType == Enum.CreatorType.User and game.CreatorId > 0 then
+    local localPlayer = game:GetService("Players").LocalPlayer
+    if game.CreatorType == Enum.CreatorType.User
+        and game.CreatorId > 0
+        and localPlayer.UserId == game.CreatorId then
         self.adminButton = button(utilityBar, "AdminButton", "ADMIN", UDim2.fromOffset(60, 44))
         self.adminPanel = self:BuildAdminPanel(root)
     end
