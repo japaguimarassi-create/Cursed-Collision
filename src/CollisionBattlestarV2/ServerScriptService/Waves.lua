@@ -108,6 +108,12 @@ function Waves:RunWave()
 
     self.score:Wave(self.current, boss)
 
+    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+        if player:GetAttribute("CBS_PvP") ~= true then
+            self.enemies.players:AddWave(player)
+        end
+    end
+
     if self.missions then
         self.missions:Wave(self.current)
     end
