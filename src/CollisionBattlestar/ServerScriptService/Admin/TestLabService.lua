@@ -80,6 +80,10 @@ function TestLabService:Execute(player: Player, action: string)
         local index = (player.UserId % #points) + 1
         local model = self.enemyService:Spawn("Elite", wave, points[index].CFrame)
 
+        if model then
+            model:SetAttribute("CBS_TestSpawn", true)
+        end
+
         return model ~= nil, model and "elite_spawned" or "spawn_failed"
     end
 
