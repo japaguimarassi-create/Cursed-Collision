@@ -1,7 +1,7 @@
 --!strict
 
 local ok, err = pcall(function()
-    require("./V2Spec")
+    require("./v2/V2Spec")
 end)
 
 if not ok then
