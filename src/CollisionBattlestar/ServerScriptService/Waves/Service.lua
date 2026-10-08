@@ -4,6 +4,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local Definitions = require(ReplicatedStorage.Shared.Definitions)
+local BossDefinitions = require(ReplicatedStorage.Shared.BossDefinitions)
+local BossRules = require(ReplicatedStorage.Shared.BossRules)
+local EventDefinitions = require(ReplicatedStorage.Shared.WaveEventDefinitions)
+local EventRules = require(ReplicatedStorage.Shared.WaveEventRules)
 
 local WaveService = {}
 WaveService.__index = WaveService
@@ -46,13 +50,20 @@ function WaveService:RunLoop()
     while self.running do
         self.wave += 1
         local profile = Definitions.BuildWave(self.wave, Constants.MaxActiveEnemies)
+        local boss = BossRules.getForWave(self.wave, BossDefinitions)
+        local eventId = EventRules.pick(self.wave, boss ~= nil)
+
         self.enemyService:SetWaveTheme(profile.ThemeId)
+        self.enemyService:SetWaveBoss(boss)
+        self.enemyService:SetWaveEvent(eventId)
 
         self.runtimeState:SetMany({
             phase = "Wave",
             wave = self.wave,
             enemiesAlive = 0,
             eliteAlive = true,
+            bossId = boss and boss.Id or nil,
+            eventId = eventId,
             intermissionEndsAt = 0,
         })
 
@@ -79,22 +90,38 @@ function WaveService:RunLoop()
         end
 
         if not self.skipNextReward then
-            self.economyService:RewardWaveClear()
+            local rewardMultiplier = 1
+            if self.enemyService.waveEvent then
+                rewardMultiplier *= math.max(1, self.enemyService.waveEvent.RewardMultiplier or 1)
+            end
+            if self.enemyService.waveBoss then
+                rewardMultiplier *= math.max(1, self.enemyService.waveBoss.RewardMultiplier or 1)
+            end
+
+            self.economyService:RewardWaveClear(
+                rewardMultiplier
+            )
         else
             self.skipNextReward = false
         end
 
-        local endAt = os.clock() + Constants.WaveIntermission
+        local endAt = self.forceAdvance
+            and os.clock()
+            or os.clock() + Constants.WaveIntermission
         self.runtimeState:SetMany({
             phase = "Intermission",
             enemiesAlive = 0,
             eliteAlive = false,
+            bossId = nil,
+            eventId = nil,
             intermissionEndsAt = endAt,
         })
 
-        while self.running and os.clock() < endAt do
+        while self.running and not self.forceAdvance and os.clock() < endAt do
             task.wait(0.25)
         end
+
+        self.forceAdvance = false
     end
 end
 
