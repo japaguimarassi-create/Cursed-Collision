@@ -15,12 +15,13 @@ CompanionService.__index = CompanionService
 
 local REQUEST_COOLDOWN = 1.5
 
-function CompanionService.new(playerState, friendService, securityService, remotes)
+function CompanionService.new(playerState, friendService, securityService, remotes, enemyService)
     return setmetatable({
         playerState = playerState,
         friendService = friendService,
         securityService = securityService,
         remotes = remotes,
+        enemyService = enemyService,
         active = {} :: {[Player]: {friendUserId: number, classId: string, brain: any, model: Model}},
         requests = {} :: {[Player]: number},
     }, CompanionService)
@@ -104,7 +105,11 @@ end
 
 function CompanionService:Summon(player: Player, friendUserId: any, classId: any)
     if self.active[player] then
-        return false, "already_active"
+        if self.active[player].model:GetAttribute("CBS_EchoDisabled") == true then
+            self:Unsummon(player, "replace_disabled")
+        else
+            return false, "already_active"
+        end
     end
 
     if not FriendRules.isValidClass(classId) then
@@ -178,6 +183,9 @@ function CompanionService:Summon(player: Player, friendUserId: any, classId: any
         {
             onAttack = function(owner, echoModel, target, damage, range)
                 return self:ApplyEchoDamage(owner, echoModel, target, damage, range)
+            end,
+            getTargets = function(origin, radius)
+                return self.enemyService:GetTargetCandidates(origin, radius)
             end,
             onHeal = function(owner, amount, position)
                 self.remotes.FX:FireAllClients("EchoHeal", {
