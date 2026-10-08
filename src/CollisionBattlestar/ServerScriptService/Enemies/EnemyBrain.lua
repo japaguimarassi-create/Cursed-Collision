@@ -105,7 +105,7 @@ function EnemyBrain:Think()
         return
     end
 
-    self.nextTargetScanAt = now + 0.35
+    self.nextTargetScanAt = now + 0.5
 
     local player, targetRoot, distance = self:FindTarget()
 
@@ -141,7 +141,7 @@ function EnemyBrain:Start()
     task.spawn(function()
         while self.running and self.model.Parent and self.humanoid.Health > 0 do
             self:Think()
-            task.wait(0.15)
+            task.wait(0.2)
         end
 
         self.running = false
