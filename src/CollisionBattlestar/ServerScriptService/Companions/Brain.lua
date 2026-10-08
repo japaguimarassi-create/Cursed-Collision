@@ -9,7 +9,7 @@ local Navigation = require(script.Parent.Parent.Enemies.Navigation)
 local EchoBrain = {}
 EchoBrain.__index = EchoBrain
 
-local THINK_INTERVAL = 0.25
+local THINK_INTERVAL = 0.3
 local FOLLOW_DISTANCE = 7
 local LEASH_DISTANCE = 32
 local RETREAT_DISTANCE = 44
@@ -226,7 +226,7 @@ function EchoBrain:Think()
     end
 
     if now >= self.nextTargetScanAt then
-        self.nextTargetScanAt = now + 0.5
+        self.nextTargetScanAt = now + 0.65
         self.target = self:FindTarget(ownerRoot)
     end
 
@@ -284,7 +284,7 @@ function EchoBrain:Start()
                 self:Think()
             end
 
-            task.wait(0.1)
+            task.wait(0.15)
         end
 
         self.running = false
