@@ -177,7 +177,7 @@ function Heart:Reload(reason: string, _)
             enemies:Clear()
         end)
     end
-    if pvp and type(pvp:Reset) == "function" then
+    if pvp and type(pvp.Reset) == "function" then
         pcall(function()
             pvp:Reset()
         end)
@@ -210,16 +210,15 @@ function Heart:Reload(reason: string, _)
     })
 
     self.running = false
-    self.recovering = false
 
-    local ok = false
     if waves and type(waves.Resume) == "function" then
         pcall(function()
             waves:Resume(resumeWave)
         end)
     end
 
-    ok = self:Start()
+    local ok = self:Start()
+    self.recovering = false
     workspace:SetAttribute("CBS2_RuntimeRecovering", false)
     workspace:SetAttribute("CBS2_RuntimeError", ok and nil or tostring(reason))
 
