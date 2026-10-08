@@ -23,7 +23,6 @@ local Ranking = require(script.Parent.Ranking)
 
 local remotes = Network.ensure()
 local runtime = RuntimeState.new()
-local stateRequestAt = {}
 local heart = Heart.new(runtime)
 
 local persistence = Persistence.new()
@@ -52,24 +51,14 @@ heart:Register("Combat", combat)
 heart:Register("Waves", waves)
 heart:Register("Ranking", ranking)
 
+local stateRequestAt = {}
+
 enemies:GetDefeated():Connect(function(_, elite, boss, killer)
     missions:Enemy(nil, elite, boss, killer)
 end)
 
 runtime:Changed():Connect(function()
-    game:BindToClose(function()
-    heart:Stop()
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if persistence.Get then
-            pcall(function()
-                persistence:Save(player, true)
-            end)
-        end
-    end
-end)
-
-remotes.State:FireAllClients("Snapshot", runtime:Snapshot())
+    remotes.State:FireAllClients("Snapshot", runtime:Snapshot())
 end)
 
 Players.PlayerRemoving:Connect(function(player)
@@ -94,15 +83,26 @@ remotes.State.OnServerEvent:Connect(function(player, request)
     end
 end)
 
-
 local started = heart:Start()
 
 if not started then
-    runtime:Set("phase", "Error")
-    runtime:Set("error", "runtime failed to start")
+    runtime:SetMany({
+        phase = "Error",
+        error = "runtime failed to start",
+    })
 else
     workspace:SetAttribute("CBS2_WorldReady", true)
     workspace:SetAttribute("CBS2_RuntimeGeneration", heart.generation)
 end
 
 remotes.State:FireAllClients("Snapshot", runtime:Snapshot())
+
+game:BindToClose(function()
+    heart:Stop()
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        pcall(function()
+            persistence:Save(player, true)
+        end)
+    end
+end)
