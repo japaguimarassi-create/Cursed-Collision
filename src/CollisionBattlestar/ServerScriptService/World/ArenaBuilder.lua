@@ -3,6 +3,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local PhysicsRules = require(ReplicatedStorage.Shared.PhysicsRules)
 
 local ArenaBuilder = {}
 
@@ -26,6 +27,7 @@ local function makePart(
     part.TopSurface = Enum.SurfaceType.Smooth
     part.BottomSurface = Enum.SurfaceType.Smooth
     part.CastShadow = false
+    PhysicsRules.apply(part, PhysicsRules.World)
     part.Parent = parent
     return part
 end
@@ -98,7 +100,7 @@ function ArenaBuilder.Build()
     }
 
     for index, position in ipairs(coverPositions) do
-        makePart(
+        local cover = makePart(
             arena,
             "Cover" .. index,
             Vector3.new(8, 8, 8),
@@ -106,6 +108,7 @@ function ArenaBuilder.Build()
             Enum.Material.Concrete,
             Color3.fromRGB(63, 68, 80)
         )
+        PhysicsRules.apply(cover, PhysicsRules.Cover)
     end
 
     local spawnFolder = Instance.new("Folder")
