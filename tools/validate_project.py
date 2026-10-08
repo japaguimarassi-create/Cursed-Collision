@@ -9,67 +9,118 @@ required = [
     "default.project.json",
     "rokit.toml",
     "README.md",
-    "src/CollisionBattlestar/ReplicatedStorage/CleanRules.lua",
-    "src/CollisionBattlestar/CleanServer/Runtime.server.lua",
-    "src/CollisionBattlestar/CleanClient/Runtime.client.lua",
-    "tools/tests/CleanRulesSpec.luau",
-    "tools/tests/run.luau",
+    "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Constants.lua",
+    "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Definitions.lua",
+    "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Config.lua",
+    "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/GameIdentity.lua",
+    "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua",
+    "src/CollisionBattlestar/ServerScriptService/Core/ServiceRegistry.lua",
+    "src/CollisionBattlestar/ServerScriptService/Core/RuntimeState.lua",
+    "src/CollisionBattlestar/ServerScriptService/Core/PlayerState.lua",
+    "src/CollisionBattlestar/ServerScriptService/Security/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Economy/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/World/ArenaBuilder.lua",
+    "src/CollisionBattlestar/ServerScriptService/World/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Enemies/EnemyFactory.lua",
+    "src/CollisionBattlestar/ServerScriptService/Enemies/EnemyBrain.lua",
+    "src/CollisionBattlestar/ServerScriptService/Enemies/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Combat/Service.lua",
+    "src/CollisionBattlestar/ServerScriptService/Waves/Service.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientBootstrap.client.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Input/Service.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/Root.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/CombatFX/Service.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Camera/Service.lua",
+    "tools/tests/PhaseASharedSpec.luau",
+    "tools/tests/phase_a_run.luau",
 ]
 
 for relative in required:
     path = ROOT / relative
     if not path.is_file() or path.stat().st_size == 0:
-        raise SystemExit("Missing required clean-runtime file: " + relative)
+        raise SystemExit("Missing required Phase A file: " + relative)
 
 manifest = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"))
 if manifest.get("name") != "CollisionBattlestar":
     raise SystemExit("Unexpected project name")
+
 tree = manifest.get("tree", {})
 workspace = tree.get("Workspace", {})
 if workspace.get("$properties", {}).get("StreamingEnabled") is not False:
-    raise SystemExit("Clean runtime requires StreamingEnabled=false")
+    raise SystemExit("Phase A requires StreamingEnabled=false")
+
+replicated_path = tree.get("ReplicatedStorage", {}).get("$path", "")
 server_path = tree.get("ServerScriptService", {}).get("$path", "")
 client_path = tree.get("StarterPlayer", {}).get("StarterPlayerScripts", {}).get("$path", "")
-if server_path != "src/CollisionBattlestar/CleanServer":
-    raise SystemExit("Server mapping is not CleanServer")
-if client_path != "src/CollisionBattlestar/CleanClient":
-    raise SystemExit("Client mapping is not CleanClient")
-server_source = (ROOT / "src/CollisionBattlestar/CleanServer/Runtime.server.lua").read_text(encoding="utf-8")
-client_source = (ROOT / "src/CollisionBattlestar/CleanClient/Runtime.client.lua").read_text(encoding="utf-8")
-for source_path, source in [("server", server_source), ("client", client_source)]:
+
+if replicated_path != "src/CollisionBattlestar/RuntimeReplicatedStorage":
+    raise SystemExit("ReplicatedStorage mapping is not isolated")
+if server_path != "src/CollisionBattlestar/ServerScriptService":
+    raise SystemExit("Server mapping is not isolated")
+if client_path != "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts":
+    raise SystemExit("Client mapping is not isolated")
+
+runtime_root = ROOT / "src/CollisionBattlestar"
+lua_files = list(runtime_root.rglob("*.lua"))
+
+if not lua_files:
+    raise SystemExit("No runtime Luau files found")
+
+for path in lua_files:
+    source = path.read_text(encoding="utf-8")
     if any(marker in source for marker in ("<<<<<<<", "=======", ">>>>>>>")):
-        raise SystemExit("Merge marker found in " + source_path)
+        raise SystemExit("Merge marker found in " + str(path))
     if "loadstring(" in source:
-        raise SystemExit("Dynamic loading found in " + source_path)
+        raise SystemExit("Dynamic loading found in " + str(path))
     if "TODO" in source:
-        raise SystemExit("Placeholder TODO found in " + source_path)
+        raise SystemExit("Placeholder TODO found in " + str(path))
+
+server_source = (ROOT / "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua").read_text(encoding="utf-8")
+combat_source = (ROOT / "src/CollisionBattlestar/ServerScriptService/Combat/Service.lua").read_text(encoding="utf-8")
+client_source = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientBootstrap.client.lua").read_text(encoding="utf-8")
+hud_source = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/Root.lua").read_text(encoding="utf-8")
+
 for token in [
-    "Players.CharacterAutoLoads = false",
-    "workspace:SetAttribute(\"CBS_WorldReady\", true)",
-    'Action.Name = "Action"',
-    'State.Name = "State"',
-    "player:LoadCharacter()",
-    'action == "Attack"',
-    'action == "Dash"',
-    'action == "BuySkin"',
-    'action == "SummonEcho"',
+    'Instance.new("RemoteEvent")',
+    "StartInOrder",
+    "PlayerState",
+    "World",
+    "Enemies",
+    "Combat",
+    "Waves",
 ]:
     if token not in server_source:
-        raise SystemExit("Server contract missing: " + token)
+        raise SystemExit("Bootstrap contract missing: " + token)
+
+for token in [
+    'action == "Attack"',
+    'action == "Dash"',
+    "GetPartBoundsInBox",
+    "ValidateAttackTarget",
+    "TakeDamage",
+]:
+    if token not in combat_source:
+        raise SystemExit("Combat contract missing: " + token)
+
+for token in [
+    "WaitForChild",
+    "HUD.new",
+    "InputService.new",
+    "CombatFX.new",
+    "CameraService.new",
+]:
+    if token not in client_source:
+        raise SystemExit("Client bootstrap contract missing: " + token)
 
 for token in [
     'gui.Name = "CollisionBattlestarHUD"',
     "Enum.ScreenInsets.CoreUISafeInsets",
-    'ContextActionService:BindAction("CBS_Attack"',
-    'ContextActionService:BindAction("CBS_Dash"',
-    'connecting.Text = "SERVER CONNECTION FAILED"',
-    'connecting.Text = "RECONNECT REQUIRED"',
+    "AttackButton",
+    "DashButton",
+    "CBS_Credits",
+    "CBS_PowerLevel",
 ]:
-    if token not in client_source:
-        raise SystemExit("Client contract missing: " + token)
+    if token not in hud_source:
+        raise SystemExit("HUD contract missing: " + token)
 
-for path in [ROOT / "src/CollisionBattlestar/CleanServer/Runtime.server.lua", ROOT / "src/CollisionBattlestar/CleanClient/Runtime.client.lua"]:
-    if path.stat().st_size > 70000:
-        raise SystemExit("Clean runtime file is too large: " + str(path))
-
-print("Validated Collision Battlestar clean runtime mapping and safety contracts.")
+print("Validated Collision Battlestar Phase A tree and runtime contracts.")
