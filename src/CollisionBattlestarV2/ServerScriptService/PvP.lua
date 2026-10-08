@@ -15,6 +15,7 @@ function PvP.new(world, score, remotes)
         remotes = remotes,
         participants = {},
         connections = {},
+        characterConnections = {},
     }, PvP)
 end
 
@@ -88,6 +89,22 @@ function PvP:Reset()
     end
 end
 
+function PvP:BindCharacter(player: Player, character: Model)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    local old = self.characterConnections[player]
+    if old then
+        old:Disconnect()
+    end
+
+    self.characterConnections[player] = humanoid.Died:Connect(function()
+        self:OnDeath(player)
+    end)
+end
+
 function PvP:Start()
     table.insert(self.connections, self.remotes.PvP.OnServerEvent:Connect(function(player, request)
         if type(request) ~= "table" then
@@ -100,13 +117,38 @@ function PvP:Start()
         end
     end))
 
+    table.insert(self.connections, Players.PlayerAdded:Connect(function(player)
+        table.insert(self.connections, player.CharacterAdded:Connect(function(character)
+            self:BindCharacter(player, character)
+        end))
+        if player.Character then
+            self:BindCharacter(player, player.Character)
+        end
+    end))
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            self:BindCharacter(player, player.Character)
+        end
+    end
+
     table.insert(self.connections, Players.PlayerRemoving:Connect(function(player)
         self.participants[player] = nil
+        local connection = self.characterConnections[player]
+        if connection then
+            connection:Disconnect()
+        end
+        self.characterConnections[player] = nil
     end))
 end
 
 function PvP:Stop()
     self:Reset()
+
+    for player, connection in pairs(self.characterConnections) do
+        connection:Disconnect()
+        self.characterConnections[player] = nil
+    end
     for _, connection in ipairs(self.connections) do
         connection:Disconnect()
     end
