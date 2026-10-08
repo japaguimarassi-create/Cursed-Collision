@@ -128,6 +128,7 @@ end
 
 local input = startOptional(script.Parent.Input.Service, "new", remotes, hud)
 local combatFX = startOptional(script.Parent.CombatFX.Service, "new", remotes)
+local audio = startOptional(script.Parent.Audio.Service, "new", remotes)
 local camera = startOptional(script.Parent.Camera.Service, "new")
 local socialInvite = startOptional(script.Parent.SocialInvite.Service, "new")
 if not socialInvite then
@@ -147,6 +148,11 @@ end
 if combatFX then
     pcall(function()
         combatFX:Start()
+    end)
+end
+if audio then
+    pcall(function()
+        audio:Start()
     end)
 end
 
