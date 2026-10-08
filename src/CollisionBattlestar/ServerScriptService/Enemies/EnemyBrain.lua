@@ -1,0 +1,156 @@
+--!strict
+
+local Players = game:GetService("Players")
+local Navigation = require(script.Parent.Navigation)
+
+local EnemyBrain = {}
+EnemyBrain.__index = EnemyBrain
+
+function EnemyBrain.new(model: Model, humanoid: Humanoid, root: BasePart, definition, callbacks)
+    return setmetatable({
+        model = model,
+        humanoid = humanoid,
+        root = root,
+        definition = definition,
+        callbacks = callbacks,
+        running = false,
+        nextAttackAt = 0,
+        nextTargetScanAt = 0,
+        navigation = Navigation.new(root),
+    }, EnemyBrain)
+end
+
+function EnemyBrain:FindTarget()
+    local closestPlayer = nil
+    local closestRoot = nil
+    local closestDistance = math.huge
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        local character = player.Character
+
+        if character then
+            local playerHumanoid = character:FindFirstChildOfClass("Humanoid")
+            local playerRoot = character:FindFirstChild("HumanoidRootPart")
+
+            if playerHumanoid
+                and playerRoot
+                and playerHumanoid.Health > 0
+                and playerRoot:IsA("BasePart")
+                and player:GetAttribute("CBS_PvP") ~= true
+                and self.callbacks.canTargetPlayer(player, playerRoot) then
+
+                local distance = (playerRoot.Position - self.root.Position).Magnitude
+
+                if distance < closestDistance then
+                    closestPlayer = player
+                    closestRoot = playerRoot
+                    closestDistance = distance
+                end
+            end
+        end
+    end
+
+    if closestPlayer then
+        self.model:SetAttribute("CBS_TargetUserId", closestPlayer.UserId)
+    else
+        self.model:SetAttribute("CBS_TargetUserId", nil)
+    end
+
+    return closestPlayer, closestRoot, closestDistance
+end
+
+function EnemyBrain:MoveToward(targetRoot: BasePart, distance: number)
+    if distance <= self.definition.AttackRange then
+        local current = self.root.AssemblyLinearVelocity
+        self.root.AssemblyLinearVelocity = Vector3.new(
+            current.X * 0.35,
+            current.Y,
+            current.Z * 0.35
+        )
+        return
+    end
+
+    local destination = self.navigation:GetNextPosition(
+        targetRoot.Position,
+        os.clock()
+    )
+
+    local offset = destination - self.root.Position
+    local horizontal = Vector3.new(offset.X, 0, offset.Z)
+
+    if horizontal.Magnitude < 0.1 then
+        return
+    end
+
+    local direction = horizontal.Unit
+    local velocity = direction * self.definition.Speed
+    local vertical = math.clamp(self.root.AssemblyLinearVelocity.Y, -45, 20)
+
+    self.root.CFrame = CFrame.lookAt(
+        self.root.Position,
+        self.root.Position + direction
+    )
+
+    self.root.AssemblyLinearVelocity = Vector3.new(
+        velocity.X,
+        vertical,
+        velocity.Z
+    )
+end
+
+function EnemyBrain:Think()
+    local now = os.clock()
+
+    if now < self.nextTargetScanAt then
+        return
+    end
+
+    self.nextTargetScanAt = now + 0.5
+
+    local player, targetRoot, distance = self:FindTarget()
+
+    if not player or not targetRoot then
+        local current = self.root.AssemblyLinearVelocity
+        self.root.AssemblyLinearVelocity = Vector3.new(
+            current.X * 0.35,
+            current.Y,
+            current.Z * 0.35
+        )
+        return
+    end
+
+    self:MoveToward(targetRoot, distance)
+
+    if distance <= self.definition.AttackRange and now >= self.nextAttackAt then
+        self.nextAttackAt = now + self.definition.AttackCooldown
+        self.callbacks.damagePlayer(
+            player,
+            self.definition.Damage,
+            self.model
+        )
+    end
+end
+
+function EnemyBrain:Start()
+    if self.running then
+        return
+    end
+
+    self.running = true
+
+    task.spawn(function()
+        while self.running and self.model.Parent and self.humanoid.Health > 0 do
+            self:Think()
+            task.wait(0.2)
+        end
+
+        self.running = false
+    end)
+end
+
+function EnemyBrain:Stop()
+    self.running = false
+    self.navigation:Destroy()
+end
+
+return EnemyBrain
