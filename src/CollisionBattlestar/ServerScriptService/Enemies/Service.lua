@@ -77,6 +77,11 @@ function EnemyService:IsEliteAlive()
     return false
 end
 
+function EnemyService:CanTargetPlayer(player: Player, root: BasePart)
+    return player:GetAttribute("CBS_PvP") ~= true
+        and self.worldService:IsInsideArena(root.Position)
+end
+
 function EnemyService:DamagePlayer(player: Player, amount: number, source: Model)
     if not player.Parent or amount <= 0 then
         return false
