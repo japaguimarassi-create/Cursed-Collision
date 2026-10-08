@@ -12,6 +12,7 @@ required = [
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Constants.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Definitions.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Config.lua",
+    "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/CombatRules.lua",
     "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/GameIdentity.lua",
     "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua",
     "src/CollisionBattlestar/ServerScriptService/Core/ServiceRegistry.lua",
