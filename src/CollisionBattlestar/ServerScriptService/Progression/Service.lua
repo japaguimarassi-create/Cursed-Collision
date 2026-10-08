@@ -3,13 +3,15 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Rules = require(ReplicatedStorage.Shared.ProgressionRules)
+local ShopRules = require(ReplicatedStorage.Shared.ShopRules)
 
 local ProgressionService = {}
 ProgressionService.__index = ProgressionService
 
-function ProgressionService.new(playerState)
+function ProgressionService.new(playerState, runtimeState)
     return setmetatable({
         playerState = playerState,
+        runtimeState = runtimeState,
     }, ProgressionService)
 end
 
@@ -17,6 +19,10 @@ function ProgressionService:Start()
 end
 
 function ProgressionService:Purchase(player: Player, upgradeId: any)
+    if not ShopRules.isSafeShopPhase(self.runtimeState.phase) then
+        return false, "shop_closed"
+    end
+
     if not Rules.isValidUpgrade(upgradeId) then
         return false, "invalid_upgrade"
     end
@@ -35,13 +41,7 @@ end
 function ProgressionService:GetSnapshot(player: Player)
     local result = {}
 
-    for upgradeId in pairs({
-        Damage = true,
-        MaxHealth = true,
-        Dash = true,
-        Critical = true,
-        Recovery = true,
-    }) do
+    for _, upgradeId in ipairs({"Damage", "MaxHealth", "Dash", "Critical", "Recovery"}) do
         local level = self.playerState:GetUpgradeLevel(player, upgradeId)
         result[upgradeId] = {
             Level = level,
