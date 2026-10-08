@@ -2,6 +2,7 @@
 
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local Constants = require(ReplicatedStorage.Shared.Constants)
 
 local Heart = {}
@@ -24,21 +25,38 @@ function Heart.new(runtimeState)
 end
 
 function Heart:Register(name: string, service: any)
+    if type(name) ~= "string" or name == "" or not service then
+        return false
+    end
+
     self.services[name] = service
     table.insert(self.order, name)
-    return service
+    return true
 end
 
 function Heart:Get(name: string)
     return self.services[name]
 end
 
-function Heart:Report(label: string, err: any)
-    if self.recovering then
-        return false
+function Heart:DisconnectWatchdog()
+    if self.heartbeat then
+        self.heartbeat:Disconnect()
+        self.heartbeat = nil
     end
-    self.lastError = ("%s: %s"):format(label, tostring(err))
-    return self:Reload(self.lastError)
+    self.accumulator = 0
+end
+
+function Heart:StopStartedServices(started)
+    for index = #started, 1, -1 do
+        local name = started[index]
+        local service = self.services[name]
+
+        if service and type(service.Stop) == "function" then
+            pcall(function()
+                service:Stop()
+            end)
+        end
+    end
 end
 
 function Heart:Start()
@@ -48,27 +66,41 @@ function Heart:Start()
 
     self.running = true
 
+    local started = {}
+
     for _, name in ipairs(self.order) do
         local service = self.services[name]
+
         if service and type(service.Start) == "function" then
             local ok, err = pcall(function()
                 service:Start()
             end)
+
             if not ok then
                 self.running = false
+                self:StopStartedServices(started)
+
                 if self.recovering then
+                    self.lastError = ("start.%s: %s"):format(name, tostring(err))
                     return false
                 end
-                return self:Reload(("start.%s"):format(name), err)
+
+                return self:Reload(("start.%s: %s"):format(name, tostring(err)))
             end
+
+            started[#started + 1] = name
         end
     end
 
+    self:DisconnectWatchdog()
+
     self.heartbeat = RunService.Heartbeat:Connect(function(dt)
         self.accumulator += dt
+
         if self.accumulator < Constants.RuntimeHealthInterval then
             return
         end
+
         self.accumulator = 0
 
         if not self.running or self.recovering then
@@ -76,25 +108,39 @@ function Heart:Start()
         end
 
         local world = self.services.World
-        local enemies = self.services.Enemies
-        local waves = self.services.Waves
+        if world and workspace:GetAttribute("CBS2_WorldReady") == true
+            and not workspace:FindFirstChild("CBS2_World") then
+            self:Report("watchdog.world", "world missing")
+            return
+        end
 
-        if world and workspace:GetAttribute("CBS2_WorldReady") == true then
-            local root = workspace:FindFirstChild("CBS2_World")
-            if not root then
-                self:Report("watchdog.world", "world missing")
+        local enemies = self.services.Enemies
+        if enemies and type(enemies.HealthCheck) == "function" then
+            local ok, healthy = pcall(function()
+                return enemies:HealthCheck()
+            end)
+
+            if not ok or healthy ~= true then
+                self:Report(
+                    "watchdog.enemies",
+                    ok and "enemy service unhealthy" or healthy
+                )
                 return
             end
         end
 
-        if enemies and type(enemies.HealthCheck) == "function" and not enemies:HealthCheck() then
-            self:Report("watchdog.enemies", "enemy service unhealthy")
-            return
-        end
+        local waves = self.services.Waves
+        if waves and type(waves.HealthCheck) == "function" then
+            local ok, healthy = pcall(function()
+                return waves:HealthCheck()
+            end)
 
-        if waves and type(waves.HealthCheck) == "function" and not waves:HealthCheck() then
-            self:Report("watchdog.waves", "wave service unhealthy")
-            return
+            if not ok or healthy ~= true then
+                self:Report(
+                    "watchdog.waves",
+                    ok and "wave service unhealthy" or healthy
+                )
+            end
         end
     end)
 
@@ -108,12 +154,24 @@ function Heart:Start()
     return true
 end
 
-function Heart:Reload(reason: string, _)
-    local now = os.clock()
+function Heart:Report(label: string, err: any)
     if self.recovering then
         return false
     end
+
+    self.lastError = ("%s: %s"):format(label, tostring(err))
+    return self:Reload(self.lastError)
+end
+
+function Heart:Reload(reason: string)
+    local now = os.clock()
+
+    if self.recovering then
+        return false
+    end
+
     if self.recoveryCount >= Constants.RuntimeRecoveryLimit then
+        self.lastError = "runtime recovery limit reached"
         return false
     end
 
@@ -125,8 +183,10 @@ function Heart:Reload(reason: string, _)
     self.lastRecoveryAt = now
     self.recoveryCount += 1
     self.generation += 1
+    self.lastError = tostring(reason)
 
     local resumeWave = math.max(1, (self.state.lastCompletedWave or 0) + 1)
+
     if self.state.phase == "Wave" then
         resumeWave = math.max(1, self.state.wave or 1)
     end
@@ -135,8 +195,9 @@ function Heart:Reload(reason: string, _)
     workspace:SetAttribute("CBS2_RuntimeRecovering", true)
     workspace:SetAttribute("CBS2_RuntimeError", tostring(reason))
 
-    local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("CBS2_Remotes")
+    local remotes = ReplicatedStorage:FindFirstChild("CBS2_Remotes")
     local stateRemote = remotes and remotes:FindFirstChild("State")
+
     if stateRemote and stateRemote:IsA("RemoteEvent") then
         stateRemote:FireAllClients("RuntimeReloading", {
             wave = resumeWave,
@@ -145,19 +206,16 @@ function Heart:Reload(reason: string, _)
         })
     end
 
+    self.running = false
+    self:DisconnectWatchdog()
+
     local reverse = {}
+
     for index = #self.order, 1, -1 do
-        table.insert(reverse, self.order[index])
+        reverse[#reverse + 1] = self.order[index]
     end
 
-    for _, name in ipairs(reverse) do
-        local service = self.services[name]
-        if service and type(service.Stop) == "function" then
-            pcall(function()
-                service:Stop()
-            end)
-        end
-    end
+    self:StopStartedServices(reverse)
 
     local world = self.services.World
     local enemies = self.services.Enemies
@@ -166,32 +224,37 @@ function Heart:Reload(reason: string, _)
     local players = self.services.Players
     local waves = self.services.Waves
 
-    if waves and type(waves.Resume) == "function" then
-        pcall(function()
-            waves:Resume(resumeWave)
-        end)
-    end
-
     if enemies and type(enemies.Clear) == "function" then
         pcall(function()
             enemies:Clear()
         end)
     end
+
     if pvp and type(pvp.Reset) == "function" then
         pcall(function()
             pvp:Reset()
         end)
     end
+
     if echo and type(echo.ResetRuntime) == "function" then
         pcall(function()
             echo:ResetRuntime()
         end)
     end
+
     if world and type(world.Reload) == "function" then
-        pcall(function()
+        local worldOk = pcall(function()
             world:Reload()
         end)
+
+        if not worldOk then
+            self.recovering = false
+            workspace:SetAttribute("CBS2_RuntimeRecovering", false)
+            workspace:SetAttribute("CBS2_RuntimeError", "world recovery failed")
+            return false
+        end
     end
+
     if players and type(players.RecoverAll) == "function" then
         pcall(function()
             players:RecoverAll(world)
@@ -209,14 +272,6 @@ function Heart:Reload(reason: string, _)
         intermissionEndsAt = os.clock() + 1,
     })
 
-    self.running = false
-
-    if self.heartbeat then
-        self.heartbeat:Disconnect()
-        self.heartbeat = nil
-    end
-    self.accumulator = 0
-
     if waves and type(waves.Resume) == "function" then
         pcall(function()
             waves:Resume(resumeWave)
@@ -224,9 +279,15 @@ function Heart:Reload(reason: string, _)
     end
 
     local ok = self:Start()
+
     self.recovering = false
     workspace:SetAttribute("CBS2_RuntimeRecovering", false)
-    workspace:SetAttribute("CBS2_RuntimeError", ok and nil or tostring(reason))
+
+    if ok then
+        workspace:SetAttribute("CBS2_RuntimeError", nil)
+    else
+        workspace:SetAttribute("CBS2_RuntimeError", tostring(self.lastError or reason))
+    end
 
     if stateRemote and stateRemote:IsA("RemoteEvent") then
         stateRemote:FireAllClients(ok and "RuntimeRestored" or "RuntimeFailed", {
@@ -240,10 +301,7 @@ end
 
 function Heart:Stop()
     self.running = false
-    if self.heartbeat then
-        self.heartbeat:Disconnect()
-        self.heartbeat = nil
-    end
+    self:DisconnectWatchdog()
 end
 
 return Heart
