@@ -183,7 +183,7 @@ function AIHeart:HealthCheck()
             count += 1
         end
     end
-    return count <= Constants.MaxNPCs
+    return self.running and count <= Constants.MaxNPCs
 end
 
 function AIHeart:Stop()
