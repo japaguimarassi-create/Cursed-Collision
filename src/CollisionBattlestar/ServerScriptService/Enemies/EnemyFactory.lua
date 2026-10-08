@@ -4,6 +4,8 @@ local EnemyFactory = {}
 
 local serial = 0
 
+local SkinFactory = require(script.Parent.SkinFactory)
+
 local TierColors = {
     [1] = Color3.fromRGB(95, 110, 130),
     [2] = Color3.fromRGB(120, 95, 65),
@@ -26,7 +28,7 @@ local function makePart(parent: Model, name: string, size: Vector3, cframe: CFra
     return part
 end
 
-function EnemyFactory.Create(definition, spawnCFrame: CFrame, wave: number)
+function EnemyFactory.Create(definition, spawnCFrame: CFrame, wave: number, skinProfile)
     local model = Instance.new("Model")
     serial += 1
     model.Name = "Enemy_" .. definition.Id .. "_" .. tostring(serial)
@@ -107,6 +109,10 @@ function EnemyFactory.Create(definition, spawnCFrame: CFrame, wave: number)
         highlight.OutlineTransparency = 0
         highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
         highlight.Parent = model
+    end
+
+    if skinProfile then
+        SkinFactory.Apply(model, skinProfile)
     end
 
     return model, humanoid, root
