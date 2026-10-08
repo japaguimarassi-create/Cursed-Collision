@@ -275,11 +275,11 @@ else
     local persistenceService = PersistenceService.new()
     local playerState = PlayerState.new(persistenceService)
     local progressionService = ProgressionService.new(playerState, runtimeState)
-    local statsService = modules.Stats.new(playerState, runtimeState, enemyService)
     local recoveryService = RecoveryService.new(playerState)
     local securityService = SecurityService.new(worldService, playerState)
     local economyService = EconomyService.new(playerState)
     local enemyService = EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel, remotes)
+    local statsService = modules.Stats.new(playerState, runtimeState, enemyService)
     local pvpService = PvPService.new(playerState, economyService, worldService, remotes)
     local combatService = CombatService.new(
         runtimeState,
