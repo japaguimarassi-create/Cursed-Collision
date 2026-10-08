@@ -15,8 +15,8 @@ local function configureLighting()
     Lighting.Brightness = 2
     Lighting.Ambient = Color3.fromRGB(65, 70, 88)
     Lighting.OutdoorAmbient = Color3.fromRGB(82, 88, 108)
-    Lighting.EnvironmentDiffuseScale = 0.65
-    Lighting.EnvironmentSpecularScale = 0.45
+    Lighting.EnvironmentDiffuseScale = 0.45
+    Lighting.EnvironmentSpecularScale = 0.25
     Lighting.FogStart = 260
     Lighting.FogEnd = 900
 
@@ -27,12 +27,12 @@ local function configureLighting()
         atmosphere.Parent = Lighting
     end
 
-    atmosphere.Density = 0.22
+    atmosphere.Density = 0.12
     atmosphere.Offset = 0.1
     atmosphere.Color = Color3.fromRGB(170, 190, 215)
     atmosphere.Decay = Color3.fromRGB(55, 65, 90)
     atmosphere.Glare = 0.08
-    atmosphere.Haze = 1.1
+    atmosphere.Haze = 0.65
 end
 
 function WorldService.new(runtimeState)
