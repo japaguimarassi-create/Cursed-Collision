@@ -17,6 +17,7 @@ function MissionService.new(playerState, enemyService, runtimeState, remotes)
         remotes = remotes,
         lastCredits = {} :: {[Player]: number},
         lastWave = 0,
+        lastCompletedWave = 0,
         running = false,
         lastSnapshotRequest = {} :: {[Player]: number},
     }, MissionService)
@@ -42,12 +43,12 @@ function MissionService:Start()
             return
         end
 
-        local wave = self.runtimeState.wave
-        if wave <= self.lastWave then
+        local completedWave = self.runtimeState.lastCompletedWave
+        if completedWave <= self.lastCompletedWave then
             return
         end
 
-        self.lastWave = wave
+        self.lastCompletedWave = completedWave
 
         for _, player in ipairs(Players:GetPlayers()) do
             self:AddProgress(player, "WaveHunter", 1)
