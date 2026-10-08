@@ -88,6 +88,17 @@ function Combat:Attack(player: Player)
                 if targetRoot then
                     local distance = (targetRoot.Position - root.Position).Magnitude
                     if distance <= Constants.AttackRange then
+                        local delta = targetRoot.Position - root.Position
+                        local flatDelta = Vector3.new(delta.X, 0, delta.Z)
+                        local forward = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z)
+                        local facing = if flatDelta.Magnitude > 0.1 and forward.Magnitude > 0.1
+                            then forward.Unit:Dot(flatDelta.Unit)
+                            else -1
+
+                        if facing < 0.15 then
+                            continue
+                        end
+
                         local critical = math.random() < math.min(0.25, state.profile.Upgrades.Damage * 0.01)
                         local finalDamage = math.floor(damage * (critical and 1.8 or 1))
                         self.enemies:TakeDamage(player, model, finalDamage, critical)
