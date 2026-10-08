@@ -24,13 +24,18 @@ function PvPService:Start()
     self.world = ArenaBuilder.Build()
 
     Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function()
+        player.CharacterAdded:Connect(function(character)
+            self:WatchCharacter(player, character)
             task.defer(function()
                 if self.participants[player] then
                     self:PositionPlayer(player)
                 end
             end)
         end)
+
+        if player.Character then
+            self:WatchCharacter(player, player.Character)
+        end
     end)
 
     Players.PlayerRemoving:Connect(function(player)
