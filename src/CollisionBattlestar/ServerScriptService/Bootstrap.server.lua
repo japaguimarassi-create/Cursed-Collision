@@ -32,6 +32,7 @@ local function loadConstants()
 end
 
 local Constants = loadConstants()
+local PhysicsRules = require(ReplicatedStorage.Shared.PhysicsRules)
 
 local function constant(name: string)
     local value = Constants[name]
@@ -86,6 +87,7 @@ local function part(parent: Instance, name: string, size: Vector3, cframe: CFram
     value.Color = color
     value.TopSurface = Enum.SurfaceType.Smooth
     value.BottomSurface = Enum.SurfaceType.Smooth
+    PhysicsRules.apply(value, PhysicsRules.World)
     value.Parent = parent
     return value
 end
