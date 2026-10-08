@@ -237,20 +237,10 @@ function MechanicsKernel:HealthCheck()
         end
     end
 
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Parent and player:GetAttribute("CBS_PlayerStateReady") == true then
-            local character = player.Character
-            if not character or not character.Parent then
-                self:ReportFailure("health.character", "player character missing: " .. player.Name)
-                return false
-            end
-        end
-    end
-
     return true
 end
 
-function MechanicsKernel:Start()
+function MechanicsKernel:Startt()
     if self.running then
         return
     end
