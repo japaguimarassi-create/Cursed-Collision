@@ -1,10 +1,10 @@
 --!strict
 
-local Constants = require("../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/Constants")
-local Rules = require("../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/Rules")
-local Data = require("../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/Data")
-local Missions = require("../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/MissionDefinitions")
-local Enemies = require("../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/EnemyDefinitions")
+local Constants = require("../../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/Constants")
+local Rules = require("../../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/Rules")
+local Data = require("../../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/Data")
+local Missions = require("../../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/MissionDefinitions")
+local Enemies = require("../../../src/CollisionBattlestarV2/ReplicatedStorage/Shared/EnemyDefinitions")
 
 assert(Constants.MaxNPCs == 16)
 assert(Constants.AttackCooldown > 0)
