@@ -119,11 +119,8 @@ function Waves:RunWave()
     end
 end
 
-function Waves:Restart(wave: number)
+function Waves:Resume(wave: number)
     self.current = math.max(0, math.floor(wave) - 1)
-    self.running = false
-    self.generation += 1
-    self:Start()
 end
 
 function Waves:HealthCheck()
