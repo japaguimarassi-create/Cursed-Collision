@@ -301,6 +301,69 @@ function StatsService:Start()
     end)
 end
 
+function StatsService:GetTop(limit: number)
+    local safeLimit = math.clamp(math.floor(tonumber(limit) or 10), 1, 10)
+
+    if self.rankingStore then
+        local ok, page = pcall(function()
+            return self.rankingStore:GetSortedAsync(false, safeLimit)
+        end)
+
+        if ok and page then
+            local rows = {}
+
+            for rank, entry in ipairs(page:GetCurrentPage()) do
+                local userId = tonumber(entry.key)
+                if userId then
+                    local name = "Player " .. tostring(userId)
+                    local nameOk, resolved = pcall(function()
+                        return Players:GetNameFromUserIdAsync(userId)
+                    end)
+
+                    if nameOk and type(resolved) == "string" then
+                        name = resolved
+                    end
+
+                    rows[#rows + 1] = {
+                        rank = rank,
+                        userId = userId,
+                        name = name,
+                        score = math.floor(tonumber(entry.value) or 0),
+                        level = LevelRules.levelForScore(tonumber(entry.value) or 0),
+                    }
+                end
+            end
+
+            return rows, "global"
+        end
+    end
+
+    local localRows = {}
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        local score = self.playerState:GetScore(player)
+        localRows[#localRows + 1] = {
+            userId = player.UserId,
+            name = player.DisplayName,
+            score = score,
+            level = LevelRules.levelForScore(score),
+        }
+    end
+
+    table.sort(localRows, function(a, b)
+        if a.score == b.score then
+            return a.userId < b.userId
+        end
+        return a.score > b.score
+    end)
+
+    for rank, row in ipairs(localRows) do
+        row.rank = rank
+    end
+
+    return localRows, "server"
+end
+
 function StatsService:HealthCheck()
     return self.running
 end
