@@ -179,6 +179,7 @@ function Enemies:OnDeath(model: Model)
     local killer = type(killerId) == "number" and Players:GetPlayerByUserId(killerId) or nil
 
     if killer then
+        self.players:AddKill(killer)
         self.score:Enemy(killer, record.definition.Reward, record.definition.Elite, record.definition.Boss)
     end
 
