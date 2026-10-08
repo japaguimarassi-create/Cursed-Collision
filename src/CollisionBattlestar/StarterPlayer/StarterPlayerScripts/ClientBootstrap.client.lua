@@ -105,7 +105,7 @@ local function startOptional(modulePath: Instance, constructorName: string, ...)
     end
 
     local createdOk, instance = pcall(function()
-        return ctor(module, ...)
+        return ctor(...)
     end)
     if not createdOk then
         warn(("Collision Battlestar client module init failed [%s]: %s"):format(constructorName, tostring(instance)))
