@@ -80,6 +80,34 @@ local function makeBurst(position: Vector3, color: Color3, count: number, speed:
     end
 end
 
+local function makeSmoke(position: Vector3, color: Color3, size: number, life: number)
+    local part = makePart(
+        "CBS_LocalSmoke",
+        Vector3.new(0.5, 0.5, 0.5),
+        position,
+        color,
+        1
+    )
+
+    local smoke = Instance.new("Smoke")
+    smoke.Color = color
+    smoke.Opacity = 0.24
+    smoke.Size = size
+    smoke.RiseVelocity = 4
+    smoke.Parent = part
+
+    TweenService:Create(
+        smoke,
+        TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {
+            Opacity = 0,
+            Size = size * 1.35,
+        }
+    ):Play()
+
+    Debris:AddItem(part, life + 0.1)
+end
+
 local function makeImpact(position: Vector3, elite: boolean, critical: boolean)
     local color = elite
         and Color3.fromRGB(255, 55, 65)
@@ -132,6 +160,7 @@ function CombatFX:Start()
             makeImpact(payload.position, false, payload.critical == true)
         elseif kind == "EnemyDefeated" and typeof(payload.position) == "Vector3" then
             makeRing(payload.position, payload.boss and 14 or payload.elite and 10 or 7, payload.boss and Color3.fromRGB(255, 70, 75) or Color3.fromRGB(120, 210, 255), payload.boss and 0.35 or 0.2)
+            makeSmoke(payload.position, payload.boss and Color3.fromRGB(90, 95, 110) or Color3.fromRGB(110, 125, 145), payload.boss and 7 or 4, payload.boss and 0.45 or 0.28)
             makeBurst(payload.position, payload.boss and Color3.fromRGB(255, 70, 75) or Color3.fromRGB(120, 210, 255), payload.boss and 8 or 4, payload.boss and 5 or 3)
         elseif kind == "WaveStart" and typeof(payload.position) == "Vector3" then
             makeRing(payload.position, 24, Color3.fromRGB(140, 90, 255), 0.35)
