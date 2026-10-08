@@ -2,7 +2,7 @@
 
 local DataSchema = {}
 
-DataSchema.CurrentVersion = 3
+DataSchema.CurrentVersion = 4
 
 local function numberOr(value: any, fallback: number)
     if type(value) == "number" and value == value and value < math.huge and value > -math.huge then
@@ -52,6 +52,7 @@ function DataSchema.Default()
         Credits = 0,
         PowerLevel = 1,
         Kills = 0,
+        Score = 0,
         TotalWaves = 0,
         Upgrades = defaultUpgrades(),
         Inventory = defaultInventory(),
@@ -160,6 +161,7 @@ function DataSchema.Sanitize(source: any)
     data.Credits = nonNegativeInt(source.Credits, 0, 2^31 - 1)
     data.PowerLevel = nonNegativeInt(source.PowerLevel, 1, 1000)
     data.Kills = nonNegativeInt(source.Kills, 0, 2^31 - 1)
+    data.Score = nonNegativeInt(source.Score, 0, 2^53)
     data.TotalWaves = nonNegativeInt(source.TotalWaves, 0, 2^31 - 1)
 
     if type(source.Upgrades) == "table" then
@@ -190,7 +192,7 @@ function DataSchema.Migrate(source: any)
         return DataSchema.Sanitize(source)
     end
 
-    if schemaVersion == 0 or schemaVersion == 1 or schemaVersion == 2 then
+    if schemaVersion == 0 or schemaVersion == 1 or schemaVersion == 2 or schemaVersion == 3 then
         local migrated = DataSchema.Sanitize(source)
         local legacyPower = nonNegativeInt(source.PowerLevel, 1, 1000)
         migrated.PowerLevel = math.max(1, legacyPower)
