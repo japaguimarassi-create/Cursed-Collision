@@ -24,6 +24,7 @@ local function makePart(parent: Model, name: string, size: Vector3, cframe: CFra
     part.TopSurface = Enum.SurfaceType.Smooth
     part.BottomSurface = Enum.SurfaceType.Smooth
     part.Massless = false
+    part.CastShadow = false
     part.Parent = parent
     return part
 end
