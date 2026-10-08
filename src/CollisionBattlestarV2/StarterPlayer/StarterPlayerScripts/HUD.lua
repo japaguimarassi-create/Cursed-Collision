@@ -190,6 +190,7 @@ function HUD.new(remotes)
         characterConnection = nil,
         healthConnection = nil,
         disabled = false,
+        selectedShopEntries = {},
     }, HUD)
 
     local function open(name: string)
@@ -236,6 +237,22 @@ function HUD.new(remotes)
                 action = "Dash",
                 direction = Vector3.new(look.X, 0, look.Z),
             })
+        end
+    end)
+
+    self.shopConnection = remotes.Shop.OnClientEvent:Connect(function(kind, payload)
+        if kind == "Catalog" and type(payload) == "table" then
+            self:ShowShop(payload)
+        elseif kind == "Result" and type(payload) == "table" then
+            self:ShowShop(payload.catalog or {})
+        end
+    end)
+
+    self.echoConnection = remotes.Echo.OnClientEvent:Connect(function(kind, payload)
+        if kind == "Friends" and type(payload) == "table" then
+            self:ShowFriends(payload)
+        elseif kind == "State" then
+            self.status.Text = payload and "ECHO ACTIVE" or "ECHO OFF"
         end
     end)
 
@@ -336,9 +353,9 @@ function HUD:Open(name: string)
         local info = label(self.content, "Info", "Upgrades and cosmetics", UDim2.new(1, -10, 0, 34))
         info.TextXAlignment = Enum.TextXAlignment.Center
     elseif name == "ECHO" then
-        local summon = button(self.content, "Summon", "SUMMON ECHO", UDim2.new(1, -10, 0, 54))
-        summon.Activated:Connect(function()
-            self.remotes.Echo:FireServer({action = "Summon"})
+        local list = button(self.content, "LoadFriends", "LOAD FRIENDS", UDim2.new(1, -10, 0, 50))
+        list.Activated:Connect(function()
+            self.remotes.Echo:FireServer({action = "ListFriends"})
         end)
         local dismiss = button(self.content, "Dismiss", "DISMISS", UDim2.new(1, -10, 0, 46))
         dismiss.Activated:Connect(function()
@@ -352,6 +369,69 @@ function HUD:Open(name: string)
         local leave = button(self.content, "LeavePVP", "RETURN TO PVE", UDim2.new(1, -10, 0, 46))
         leave.Activated:Connect(function()
             self.remotes.PvP:FireServer({action = "Leave"})
+        end)
+    end
+end
+
+function HUD:ShowShop(catalog)
+    self:Open("SHOP")
+
+    for _, entry in ipairs(catalog) do
+        local title = entry.name or entry.id
+        local detail = entry.kind == "Upgrade"
+            and ("%s  •  LV %d/%d  •  %d C"):format(
+                title,
+                entry.level or 0,
+                entry.max or 25,
+                entry.price or 0
+            )
+            or ("%s  •  %d C"):format(title, entry.price or 0)
+
+        local row = button(
+            self.content,
+            "Shop_" .. tostring(entry.id),
+            entry.owned and (title .. " • EQUIP") or detail,
+            UDim2.new(1, -10, 0, 50)
+        )
+
+        row.Activated:Connect(function()
+            if entry.kind == "Upgrade" then
+                self.remotes.Shop:FireServer({
+                    action = "Buy",
+                    id = entry.id,
+                    price = entry.price,
+                })
+            elseif entry.owned then
+                self.remotes.Shop:FireServer({
+                    action = "Equip",
+                    id = entry.id,
+                })
+            else
+                self.remotes.Shop:FireServer({
+                    action = "Buy",
+                    id = entry.id,
+                })
+            end
+        end)
+    end
+end
+
+function HUD:ShowFriends(friends)
+    self:Open("ECHO")
+
+    for _, friend in ipairs(friends) do
+        local row = button(
+            self.content,
+            "Friend_" .. tostring(friend.id),
+            "SUMMON  " .. tostring(friend.name),
+            UDim2.new(1, -10, 0, 50)
+        )
+
+        row.Activated:Connect(function()
+            self.remotes.Echo:FireServer({
+                action = "Summon",
+                friendUserId = friend.id,
+            })
         end)
     end
 end
@@ -394,17 +474,12 @@ function HUD:ShowMissions(payload)
 end
 
 function HUD:Stop()
-    if self.stateConnection then
-        self.stateConnection:Disconnect()
-        self.stateConnection = nil
-    end
-    if self.characterConnection then
-        self.characterConnection:Disconnect()
-        self.characterConnection = nil
-    end
-    if self.healthConnection then
-        self.healthConnection:Disconnect()
-        self.healthConnection = nil
+    for _, name in ipairs({"shopConnection", "echoConnection", "stateConnection", "characterConnection", "healthConnection"}) do
+        local connection = self[name]
+        if connection then
+            connection:Disconnect()
+            self[name] = nil
+        end
     end
     self.gui:Destroy()
 end
