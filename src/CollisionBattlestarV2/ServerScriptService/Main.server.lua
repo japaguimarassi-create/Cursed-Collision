@@ -23,6 +23,7 @@ local Ranking = require(script.Parent.Ranking)
 
 local remotes = Network.ensure()
 local runtime = RuntimeState.new()
+local stateRequestAt = {}
 local heart = Heart.new(runtime)
 
 local persistence = Persistence.new()
@@ -63,6 +64,12 @@ remotes.State.OnServerEvent:Connect(function(player, request)
     if type(request) ~= "table" then
         return
     end
+
+    local now = os.clock()
+    if now - (stateRequestAt[player] or -math.huge) < 0.5 then
+        return
+    end
+    stateRequestAt[player] = now
 
     if request.action == "RequestState" then
         remotes.State:FireClient(player, "Snapshot", runtime:Snapshot())
