@@ -262,9 +262,6 @@ function Echo:Start()
                 self:Tick(player, record, now)
             end
             task.wait(any and 0.2 or 0.5)
-            if not self.connections then
-                break
-            end
         end
     end)
 end
