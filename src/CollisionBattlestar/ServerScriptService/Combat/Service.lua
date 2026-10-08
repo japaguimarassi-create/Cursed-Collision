@@ -11,7 +11,7 @@ local ProgressionRules = require(ReplicatedStorage.Shared.ProgressionRules)
 local CombatService = {}
 CombatService.__index = CombatService
 
-function CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes, pvpService)
+function CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes, pvpService, mechanicsKernel)
     return setmetatable({
         runtimeState = runtimeState,
         playerState = playerState,
@@ -20,6 +20,7 @@ function CombatService.new(runtimeState, playerState, securityService, worldServ
         enemyService = enemyService,
         remotes = remotes,
         pvpService = pvpService,
+        mechanicsKernel = mechanicsKernel,
         connection = nil,
     }, CombatService)
 end
@@ -31,17 +32,25 @@ function CombatService:Start()
 end
 
 function CombatService:HandleRequest(player: Player, request: any)
-    if type(request) ~= "table" then
-        self.securityService:RecordStrike(player)
-        return
+    local function execute()
+        if type(request) ~= "table" then
+            self.securityService:RecordStrike(player)
+            return
+        end
+
+        if request.action == "Attack" then
+            self:HandleAttack(player)
+        elseif request.action == "Dash" then
+            self:HandleDash(player, request.direction)
+        else
+            self.securityService:RecordStrike(player)
+        end
     end
 
-    if request.action == "Attack" then
-        self:HandleAttack(player)
-    elseif request.action == "Dash" then
-        self:HandleDash(player, request.direction)
+    if self.mechanicsKernel then
+        self.mechanicsKernel:Call("combat.request", execute)
     else
-        self.securityService:RecordStrike(player)
+        execute()
     end
 end
 
