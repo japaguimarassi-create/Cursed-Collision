@@ -26,6 +26,7 @@ function AudioService.new(remotes)
         remotes = remotes,
         running = false,
         connection = nil,
+        stateConnection = nil,
         music = nil,
     }, AudioService)
 end
@@ -96,7 +97,7 @@ function AudioService:Start()
         end
     end)
 
-    self.remotes.State.OnClientEvent:Connect(function(kind)
+    self.stateConnection = self.remotes.State.OnClientEvent:Connect(function(kind)
         if kind == "LevelUp" then
             self:Play("LevelUp")
         elseif kind == "RuntimeReloaded" then
@@ -111,6 +112,11 @@ function AudioService:Stop()
     if self.connection then
         self.connection:Disconnect()
         self.connection = nil
+    end
+
+    if self.stateConnection then
+        self.stateConnection:Disconnect()
+        self.stateConnection = nil
     end
 
     if self.music then
