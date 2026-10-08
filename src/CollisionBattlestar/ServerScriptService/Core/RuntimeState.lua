@@ -13,6 +13,8 @@ function RuntimeState.new()
         wave = 0,
         enemiesAlive = 0,
         eliteAlive = false,
+        bossId = nil,
+        eventId = nil,
         intermissionEndsAt = 0,
     }, RuntimeState)
 end
@@ -55,6 +57,8 @@ function RuntimeState:Snapshot()
         wave = self.wave,
         enemiesAlive = self.enemiesAlive,
         eliteAlive = self.eliteAlive,
+        bossId = self.bossId,
+        eventId = self.eventId,
         intermissionEndsAt = self.intermissionEndsAt,
     }
 end
