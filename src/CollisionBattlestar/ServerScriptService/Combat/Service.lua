@@ -11,7 +11,7 @@ local ProgressionRules = require(ReplicatedStorage.Shared.ProgressionRules)
 local CombatService = {}
 CombatService.__index = CombatService
 
-function CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes)
+function CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes, pvpService)
     return setmetatable({
         runtimeState = runtimeState,
         playerState = playerState,
@@ -19,6 +19,7 @@ function CombatService.new(runtimeState, playerState, securityService, worldServ
         worldService = worldService,
         enemyService = enemyService,
         remotes = remotes,
+        pvpService = pvpService,
         connection = nil,
     }, CombatService)
 end
@@ -35,10 +36,9 @@ function CombatService:HandleRequest(player: Player, request: any)
         return
     end
 
-    local action = request.action
-    if action == "Attack" then
+    if request.action == "Attack" then
         self:HandleAttack(player)
-    elseif action == "Dash" then
+    elseif request.action == "Dash" then
         self:HandleDash(player, request.direction)
     else
         self.securityService:RecordStrike(player)
@@ -47,10 +47,7 @@ end
 
 function CombatService:GetPowerLevel(player: Player)
     local state = self.playerState:Get(player)
-    if not state then
-        return 1
-    end
-    return state.powerLevel
+    return state and state.powerLevel or 1
 end
 
 function CombatService:CalculateDamage(player: Player, combo: number)
@@ -71,79 +68,178 @@ function CombatService:CalculateDamage(player: Player, combo: number)
     return damage, critical
 end
 
+function CombatService:AttackPVE(player: Player, root: BasePart, character: Model, damage: number, critical: boolean, combo: number)
+    local params = OverlapParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {character}
+    params.MaxParts = 64
+
+    local hitCFrame = root.CFrame * CFrame.new(
+        0,
+        0,
+        -(Config.Combat.HitboxSize.Z * 0.5 + 1)
+    )
+
+    local parts = workspace:GetPartBoundsInBox(
+        hitCFrame,
+        Config.Combat.HitboxSize,
+        params
+    )
+
     local seen = {}
-    local damage, critical = self:CalculateDamage(player, combo)
 
     for _, part in ipairs(parts) do
         local model = part:FindFirstAncestorOfClass("Model")
-        if model and not seen[model] then
+
+        if model and not seen[model] and model:GetAttribute("CBS_Enemy") == true then
             seen[model] = true
 
-            if player:GetAttribute("CBS_PvP") == true then
-                local targetPlayer = Players:GetPlayerFromCharacter(model)
-                if targetPlayer then
-                    local targetValid, humanoid, targetRoot = self.securityService:ValidatePvPTarget(player, targetPlayer, root)
-                    if targetValid and humanoid and targetRoot then
-                        local killerAttribute = "CBS_LastPvPKillerUserId"
-                        targetPlayer:SetAttribute(killerAttribute, player.UserId)
-                        humanoid:TakeDamage(damage)
+            local valid, humanoid, targetRoot = self.securityService:ValidateAttackTarget(
+                player,
+                model,
+                root
+            )
 
-                        local direction = targetRoot.Position - root.Position
-                        if direction.Magnitude > 0.01 then
-                            targetRoot.AssemblyLinearVelocity =
-                                direction.Unit * Config.Combat.KnockbackBase
-                                + Vector3.new(0, Config.Combat.KnockbackVertical, 0)
-                        end
+            if valid and humanoid and targetRoot then
+                model:SetAttribute("CBS_LastHitUserId", player.UserId)
+                humanoid:TakeDamage(damage)
 
-                        self.remotes.FX:FireAllClients("PvPHit", {
-                            attackerUserId = player.UserId,
-                            targetUserId = targetPlayer.UserId,
-                            position = targetRoot.Position,
-                            combo = combo,
-                            critical = critical,
-                        })
-                    end
+                local direction = targetRoot.Position - root.Position
+                if direction.Magnitude > 0.01 then
+                    local resistance = tonumber(model:GetAttribute("CBS_KnockbackResistance")) or 0
+                    local force = Config.Combat.KnockbackBase * (1 - math.clamp(resistance, 0, 0.9))
+                    targetRoot.AssemblyLinearVelocity =
+                        direction.Unit * force
+                        + Vector3.new(0, Config.Combat.KnockbackVertical, 0)
                 end
-            elseif model:GetAttribute("CBS_Enemy") == true then
-                local targetValid, humanoid, targetRoot = self.securityService:ValidateAttackTarget(player, model, root)
-                if targetValid and humanoid and targetRoot then
-                    model:SetAttribute("CBS_LastHitUserId", player.UserId)
+
+                self.remotes.FX:FireAllClients("Hit", {
+                    position = targetRoot.Position,
+                    combo = combo,
+                    elite = model:GetAttribute("CBS_Elite") == true,
+                    critical = critical,
+                })
+            end
+        end
+    end
+end
+
+function CombatService:AttackPVP(player: Player, root: BasePart, character: Model, damage: number, critical: boolean, combo: number)
+    if not self.pvpService or not self.pvpService:IsParticipant(player) then
+        return
+    end
+
+    if not self.pvpService:IsInsideZone(root.Position) then
+        return
+    end
+
+    local params = OverlapParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {character}
+    params.MaxParts = 64
+
+    local hitCFrame = root.CFrame * CFrame.new(
+        0,
+        0,
+        -(Config.Combat.HitboxSize.Z * 0.5 + 1)
+    )
+
+    local parts = workspace:GetPartBoundsInBox(
+        hitCFrame,
+        Config.Combat.HitboxSize,
+        params
+    )
+
+    local seen = {}
+
+    for _, part in ipairs(parts) do
+        local targetCharacter = part:FindFirstAncestorOfClass("Model")
+
+        if targetCharacter and not seen[targetCharacter] then
+            seen[targetCharacter] = true
+
+            local targetPlayer = Players:GetPlayerFromCharacter(targetCharacter)
+
+            if targetPlayer and self.pvpService:IsParticipant(targetPlayer) then
+                local valid, humanoid, targetRoot = self.securityService:ValidatePvPTarget(
+                    player,
+                    targetPlayer,
+                    root
+                )
+
+                if valid and humanoid and targetRoot and self.pvpService:IsInsideZone(targetRoot.Position) then
+                    targetPlayer:SetAttribute("CBS_LastPvPKillerUserId", player.UserId)
                     humanoid:TakeDamage(damage)
 
                     local direction = targetRoot.Position - root.Position
                     if direction.Magnitude > 0.01 then
-                        local resistance = tonumber(model:GetAttribute("CBS_KnockbackResistance")) or 0
-                        local force = Config.Combat.KnockbackBase * (1 - math.clamp(resistance, 0, 0.9))
                         targetRoot.AssemblyLinearVelocity =
-                            direction.Unit * force
+                            direction.Unit * Config.Combat.KnockbackBase
                             + Vector3.new(0, Config.Combat.KnockbackVertical, 0)
                     end
 
-                    self.remotes.FX:FireAllClients("Hit", {
+                    self.remotes.FX:FireAllClients("PvPHit", {
+                        attackerUserId = player.UserId,
+                        targetUserId = targetPlayer.UserId,
                         position = targetRoot.Position,
                         combo = combo,
-                        elite = model:GetAttribute("CBS_Elite") == true,
                         critical = critical,
                     })
                 end
             end
         end
     end
+end
+
+function CombatService:HandleAttack(player: Player)
+    local valid, character, root = self.securityService:IsAliveCharacter(player)
+    if not valid or not root or not character then
+        return
+    end
+
+    local inPvP = player:GetAttribute("CBS_PvP") == true
+
+    if inPvP then
+        if not self.pvpService or not self.pvpService:IsParticipant(player) then
+            return
+        end
+    elseif not self.securityService:IsInsideArena(root) then
+        return
+    end
+
+    local combo = self.playerState:MarkAttack(player, os.clock())
+    if not combo then
+        return
+    end
+
+    local damage, critical = self:CalculateDamage(player, combo)
+
+    if inPvP then
+        self:AttackPVP(player, root, character, damage, critical, combo)
+    else
+        self:AttackPVE(player, root, character, damage, critical, combo)
+    end
 
     self.remotes.FX:FireClient(player, "Attack", {
         combo = combo,
         critical = critical,
+        pvp = inPvP,
     })
 end
 
-function CombatService:HandleDash(player: Player)
 function CombatService:HandleDash(player: Player, requestedDirection: any)
     local valid, character, root = self.securityService:IsAliveCharacter(player)
     if not valid or not root then
         return
     end
 
-    if not self.securityService:IsInsideArena(root) then
+    local inPvP = player:GetAttribute("CBS_PvP") == true
+
+    if inPvP then
+        if not self.pvpService or not self.pvpService:IsParticipant(player) or not self.pvpService:IsInsideZone(root.Position) then
+            return
+        end
+    elseif not self.securityService:IsInsideArena(root) then
         return
     end
 
@@ -157,9 +253,14 @@ function CombatService:HandleDash(player: Player, requestedDirection: any)
         return
     end
 
-    local centerDistance = Vector2.new(root.Position.X, root.Position.Z).Magnitude
-    local maxRadius = Constants.ArenaRadius - 6
-    local available = math.max(0, maxRadius - centerDistance)
+    local centerDistance = inPvP
+        and math.abs(root.Position.X)
+        or Vector2.new(root.Position.X, root.Position.Z).Magnitude
+
+    local available = inPvP
+        and math.max(0, 70 - centerDistance)
+        or math.max(0, Constants.ArenaRadius - 6 - centerDistance)
+
     local distance = math.min(Config.Combat.DashDistance, available)
 
     if distance <= 0.5 then
@@ -179,6 +280,7 @@ function CombatService:HandleDash(player: Player, requestedDirection: any)
         userId = player.UserId,
         position = root.Position,
         direction = direction,
+        pvp = inPvP,
     })
 
     task.delay(Config.Combat.DashDuration, function()
