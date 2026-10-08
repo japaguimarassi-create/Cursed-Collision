@@ -6,7 +6,7 @@ local Rules = require(script.Parent.ReplicatedStorage.Shared.Rules)
 local Waves = {}
 Waves.__index = Waves
 
-function Waves.new(runtimeState, world, enemies, score, remotes, heart)
+function Waves.new(runtimeState, world, enemies, score, remotes, heart, missions)
     return setmetatable({
         state = runtimeState,
         world = world,
@@ -14,6 +14,7 @@ function Waves.new(runtimeState, world, enemies, score, remotes, heart)
         score = score,
         remotes = remotes,
         heart = heart,
+        missions = missions,
         running = false,
         generation = 0,
         current = 0,
@@ -105,6 +106,10 @@ function Waves:RunWave()
     end
 
     self.score:Wave(self.current, boss)
+
+    if self.missions then
+        self.missions:Wave(self.current)
+    end
 
     self.state:SetMany({
         phase = "Intermission",
