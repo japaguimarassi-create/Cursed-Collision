@@ -80,6 +80,15 @@ function Missions:Snapshot(player: Player)
 end
 
 function Missions:Start()
+    if self.creditConnection then
+        self.creditConnection:Disconnect()
+    end
+
+    self.creditConnection = self.players:GetCreditChanged():Connect(function(player, amount)
+        if amount > 0 then
+            self:Add(player, "Credits", amount)
+        end
+    end)
 end
 
 function Missions:Stop()
