@@ -1,5 +1,6 @@
 --!strict
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Constants = require(ReplicatedStorage.Shared.Constants)
@@ -52,39 +53,7 @@ function CombatService:GetPowerLevel(player: Player)
     return state.powerLevel
 end
 
-function CombatService:HandleAttack(player: Player)
-    local valid, character, root = self.securityService:IsAliveCharacter(player)
-    if not valid or not root then
-        return
-    end
-
-    if not self.securityService:IsInsideArena(root) then
-        return
-    end
-
-    local combo = self.playerState:MarkAttack(player, os.clock())
-    if not combo then
-        return
-    end
-
-    local params = OverlapParams.new()
-    params.FilterType = Enum.RaycastFilterType.Exclude
-    params.FilterDescendantsInstances = {character}
-    params.MaxParts = 48
-
-    local hitCFrame = root.CFrame * CFrame.new(
-        0,
-        0,
-        -(Config.Combat.HitboxSize.Z * 0.5 + 1)
-    )
-
-    local parts = workspace:GetPartBoundsInBox(
-        hitCFrame,
-        Config.Combat.HitboxSize,
-        params
-    )
-
-    local seen = {}
+function CombatService:CalculateDamage(player: Player, combo: number)
     local damage = 12 + (self:GetPowerLevel(player) - 1) * 3
     damage *= CombatRules.comboMultiplier(combo)
     damage *= ProgressionRules.damageMultiplier(
@@ -99,29 +68,64 @@ function CombatService:HandleAttack(player: Player)
         damage *= 1.5
     end
 
+    return damage, critical
+end
+
+    local seen = {}
+    local damage, critical = self:CalculateDamage(player, combo)
+
     for _, part in ipairs(parts) do
         local model = part:FindFirstAncestorOfClass("Model")
-        if model and not seen[model] and model:GetAttribute("CBS_Enemy") == true then
+        if model and not seen[model] then
             seen[model] = true
 
-            local targetValid, humanoid, targetRoot = self.securityService:ValidateAttackTarget(player, model, root)
-            if targetValid and humanoid and targetRoot then
-                model:SetAttribute("CBS_LastHitUserId", player.UserId)
-                humanoid:TakeDamage(damage)
+            if player:GetAttribute("CBS_PvP") == true then
+                local targetPlayer = Players:GetPlayerFromCharacter(model)
+                if targetPlayer then
+                    local targetValid, humanoid, targetRoot = self.securityService:ValidatePvPTarget(player, targetPlayer, root)
+                    if targetValid and humanoid and targetRoot then
+                        local killerAttribute = "CBS_LastPvPKillerUserId"
+                        targetPlayer:SetAttribute(killerAttribute, player.UserId)
+                        humanoid:TakeDamage(damage)
 
-                local direction = targetRoot.Position - root.Position
-                if direction.Magnitude > 0.01 then
-                    local resistance = tonumber(model:GetAttribute("CBS_KnockbackResistance")) or 0
-                    local force = Config.Combat.KnockbackBase * (1 - math.clamp(resistance, 0, 0.9))
-                    targetRoot.AssemblyLinearVelocity = direction.Unit * force + Vector3.new(0, Config.Combat.KnockbackVertical, 0)
+                        local direction = targetRoot.Position - root.Position
+                        if direction.Magnitude > 0.01 then
+                            targetRoot.AssemblyLinearVelocity =
+                                direction.Unit * Config.Combat.KnockbackBase
+                                + Vector3.new(0, Config.Combat.KnockbackVertical, 0)
+                        end
+
+                        self.remotes.FX:FireAllClients("PvPHit", {
+                            attackerUserId = player.UserId,
+                            targetUserId = targetPlayer.UserId,
+                            position = targetRoot.Position,
+                            combo = combo,
+                            critical = critical,
+                        })
+                    end
                 end
+            elseif model:GetAttribute("CBS_Enemy") == true then
+                local targetValid, humanoid, targetRoot = self.securityService:ValidateAttackTarget(player, model, root)
+                if targetValid and humanoid and targetRoot then
+                    model:SetAttribute("CBS_LastHitUserId", player.UserId)
+                    humanoid:TakeDamage(damage)
 
-                self.remotes.FX:FireAllClients("Hit", {
-                    position = targetRoot.Position,
-                    combo = combo,
-                    elite = model:GetAttribute("CBS_Elite") == true,
-                    critical = critical,
-                })
+                    local direction = targetRoot.Position - root.Position
+                    if direction.Magnitude > 0.01 then
+                        local resistance = tonumber(model:GetAttribute("CBS_KnockbackResistance")) or 0
+                        local force = Config.Combat.KnockbackBase * (1 - math.clamp(resistance, 0, 0.9))
+                        targetRoot.AssemblyLinearVelocity =
+                            direction.Unit * force
+                            + Vector3.new(0, Config.Combat.KnockbackVertical, 0)
+                    end
+
+                    self.remotes.FX:FireAllClients("Hit", {
+                        position = targetRoot.Position,
+                        combo = combo,
+                        elite = model:GetAttribute("CBS_Elite") == true,
+                        critical = critical,
+                    })
+                end
             end
         end
     end
@@ -132,6 +136,7 @@ function CombatService:HandleAttack(player: Player)
     })
 end
 
+function CombatService:HandleDash(player: Player)
 function CombatService:HandleDash(player: Player, requestedDirection: any)
     local valid, character, root = self.securityService:IsAliveCharacter(player)
     if not valid or not root then
