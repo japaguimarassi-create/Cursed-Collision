@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local Definitions = require(ReplicatedStorage.Shared.EnemyDefinitions)
 local AIHeart = require(script.Parent.AI.Heart)
+local PhysicsRules = require(ReplicatedStorage.Shared.PhysicsRules)
 
 local Enemies = {}
 Enemies.__index = Enemies
@@ -37,6 +38,7 @@ function Enemies:BuildModel(definition, position)
     local model = Instance.new("Model")
     model.Name = definition.Id
     model:SetAttribute("CBS2_NPC", true)
+    model:SetAttribute("CBS2_NPC", true)
     model:SetAttribute("CBS2_Elite", definition.Elite)
     model:SetAttribute("CBS2_Boss", definition.Boss)
 
@@ -49,7 +51,7 @@ function Enemies:BuildModel(definition, position)
     root.CanTouch = false
     root.CanQuery = true
     root.CollisionGroup = "CBS_NPC"
-    root.CustomPhysicalProperties = ReplicatedStorage.Shared.PhysicsRules.NPC
+    root.CustomPhysicalProperties = PhysicsRules.NPC
     root.Position = position
     root.Parent = model
 
@@ -60,7 +62,7 @@ function Enemies:BuildModel(definition, position)
     body.CanTouch = false
     body.CanQuery = true
     body.CollisionGroup = "CBS_NPC"
-    body.CustomPhysicalProperties = ReplicatedStorage.Shared.PhysicsRules.NPC
+    body.CustomPhysicalProperties = PhysicsRules.NPC
     body.Color = definition.Boss and Color3.fromRGB(175, 55, 65)
         or definition.Elite and Color3.fromRGB(170, 80, 220)
         or Color3.fromRGB(90, 100, 120)
@@ -75,7 +77,7 @@ function Enemies:BuildModel(definition, position)
     head.CanTouch = false
     head.CanQuery = false
     head.CollisionGroup = "CBS_NPC"
-    head.CustomPhysicalProperties = ReplicatedStorage.Shared.PhysicsRules.NPC
+    head.CustomPhysicalProperties = PhysicsRules.NPC
     head.Color = body.Color
     head.Material = Enum.Material.SmoothPlastic
     head.Parent = model
