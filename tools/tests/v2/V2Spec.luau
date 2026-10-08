@@ -54,3 +54,5 @@ assert(Missions.Bosses.Goal == 3)
 assert(Enemies.Boss.Boss == true)
 
 print("PASS Collision Battlestar V2 pure rules")
+
+return true
