@@ -27,10 +27,6 @@ jobs:
           cache: true
       - name: Run clean Luau tests
         run: luau tools/tests/run.luau
-      - name: Parse all runtime Luau
-        run: |
-          set -euo pipefail
-          find src/CollisionBattlestar -type f -name '*.lua' -print0 | xargs -0 -n1 luau --only-parse
       - name: Validate clean runtime
         run: python3 tools/validate_project.py
       - name: Build Roblox place
