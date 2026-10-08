@@ -21,6 +21,13 @@ return function()
     local lateWave = Definitions.BuildWave(25)
     assert(lateWave.Elite == 1)
     assert(lateWave.Total <= Constants.MaxActiveEnemies)
+
+    for waveNumber = 1, 100 do
+        local generated = Definitions.BuildWave(waveNumber)
+        assert(generated.Elite == 1)
+        assert(generated.Total <= Constants.MaxActiveEnemies)
+        assert(generated.Total == generated.Grunt + generated.Brute + generated.Stalker + generated.Elite)
+    end
     assert(Definitions.Enemies.Elite.IsElite == true)
     assert(Definitions.Enemies.Elite.Tier > Definitions.Enemies.Stalker.Tier)
     assert(Definitions.Enemies.Elite.MaxHealth > Definitions.Enemies.Stalker.MaxHealth)
