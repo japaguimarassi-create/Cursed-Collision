@@ -120,6 +120,13 @@ function ShopService:GetCatalog(player: Player)
     return catalog
 end
 
+local function canGrant(profile, itemId: string)
+    return type(profile) == "table"
+        and type(profile.Inventory) == "table"
+        and type(profile.Inventory.Owned) == "table"
+        and InventoryRules.canGrant(profile.Inventory.Owned, itemId)
+end
+
 function ShopService:Purchase(player: Player, itemId: any)
     if not ShopRules.isSafeShopPhase(self.runtimeState.phase) then
         return false, "shop_closed"
@@ -156,27 +163,21 @@ function ShopService:Purchase(player: Player, itemId: any)
         return false, reason
     end
 
-    if not inventoryRulesSafeGrant(profile, itemId) then
+    local nextOwned = InventoryRules.grant(profile.Inventory.Owned, itemId)
+
+    if type(nextOwned) ~= "table" or not canGrant(profile, itemId) then
         return false, "inventory_rejected"
     end
 
     local price = item.Price
     state.credits -= price
     profile.Credits = state.credits
-    profile.Inventory.Owned[itemId] = true
+    profile.Inventory.Owned = nextOwned
 
     player:SetAttribute("CBS_Credits", state.credits)
 
     return true, "purchased"
 end
 
-local function inventoryRulesSafeGrant(profile, itemId)
-    if type(profile) ~= "table" or type(profile.Inventory) ~= "table" then
-        return false
-    end
-
-    local owned = profile.Inventory.Owned
-    return type(owned) == "table" and owned[itemId] ~= true
-end
 
 return ShopService
