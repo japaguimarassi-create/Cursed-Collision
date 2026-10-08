@@ -155,6 +155,13 @@ function Heart:Reload(reason: string, _)
     local pvp = self.services.PvP
     local echo = self.services.Echo
     local players = self.services.Players
+    local waves = self.services.Waves
+
+    if waves and type(waves.Resume) == "function" then
+        pcall(function()
+            waves:Resume(resumeWave)
+        end)
+    end
 
     if enemies and type(enemies.Clear) == "function" then
         pcall(function()
@@ -197,15 +204,6 @@ function Heart:Reload(reason: string, _)
     self.recovering = false
 
     local ok = self:Start()
-    if ok then
-        local waves = self.services.Waves
-        if waves and type(waves.Resume) == "function" then
-            pcall(function()
-                waves:Resume(resumeWave)
-            end)
-        end
-    end
-
     workspace:SetAttribute("CBS2_RuntimeRecovering", false)
     workspace:SetAttribute("CBS2_RuntimeError", ok and nil or tostring(reason))
 
