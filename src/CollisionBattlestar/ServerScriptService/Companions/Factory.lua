@@ -76,6 +76,7 @@ local function sanitizeModel(model: Model)
         elseif descendant:IsA("BasePart") then
             descendant.CanCollide = false
             descendant.CanTouch = false
+            descendant.CastShadow = false
             descendant.Massless = true
             descendant:SetNetworkOwner(nil)
         end
