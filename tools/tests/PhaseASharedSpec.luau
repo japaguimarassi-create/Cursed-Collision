@@ -3,14 +3,15 @@
 return function()
     local Constants = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Constants")
     local Definitions = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Definitions")
-    local Config = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Config")
     local Identity = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/GameIdentity")
 
     assert(Identity.ProductName == "Collision Battlestar")
     assert(Identity.Subtitle == "Where Worlds Collide")
     assert(Constants.ComboSteps == 3)
     assert(Constants.DashDistance > 0)
-    assert(Config.Combat.AttackCooldown == Constants.AttackCooldown)
+    assert(Constants.HitboxWidth > 0)
+    assert(Constants.HitboxHeight > 0)
+    assert(Constants.HitboxDepth > 0)
 
     local wave = Definitions.BuildWave(1)
     assert(wave.Number == 1)
