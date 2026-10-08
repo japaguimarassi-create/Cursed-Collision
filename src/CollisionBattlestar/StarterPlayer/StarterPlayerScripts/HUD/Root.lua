@@ -2,10 +2,7 @@
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
-
-local Constants = require(ReplicatedStorage.Shared.Constants)
 
 local HUD = {}
 HUD.__index = HUD
