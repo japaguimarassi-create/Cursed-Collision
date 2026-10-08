@@ -1,6 +1,8 @@
 --!strict
 
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Constants = require(ReplicatedStorage.Shared.Constants)
 
 local Heart = {}
 Heart.__index = Heart
@@ -61,7 +63,7 @@ function Heart:Start()
 
     self.heartbeat = RunService.Heartbeat:Connect(function(dt)
         self.accumulator += dt
-        if self.accumulator < 5 then
+        if self.accumulator < Constants.RuntimeHealthInterval then
             return
         end
         self.accumulator = 0
@@ -108,7 +110,11 @@ function Heart:Reload(reason: string, _)
     if self.recovering then
         return false
     end
-    if now - self.lastRecoveryAt < 6 then
+    if self.recoveryCount >= Constants.RuntimeRecoveryLimit then
+        return false
+    end
+
+    if now - self.lastRecoveryAt < Constants.RuntimeRecoveryCooldown then
         return false
     end
 
@@ -203,7 +209,14 @@ function Heart:Reload(reason: string, _)
     self.running = false
     self.recovering = false
 
-    local ok = self:Start()
+    local ok = false
+    if waves and type(waves.Resume) == "function" then
+        pcall(function()
+            waves:Resume(resumeWave)
+        end)
+    end
+
+    ok = self:Start()
     workspace:SetAttribute("CBS2_RuntimeRecovering", false)
     workspace:SetAttribute("CBS2_RuntimeError", ok and nil or tostring(reason))
 
