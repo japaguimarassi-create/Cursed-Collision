@@ -1,7 +1,8 @@
 --!strict
 
-local Constants = require(script.Parent.ReplicatedStorage.Shared.Constants)
-local Rules = require(script.Parent.ReplicatedStorage.Shared.Rules)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Constants = require(ReplicatedStorage.Shared.Constants)
+local Rules = require(ReplicatedStorage.Shared.Rules)
 
 local Waves = {}
 Waves.__index = Waves
