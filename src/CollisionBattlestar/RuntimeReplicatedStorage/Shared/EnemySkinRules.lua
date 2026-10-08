@@ -6,6 +6,13 @@ local function validTier(tier: any)
     return type(tier) == "number" and tier >= 1 and tier <= 4 and tier == math.floor(tier)
 end
 
+local function validVariant(compatibility, key: string, value: any)
+    return type(value) == "string"
+        and type(compatibility) == "table"
+        and type(compatibility[key]) == "table"
+        and compatibility[key][value] == true
+end
+
 function EnemySkinRules.isValidProfile(profile: any, definitions)
     if type(profile) ~= "table"
         or type(profile.ProfileId) ~= "string"
@@ -14,11 +21,21 @@ function EnemySkinRules.isValidProfile(profile: any, definitions)
         return false
     end
 
-    if type(definitions) == "table" and definitions.Themes then
-        return definitions.Themes[profile.ThemeId] ~= nil
+    if type(definitions) ~= "table"
+        or type(definitions.Themes) ~= "table"
+        or definitions.Themes[profile.ThemeId] == nil then
+        return false
     end
 
-    return true
+    local compatibility = definitions.Compatibility and definitions.Compatibility[profile.Tier]
+    if not compatibility then
+        return false
+    end
+
+    return validVariant(compatibility, "Body", profile.BodyVariant)
+        and validVariant(compatibility, "Head", profile.HeadVariant)
+        and validVariant(compatibility, "Gear", profile.GearVariant)
+        and validVariant(compatibility, "Accessory", profile.AccessoryVariant)
 end
 
 function EnemySkinRules.validProfiles(themeId: string, tier: number, definitions)
