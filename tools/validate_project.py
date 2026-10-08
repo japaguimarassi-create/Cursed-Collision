@@ -138,11 +138,11 @@ monetization = (ROOT / "src/CollisionBattlestar/ServerScriptService/Monetization
 
 for token in [
     '"RemoteEvent"',
-    '"Commerce"',
-    '"Companion"',
-    '"PvP"',
-    '"Mission"',
-    '"Admin"',
+    "Constants.CommerceRemote",
+    "Constants.CompanionRemote",
+    "Constants.PvPRemote",
+    "Constants.MissionRemote",
+    "Constants.AdminRemote",
     "StartInOrder",
     "Persistence",
     "PlayerState",
@@ -171,7 +171,7 @@ for token in ["UpdateAsync", "GenerateGUID", "SaveAndRelease", "PLAYER_SESSION_L
     if token not in persistence:
         raise SystemExit("Persistence contract missing: " + token)
 
-for token in ["WaitForChild", "HUD.new", "InputService.new", "AdvancedPanels.new", "SocialInvite.new"]:
+for token in ["WaitForChild", "HUD.new", "InputService.new", "AdvancedPanels.new", "SocialInvite.new", "ClientRemotes.WaitForRemotes"]:
     if token not in client:
         raise SystemExit("Client bootstrap contract missing: " + token)
 
