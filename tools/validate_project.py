@@ -171,9 +171,14 @@ for token in ["UpdateAsync", "GenerateGUID", "SaveAndRelease", "PLAYER_SESSION_L
     if token not in persistence:
         raise SystemExit("Persistence contract missing: " + token)
 
-for token in ["WaitForChild", "HUD.new", "InputService.new", "AdvancedPanels.new", "SocialInvite.new", "ClientRemotes.WaitForRemotes"]:
+for token in ["HUD.new", "InputService.new", "AdvancedPanels.new", "SocialInvite.new", "ClientRemotes.WaitForRemotes"]:
     if token not in client:
         raise SystemExit("Client bootstrap contract missing: " + token)
+
+client_remotes = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientRemotes.lua").read_text(encoding="utf-8")
+for token in ["WaitForChild", "Constants.CommerceRemote", "Constants.CompanionRemote", "Constants.PvPRemote", "Constants.MissionRemote", "Constants.AdminRemote"]:
+    if token not in client_remotes:
+        raise SystemExit("Client remote contract missing: " + token)
 
 for token in [
     'gui.Name = "CollisionBattlestarHUD"',
