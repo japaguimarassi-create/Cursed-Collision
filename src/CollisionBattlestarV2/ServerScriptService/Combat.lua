@@ -157,10 +157,14 @@ function Combat:Dash(player: Player, direction: any)
         )
     end
 
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {character}
+
     local hit = Workspace:Raycast(
         root.Position,
         target - root.Position,
-        RaycastParams.new()
+        rayParams
     )
 
     if hit and hit.Instance and hit.Instance.CanCollide then
