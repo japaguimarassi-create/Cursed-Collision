@@ -7,13 +7,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LevelRules = require(ReplicatedStorage.Shared.LevelRules)
 
 local RANKING_STORE = "CollisionBattlestar_Ranking_v1"
-local LEADERBOARD_WRITE_INTERVAL = 20
+local LEADERBOARD_WRITE_INTERVAL = 60
 local MAX_SCORE = 2^53
 
 local StatsService = {}
 StatsService.__index = StatsService
 
-function StatsService.new(playerState, runtimeState, enemyService)
+function StatsService.new(playerState, runtimeState, enemyService, remotes)
     local ok, store = pcall(function()
         return DataStoreService:GetOrderedDataStore(RANKING_STORE)
     end)
@@ -22,6 +22,7 @@ function StatsService.new(playerState, runtimeState, enemyService)
         playerState = playerState,
         runtimeState = runtimeState,
         enemyService = enemyService,
+        remotes = remotes,
         rankingStore = ok and store or nil,
         running = false,
         lastWave = 0,
@@ -30,6 +31,7 @@ function StatsService.new(playerState, runtimeState, enemyService)
         pendingRanking = {} :: {[Player]: number},
         lastRankingWrite = {} :: {[Player]: number},
         connections = {},
+        playerConnections = {} :: {[Player]: {RBXScriptConnection}},
     }, StatsService)
 end
 
@@ -96,9 +98,8 @@ function StatsService:AddScore(player: Player, amount: number, reason: string?)
     local nextLevel = LevelRules.levelForScore(current + added)
 
     if nextLevel > previousLevel then
-        local remoteFolder = ReplicatedStorage:FindFirstChild("CollisionBattlestarRemotes")
-        local remote = remoteFolder and remoteFolder:FindFirstChild("State")
-        if remote and remote:IsA("RemoteEvent") then
+        local remote = self.remotes and self.remotes.State
+        if remote then
             remote:FireClient(player, "LevelUp", {
                 level = nextLevel,
                 score = current + added,
@@ -150,7 +151,7 @@ function StatsService:AwardPvPKill(player: Player)
 end
 
 function StatsService:Flush(player: Player)
-    if not self.rankingStore or not player.Parent then
+    if not self.rankingStore then
         return false
     end
 
@@ -182,6 +183,48 @@ function StatsService:FlushPending()
     end
 end
 
+function StatsService:BindPlayer(player: Player)
+    local old = self.playerConnections[player]
+    if old then
+        for _, connection in ipairs(old) do
+            connection:Disconnect()
+        end
+    end
+
+    local connections = {}
+
+    table.insert(connections, player:GetAttributeChangedSignal("CBS_PlayerStateReady"):Connect(function()
+        if player:GetAttribute("CBS_PlayerStateReady") == true then
+            self:Publish(player)
+        end
+    end))
+
+    table.insert(connections, player:GetAttributeChangedSignal("CBS_Score"):Connect(function()
+        if player:GetAttribute("CBS_PlayerStateReady") == true then
+            self:Publish(player)
+        end
+    end))
+
+    self.playerConnections[player] = connections
+
+    if player:GetAttribute("CBS_PlayerStateReady") == true then
+        self:Publish(player)
+    else
+        task.spawn(function()
+            for _ = 1, 20 do
+                if not player.Parent or player:GetAttribute("CBS_PlayerStateReady") == true then
+                    break
+                end
+                task.wait(0.25)
+            end
+
+            if player.Parent and player:GetAttribute("CBS_PlayerStateReady") == true then
+                self:Publish(player)
+            end
+        end)
+    end
+end
+
 function StatsService:Start()
     if self.running then
         return
@@ -190,19 +233,24 @@ function StatsService:Start()
     self.running = true
 
     for _, player in ipairs(Players:GetPlayers()) do
-        self:Publish(player)
+        self:BindPlayer(player)
     end
 
     table.insert(self.connections, Players.PlayerAdded:Connect(function(player)
-        task.defer(function()
-            if player.Parent then
-                self:Publish(player)
-            end
-        end)
+        self:BindPlayer(player)
     end))
 
     table.insert(self.connections, Players.PlayerRemoving:Connect(function(player)
         self:Flush(player)
+
+        local playerConnections = self.playerConnections[player]
+        if playerConnections then
+            for _, connection in ipairs(playerConnections) do
+                connection:Disconnect()
+            end
+        end
+
+        self.playerConnections[player] = nil
         self.pendingRanking[player] = nil
         self.lastRankingWrite[player] = nil
     end))
