@@ -124,6 +124,10 @@ function InputService:Start()
         local ready = snapshot.worldReady == true and snapshot.phase ~= "Booting"
         self:SetEnabled(ready)
     end)
+
+    self.remotes.State:FireServer({
+        action = "RequestState",
+    })
 end
 
 function InputService:SetEnabled(enabled: boolean)
