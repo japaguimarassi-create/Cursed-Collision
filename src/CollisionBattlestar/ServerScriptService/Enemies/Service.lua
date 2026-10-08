@@ -256,9 +256,14 @@ function EnemyService:Spawn(enemyId: string, wave: number, spawnCFrame: CFrame)
         humanoid,
         root,
         definition,
-        function(player, amount, source)
-            self:DamagePlayer(player, amount, source)
-        end
+        {
+            damagePlayer = function(player, amount, source)
+                self:DamagePlayer(player, amount, source)
+            end,
+            canTargetPlayer = function(player, playerRoot)
+                return self:CanTargetPlayer(player, playerRoot)
+            end,
+        }
     )
 
     record.brain = brain
