@@ -26,7 +26,7 @@ local function defaultUpgrades()
     }
 end
 
-local local function defaultMissions()
+local function defaultMissions()
     return {
         WaveHunter = {Progress = 0, Completed = false},
         EliteBreaker = {Progress = 0, Completed = false},
