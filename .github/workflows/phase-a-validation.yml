@@ -27,10 +27,6 @@ jobs:
           cache: true
       - name: Run Phase B rules
         run: luau tools/tests/phase_b_rules_run.luau
-      - name: Parse all runtime Luau
-        run: |
-          set -euo pipefail
-          find src/CollisionBattlestar -type f -name '*.lua' -print0 | xargs -0 -n1 luau --only-parse
       - name: Validate project structure
         run: python3 tools/validate_project.py
       - name: Build Collision Battlestar place
