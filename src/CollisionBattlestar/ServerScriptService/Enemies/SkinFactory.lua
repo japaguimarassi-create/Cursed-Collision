@@ -59,6 +59,14 @@ function SkinFactory.Apply(model: Model, profile)
     core.Color = primary
     head.Color = primary:Lerp(Color3.new(1, 1, 1), 0.12)
 
+    if profile.HeadVariant == "Visor" then
+        addGear(model, "SkinVisor", Vector3.new(1.65, 0.45, 1.85), Vector3.new(0, 4.15, -0.82), accent, Enum.Material.Glass)
+    elseif profile.HeadVariant == "Mask" then
+        addGear(model, "SkinMask", Vector3.new(1.7, 1.05, 0.38), Vector3.new(0, 3.75, -0.95), secondary, Enum.Material.Metal)
+    elseif profile.HeadVariant == "Crest" then
+        addGear(model, "SkinHeadCrest", Vector3.new(0.48, 1.15, 0.3), Vector3.new(0, 4.95, 0), accent, Enum.Material.Neon)
+    end
+
     if profile.GearVariant == "Harness" then
         addGear(model, "SkinHarness", Vector3.new(3.7, 0.45, 0.45), Vector3.new(0, 2, -1.05), secondary, Enum.Material.Metal)
     elseif profile.GearVariant == "HarnessAlt" then
@@ -79,6 +87,16 @@ function SkinFactory.Apply(model: Model, profile)
     elseif profile.GearVariant == "CommanderAlt" then
         addGear(model, "SkinCommandAlt", Vector3.new(3.5, 0.7, 0.5), Vector3.new(0, 3.4, -1.05), secondary, Enum.Material.Metal)
         addGear(model, "SkinCrestAlt", Vector3.new(0.75, 0.75, 0.45), Vector3.new(0, 5.0, 0), accent, Enum.Material.Neon)
+    end
+
+    if profile.AccessoryVariant == "Strap" then
+        addGear(model, "SkinStrap", Vector3.new(0.35, 2.8, 0.35), Vector3.new(-1.1, 2.2, -1.15), accent, Enum.Material.Fabric)
+    elseif profile.AccessoryVariant == "Utility" then
+        addGear(model, "SkinUtility", Vector3.new(0.7, 1.0, 0.7), Vector3.new(1.55, 1.0, -1.0), secondary, Enum.Material.Metal)
+    elseif profile.AccessoryVariant == "Cloak" then
+        addGear(model, "SkinCloak", Vector3.new(2.8, 2.9, 0.18), Vector3.new(0, 2.2, 1.0), secondary, Enum.Material.Fabric)
+    elseif profile.AccessoryVariant == "Crown" then
+        addGear(model, "SkinCrown", Vector3.new(1.5, 0.3, 1.5), Vector3.new(0, 5.0, 0), accent, Enum.Material.Neon)
     end
 
     addGear(
