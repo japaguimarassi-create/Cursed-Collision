@@ -35,6 +35,7 @@ return function()
     })
 
     assert(legacy.SchemaVersion == 3)
+    assert(type(legacy.Missions) == "table")
     assert(legacy.Credits == 250)
     assert(legacy.PowerLevel == 4)
     assert(legacy.Upgrades.Damage == 3)
