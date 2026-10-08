@@ -17,7 +17,7 @@ local AIKernel = require(script.Parent.Parent.AI.Kernel)
 local EnemyService = {}
 EnemyService.__index = EnemyService
 
-function EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel)
+function EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel, remotes)
     local self = setmetatable({
         runtimeState = runtimeState,
         worldService = worldService,
@@ -30,6 +30,7 @@ function EnemyService.new(runtimeState, worldService, economyService, mechanicsK
         waveBoss = nil,
         waveEvent = nil,
         mechanicsKernel = mechanicsKernel,
+        remotes = remotes,
         aiKernel = nil,
     }, EnemyService)
 
@@ -267,6 +268,20 @@ function EnemyService:Spawn(enemyId: string, wave: number, spawnCFrame: CFrame)
         text.Parent = bossLabel
 
         bossLabel.Parent = model:FindFirstChild("Head") or model
+
+        if self.remotes and self.remotes.FX then
+            self.remotes.FX:FireAllClients("BossSpawn", {
+                position = root.Position,
+                boss = self.waveBoss.DisplayName,
+            })
+        end
+    end
+
+    if self.remotes and self.remotes.FX and not definition.IsBoss then
+        self.remotes.FX:FireAllClients("EnemySpawn", {
+            position = root.Position,
+            elite = definition.IsElite == true,
+        })
     end
 
     local record = {
@@ -340,6 +355,14 @@ function EnemyService:HandleDeath(model: Model)
         enemiesAlive = self:GetActiveCount(),
         eliteAlive = self:IsEliteAlive(),
     })
+
+    if self.remotes and self.remotes.FX then
+        self.remotes.FX:FireAllClients("EnemyDefeated", {
+            position = position,
+            elite = record.definition.IsElite == true,
+            boss = record.definition.IsBoss == true,
+        })
+    end
 
     self.defeated:Fire(
         record.definition.Id,
