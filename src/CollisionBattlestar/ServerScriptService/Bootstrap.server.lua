@@ -14,6 +14,8 @@ local CompanionService = require(script.Parent.Companions.Service)
 local InventoryService = require(script.Parent.Shop.InventoryService)
 local ShopService = require(script.Parent.Shop.Service)
 local PvPService = require(script.Parent.PvP.Service)
+local RecoveryService = require(script.Parent.Progression.RecoveryService)
+local MissionService = require(script.Parent.Missions.Service)
 local WorldService = require(script.Parent.World.Service)
 local SecurityService = require(script.Parent.Security.Service)
 local EconomyService = require(script.Parent.Economy.Service)
@@ -48,6 +50,7 @@ local remotes = {
     Commerce = getOrCreateRemote(remotesFolder, "RemoteEvent", "Commerce"),
     Companion = getOrCreateRemote(remotesFolder, "RemoteEvent", "Companion"),
     PvP = getOrCreateRemote(remotesFolder, "RemoteEvent", "PvP"),
+    Mission = getOrCreateRemote(remotesFolder, "RemoteEvent", "Mission"),
 }
 
 local runtimeState = RuntimeState.new()
@@ -61,6 +64,8 @@ local securityService = SecurityService.new(worldService, playerState)
 local economyService = EconomyService.new(playerState)
 local enemyService = EnemyService.new(runtimeState, worldService, economyService)
 local pvpService = PvPService.new(playerState, economyService, remotes)
+local recoveryService = RecoveryService.new(playerState)
+local missionService = MissionService.new(playerState, enemyService, runtimeState, remotes)
 local combatService = CombatService.new(runtimeState, playerState, securityService, worldService, enemyService, remotes, pvpService)
 local waveService = WaveService.new(runtimeState, worldService, enemyService, economyService)
 local friendService = FriendService.new()
@@ -71,12 +76,14 @@ local shopService = ShopService.new(runtimeState, playerState, progressionServic
 registry:Register("Persistence", persistenceService)
 registry:Register("PlayerState", playerState)
 registry:Register("Progression", progressionService)
+registry:Register("Recovery", recoveryService)
 registry:Register("World", worldService)
 registry:Register("Security", securityService)
 registry:Register("Economy", economyService)
 registry:Register("Enemies", enemyService)
 registry:Register("Combat", combatService)
 registry:Register("PvP", pvpService)
+registry:Register("Missions", missionService)
 registry:Register("Friends", friendService)
 registry:Register("Inventory", inventoryService)
 registry:Register("Companions", companionService)
@@ -112,6 +119,7 @@ registry:StartInOrder({
     "Persistence",
     "PlayerState",
     "Progression",
+    "Recovery",
     "World",
     "Security",
     "Economy",
@@ -122,6 +130,7 @@ registry:StartInOrder({
     "Combat",
     "Companions",
     "Shop",
+    "Missions",
     "Waves",
 })
 
