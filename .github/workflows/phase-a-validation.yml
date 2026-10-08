@@ -26,6 +26,8 @@ jobs:
           cache: true
       - name: Run Phase A shared tests
         run: luau tools/tests/phase_a_run.luau
+      - name: Validate Phase A structure
+        run: python3 tools/validate_project.py
       - name: Build Phase A place
         run: |
           set -euo pipefail
