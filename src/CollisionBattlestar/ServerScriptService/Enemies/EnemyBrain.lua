@@ -6,15 +6,16 @@ local Navigation = require(script.Parent.Navigation)
 local EnemyBrain = {}
 EnemyBrain.__index = EnemyBrain
 
-function EnemyBrain.new(model: Model, humanoid: Humanoid, root: BasePart, definition, damageCallback)
+function EnemyBrain.new(model: Model, humanoid: Humanoid, root: BasePart, definition, callbacks)
     return setmetatable({
         model = model,
         humanoid = humanoid,
         root = root,
         definition = definition,
-        damageCallback = damageCallback,
+        callbacks = callbacks,
         running = false,
         nextAttackAt = 0,
+        nextTargetScanAt = 0,
         navigation = Navigation.new(root),
     }, EnemyBrain)
 end
@@ -26,22 +27,25 @@ function EnemyBrain:FindTarget()
 
     for _, player in ipairs(Players:GetPlayers()) do
         local character = player.Character
+
         if character then
             local playerHumanoid = character:FindFirstChildOfClass("Humanoid")
             local playerRoot = character:FindFirstChild("HumanoidRootPart")
 
-            if playerHumanoid and playerRoot and playerHumanoid.Health > 0 and playerRoot:IsA("BasePart")
-                and player:GetAttribute("CBS_PvP") ~= true then
-                if self.callbacks.canTargetPlayer(player, playerRoot) then
-                    local distance = (playerRoot.Position - self.root.Position).Magnitude
-                    if distance < closestDistance then
+            if playerHumanoid
+                and playerRoot
+                and playerHumanoid.Health > 0
+                and playerRoot:IsA("BasePart")
+                and player:GetAttribute("CBS_PvP") ~= true
+                and self.callbacks.canTargetPlayer(player, playerRoot) then
+
+                local distance = (playerRoot.Position - self.root.Position).Magnitude
+
+                if distance < closestDistance then
                     closestPlayer = player
                     closestRoot = playerRoot
-                        closestDistance = distance
-                    end
+                    closestDistance = distance
                 end
-            else
-                self.model:SetAttribute("CBS_TargetUserId", nil)
             end
         end
     end
@@ -58,11 +62,19 @@ end
 function EnemyBrain:MoveToward(targetRoot: BasePart, distance: number)
     if distance <= self.definition.AttackRange then
         local current = self.root.AssemblyLinearVelocity
-        self.root.AssemblyLinearVelocity = Vector3.new(current.X * 0.35, current.Y, current.Z * 0.35)
+        self.root.AssemblyLinearVelocity = Vector3.new(
+            current.X * 0.35,
+            current.Y,
+            current.Z * 0.35
+        )
         return
     end
 
-    local destination = self.navigation:GetNextPosition(targetRoot.Position, os.clock())
+    local destination = self.navigation:GetNextPosition(
+        targetRoot.Position,
+        os.clock()
+    )
+
     local offset = destination - self.root.Position
     local horizontal = Vector3.new(offset.X, 0, offset.Z)
 
@@ -71,8 +83,8 @@ function EnemyBrain:MoveToward(targetRoot: BasePart, distance: number)
     end
 
     local direction = horizontal.Unit
-    local desiredVelocity = direction * self.definition.Speed
-    local currentVertical = math.clamp(self.root.AssemblyLinearVelocity.Y, -45, 20)
+    local velocity = direction * self.definition.Speed
+    local vertical = math.clamp(self.root.AssemblyLinearVelocity.Y, -45, 20)
 
     self.root.CFrame = CFrame.lookAt(
         self.root.Position,
@@ -80,10 +92,43 @@ function EnemyBrain:MoveToward(targetRoot: BasePart, distance: number)
     )
 
     self.root.AssemblyLinearVelocity = Vector3.new(
-        desiredVelocity.X,
-        currentVertical,
-        desiredVelocity.Z
+        velocity.X,
+        vertical,
+        velocity.Z
     )
+end
+
+function EnemyBrain:Think()
+    local now = os.clock()
+
+    if now < self.nextTargetScanAt then
+        return
+    end
+
+    self.nextTargetScanAt = now + 0.35
+
+    local player, targetRoot, distance = self:FindTarget()
+
+    if not player or not targetRoot then
+        local current = self.root.AssemblyLinearVelocity
+        self.root.AssemblyLinearVelocity = Vector3.new(
+            current.X * 0.35,
+            current.Y,
+            current.Z * 0.35
+        )
+        return
+    end
+
+    self:MoveToward(targetRoot, distance)
+
+    if distance <= self.definition.AttackRange and now >= self.nextAttackAt then
+        self.nextAttackAt = now + self.definition.AttackCooldown
+        self.callbacks.damagePlayer(
+            player,
+            self.definition.Damage,
+            self.model
+        )
+    end
 end
 
 function EnemyBrain:Start()
@@ -95,22 +140,8 @@ function EnemyBrain:Start()
 
     task.spawn(function()
         while self.running and self.model.Parent and self.humanoid.Health > 0 do
-            local player, targetRoot, distance = self:FindTarget()
-
-            if player and targetRoot then
-                self:MoveToward(targetRoot, distance)
-
-                local now = os.clock()
-                if distance <= self.definition.AttackRange and now >= self.nextAttackAt then
-                    self.nextAttackAt = now + self.definition.AttackCooldown
-                    self.damageCallback(player, self.definition.Damage, self.model)
-                end
-            else
-                local current = self.root.AssemblyLinearVelocity
-                self.root.AssemblyLinearVelocity = Vector3.new(current.X * 0.35, current.Y, current.Z * 0.35)
-            end
-
-            task.wait(0.2)
+            self:Think()
+            task.wait(0.15)
         end
 
         self.running = false
