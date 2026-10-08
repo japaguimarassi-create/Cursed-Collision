@@ -1,0 +1,36 @@
+--!strict
+
+local Constants = table.freeze({
+    GameVersion = "0.1.0",
+    RemotesFolder = "CollisionBattlestarRemotes",
+    CombatRemote = "Combat",
+    StateRemote = "State",
+    FXRemote = "FX",
+    WorldReadyAttribute = "CBS_WorldReady",
+    PlayerStateAttribute = "CBS_PlayerStateReady",
+    MaxAttackDistance = 12,
+    MaxAttackAngle = 0.72,
+    AttackCooldown = 0.34,
+    ComboResetWindow = 0.95,
+    ComboSteps = 3,
+    DashCooldown = 1.35,
+    DashDistance = 22,
+    DashDuration = 0.16,
+    DashVerticalLimit = 0.35,
+    HitboxSize = Vector3.new(6, 5, 8),
+    KnockbackBase = 28,
+    KnockbackVertical = 8,
+    BaseHealth = 100,
+    BaseWalkSpeed = 16,
+    BaseCredits = 0,
+    WaveIntermission = 6,
+    WaveClearReward = 50,
+    UpgradeBaseCost = 100,
+    UpgradeCostGrowth = 1.55,
+    MaxActiveEnemies = 24,
+    EnemySpawnRadius = 42,
+    ArenaRadius = 70,
+    SafeSpawnRadius = 14,
+})
+
+return Constants
