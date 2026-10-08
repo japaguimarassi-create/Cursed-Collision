@@ -7,11 +7,11 @@ local function color3(value: any, fallback: Color3)
         return fallback
     end
 
-    local r = math.clamp(tonumber(value[1]) or 255, 0, 255)
-    local g = math.clamp(tonumber(value[2]) or 255, 0, 255)
-    local b = math.clamp(tonumber(value[3]) or 255, 0, 255)
-
-    return Color3.fromRGB(r, g, b)
+    return Color3.fromRGB(
+        math.clamp(tonumber(value[1]) or 255, 0, 255),
+        math.clamp(tonumber(value[2]) or 255, 0, 255),
+        math.clamp(tonumber(value[3]) or 255, 0, 255)
+    )
 end
 
 local function addGear(model: Model, name: string, size: Vector3, offset: Vector3, color: Color3, material: Enum.Material)
@@ -54,48 +54,46 @@ function SkinFactory.Apply(model: Model, profile)
     local primary = color3(profile.PrimaryColor, Color3.fromRGB(100, 100, 100))
     local secondary = color3(profile.SecondaryColor, Color3.fromRGB(50, 50, 50))
     local accent = color3(profile.AccentColor, Color3.fromRGB(220, 220, 220))
+    local tier = tonumber(profile.Tier) or 1
 
     core.Color = primary
     head.Color = primary:Lerp(Color3.new(1, 1, 1), 0.12)
 
-    local tier = tonumber(profile.Tier) or 1
-
     if profile.GearVariant == "Harness" then
         addGear(model, "SkinHarness", Vector3.new(3.7, 0.45, 0.45), Vector3.new(0, 2, -1.05), secondary, Enum.Material.Metal)
+    elseif profile.GearVariant == "HarnessAlt" then
+        addGear(model, "SkinHarnessAlt", Vector3.new(2.2, 1.6, 0.35), Vector3.new(0, 1.8, -1.15), secondary, Enum.Material.Metal)
     elseif profile.GearVariant == "Plate" then
         addGear(model, "SkinPlateL", Vector3.new(1.1, 2.1, 0.45), Vector3.new(-2.0, 1.6, 0), secondary, Enum.Material.Metal)
         addGear(model, "SkinPlateR", Vector3.new(1.1, 2.1, 0.45), Vector3.new(2.0, 1.6, 0), secondary, Enum.Material.Metal)
+    elseif profile.GearVariant == "PlateAlt" then
+        addGear(model, "SkinPlateAlt", Vector3.new(3.6, 0.6, 0.5), Vector3.new(0, 2.7, 0), secondary, Enum.Material.DiamondPlate)
     elseif profile.GearVariant == "Shoulder" then
         addGear(model, "SkinShoulderL", Vector3.new(1.4, 0.8, 1.4), Vector3.new(-2.0, 2.6, 0), secondary, Enum.Material.Metal)
         addGear(model, "SkinShoulderR", Vector3.new(1.4, 0.8, 1.4), Vector3.new(2.0, 2.6, 0), secondary, Enum.Material.Metal)
+    elseif profile.GearVariant == "ShoulderAlt" then
+        addGear(model, "SkinShoulderAlt", Vector3.new(3.9, 0.5, 0.5), Vector3.new(0, 2.7, -0.9), secondary, Enum.Material.Metal)
     elseif profile.GearVariant == "Commander" then
         addGear(model, "SkinCommandBand", Vector3.new(3.8, 0.5, 0.5), Vector3.new(0, 3.1, -0.95), secondary, Enum.Material.Metal)
         addGear(model, "SkinCrest", Vector3.new(0.55, 1.2, 0.3), Vector3.new(0, 5.0, 0), accent, Enum.Material.Neon)
+    elseif profile.GearVariant == "CommanderAlt" then
+        addGear(model, "SkinCommandAlt", Vector3.new(3.5, 0.7, 0.5), Vector3.new(0, 3.4, -1.05), secondary, Enum.Material.Metal)
+        addGear(model, "SkinCrestAlt", Vector3.new(0.75, 0.75, 0.45), Vector3.new(0, 5.0, 0), accent, Enum.Material.Neon)
     end
 
-    local accentPart = addGear(
+    addGear(
         model,
         "SkinAccent",
         Vector3.new(math.max(0.5, 2.8 - tier * 0.2), 0.3, 1.9),
         Vector3.new(0, 1.2 + tier * 0.15, -1.05),
-        profile.Tier == 4 and Color3.fromRGB(255, 45, 55) or accent,
+        tier == 4 and Color3.fromRGB(255, 45, 55) or accent,
         Enum.Material.Neon
     )
-
-    if profile.Tier == 4 then
-        local highlight = model:FindFirstChild("EliteHighlight")
-        if highlight and highlight:IsA("Highlight") then
-            highlight.FillColor = Color3.fromRGB(255, 35, 45)
-            highlight.OutlineColor = Color3.fromRGB(255, 180, 180)
-        end
-        core.Color = primary:Lerp(Color3.fromRGB(255, 40, 40), 0.18)
-        head.Color = core.Color:Lerp(Color3.new(1, 1, 1), 0.12)
-    end
 
     model:SetAttribute("CBS_SkinProfileId", profile.ProfileId)
     model:SetAttribute("CBS_SkinThemeId", profile.ThemeId)
 
-    return accentPart ~= nil
+    return true
 end
 
 return SkinFactory
