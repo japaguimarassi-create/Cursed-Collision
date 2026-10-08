@@ -7,6 +7,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local CombatRules = require(ReplicatedStorage.Shared.CombatRules)
 local DataSchema = require(ReplicatedStorage.Shared.DataSchema)
 local ProgressionRules = require(ReplicatedStorage.Shared.ProgressionRules)
+local PhysicsRules = require(ReplicatedStorage.Shared.PhysicsRules)
 
 local PlayerState = {}
 PlayerState.__index = PlayerState
@@ -59,6 +60,12 @@ function PlayerState:Start()
 end
 
 function PlayerState:BindCharacter(player: Player, character: Model)
+    for _, descendant in ipairs(character:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            PhysicsRules.apply(descendant, PhysicsRules.Character)
+        end
+    end
+
     self:ApplyCharacterStats(player, character)
 
     local humanoid = character:FindFirstChildOfClass("Humanoid")
