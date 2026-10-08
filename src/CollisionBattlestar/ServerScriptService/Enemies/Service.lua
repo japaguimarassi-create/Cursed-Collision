@@ -23,6 +23,7 @@ function EnemyService.new(runtimeState, worldService, economyService)
         serial = 0,
         waveThemeId = "Urban",
         previousSkinByTier = {},
+        skinSeed = 0,
     }, EnemyService)
 end
 
@@ -101,7 +102,8 @@ function EnemyService:Spawn(enemyId: string, wave: number, spawnCFrame: CFrame)
         return nil
     end
 
-    local selfSeed = self.serial + 1
+    self.skinSeed += 1
+    local selfSeed = self.skinSeed
     local previous = self.previousSkinByTier[definition.Tier]
     local skinProfile = EnemySkinRules.pick(
         self.waveThemeId,
