@@ -36,6 +36,26 @@ local Config = {
         Intermission = Constants.WaveIntermission,
         MaxActiveEnemies = Constants.MaxActiveEnemies,
     },
+    Runtime = {
+        HealthCheckInterval = 3,
+        RecoveryCooldown = 4,
+        MaxRecoveryFailures = 3,
+    },
+    AI = {
+        MaxActiveEnemies = Constants.MaxActiveEnemies,
+        SchedulerInterval = 0.08,
+        TargetRefreshInterval = 0.35,
+        MaxNpcErrors = 3,
+        BaseSkill = 0.25,
+        SkillPerWave = 0.018,
+        MaxSkill = 0.82,
+        BaseThinkInterval = 0.28,
+        MinThinkInterval = 0.16,
+        ThinkImprovementPerWave = 0.0025,
+        BasePredictionTime = 0.05,
+        PredictionPerWave = 0.004,
+        MaxPredictionTime = 0.35,
+    },
 }
 
 return table.freeze({
@@ -44,4 +64,6 @@ return table.freeze({
     Combat = table.freeze(Config.Combat),
     Economy = table.freeze(Config.Economy),
     Waves = table.freeze(Config.Waves),
+    Runtime = table.freeze(Config.Runtime),
+    AI = table.freeze(Config.AI),
 })
