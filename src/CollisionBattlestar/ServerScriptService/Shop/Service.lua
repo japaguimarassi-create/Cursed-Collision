@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ShopDefinitions = require(ReplicatedStorage.Shared.ShopDefinitions)
 local ShopRules = require(ReplicatedStorage.Shared.ShopRules)
+local InventoryRules = require(ReplicatedStorage.Shared.InventoryRules)
 
 local ShopService = {}
 ShopService.__index = ShopService
@@ -154,7 +155,7 @@ function ShopService:Purchase(player: Player, itemId: any)
         return false, reason
     end
 
-    if not InventoryRulesSafeGrant(profile, itemId) then
+    if not inventoryRulesSafeGrant(profile, itemId) then
         return false, "inventory_rejected"
     end
 
@@ -168,7 +169,7 @@ function ShopService:Purchase(player: Player, itemId: any)
     return true, "purchased"
 end
 
-function InventoryRulesSafeGrant(profile, itemId)
+local function inventoryRulesSafeGrant(profile, itemId)
     if type(profile) ~= "table" or type(profile.Inventory) ~= "table" then
         return false
     end
