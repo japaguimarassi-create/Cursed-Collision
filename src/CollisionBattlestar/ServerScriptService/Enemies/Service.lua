@@ -12,11 +12,12 @@ local WaveEventDefinitions = require(ReplicatedStorage.Shared.WaveEventDefinitio
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local EnemyFactory = require(script.Parent.EnemyFactory)
 local EnemyBrain = require(script.Parent.EnemyBrain)
+local AIKernel = require(script.Parent.Parent.AI.Kernel)
 
 local EnemyService = {}
 EnemyService.__index = EnemyService
 
-function EnemyService.new(runtimeState, worldService, economyService)
+function EnemyService.new(runtimeState, worldService, economyService, mechanicsKernel)
     return setmetatable({
         runtimeState = runtimeState,
         worldService = worldService,
@@ -28,10 +29,30 @@ function EnemyService.new(runtimeState, worldService, economyService)
         skinSeed = 0,
         waveBoss = nil,
         waveEvent = nil,
+        mechanicsKernel = mechanicsKernel,
+        aiKernel = AIKernel.new(function(label, err)
+            if self and self.mechanicsKernel then
+                self.mechanicsKernel:ReportFailure(label, err)
+            end
+        end),
     }, EnemyService)
 end
 
 function EnemyService:Start()
+    self.aiKernel:Start()
+end
+
+function EnemyService:SetWave(wave: number)
+    self.aiKernel:SetWave(wave)
+end
+
+function EnemyService:GetAISnapshot()
+    return self.aiKernel:GetSnapshot()
+end
+
+function EnemyService:HealthCheck()
+    return self:GetActiveCount() <= Constants.MaxActiveEnemies
+        and self.aiKernel:HealthCheck()
 end
 
 function EnemyService:GetDefeatedEvent()
@@ -278,7 +299,11 @@ function EnemyService:Spawn(enemyId: string, wave: number, spawnCFrame: CFrame)
         self:HandleDeath(model)
     end)
 
-    brain:Start()
+    if not self.aiKernel:Register(model, brain, definition, wave) then
+        brain:Stop()
+        model:Destroy()
+        return nil
+    end
 
     return model
 end
@@ -345,9 +370,7 @@ function EnemyService:ClearAll()
 
         self.active[model] = nil
 
-        if record.brain then
-            record.brain:Stop()
-        end
+        self.aiKernel:Unregister(model)
 
         if record.diedConnection then
             record.diedConnection:Disconnect()
@@ -358,10 +381,22 @@ function EnemyService:ClearAll()
         end
     end
 
+    self.aiKernel:Reset()
+
     self.runtimeState:SetMany({
         enemiesAlive = 0,
         eliteAlive = false,
     })
+end
+
+function EnemyService:Reload()
+    self:ClearAll()
+    self.aiKernel:Reset()
+end
+
+function EnemyService:Stop()
+    self:ClearAll()
+    self.aiKernel:Stop()
 end
 
 return EnemyService
