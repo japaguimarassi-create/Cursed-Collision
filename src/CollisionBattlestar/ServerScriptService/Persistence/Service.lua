@@ -77,11 +77,16 @@ function PersistenceService:Load(player: Player)
     local blocked = false
     local loadedProfile = nil
     local key = getKey(player)
-
-    local success, result = retry(function()
+        local success, result = retry(function()
         local value
         local updateSuccess, updateResult = pcall(function()
             return self.store:UpdateAsync(key, function(current)
+                if type(current) == "table"
+                    and type(current.SchemaVersion) == "number"
+                    and current.SchemaVersion > DataSchema.CurrentVersion then
+                    error("UNSUPPORTED_PROFILE_VERSION")
+                end
+
                 local currentData = DataSchema.Migrate(current)
                 local lock = type(current) == "table" and current.__Session
 
@@ -193,6 +198,13 @@ function PersistenceService:Save(player: Player)
 
     local success, result = retry(function()
         local updated = self.store:UpdateAsync(key, function(current)
+            if type(current) == "table"
+                and type(current.SchemaVersion) == "number"
+                and current.SchemaVersion > DataSchema.CurrentVersion then
+                conflict = true
+                return nil
+            end
+
             local currentLock = type(current) == "table" and current.__Session
 
             if type(currentLock) == "table" and not PersistenceRules.isOwned(
@@ -236,6 +248,12 @@ function PersistenceService:Release(player: Player)
 
     local success, result = retry(function()
         local updated = self.store:UpdateAsync(key, function(current)
+            if type(current) == "table"
+                and type(current.SchemaVersion) == "number"
+                and current.SchemaVersion > DataSchema.CurrentVersion then
+                return nil
+            end
+
             local currentData = DataSchema.Migrate(current)
             local lock = type(current) == "table" and current.__Session
 
@@ -267,7 +285,12 @@ function PersistenceService:SaveAndRelease(player: Player)
         return
     end
 
-    self:Save(player)
+    local saved, saveError = self:Save(player)
+    if not saved then
+        warn(("Profile save failed for %s; lock will expire safely: %s"):format(player.Name, tostring(saveError)))
+        return
+    end
+
     self:Release(player)
 
     local session = self.sessions[player]
