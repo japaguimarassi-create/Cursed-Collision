@@ -1,0 +1,37 @@
+name: Collision Battlestar Phase A Validation
+
+on:
+  push:
+    branches:
+      - "rebuild/collision-battlestar-*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: collision-battlestar-phase-a
+  cancel-in-progress: true
+
+jobs:
+  phase-a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Roblox toolchain
+        uses: paradoxum-games/setup-rokit@v3
+        with:
+          cache: true
+      - name: Run Phase A shared tests
+        run: luau tools/tests/phase_a_run.luau
+      - name: Validate Phase A structure
+        run: python3 tools/validate_project.py
+      - name: Build Phase A place
+        run: |
+          set -euo pipefail
+          rm -rf build
+          mkdir -p build
+          rojo build default.project.json --output build/CollisionBattlestar.rbxl
+          test -s build/CollisionBattlestar.rbxl
