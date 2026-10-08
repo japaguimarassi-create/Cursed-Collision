@@ -25,7 +25,7 @@ local function makePart(
     part.Transparency = transparency or 0
     part.TopSurface = Enum.SurfaceType.Smooth
     part.BottomSurface = Enum.SurfaceType.Smooth
-    part.CastShadow = true
+    part.CastShadow = false
     part.Parent = parent
     return part
 end
