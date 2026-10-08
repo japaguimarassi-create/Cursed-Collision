@@ -6,7 +6,7 @@ RuntimeState.__index = RuntimeState
 function RuntimeState.new()
     local changed = Instance.new("BindableEvent")
 
-    local self = setmetatable({
+    return setmetatable({
         changed = changed,
         worldReady = false,
         phase = "Booting",
@@ -15,8 +15,6 @@ function RuntimeState.new()
         eliteAlive = false,
         intermissionEndsAt = 0,
     }, RuntimeState)
-
-    return self
 end
 
 function RuntimeState:GetChangedEvent()
@@ -34,9 +32,20 @@ function RuntimeState:Set(name: string, value: any)
 end
 
 function RuntimeState:SetMany(values: {[string]: any})
+    local changed = false
+
     for name, value in pairs(values) do
-        self:Set(name, value)
+        if self[name] ~= value then
+            self[name] = value
+            changed = true
+        end
     end
+
+    if changed then
+        self.changed:Fire("Batch")
+    end
+
+    return changed
 end
 
 function RuntimeState:Snapshot()
