@@ -23,6 +23,7 @@ required = [
     "src/CollisionBattlestar/ServerScriptService/World/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Enemies/EnemyFactory.lua",
     "src/CollisionBattlestar/ServerScriptService/Enemies/EnemyBrain.lua",
+    "src/CollisionBattlestar/ServerScriptService/Enemies/Navigation.lua",
     "src/CollisionBattlestar/ServerScriptService/Enemies/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Combat/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/Waves/Service.lua",
