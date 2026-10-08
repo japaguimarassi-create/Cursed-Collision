@@ -192,7 +192,7 @@ function Heart:Reload(reason: string, _)
             world:Reload()
         end)
     end
-    if players and type(players:RecoverAll) == "function" then
+    if players and type(players.RecoverAll) == "function" then
         pcall(function()
             players:RecoverAll(world)
         end)
