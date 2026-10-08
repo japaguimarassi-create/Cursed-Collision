@@ -50,11 +50,11 @@ local remotes = {
     Combat = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.CombatRemote),
     State = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.StateRemote),
     FX = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.FXRemote),
-    Commerce = getOrCreateRemote(remotesFolder, "RemoteEvent", "Commerce"),
-    Companion = getOrCreateRemote(remotesFolder, "RemoteEvent", "Companion"),
-    PvP = getOrCreateRemote(remotesFolder, "RemoteEvent", "PvP"),
-    Mission = getOrCreateRemote(remotesFolder, "RemoteEvent", "Mission"),
-    Admin = getOrCreateRemote(remotesFolder, "RemoteEvent", "Admin"),
+    Commerce = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.CommerceRemote),
+    Companion = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.CompanionRemote),
+    PvP = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.PvPRemote),
+    Mission = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.MissionRemote),
+    Admin = getOrCreateRemote(remotesFolder, "RemoteEvent", Constants.AdminRemote),
 }
 
 local runtimeState = RuntimeState.new()
