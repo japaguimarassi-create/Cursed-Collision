@@ -8,6 +8,7 @@ local Registry = require(script.Parent.Core.ServiceRegistry)
 local RuntimeState = require(script.Parent.Core.RuntimeState)
 local PlayerState = require(script.Parent.Core.PlayerState)
 local PersistenceService = require(script.Parent.Persistence.Service)
+local ProgressionService = require(script.Parent.Progression.Service)
 local WorldService = require(script.Parent.World.Service)
 local SecurityService = require(script.Parent.Security.Service)
 local EconomyService = require(script.Parent.Economy.Service)
@@ -44,6 +45,7 @@ local remotes = {
 local runtimeState = RuntimeState.new()
 local persistenceService = PersistenceService.new()
 local playerState = PlayerState.new(persistenceService)
+local progressionService = ProgressionService.new(playerState)
 local registry = Registry.new()
 
 local worldService = WorldService.new(runtimeState)
@@ -55,6 +57,7 @@ local waveService = WaveService.new(runtimeState, worldService, enemyService, ec
 
 registry:Register("Persistence", persistenceService)
 registry:Register("PlayerState", playerState)
+registry:Register("Progression", progressionService)
 registry:Register("World", worldService)
 registry:Register("Security", securityService)
 registry:Register("Economy", economyService)
@@ -77,17 +80,20 @@ remotes.State.OnServerEvent:Connect(function(player, request)
     end
 
     if request.action == "Upgrade" then
-        local success, value = economyService:TryUpgrade(player)
+        local success, value = progressionService:Purchase(player, request.upgradeId or "Damage")
         remotes.State:FireClient(player, "UpgradeResult", {
             success = success,
             value = value,
+            snapshot = progressionService:GetSnapshot(player),
         })
+        return
     end
 end)
 
 registry:StartInOrder({
     "Persistence",
     "PlayerState",
+    "Progression",
     "World",
     "Security",
     "Economy",
