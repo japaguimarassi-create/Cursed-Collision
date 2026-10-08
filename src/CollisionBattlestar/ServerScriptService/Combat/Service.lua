@@ -253,15 +253,18 @@ function CombatService:HandleDash(player: Player, requestedDirection: any)
         return
     end
 
-    local centerDistance = inPvP
-        and math.abs(root.Position.X)
-        or Vector2.new(root.Position.X, root.Position.Z).Magnitude
-
-    local available = inPvP
-        and math.max(0, 70 - centerDistance)
-        or math.max(0, Constants.ArenaRadius - 6 - centerDistance)
-
-    local distance = math.min(Config.Combat.DashDistance, available)
+    local distance
+    if inPvP then
+        distance = self.pvpService:GetAvailableDashDistance(
+            root.Position,
+            direction,
+            Config.Combat.DashDistance
+        )
+    else
+        local centerDistance = Vector2.new(root.Position.X, root.Position.Z).Magnitude
+        local available = math.max(0, Constants.ArenaRadius - 6 - centerDistance)
+        distance = math.min(Config.Combat.DashDistance, available)
+    end
 
     if distance <= 0.5 then
         return
