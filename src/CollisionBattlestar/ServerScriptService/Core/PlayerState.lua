@@ -67,7 +67,7 @@ function PlayerState:BindCharacter(player: Player, character: Model)
 
     humanoid.Died:Connect(function()
         self:ResetCombatLocks(player)
-    end)nd)
+    end)
 end
 
 function PlayerState:AddPlayer(player: Player)
