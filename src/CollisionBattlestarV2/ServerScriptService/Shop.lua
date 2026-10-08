@@ -123,6 +123,9 @@ function Shop:Handle(player: Player, request: any)
 end
 
 function Shop:Start()
+    table.insert(self.connections, game:GetService("Players").PlayerRemoving:Connect(function(player)
+        self.lastRequest[player] = nil
+    end))
     table.insert(self.connections, self.remotes.Shop.OnServerEvent:Connect(function(player, request)
         self:Handle(player, request)
     end))
