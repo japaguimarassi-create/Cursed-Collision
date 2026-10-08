@@ -521,7 +521,10 @@ function AdvancedPanels:BuildPvPPanel(root: Frame)
     self.pvpJoin.Position = UDim2.fromOffset(16, 166)
 
     self.pvpLeave = button(panel, "Leave", "RETURN", UDim2.fromOffset(150, 50))
-    self.pvpLeave.Position = UDim2.new(1, -166, 0, 166)
+    self.pvpJoin.Size = UDim2.new(0.5, -22, 0, 50)
+    self.pvpJoin.Position = UDim2.fromOffset(16, 166)
+    self.pvpLeave.Size = UDim2.new(0.5, -22, 0, 50)
+    self.pvpLeave.Position = UDim2.new(0.5, 6, 0, 166)
 
     return panel
 end
