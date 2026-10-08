@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ShopDefinitions = require(ReplicatedStorage.Shared.ShopDefinitions)
 local ShopRules = require(ReplicatedStorage.Shared.ShopRules)
 local InventoryRules = require(ReplicatedStorage.Shared.InventoryRules)
+local ProgressionRules = require(ReplicatedStorage.Shared.ProgressionRules)
 
 local ShopService = {}
 ShopService.__index = ShopService
@@ -78,6 +79,7 @@ function ShopService:HandleRequest(player: Player, request: any)
             success = ok,
             reason = reason,
             inventory = self.inventoryService:GetSnapshot(player),
+            catalog = self:GetCatalog(player),
         })
     end
 end
@@ -98,10 +100,9 @@ function ShopService:GetCatalog(player: Player)
 
         if item.Category == "Upgrade" then
             local currentLevel = self.playerState:GetUpgradeLevel(player, item.UpgradeId)
-            local Rules = require(ReplicatedStorage.Shared.ProgressionRules)
             entry.Level = currentLevel
-            entry.MaxLevel = Rules.getMaxLevel(item.UpgradeId)
-            entry.Price = Rules.getCost(item.UpgradeId, currentLevel)
+            entry.MaxLevel = ProgressionRules.getMaxLevel(item.UpgradeId)
+            entry.Price = ProgressionRules.getCost(item.UpgradeId, currentLevel)
         else
             entry.Price = item.Price
         end
