@@ -33,8 +33,8 @@ function Combat:DamageTarget(attacker: Player, target: Model, baseDamage: number
             return false
         end
 
-        targetHumanoid:TakeDamage(baseDamage)
         targetPlayer:SetAttribute("CBS2_LastKiller", attacker.UserId)
+        targetHumanoid:TakeDamage(baseDamage)
         self.remotes.FX:FireAllClients("Hit", {
             position = target:GetPivot().Position,
             pvp = true,
