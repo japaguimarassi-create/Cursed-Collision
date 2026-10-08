@@ -2,7 +2,7 @@
 
 local DataSchema = {}
 
-DataSchema.CurrentVersion = 2
+DataSchema.CurrentVersion = 3
 
 local function numberOr(value: any, fallback: number)
     if type(value) == "number" and value == value and value < math.huge and value > -math.huge then
@@ -190,7 +190,7 @@ function DataSchema.Migrate(source: any)
         return DataSchema.Sanitize(source)
     end
 
-    if schemaVersion == 0 or schemaVersion == 1 then
+    if schemaVersion == 0 or schemaVersion == 1 or schemaVersion == 2 then
         local migrated = DataSchema.Sanitize(source)
         local legacyPower = nonNegativeInt(source.PowerLevel, 1, 1000)
         migrated.PowerLevel = math.max(1, legacyPower)
