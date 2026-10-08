@@ -22,6 +22,14 @@ type State = {
     kills: number,
 }
 
+local UPGRADE_IDS = {
+    "Damage",
+    "MaxHealth",
+    "Dash",
+    "Critical",
+    "Recovery",
+}
+
 function PlayerState.new(persistenceService)
     return setmetatable({
         persistence = persistenceService,
@@ -47,6 +55,31 @@ function PlayerState:Start()
             self:AddPlayer(player)
         end)
     end
+end
+
+function PlayerState:BindCharacter(player: Player, character: Model)
+    self:ApplyCharacterStats(player, character)
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    humanoid.Died:Connect(function()
+        task.delay(2, function()
+            if not player.Parent or player.Character ~= character then
+                return
+            end
+
+            local ok = pcall(function()
+                player:LoadCharacter()
+            end)
+
+            if not ok and player.Parent then
+                player:Kick("Character respawn failed safely.")
+            end
+        end)
+    end)
 end
 
 function PlayerState:AddPlayer(player: Player)
@@ -83,42 +116,29 @@ function PlayerState:AddPlayer(player: Player)
     player:SetAttribute("CBS_Credits", state.credits)
     player:SetAttribute("CBS_PowerLevel", state.powerLevel)
     player:SetAttribute("CBS_Kills", state.kills)
-    for _, upgradeId in ipairs({"Damage", "MaxHealth", "Dash", "Critical", "Recovery"}) do
+
+    for _, upgradeId in ipairs(UPGRADE_IDS) do
         player:SetAttribute(
             "CBS_" .. upgradeId .. "Level",
             state.profile.Upgrades[upgradeId] or 0
         )
     end
+
+    player:SetAttribute("CBS_PvP", false)
+    player:SetAttribute("CBS_EchoDisabled", false)
     player:SetAttribute("CBS_PlayerStateReady", true)
 
-    local function onCharacter(character: Model)
-        self:ApplyCharacterStats(player, character)
-
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.Died:Connect(function()
-                task.delay(2, function()
-                    if player.Parent and not player.Character then
-                        local ok = pcall(function()
-                            player:LoadCharacter()
-                        end)
-                        if not ok and player.Parent then
-                            player:Kick("Character respawn failed safely.")
-                        end
-                    end
-                end)
-            end)
-        end
-    end
-
-    player.CharacterAdded:Connect(onCharacter)
+    player.CharacterAdded:Connect(function(character)
+        self:BindCharacter(player, character)
+    end)
 
     if player.Character then
-        onCharacter(player.Character)
+        self:BindCharacter(player, player.Character)
     else
         local ok = pcall(function()
             player:LoadCharacter()
         end)
+
         if not ok and player.Parent then
             player:Kick("Character initialization failed safely.")
         end
@@ -134,10 +154,23 @@ function PlayerState:GetProfile(player: Player)
     return state and state.profile or nil
 end
 
+function PlayerState:GetUpgradeLevel(player: Player, upgradeId: string)
+    local state = self.states[player]
+    if not state then
+        return 0
+    end
+
+    return state.profile.Upgrades[upgradeId] or 0
+end
+
 function PlayerState:TryNamedUpgrade(player: Player, upgradeId: string, definition, cost: number)
     local state = self.states[player]
     if not state then
         return false, "state_unavailable"
+    end
+
+    if type(definition) ~= "table" or not ProgressionRules.isValidUpgrade(upgradeId) then
+        return false, "invalid_upgrade"
     end
 
     local currentLevel = self:GetUpgradeLevel(player, upgradeId)
@@ -146,11 +179,16 @@ function PlayerState:TryNamedUpgrade(player: Player, upgradeId: string, definiti
         return false, "max_level"
     end
 
-    if state.credits < cost then
+    local authoritativeCost = ProgressionRules.getCost(upgradeId, currentLevel)
+    if cost ~= authoritativeCost then
+        return false, "stale_price"
+    end
+
+    if state.credits < authoritativeCost then
         return false, "insufficient_credits"
     end
 
-    state.credits -= cost
+    state.credits -= authoritativeCost
     state.profile.Credits = state.credits
     state.profile.Upgrades[upgradeId] = currentLevel + 1
 
@@ -162,16 +200,6 @@ function PlayerState:TryNamedUpgrade(player: Player, upgradeId: string, definiti
     end
 
     return true, currentLevel + 1
-end
-
-function PlayerState:GetUpgradeLevel(player: Player, upgradeId: string)
-    local state = self.states[player]
-    if not state then
-        return 0
-    end
-
-    local upgrades = state.profile.Upgrades
-    return upgrades[upgradeId] or 0
 end
 
 function PlayerState:ApplyCharacterStats(player: Player, character: Model)
@@ -186,71 +214,41 @@ function PlayerState:ApplyCharacterStats(player: Player, character: Model)
     end
 
     local healthLevel = self:GetUpgradeLevel(player, "MaxHealth")
-    local speedLevel = self:GetUpgradeLevel(player, "Dash")
-    local recoveryLevel = self:GetUpgradeLevel(player, "Recovery")
-    local maxHealth = Config.Player.BaseHealth + (state.powerLevel - 1) * 10 + healthLevel * 15
-    local speed = Config.Player.BaseWalkSpeed + (state.powerLevel - 1) * 0.75 + speedLevel * 0.3
+    local dashLevel = self:GetUpgradeLevel(player, "Dash")
+    local maxHealth = Config.Player.BaseHealth
+        + (state.powerLevel - 1) * 10
+        + ProgressionRules.maxHealthBonus(healthLevel)
 
     humanoid.MaxHealth = maxHealth
     humanoid.Health = maxHealth
-    humanoid.WalkSpeed = speed
+    humanoid.WalkSpeed = Config.Player.BaseWalkSpeed + (state.powerLevel - 1) * 0.75 + dashLevel * 0.3
 
-    player:SetAttribute("CBS_RecoveryLevel", recoveryLevel)
     player:SetAttribute("CBS_DamageLevel", self:GetUpgradeLevel(player, "Damage"))
     player:SetAttribute("CBS_MaxHealthLevel", healthLevel)
-    player:SetAttribute("CBS_DashLevel", speedLevel)
+    player:SetAttribute("CBS_DashLevel", dashLevel)
     player:SetAttribute("CBS_CriticalLevel", self:GetUpgradeLevel(player, "Critical"))
+    player:SetAttribute("CBS_RecoveryLevel", self:GetUpgradeLevel(player, "Recovery"))
 end
 
 function PlayerState:AddCredits(player: Player, amount: number)
     local state = self.states[player]
-    if not state or amount <= 0 then
+    if not state or not player.Parent then
         return false
     end
 
-    local gained = math.floor(amount)
+    local gained = math.floor(tonumber(amount) or 0)
+    if gained <= 0 then
+        return false
+    end
+
     state.credits += gained
     state.profile.Credits = state.credits
     player:SetAttribute("CBS_Credits", state.credits)
     return true
 end
 
-function PlayerState:TryUpgrade(player: Player)
-    local state = self.states[player]
-    if not state then
-        return false, "state_unavailable"
-    end
-
-    local cost = self:GetUpgradeCost(player)
-    if state.credits < cost then
-        return false, "insufficient_credits"
-    end
-
-    state.credits -= cost
-    state.powerLevel += 1
-    state.profile.Credits = state.credits
-    state.profile.PowerLevel = state.powerLevel
-
-    player:SetAttribute("CBS_Credits", state.credits)
-    player:SetAttribute("CBS_PowerLevel", state.powerLevel)
-
-    if player.Character then
-        self:ApplyCharacterStats(player, player.Character)
-    end
-
-    return true, state.powerLevel
-end
-
-function PlayerState:GetUpgradeCost(player: Player): number
-    local state = self.states[player]
-    if not state then
-        return math.huge
-    end
-
-    return math.floor(
-        Config.Economy.UpgradeBaseCost
-            * Config.Economy.UpgradeCostGrowth ^ (state.powerLevel - 1)
-    )
+function PlayerState:AddPvPKill(player: Player)
+    return self:MarkKill(player)
 end
 
 function PlayerState:MarkAttack(player: Player, now: number)
@@ -263,21 +261,12 @@ function PlayerState:MarkAttack(player: Player, now: number)
         return nil
     end
 
-    if now - state.lastComboAt > Config.Combat.ComboResetWindow then
-        state.comboStep = CombatRules.nextCombo(
-            state.comboStep,
-            math.huge,
-            Config.Combat.ComboResetWindow,
-            Config.Combat.ComboSteps
-        )
-    else
-        state.comboStep = CombatRules.nextCombo(
-            state.comboStep,
-            now - state.lastComboAt,
-            Config.Combat.ComboResetWindow,
-            Config.Combat.ComboSteps
-        )
-    end
+    state.comboStep = CombatRules.nextCombo(
+        state.comboStep,
+        now - state.lastComboAt,
+        Config.Combat.ComboResetWindow,
+        Config.Combat.ComboSteps
+    )
 
     state.lastAttackAt = now
     state.lastComboAt = now
