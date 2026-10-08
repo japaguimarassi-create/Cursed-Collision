@@ -83,7 +83,7 @@ client_source = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScri
 hud_source = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/Root.lua").read_text(encoding="utf-8")
 
 for token in [
-    'Instance.new("RemoteEvent")',
+    '"RemoteEvent"',
     "StartInOrder",
     "PlayerState",
     "World",
