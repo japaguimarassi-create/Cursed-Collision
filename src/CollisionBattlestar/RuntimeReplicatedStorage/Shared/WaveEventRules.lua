@@ -9,12 +9,14 @@ function WaveEventRules.pick(wave: number, isBossWave: boolean)
         return nil
     end
 
-    if safeWave % 15 == 0 then
+    if safeWave % 20 == 5 then
+        return "RiftSurge"
+    elseif safeWave % 20 == 15 then
         return "CreditRush"
+    elseif safeWave % 20 == 0 then
+        return nil
     elseif safeWave % 10 == 5 then
         return "Overdrive"
-    elseif safeWave % 5 == 0 then
-        return "RiftSurge"
     end
 
     return nil
