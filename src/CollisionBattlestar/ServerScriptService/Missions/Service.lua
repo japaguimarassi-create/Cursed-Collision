@@ -18,6 +18,7 @@ function MissionService.new(playerState, enemyService, runtimeState, remotes)
         lastCredits = {} :: {[Player]: number},
         lastWave = 0,
         running = false,
+        lastSnapshotRequest = {} :: {[Player]: number},
     }, MissionService)
 end
 
@@ -63,12 +64,22 @@ function MissionService:Start()
 
     self.playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
         self.lastCredits[player] = nil
+        self.lastSnapshotRequest[player] = nil
     end)
 
     self.remotes.Mission.OnServerEvent:Connect(function(player, request)
-        if type(request) == "table" and request.action == "Snapshot" then
-            self:Publish(player)
+        if type(request) ~= "table" or request.action ~= "Snapshot" then
+            return
         end
+
+        local now = os.clock()
+        local last = self.lastSnapshotRequest[player] or -math.huge
+        if now - last < 1 then
+            return
+        end
+
+        self.lastSnapshotRequest[player] = now
+        self:Publish(player)
     end)
 end
 
