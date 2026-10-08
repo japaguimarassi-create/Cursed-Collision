@@ -3,14 +3,12 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Constants = require(ReplicatedStorage.Shared.Constants)
+local Config = require(ReplicatedStorage.Shared.Config)
 
 local AIKernel = {}
 AIKernel.__index = AIKernel
 
-local TARGET_REFRESH_INTERVAL = 0.35
-local SCHEDULER_INTERVAL = 0.08
-local MAX_NPC_ERRORS = 3
+local AIConfig = Config.AI
 
 function AIKernel.new(onFatal)
     return setmetatable({
@@ -31,14 +29,27 @@ end
 
 function AIKernel:BuildProfile(wave: number)
     local clampedWave = math.max(0, math.floor(tonumber(wave) or 0))
-    local skill = math.clamp(0.25 + clampedWave * 0.018, 0.25, 0.82)
+    local skill = math.clamp(
+        AIConfig.BaseSkill + clampedWave * AIConfig.SkillPerWave,
+        AIConfig.BaseSkill,
+        AIConfig.MaxSkill
+    )
 
     return {
         Wave = clampedWave,
         Skill = skill,
-        ReactionInterval = math.max(0.16, 0.28 - math.min(0.12, clampedWave * 0.0025)),
-        TargetRefreshInterval = TARGET_REFRESH_INTERVAL,
-        PredictionTime = 0.05 + math.min(0.35, clampedWave * 0.004),
+        ReactionInterval = math.max(
+            AIConfig.MinThinkInterval,
+            AIConfig.BaseThinkInterval - math.min(
+                AIConfig.BaseThinkInterval - AIConfig.MinThinkInterval,
+                clampedWave * AIConfig.ThinkImprovementPerWave
+            )
+        ),
+        TargetRefreshInterval = AIConfig.TargetRefreshInterval,
+        PredictionTime = AIConfig.BasePredictionTime + math.min(
+            AIConfig.MaxPredictionTime - AIConfig.BasePredictionTime,
+            clampedWave * AIConfig.PredictionPerWave
+        ),
         TargetStickiness = 0.08 + math.min(0.28, clampedWave * 0.012),
         AttackConfidence = 0.45 + skill * 0.45,
     }
@@ -109,7 +120,7 @@ function AIKernel:Register(model: Model, brain, definition, wave: number)
         end
     end
 
-    if count >= Constants.MaxActiveEnemies then
+    if count >= AIConfig.MaxActiveEnemies then
         return false
     end
 
@@ -182,7 +193,7 @@ function AIKernel:ProcessRecord(model: Model, record, now: number)
         record.memory.errors += 1
         record.brain:Reset()
 
-        if record.memory.errors >= MAX_NPC_ERRORS then
+        if record.memory.errors >= AIConfig.MaxNpcErrors then
             self.fatalPending = "npc ai failure: " .. tostring(model.Name) .. ": " .. tostring(result)
         end
         return
@@ -242,7 +253,7 @@ function AIKernel:Start()
                 end
             end
 
-            task.wait(SCHEDULER_INTERVAL)
+            task.wait(AIConfig.SchedulerInterval)
         end
     end)
 end
@@ -276,7 +287,7 @@ function AIKernel:HealthCheck()
         count += 1
     end
 
-    return count <= Constants.MaxActiveEnemies
+    return count <= AIConfig.MaxActiveEnemies
 end
 
 function AIKernel:GetSnapshot()
@@ -290,7 +301,7 @@ function AIKernel:GetSnapshot()
     return {
         wave = self.wave,
         active = count,
-        maxActive = Constants.MaxActiveEnemies,
+        maxActive = AIConfig.MaxActiveEnemies,
         skill = self.profile and self.profile.Skill or self.skill,
         generation = self.generation,
     }
