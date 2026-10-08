@@ -124,6 +124,7 @@ end
 function World:Start()
     self:ConfigurePhysics()
     self:Build()
+    workspace:SetAttribute("CBS2_WorldReady", true)
 
     Lighting.ClockTime = 18.5
     Lighting.Brightness = 2
