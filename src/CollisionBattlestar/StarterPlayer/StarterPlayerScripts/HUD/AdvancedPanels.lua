@@ -629,7 +629,11 @@ function AdvancedPanels:Bind()
         if kind == "Catalog" then
             self:RefreshShop(payload)
         elseif kind == "PurchaseResult" or kind == "EquipResult" then
-            self.remotes.Commerce:FireServer({action = "Catalog"})
+            if type(payload) == "table" and type(payload.catalog) == "table" then
+                self:RefreshShop(payload.catalog)
+            else
+                self.remotes.Commerce:FireServer({action = "Catalog"})
+            end
         end
     end))
 
