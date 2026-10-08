@@ -25,6 +25,7 @@ function StatsService.new(playerState, runtimeState, enemyService)
         rankingStore = ok and store or nil,
         running = false,
         lastWave = 0,
+        lastAwardedWave = 0,
         lastWaveMeta = {},
         pendingRanking = {} :: {[Player]: number},
         lastRankingWrite = {} :: {[Player]: number},
@@ -232,11 +233,11 @@ function StatsService:Start()
         end
 
         local completed = self.runtimeState.lastCompletedWave
-        if completed <= 0 or completed == self.lastWave then
+        if completed <= 0 or completed <= self.lastAwardedWave then
             return
         end
 
-        self.lastWave = completed
+        self.lastAwardedWave = completed
         self:AwardWave(
             completed,
             self.lastWaveMeta.bossId,
