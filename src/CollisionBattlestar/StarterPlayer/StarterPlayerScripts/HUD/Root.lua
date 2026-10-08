@@ -161,9 +161,7 @@ function HUD.new(remotes)
     local closeButton = makeButton(menuPanel, "CloseButton", "CLOSE", UDim2.new(1, -28, 0, 40), UDim2.fromOffset(14, 158))
     closeButton.TextSize = 15
 
-    if not UserInputService.TouchEnabled then
-        actionFrame.Visible = true
-    end
+    actionFrame.Visible = true
 
     local self = setmetatable({
         gui = gui,
