@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local Config = require(ReplicatedStorage.Shared.Config)
 local CombatRules = require(ReplicatedStorage.Shared.CombatRules)
+local ProgressionRules = require(ReplicatedStorage.Shared.ProgressionRules)
 
 local CombatService = {}
 CombatService.__index = CombatService
@@ -86,6 +87,17 @@ function CombatService:HandleAttack(player: Player)
     local seen = {}
     local damage = 12 + (self:GetPowerLevel(player) - 1) * 3
     damage *= CombatRules.comboMultiplier(combo)
+    damage *= ProgressionRules.damageMultiplier(
+        self.playerState:GetUpgradeLevel(player, "Damage")
+    )
+
+    local critical = math.random() < ProgressionRules.criticalChance(
+        self.playerState:GetUpgradeLevel(player, "Critical")
+    )
+
+    if critical then
+        damage *= 1.5
+    end
 
     for _, part in ipairs(parts) do
         local model = part:FindFirstAncestorOfClass("Model")
@@ -108,6 +120,7 @@ function CombatService:HandleAttack(player: Player)
                     position = targetRoot.Position,
                     combo = combo,
                     elite = model:GetAttribute("CBS_Elite") == true,
+                    critical = critical,
                 })
             end
         end
@@ -115,6 +128,7 @@ function CombatService:HandleAttack(player: Player)
 
     self.remotes.FX:FireClient(player, "Attack", {
         combo = combo,
+        critical = critical,
     })
 end
 
