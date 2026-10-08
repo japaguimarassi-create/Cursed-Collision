@@ -1,20 +1,20 @@
-name: Collision Battlestar Phase A Validation
+name: Collision Battlestar Phase B Validation
 
 on:
   push:
     branches:
-      - "rebuild/collision-battlestar-*"
+      - "rebuild/collision-battlestar-phase-b-*"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: collision-battlestar-phase-a
+  group: collision-battlestar-phase-b
   cancel-in-progress: true
 
 jobs:
-  phase-a:
+  phase-b:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -24,11 +24,11 @@ jobs:
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
-      - name: Run Phase A shared tests
-        run: luau tools/tests/phase_a_run.luau
-      - name: Validate Phase A structure
+      - name: Run Phase B rules
+        run: luau tools/tests/phase_b_rules_run.luau
+      - name: Validate Phase B structure
         run: python3 tools/validate_project.py
-      - name: Build Phase A place
+      - name: Build Phase B place
         run: |
           set -euo pipefail
           rm -rf build
