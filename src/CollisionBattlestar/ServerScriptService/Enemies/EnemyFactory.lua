@@ -83,7 +83,9 @@ function EnemyFactory.Create(definition, spawnCFrame: CFrame, wave: number)
     humanoid.MaxHealth = definition.MaxHealth + math.max(0, wave - 1) * (definition.MaxHealth * 0.08)
     humanoid.Health = humanoid.MaxHealth
     humanoid.WalkSpeed = definition.Speed
-    humanoid.AutoRotate = true
+    humanoid.AutoRotate = false
+    humanoid.PlatformStand = true
+    humanoid.RequiresNeck = false
     humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
     humanoid.Parent = model
 
