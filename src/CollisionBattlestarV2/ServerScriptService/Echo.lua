@@ -14,6 +14,7 @@ function Echo.new(players, enemies, remotes)
         active = {},
         requests = {},
         connections = {},
+        running = false,
     }, Echo)
 end
 
@@ -146,8 +147,9 @@ function Echo:Start()
         self:Remove(player)
     end))
 
+    self.running = true
     task.spawn(function()
-        while true do
+        while self.running do
             local any = false
             local now = os.clock()
             for player, record in pairs(self.active) do
@@ -173,6 +175,7 @@ function Echo:ResetRuntime()
 end
 
 function Echo:Stop()
+    self.running = false
     self:ResetRuntime()
     for _, connection in ipairs(self.connections) do
         connection:Disconnect()
