@@ -647,7 +647,7 @@ function AdvancedPanels:Bind()
 
         if kind == "Friends" then
             self:RefreshFriends(payload.friends)
-        elseif kind == "SummonResult" or kind == "UnsummonResult" then
+        elseif kind == "State" or kind == "SummonResult" or kind == "UnsummonResult" then
             local snapshot = payload.snapshot
             if snapshot and snapshot.active then
                 self.echoStatus.Text = ("Echo: %s\nState: %s  •  Level %d  •  Bond %d"):format(
