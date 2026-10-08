@@ -57,7 +57,23 @@ enemies:GetDefeated():Connect(function(_, elite, boss, killer)
 end)
 
 runtime:Changed():Connect(function()
-    remotes.State:FireAllClients("Snapshot", runtime:Snapshot())
+    game:BindToClose(function()
+    heart:Stop()
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if persistence.Get then
+            pcall(function()
+                persistence:Save(player, true)
+            end)
+        end
+    end
+end)
+
+remotes.State:FireAllClients("Snapshot", runtime:Snapshot())
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    stateRequestAt[player] = nil
 end)
 
 remotes.State.OnServerEvent:Connect(function(player, request)
