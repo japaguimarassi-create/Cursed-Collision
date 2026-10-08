@@ -124,7 +124,7 @@ function PlayerState:AddPlayer(player: Player)
         self:BindCharacter(player, player.Character)
     else
         local ok = pcall(function()
-            player:LoadCharacter()
+            player:LoadCharacterAsync()
         end)
 
         if not ok and player.Parent then
