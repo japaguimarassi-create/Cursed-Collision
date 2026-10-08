@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local ArenaBuilder = require(script.Parent.ArenaBuilder)
+local ContentBuilder = require(script.Parent.ContentBuilder)
 
 local WorldService = {}
 WorldService.__index = WorldService
@@ -17,6 +18,7 @@ end
 
 function WorldService:Start()
     self.world = ArenaBuilder.Build()
+    ContentBuilder.Build(self.world)
     workspace:SetAttribute(Constants.WorldReadyAttribute, true)
     self.runtimeState:SetMany({
         worldReady = true,
