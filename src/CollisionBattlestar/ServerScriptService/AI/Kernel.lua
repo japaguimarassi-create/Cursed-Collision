@@ -262,7 +262,13 @@ function AIKernel:Stop()
     self.running = false
     self.loopToken += 1
 
+    local models = {}
+
     for model in pairs(self.records) do
+        table.insert(models, model)
+    end
+
+    for _, model in ipairs(models) do
         self:Unregister(model)
     end
 
