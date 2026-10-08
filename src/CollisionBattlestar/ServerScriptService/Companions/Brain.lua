@@ -243,7 +243,11 @@ function EchoBrain:Think()
                 self:SetState(self.classId == "Guardian" and "Protect" or "Position")
                 self:TryAttack(target, now)
             else
-                self:SetState(self.classId == "Guardian" or self.classId == "Vanguard" and "Protect" or "Position")
+                local positionState = "Position"
+                if self.classId == "Guardian" or self.classId == "Vanguard" then
+                    positionState = "Protect"
+                end
+                self:SetState(positionState)
                 local desired = targetRoot.Position - (targetRoot.Position - self.root.Position).Unit * self.class.PreferredDistance
                 local waypoint = self.navigation:GetNextPosition(desired, now)
                 self:MoveToward(waypoint)
