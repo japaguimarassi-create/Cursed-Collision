@@ -132,6 +132,13 @@ function CompanionService:Summon(player: Player, friendUserId: any, classId: any
 
     local key = tostring(friendUserId)
     local saved = profile.Echoes[key]
+    local previousEquippedKey = nil
+
+    for echoKey, echo in pairs(profile.Echoes) do
+        if type(echo) == "table" and echo.Equipped == true then
+            previousEquippedKey = echoKey
+        end
+    end
 
     if type(saved) ~= "table" then
         saved = {
@@ -160,6 +167,14 @@ function CompanionService:Summon(player: Player, friendUserId: any, classId: any
 
     if not model or not humanoid or not root then
         saved.Equipped = false
+
+        if previousEquippedKey then
+            local previous = profile.Echoes[previousEquippedKey]
+            if type(previous) == "table" then
+                previous.Equipped = true
+            end
+        end
+
         return false, "factory_failed"
     end
 
