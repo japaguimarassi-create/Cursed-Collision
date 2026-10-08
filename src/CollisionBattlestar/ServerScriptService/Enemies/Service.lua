@@ -318,7 +318,8 @@ function EnemyService:HandleDeath(model: Model)
         record.definition.Id,
         record.definition.IsElite,
         position,
-        record.definition.IsBoss == true
+        record.definition.IsBoss == true,
+        model:GetAttribute("CBS_TestSpawn") == true
     )
 
     task.delay(0.2, function()
