@@ -16,6 +16,7 @@ function PlayerService.new(persistence)
         persistence = persistence,
         states = {},
         connections = {},
+        characterConnections = {},
         creditChanged = Instance.new("BindableEvent"),
         running = false,
     }, PlayerService)
@@ -118,7 +119,12 @@ function PlayerService:Add(player: Player)
     player:SetAttribute("CBS_LevelProgress", progress)
     player:SetAttribute("CBS_LevelRequired", required)
 
-    table.insert(self.connections, player.CharacterAdded:Connect(function(character)
+    local previousCharacterConnection = self.characterConnections[player]
+    if previousCharacterConnection then
+        previousCharacterConnection:Disconnect()
+    end
+
+    self.characterConnections[player] = player.CharacterAdded:Connect(function(character)
         self:ApplyCharacter(player, character)
 
         local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -322,6 +328,12 @@ function PlayerService:Start()
     end))
 
     table.insert(self.connections, Players.PlayerRemoving:Connect(function(player)
+        local characterConnection = self.characterConnections[player]
+        if characterConnection then
+            characterConnection:Disconnect()
+            self.characterConnections[player] = nil
+        end
+
         task.delay(2, function()
             self.states[player] = nil
         end)
@@ -336,6 +348,12 @@ end
 
 function PlayerService:Stop()
     self.running = false
+
+    for player, connection in pairs(self.characterConnections) do
+        connection:Disconnect()
+        self.characterConnections[player] = nil
+    end
+
     for _, connection in ipairs(self.connections) do
         connection:Disconnect()
     end
