@@ -5,12 +5,14 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local DataSchema = require(game:GetService("ReplicatedStorage").Shared.DataSchema)
-local PersistenceRules = require(game:GetService("ReplicatedStorage").Shared.PersistenceRules)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DataSchema = require(ReplicatedStorage.Shared.DataSchema)
+local PersistenceRules = require(ReplicatedStorage.Shared.PersistenceRules)
 
 local STORE_NAME = "CollisionBattlestar_PlayerProfiles_v2"
 local LOCK_DURATION = 120
 local RENEW_INTERVAL = 45
+local AUTOSAVE_INTERVAL = 90
 local MAX_RETRIES = 5
 
 local PersistenceService = {}
@@ -43,6 +45,8 @@ function PersistenceService.new()
         profiles = {} :: {[Player]: any},
         sessions = {} :: {[Player]: {sessionId: string, renewTask: thread?}},
         closing = false,
+        studio = RunService:IsStudio(),
+        autosaveTask = nil,
     }, PersistenceService)
 end
 
@@ -51,19 +55,35 @@ function PersistenceService:Start()
         self:SaveAndRelease(player)
     end)
 
+    self.autosaveTask = task.spawn(function()
+        while not self.closing do
+            task.wait(AUTOSAVE_INTERVAL)
+
+            if self.closing then
+                break
+            end
+
+            if not self.studio then
+                for _, player in ipairs(Players:GetPlayers()) do
+                    self:Save(player)
+                    task.wait(0.25)
+                end
+            end
+        end
+    end)
+
     game:BindToClose(function()
         self.closing = true
 
-        local remaining = 25
         for _, player in ipairs(Players:GetPlayers()) do
             task.spawn(function()
                 self:SaveAndRelease(player)
             end)
         end
 
-        while next(self.profiles) ~= nil and remaining > 0 do
-            task.wait(1)
-            remaining -= 1
+        local deadline = os.clock() + 25
+        while next(self.profiles) ~= nil and os.clock() < deadline do
+            task.wait(0.25)
         end
     end)
 end
@@ -73,13 +93,25 @@ function PersistenceService:Load(player: Player)
         return self.profiles[player]
     end
 
+    if self.studio then
+        local profile = DataSchema.Default()
+        self.profiles[player] = profile
+        self.sessions[player] = {
+            sessionId = HttpService:GenerateGUID(false),
+            renewTask = nil,
+        }
+        return profile
+    end
+
     local sessionId = HttpService:GenerateGUID(false)
     local blocked = false
     local loadedProfile = nil
     local key = getKey(player)
-        local success, result = retry(function()
-        local value
-        local updateSuccess, updateResult = pcall(function()
+
+    local success, result = retry(function()
+        local value = nil
+
+        local ok, updateResult = pcall(function()
             return self.store:UpdateAsync(key, function(current)
                 if type(current) == "table"
                     and type(current.SchemaVersion) == "number"
@@ -100,36 +132,33 @@ function PersistenceService:Load(player: Player)
                     return nil
                 end
 
-                currentData.__Session = PersistenceRules.makeLock(sessionId, os.time(), LOCK_DURATION)
+                currentData.__Session = PersistenceRules.makeLock(
+                    sessionId,
+                    os.time(),
+                    LOCK_DURATION
+                )
+
                 value = currentData
                 return currentData
             end)
         end)
 
-        if not updateSuccess then
+        if not ok then
             error(updateResult)
         end
 
         if value == nil then
-            if blocked then
-                error("PLAYER_SESSION_LOCKED")
-            end
-            error("PLAYER_PROFILE_NOT_RETURNED")
+            error(blocked and "PLAYER_SESSION_LOCKED" or "PLAYER_PROFILE_NOT_RETURNED")
         end
 
         return updateResult
     end)
 
     if not success then
-        if RunService:IsStudio() then
-            warn(("Persistence fallback for %s: %s"):format(player.Name, tostring(result)))
-            loadedProfile = DataSchema.Default()
-        else
-            return nil, tostring(result)
-        end
-    else
-        loadedProfile = DataSchema.Sanitize(result)
+        return nil, tostring(result)
     end
+
+    loadedProfile = DataSchema.Sanitize(result)
 
     if not player.Parent then
         return nil, "PLAYER_LEFT_DURING_LOAD"
@@ -145,33 +174,38 @@ function PersistenceService:Load(player: Player)
         while self.profiles[player] and player.Parent and not self.closing do
             task.wait(RENEW_INTERVAL)
 
-            if not self.profiles[player] or not self.sessions[player] then
+            local session = self.sessions[player]
+            if not session or not self.profiles[player] or not player.Parent then
                 break
             end
 
-            local currentSession = self.sessions[player]
-            local renewOk, renewError = retry(function()
-                local result = self.store:UpdateAsync(key, function(current)
-                    local data = DataSchema.Migrate(current)
+            local ok = retry(function()
+                local updated = self.store:UpdateAsync(key, function(current)
                     local lock = type(current) == "table" and current.__Session
 
-                    if type(lock) == "table" and not PersistenceRules.isOwned(lock.SessionId, currentSession.sessionId) then
+                    if type(lock) == "table" and not PersistenceRules.isOwned(
+                        lock.SessionId,
+                        session.sessionId
+                    ) then
                         return nil
                     end
 
-                    data.__Session = PersistenceRules.makeLock(currentSession.sessionId, os.time(), LOCK_DURATION)
+                    local data = DataSchema.Migrate(current)
+                    data.__Session = PersistenceRules.makeLock(
+                        session.sessionId,
+                        os.time(),
+                        LOCK_DURATION
+                    )
                     return data
                 end)
 
-                if result == nil then
+                if updated == nil then
                     error("SESSION_RENEW_REJECTED")
                 end
-
-                return result
             end)
 
-            if not renewOk then
-                warn(("Session lock renewal failed for %s: %s"):format(player.Name, tostring(renewError)))
+            if not ok then
+                warn(("Session lock renewal failed for %s"):format(player.Name))
             end
         end
     end)
@@ -191,9 +225,12 @@ function PersistenceService:Save(player: Player)
         return false, "profile_unavailable"
     end
 
+    if self.studio then
+        return true
+    end
+
     local key = getKey(player)
     local payload = DataSchema.Sanitize(profile)
-    local saved = false
     local conflict = false
 
     local success, result = retry(function()
@@ -206,7 +243,6 @@ function PersistenceService:Save(player: Player)
             end
 
             local currentLock = type(current) == "table" and current.__Session
-
             if type(currentLock) == "table" and not PersistenceRules.isOwned(
                 currentLock.SessionId,
                 session.sessionId
@@ -215,32 +251,40 @@ function PersistenceService:Save(player: Player)
                 return nil
             end
 
-            payload.__Session = PersistenceRules.makeLock(session.sessionId, os.time(), LOCK_DURATION)
+            payload.__Session = PersistenceRules.makeLock(
+                session.sessionId,
+                os.time(),
+                LOCK_DURATION
+            )
+
             return payload
         end)
 
         if updated == nil then
-            if conflict then
-                error("PLAYER_SESSION_CONFLICT")
-            end
-            error("PLAYER_SAVE_REJECTED")
+            error(conflict and "PLAYER_SESSION_CONFLICT" or "PLAYER_SAVE_REJECTED")
         end
 
-        saved = true
-        return updated
+        return true
     end)
 
     if not success then
         return false, tostring(result)
     end
 
-    return saved
+    return true
 end
 
 function PersistenceService:Release(player: Player)
     local session = self.sessions[player]
+
     if not session then
         return false, "session_unavailable"
+    end
+
+    if self.studio then
+        self.sessions[player] = nil
+        self.profiles[player] = nil
+        return true
     end
 
     local key = getKey(player)
@@ -257,7 +301,10 @@ function PersistenceService:Release(player: Player)
             local currentData = DataSchema.Migrate(current)
             local lock = type(current) == "table" and current.__Session
 
-            if type(lock) == "table" and not PersistenceRules.isOwned(lock.SessionId, session.sessionId) then
+            if type(lock) == "table" and not PersistenceRules.isOwned(
+                lock.SessionId,
+                session.sessionId
+            ) then
                 return nil
             end
 
@@ -270,14 +317,21 @@ function PersistenceService:Release(player: Player)
             error("PLAYER_RELEASE_REJECTED")
         end
 
-        return updated
+        return true
     end)
 
     if not success then
         return false, tostring(result)
     end
 
-    return released
+    if session.renewTask then
+        task.cancel(session.renewTask)
+    end
+
+    self.sessions[player] = nil
+    self.profiles[player] = nil
+
+    return true
 end
 
 function PersistenceService:SaveAndRelease(player: Player)
@@ -287,19 +341,14 @@ function PersistenceService:SaveAndRelease(player: Player)
 
     local saved, saveError = self:Save(player)
     if not saved then
-        warn(("Profile save failed for %s; lock will expire safely: %s"):format(player.Name, tostring(saveError)))
+        warn(("Profile save failed for %s; retaining lock until expiry: %s"):format(
+            player.Name,
+            tostring(saveError)
+        ))
         return
     end
 
     self:Release(player)
-
-    local session = self.sessions[player]
-    if session and session.renewTask then
-        task.cancel(session.renewTask)
-    end
-
-    self.sessions[player] = nil
-    self.profiles[player] = nil
 end
 
 return PersistenceService
