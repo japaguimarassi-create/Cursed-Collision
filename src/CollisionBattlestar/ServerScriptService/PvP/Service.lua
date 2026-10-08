@@ -9,12 +9,13 @@ local ArenaBuilder = require(script.Parent.ArenaBuilder)
 local PvPService = {}
 PvPService.__index = PvPService
 
-function PvPService.new(playerState, economyService, worldService, remotes)
+function PvPService.new(playerState, economyService, worldService, remotes, statsService)
     return setmetatable({
         playerState = playerState,
         economyService = economyService,
         worldService = worldService,
         remotes = remotes,
+        statsService = statsService,
         world = nil,
         participants = {} :: {[Player]: boolean},
         requests = {} :: {[Player]: number},
@@ -131,6 +132,9 @@ function PvPService:WatchCharacter(player: Player, character: Model?)
             local killer = Players:GetPlayerByUserId(killerUserId)
             if killer and self.participants[killer] then
                 self.economyService:RewardPvPKill(killer, 75)
+                if self.statsService then
+                    self.statsService:AwardPvPKill(killer)
+                end
             end
         end
 
