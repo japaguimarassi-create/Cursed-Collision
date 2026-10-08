@@ -93,6 +93,22 @@ function PlayerState:AddPlayer(player: Player)
 
     local function onCharacter(character: Model)
         self:ApplyCharacterStats(player, character)
+
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.Died:Connect(function()
+                task.delay(2, function()
+                    if player.Parent and not player.Character then
+                        local ok = pcall(function()
+                            player:LoadCharacter()
+                        end)
+                        if not ok and player.Parent then
+                            player:Kick("Character respawn failed safely.")
+                        end
+                    end
+                end)
+            end)
+        end
     end
 
     player.CharacterAdded:Connect(onCharacter)
