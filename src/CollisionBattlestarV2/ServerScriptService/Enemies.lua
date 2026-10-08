@@ -38,7 +38,6 @@ function Enemies:BuildModel(definition, position)
     local model = Instance.new("Model")
     model.Name = definition.Id
     model:SetAttribute("CBS2_NPC", true)
-    model:SetAttribute("CBS2_NPC", true)
     model:SetAttribute("CBS2_Elite", definition.Elite)
     model:SetAttribute("CBS2_Boss", definition.Boss)
 
