@@ -59,6 +59,19 @@ runtime:Changed():Connect(function()
     remotes.State:FireAllClients("Snapshot", runtime:Snapshot())
 end)
 
+remotes.State.OnServerEvent:Connect(function(player, request)
+    if type(request) ~= "table" then
+        return
+    end
+
+    if request.action == "RequestState" then
+        remotes.State:FireClient(player, "Snapshot", runtime:Snapshot())
+    elseif request.action == "Missions" then
+        remotes.State:FireClient(player, "Missions", missions:Snapshot(player))
+    end
+end)
+
+
 local started = heart:Start()
 
 if not started then
