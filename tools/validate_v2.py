@@ -80,6 +80,9 @@ world = (v2 / "ServerScriptService/World.lua").read_text(encoding="utf-8")
 persistence = (v2 / "ServerScriptService/Persistence.lua").read_text(encoding="utf-8")
 players = (v2 / "ServerScriptService/Players.lua").read_text(encoding="utf-8")
 main = (v2 / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
+constants = (v2 / "ReplicatedStorage/Shared/Constants.lua").read_text(encoding="utf-8")
+fx = (v2 / "StarterPlayer/StarterPlayerScripts/FX.lua").read_text(encoding="utf-8")
+audio = (v2 / "StarterPlayer/StarterPlayerScripts/Audio.lua").read_text(encoding="utf-8")
 
 for token in ("Register", "Report", "Reload", "RuntimeReloading", "RuntimeRestored", "RuntimeFailed"):
     assert token in heart
@@ -98,5 +101,19 @@ for token in ("UpdateAsync", "GenerateGUID", "GetDataStore"):
 
 assert "LoadCharacterAsync" in players
 assert "loadstring(" not in main
+assert "Vector3.new" not in constants
+assert "runtime:Changed():Connect(function()\n    game:BindToClose" not in main
+assert 'game:BindToClose(function()\n    heart:Stop()' in main
+assert "StopStartedServices(self.order)" in heart
+assert "DisconnectWatchdog" in heart
+assert "return self.running and count <= Constants.MaxNPCs" in ai_heart
+assert "makeSmoke" in fx
+assert "9075325599" in audio
+assert "82845990304289" in audio
+
+for path in (v2 / "ServerScriptService").rglob("*.lua"):
+    source = path.read_text(encoding="utf-8")
+    assert "script.Parent.ReplicatedStorage" not in source
+    assert ":function" not in source
 
 print(f"Validated Collision Battlestar V2 runtime: {len(lua_files)} Lua files")
