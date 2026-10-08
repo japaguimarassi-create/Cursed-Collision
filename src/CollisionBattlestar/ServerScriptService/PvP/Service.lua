@@ -44,6 +44,7 @@ function PvPService:Start()
 
     for _, player in ipairs(Players:GetPlayers()) do
         self.participants[player] = player:GetAttribute("CBS_PvP") == true
+        self:WatchCharacter(player, player.Character)
     end
 end
 
@@ -102,6 +103,33 @@ function PvPService:GetSpawns()
     end)
 
     return result
+end
+
+function PvPService:WatchCharacter(player: Player, character: Model?)
+    if not character then
+        return
+    end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    humanoid.Died:Connect(function()
+        if not self.participants[player] then
+            return
+        end
+
+        local killerUserId = player:GetAttribute("CBS_LastPvPKillerUserId")
+        if type(killerUserId) == "number" then
+            local killer = Players:GetPlayerByUserId(killerUserId)
+            if killer and self.participants[killer] then
+                self.economyService:RewardEnemyDefeat(killer, 75)
+            end
+        end
+
+        player:SetAttribute("CBS_LastPvPKillerUserId", nil)
+    end)
 end
 
 function PvPService:PositionPlayer(player: Player)
@@ -163,6 +191,15 @@ end
 
 function PvPService:IsParticipant(player: Player)
     return self.participants[player] == true
+end
+
+function PvPService:IsInsideZone(position: Vector3)
+    return position.X >= -70
+        and position.X <= 70
+        and position.Z >= 138
+        and position.Z <= 242
+        and position.Y >= -10
+        and position.Y <= 60
 end
 
 function PvPService:ValidateTarget(player: Player, target: Player)
