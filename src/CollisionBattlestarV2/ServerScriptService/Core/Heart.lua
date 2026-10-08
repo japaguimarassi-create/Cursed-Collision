@@ -211,6 +211,12 @@ function Heart:Reload(reason: string, _)
 
     self.running = false
 
+    if self.heartbeat then
+        self.heartbeat:Disconnect()
+        self.heartbeat = nil
+    end
+    self.accumulator = 0
+
     if waves and type(waves.Resume) == "function" then
         pcall(function()
             waves:Resume(resumeWave)
