@@ -4,7 +4,7 @@ return function()
     local Schema = require("../../src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/DataSchema")
 
     local fresh = Schema.Default()
-    assert(fresh.SchemaVersion == 2)
+    assert(fresh.SchemaVersion == 3)
     assert(fresh.Credits == 0)
     assert(fresh.PowerLevel == 1)
     assert(fresh.Inventory.Owned.Default == nil)
@@ -34,7 +34,7 @@ return function()
         },
     })
 
-    assert(legacy.SchemaVersion == Schema.CurrentVersion)
+    assert(legacy.SchemaVersion == 3)
     assert(legacy.Credits == 250)
     assert(legacy.PowerLevel == 4)
     assert(legacy.Upgrades.Damage == 3)
