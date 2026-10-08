@@ -67,6 +67,7 @@ required = [
     "src/CollisionBattlestar/ServerScriptService/Monetization/Service.lua",
     "src/CollisionBattlestar/ServerScriptService/PvP/ArenaBuilder.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientBootstrap.client.lua",
+    "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/RuntimeGuard.client.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientRemotes.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/Input/Service.lua",
     "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/Root.lua",
@@ -129,6 +130,9 @@ for path in lua_files:
 server = (ROOT / "src/CollisionBattlestar/ServerScriptService/Bootstrap.server.lua").read_text(encoding="utf-8")
 combat = (ROOT / "src/CollisionBattlestar/ServerScriptService/Combat/Service.lua").read_text(encoding="utf-8")
 client = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientBootstrap.client.lua").read_text(encoding="utf-8")
+guard = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/RuntimeGuard.client.lua").read_text(encoding="utf-8")
+config = (ROOT / "src/CollisionBattlestar/RuntimeReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
+player_state = (ROOT / "src/CollisionBattlestar/ServerScriptService/Core/PlayerState.lua").read_text(encoding="utf-8")
 hud = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/Root.lua").read_text(encoding="utf-8")
 panels = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/HUD/AdvancedPanels.lua").read_text(encoding="utf-8")
 persistence = (ROOT / "src/CollisionBattlestar/ServerScriptService/Persistence/Service.lua").read_text(encoding="utf-8")
@@ -176,6 +180,16 @@ for token in ["HUD.new", "startOptional", "AdvancedPanels", "ClientBootstrap.Wai
     if token not in client:
         raise SystemExit("Client bootstrap contract missing: " + token)
 
+for token in ["CollisionBattlestarRuntimeGuard", "CBS_WorldReady", "CBS_ServerBootError", "CameraSubject"]:
+    if token not in guard:
+        raise SystemExit("Runtime guard contract missing: " + token)
+
+if "HitboxSize = Constants.HitboxSize" not in config:
+    raise SystemExit("Config must use authoritative HitboxSize")
+
+if "LoadCharacterAsync" not in player_state or "LoadCharacter()" in player_state:
+    raise SystemExit("PlayerState must use LoadCharacterAsync without deprecated LoadCharacter")
+
 client_remotes = (ROOT / "src/CollisionBattlestar/StarterPlayer/StarterPlayerScripts/ClientRemotes.lua").read_text(encoding="utf-8")
 for token in ["WaitForChild", "DEFAULTS", "CommerceRemote", "CompanionRemote", "PvPRemote", "MissionRemote", "AdminRemote"]:
     if token not in client_remotes:
@@ -206,5 +220,11 @@ for token in ["IsInsideZone", "Join", "Leave", "CBS_PvP"]:
 
 if "ProcessReceipt" not in monetization:
     raise SystemExit("Monetization receipt contract missing")
+
+workflow = (ROOT / ".github/workflows/phase-a-validation.yml").read_text(encoding="utf-8")
+if "rebuild/collision-battlestar-phase-c-*" not in workflow:
+    raise SystemExit("Phase C workflow trigger missing")
+if "fallback" not in server.lower():
+    raise SystemExit("Server fallback boot contract missing")
 
 print("Validated Collision Battlestar Phase B tree and runtime contracts.")
