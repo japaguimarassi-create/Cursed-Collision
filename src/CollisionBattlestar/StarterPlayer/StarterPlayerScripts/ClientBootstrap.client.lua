@@ -119,6 +119,13 @@ local input = startOptional(script.Parent.Input.Service, "new", remotes, hud)
 local combatFX = startOptional(script.Parent.CombatFX.Service, "new", remotes)
 local camera = startOptional(script.Parent.Camera.Service, "new")
 local socialInvite = startOptional(script.Parent.SocialInvite.Service, "new")
+if not socialInvite then
+    socialInvite = {
+        Prompt = function()
+            return false, "invite_unavailable"
+        end,
+    }
+end
 
 if camera then
     pcall(function()
