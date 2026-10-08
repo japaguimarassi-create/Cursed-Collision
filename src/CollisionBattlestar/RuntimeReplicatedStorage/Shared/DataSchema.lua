@@ -26,6 +26,14 @@ local function defaultUpgrades()
     }
 end
 
+local local function defaultMissions()
+    return {
+        WaveHunter = {Progress = 0, Completed = false},
+        EliteBreaker = {Progress = 0, Completed = false},
+        CreditCollector = {Progress = 0, Completed = false},
+    }
+end
+
 local function defaultInventory()
     return {
         Owned = {},
@@ -48,6 +56,7 @@ function DataSchema.Default()
         Upgrades = defaultUpgrades(),
         Inventory = defaultInventory(),
         Echoes = {},
+        Missions = defaultMissions(),
     }
 end
 
@@ -77,6 +86,24 @@ local function sanitizeEquipped(source: any)
     for slot, itemId in pairs(source) do
         if type(slot) == "string" and type(itemId) == "string" and #slot <= 60 and #itemId <= 80 then
             output[slot] = itemId
+        end
+    end
+
+    return output
+end
+
+local function sanitizeMissions(source: any)
+    local output = defaultMissions()
+
+    if type(source) ~= "table" then
+        return output
+    end
+
+    for missionId, mission in pairs(output) do
+        local stored = source[missionId]
+        if type(stored) == "table" then
+            output[missionId].Progress = nonNegativeInt(stored.Progress, 0, 100000)
+            output[missionId].Completed = stored.Completed == true
         end
     end
 
@@ -147,6 +174,7 @@ function DataSchema.Sanitize(source: any)
     end
 
     data.Echoes = sanitizeEchoes(source.Echoes)
+    data.Missions = sanitizeMissions(source.Missions)
 
     return data
 end
