@@ -10,7 +10,7 @@
       }
     },
     "ReplicatedStorage": {
-      "$path": "src/CollisionBattlestar/ReplicatedStorage"
+      "$path": "src/CollisionBattlestar/RuntimeReplicatedStorage"
     },
     "ServerScriptService": {
       "$path": "src/CollisionBattlestar/ServerScriptService"
