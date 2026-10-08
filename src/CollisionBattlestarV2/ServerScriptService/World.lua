@@ -123,7 +123,14 @@ end
 
 function World:Start()
     self:ConfigurePhysics()
-    self:Build()
+
+    local existing = workspace:FindFirstChild("CBS2_World")
+    if not self.root or not existing then
+        self:Build()
+    else
+        self.root = existing
+    end
+
     workspace:SetAttribute("CBS2_WorldReady", true)
 
     Lighting.ClockTime = 18.5
