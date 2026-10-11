@@ -6,7 +6,7 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 
 local AnimalBrain = {}
 local wildlifeRegistry = setmetatable({}, { __mode = "k" })
-local startedGuardians = {}
+local startedGuardians = setmetatable({}, { __mode = "k" })
 local lastCaught = {}
 
 local function characterState(player)
@@ -116,6 +116,7 @@ local function runGuardian(guardian, onCaught, notify)
     end
 
     local origin = root.Position
+    guardian:SetAttribute("BrainState", "Patrol")
     local range = math.clamp(guardian:GetAttribute("VisionRange") or Config.Guardian.VisionRange, 10, 180)
     local patrolRadius = math.clamp(guardian:GetAttribute("PatrolRadius") or Config.Guardian.PatrolRadius, 5, 200)
     local patrolSpeed = math.clamp(guardian:GetAttribute("PatrolSpeed") or Config.Guardian.PatrolSpeed, 4, 35)
@@ -137,6 +138,7 @@ local function runGuardian(guardian, onCaught, notify)
         local player, targetRoot, distance = targetFor(guardian, root, range)
 
         if player and targetRoot then
+            guardian:SetAttribute("BrainState", "Chase")
             local targetChanged = targetPlayer ~= player
             targetPlayer = player
             humanoid.WalkSpeed = chaseSpeed
@@ -164,10 +166,18 @@ local function runGuardian(guardian, onCaught, notify)
             targetPlayer = nil
             lastTargetPosition = nil
             humanoid.WalkSpeed = patrolSpeed
+            local distanceFromHome = (Vector3.new(root.Position.X, origin.Y, root.Position.Z) - origin).Magnitude
+            if distanceFromHome > patrolRadius * 1.25 then
+                guardian:SetAttribute("BrainState", "Return")
+                patrolGoal = origin
+                nextPatrol = now + 3
+            else
+                guardian:SetAttribute("BrainState", "Patrol")
+            end
 
-            if not patrolGoal
+            if distanceFromHome <= patrolRadius * 1.25 and (not patrolGoal
                 or (root.Position - patrolGoal).Magnitude < 5
-                or now >= nextPatrol then
+                or now >= nextPatrol) then
                 patrolGoal = randomPatrolPoint(origin, patrolRadius)
                 nextPatrol = now + math.random(5, 9)
             end
@@ -204,6 +214,9 @@ function AnimalBrain.StartGuardians(builder, animalService, notify)
     end
 
     folder.ChildAdded:Connect(addGuardian)
+    folder.ChildRemoved:Connect(function(guardian)
+        startedGuardians[guardian] = nil
+    end)
 end
 
 
