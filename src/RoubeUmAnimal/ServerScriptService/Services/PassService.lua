@@ -5,6 +5,7 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 
 local PassService = {}
 local ownership = {}
+local promptCooldown = {}
 local notify
 local promptRemote
 local ids = {}
@@ -76,6 +77,15 @@ function PassService.Start(promptRequestRemote, promptClientRemote, notifyFuncti
             return
         end
 
+        local now = os.clock()
+        local lastPrompt = promptCooldown[player] or 0
+
+        if now - lastPrompt < 2 then
+            return
+        end
+
+        promptCooldown[player] = now
+
         local passId = idFor(passName)
 
         if passId <= 0 then
@@ -134,6 +144,7 @@ end
 
 function PassService.RemovePlayer(player)
     ownership[player] = nil
+    promptCooldown[player] = nil
 end
 
 return PassService
