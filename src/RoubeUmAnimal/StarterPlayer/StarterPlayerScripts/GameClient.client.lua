@@ -2,8 +2,10 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MarketplaceService = game:GetService("MarketplaceService")
 local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
 local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("RoubeAnimalRemotes")
@@ -14,36 +16,43 @@ local passPromptRemote = remotes:WaitForChild("PromptGamepass")
 local productRequestRemote = remotes:WaitForChild("RequestStackableProduct")
 local productPromptRemote = remotes:WaitForChild("PromptStackableProduct")
 local rebirthRequestRemote = remotes:WaitForChild("RequestRebirth")
+local dailyRewardRemote = remotes:WaitForChild("RequestDailyReward")
+local redeemCodeRemote = remotes:WaitForChild("RequestRedeemCode")
+local questClaimRemote = remotes:WaitForChild("RequestQuest")
 local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("AnimalCatalog"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local MonetizationIds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("MonetizationIds"))
 
 local COLORS = {
-    Background = Color3.fromRGB(22, 30, 44),
-    Panel = Color3.fromRGB(34, 46, 64),
-    PanelLight = Color3.fromRGB(48, 64, 86),
-    Blue = Color3.fromRGB(65, 166, 244),
-    Green = Color3.fromRGB(55, 184, 113),
-    Gold = Color3.fromRGB(231, 171, 49),
-    Red = Color3.fromRGB(217, 75, 74),
-    Purple = Color3.fromRGB(145, 89, 187),
-    Orange = Color3.fromRGB(222, 119, 43),
-    Teal = Color3.fromRGB(40, 147, 136),
-    Text = Color3.fromRGB(248, 250, 255),
-    Muted = Color3.fromRGB(190, 202, 216),
-    Dark = Color3.fromRGB(14, 20, 30),
+    Background = Color3.fromRGB(35, 48, 39),
+    Panel = Color3.fromRGB(55, 73, 54),
+    PanelLight = Color3.fromRGB(79, 99, 67),
+    Meadow = Color3.fromRGB(125, 190, 83),
+    Leaf = Color3.fromRGB(70, 156, 83),
+    Moss = Color3.fromRGB(46, 101, 63),
+    Gold = Color3.fromRGB(255, 204, 89),
+    Cream = Color3.fromRGB(255, 244, 219),
+    Blue = Color3.fromRGB(106, 195, 239),
+    Aqua = Color3.fromRGB(79, 203, 190),
+    Purple = Color3.fromRGB(181, 139, 221),
+    Orange = Color3.fromRGB(237, 145, 75),
+    Red = Color3.fromRGB(221, 96, 77),
+    Pink = Color3.fromRGB(246, 139, 172),
+    Text = Color3.fromRGB(255, 250, 231),
+    Muted = Color3.fromRGB(213, 223, 199),
+    Dark = Color3.fromRGB(25, 35, 28),
 }
 
-local oldGui = player:WaitForChild("PlayerGui"):FindFirstChild("RoubeUmAnimalHUD")
+local oldGui = player:WaitForChild("PlayerGui"):FindFirstChild("StealAnAnimalHUD")
 if oldGui then
     oldGui:Destroy()
 end
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "RoubeUmAnimalHUD"
+gui.Name = "StealAnAnimalHUD"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = false
-gui.DisplayOrder = 15
+gui.DisplayOrder = 20
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 gui.Parent = player:WaitForChild("PlayerGui")
@@ -55,16 +64,24 @@ local function corner(instance, radius)
     return object
 end
 
-local function stroke(instance, color, thickness, transparency)
+local function outline(instance, color, thickness, transparency)
     local object = Instance.new("UIStroke")
-    object.Color = color or COLORS.Blue
-    object.Thickness = thickness or 1
-    object.Transparency = transparency or 0.25
+    object.Color = color or COLORS.Gold
+    object.Thickness = thickness or 1.5
+    object.Transparency = transparency or 0.2
     object.Parent = instance
     return object
 end
 
-local function makeLabel(parent, name, text, size, position, fontSize, color, alignment)
+local function gradient(instance, first, last, rotation)
+    local object = Instance.new("UIGradient")
+    object.Color = ColorSequence.new(first, last)
+    object.Rotation = rotation or 90
+    object.Parent = instance
+    return object
+end
+
+local function label(parent, name, text, size, position, fontSize, color, alignment)
     local object = Instance.new("TextLabel")
     object.Name = name
     object.Size = size
@@ -82,320 +99,269 @@ local function makeLabel(parent, name, text, size, position, fontSize, color, al
     return object
 end
 
-local function makeButton(parent, name, text, size, position, color, callback)
+local function button(parent, name, text, size, position, color, callback, order)
     local object = Instance.new("TextButton")
     object.Name = name
     object.Size = size
     object.Position = position
-    object.BackgroundColor3 = color or COLORS.PanelLight
+    object.BackgroundColor3 = color or COLORS.Leaf
     object.BorderSizePixel = 0
     object.AutoButtonColor = true
-    object.Font = Enum.Font.GothamBold
+    object.Font = Enum.Font.GothamBlack
     object.Text = text
     object.TextColor3 = COLORS.Text
+    object.TextSize = 12
     object.TextScaled = true
     object.TextWrapped = true
     object.Selectable = true
     object.Active = true
+    object.LayoutOrder = order or 0
     object.Parent = parent
     corner(object, 10)
-    stroke(object, COLORS.Dark, 2, 0.35)
+    outline(object, COLORS.Dark, 1.5, 0.35)
+    gradient(object, color or COLORS.Leaf, COLORS.Moss, 90)
     object.Activated:Connect(callback)
     return object
+end
+
+local function number(value)
+    value = tonumber(value) or 0
+    local abs = math.abs(value)
+    if abs >= 1000000000 then
+        return string.format("%.1fB", value / 1000000000)
+    elseif abs >= 1000000 then
+        return string.format("%.1fM", value / 1000000)
+    elseif abs >= 10000 then
+        return string.format("%.1fK", value / 1000)
+    end
+    return tostring(math.floor(value))
+end
+
+local function rarityColor(rarity)
+    if rarity == "Common" then return Color3.fromRGB(199, 213, 181) end
+    if rarity == "Uncommon" then return COLORS.Leaf end
+    if rarity == "Rare" then return COLORS.Blue end
+    if rarity == "Epic" then return COLORS.Purple end
+    if rarity == "Legendary" then return COLORS.Gold end
+    return COLORS.Pink
+end
+
+local function biomeName(key)
+    local info = Catalog.BiomeInfo[key]
+    return info and info.Name or string.upper(tostring(key))
 end
 
 local mapLoadOverlay = Instance.new("Frame")
 mapLoadOverlay.Name = "MapLoadDiagnostic"
 mapLoadOverlay.Size = UDim2.fromScale(1, 1)
 mapLoadOverlay.BackgroundColor3 = COLORS.Dark
-mapLoadOverlay.BackgroundTransparency = 0.08
+mapLoadOverlay.BackgroundTransparency = 0.05
 mapLoadOverlay.BorderSizePixel = 0
 mapLoadOverlay.Visible = false
 mapLoadOverlay.Active = true
-mapLoadOverlay.ZIndex = 60
+mapLoadOverlay.ZIndex = 80
 mapLoadOverlay.Parent = gui
-
 local mapLoadCard = Instance.new("Frame")
 mapLoadCard.Name = "MapLoadCard"
-mapLoadCard.Size = UDim2.new(0.9, 0, 0, 220)
+mapLoadCard.Size = UDim2.new(0.9, 0, 0, 235)
 mapLoadCard.Position = UDim2.fromScale(0.5, 0.5)
 mapLoadCard.AnchorPoint = Vector2.new(0.5, 0.5)
 mapLoadCard.BackgroundColor3 = COLORS.Background
 mapLoadCard.BorderSizePixel = 0
-mapLoadCard.ZIndex = 61
+mapLoadCard.ZIndex = 81
 mapLoadCard.Parent = mapLoadOverlay
 corner(mapLoadCard, 16)
-stroke(mapLoadCard, COLORS.Orange, 2, 0.12)
-
-local mapLoadTitle = Instance.new("TextLabel")
-mapLoadTitle.Name = "StatusTitle"
-mapLoadTitle.Size = UDim2.new(1, -24, 0, 42)
-mapLoadTitle.Position = UDim2.new(0, 12, 0, 12)
-mapLoadTitle.BackgroundTransparency = 1
+outline(mapLoadCard, COLORS.Orange, 2, 0.1)
+gradient(mapLoadCard, COLORS.Panel, COLORS.Dark, 90)
+local mapLoadTitle = label(mapLoadCard, "StatusTitle", "LOADING YOUR WORLD", UDim2.new(1, -24, 0, 42), UDim2.new(0, 12, 0, 10), 20, COLORS.Gold, Enum.TextXAlignment.Center)
+mapLoadTitle.ZIndex = 82
 mapLoadTitle.Font = Enum.Font.GothamBlack
-mapLoadTitle.Text = "CARREGANDO O MAPA"
-mapLoadTitle.TextColor3 = COLORS.Blue
-mapLoadTitle.TextSize = 19
-mapLoadTitle.TextWrapped = true
-mapLoadTitle.ZIndex = 62
-mapLoadTitle.Parent = mapLoadCard
-
-local mapLoadDetails = Instance.new("TextLabel")
-mapLoadDetails.Name = "StatusDetails"
-mapLoadDetails.Size = UDim2.new(1, -24, 0, 92)
-mapLoadDetails.Position = UDim2.new(0, 12, 0, 58)
-mapLoadDetails.BackgroundTransparency = 1
-mapLoadDetails.Font = Enum.Font.GothamMedium
-mapLoadDetails.Text = "Preparando fazenda, selva e vulcão..."
-mapLoadDetails.TextColor3 = COLORS.Muted
-mapLoadDetails.TextSize = 14
-mapLoadDetails.TextWrapped = true
-mapLoadDetails.ZIndex = 62
-mapLoadDetails.Parent = mapLoadCard
-
-local mapLoadClose = Instance.new("TextButton")
-mapLoadClose.Name = "ContinueButton"
-mapLoadClose.Size = UDim2.new(1, -24, 0, 42)
-mapLoadClose.Position = UDim2.new(0, 12, 1, -54)
-mapLoadClose.BackgroundColor3 = COLORS.Orange
-mapLoadClose.BorderSizePixel = 0
-mapLoadClose.Font = Enum.Font.GothamBlack
-mapLoadClose.Text = "CONTINUAR MESMO ASSIM"
-mapLoadClose.TextColor3 = COLORS.Text
-mapLoadClose.TextSize = 14
-mapLoadClose.TextWrapped = true
-mapLoadClose.Visible = false
-mapLoadClose.ZIndex = 62
-mapLoadClose.Parent = mapLoadCard
-corner(mapLoadClose, 10)
-mapLoadClose.Activated:Connect(function()
+local mapLoadDetails = label(mapLoadCard, "StatusDetails", "Preparing the farms, biomes and animal guardians...", UDim2.new(1, -24, 0, 100), UDim2.new(0, 12, 0, 56), 14, COLORS.Muted, Enum.TextXAlignment.Center)
+mapLoadDetails.ZIndex = 82
+local mapLoadClose = button(mapLoadCard, "ContinueButton", "CONTINUE ANYWAY", UDim2.new(1, -24, 0, 42), UDim2.new(0, 12, 1, -54), COLORS.Orange, function()
     mapLoadOverlay.Visible = false
 end)
+mapLoadClose.Visible = false
+mapLoadClose.ZIndex = 82
 
 task.spawn(function()
-    local root = workspace:WaitForChild("RoubeUmAnimal", 35)
+    local root = workspace:WaitForChild("StealAnAnimal", 40)
     if not root then
         mapLoadOverlay.Visible = true
-        mapLoadTitle.Text = "MAPA NÃO INICIALIZOU"
+        mapLoadTitle.Text = "WORLD DID NOT START"
         mapLoadTitle.TextColor3 = COLORS.Red
-        mapLoadDetails.Text = "O servidor não criou Workspace.RoubeUmAnimal. Reentre em outro servidor; se continuar, o criador precisa verificar os logs do servidor."
+        mapLoadDetails.Text = "The server did not create the world root. Leave and join another server. If it keeps happening, the creator needs to inspect the server logs."
         mapLoadClose.Visible = true
         return
     end
-
-    local deadline = os.clock() + 35
+    local deadline = os.clock() + 40
     while root.Parent and root:GetAttribute("MapReady") == nil and os.clock() < deadline do
         task.wait(0.25)
     end
-
     if root.Parent and root:GetAttribute("MapReady") == true then
         return
     end
-
     mapLoadOverlay.Visible = true
-    mapLoadTitle.Text = "MAPA CARREGADO PARCIALMENTE"
+    mapLoadTitle.Text = "WORLD STARTED INCOMPLETE"
     mapLoadTitle.TextColor3 = COLORS.Orange
-    mapLoadDetails.Text = "Bases: " .. tostring(root:GetAttribute("BaseCount") or 0)
-        .. " / 8\nBiomas: " .. tostring(root:GetAttribute("BiomeCount") or 0)
-        .. " / 3\nAnimais: " .. tostring(root:GetAttribute("AnimalCount") or 0)
-        .. "\nTente entrar novamente. O diagnóstico foi registrado pelo servidor."
+    mapLoadDetails.Text = "Farms: " .. tostring(root:GetAttribute("BaseCount") or 0) .. "/8"
+        .. "
+Biomes: " .. tostring(root:GetAttribute("BiomeCount") or 0) .. "/6"
+        .. "
+Animals: " .. tostring(root:GetAttribute("AnimalCount") or 0)
+        .. "
+Try another server. The server logs include the failed construction step."
     mapLoadClose.Visible = true
 end)
 
 local statsPanel = Instance.new("Frame")
-statsPanel.Name = "StatsPanel"
-statsPanel.Size = UDim2.new(0.96, 0, 0, 86)
-statsPanel.Position = UDim2.new(0.5, 0, 0, 8)
+statsPanel.Name = "TopHUD"
+statsPanel.Size = UDim2.new(0.97, 0, 0, 100)
+statsPanel.Position = UDim2.new(0.5, 0, 0, 7)
 statsPanel.AnchorPoint = Vector2.new(0.5, 0)
 statsPanel.BackgroundColor3 = COLORS.Background
-statsPanel.BackgroundTransparency = 0.04
+statsPanel.BackgroundTransparency = 0.02
 statsPanel.BorderSizePixel = 0
 statsPanel.Parent = gui
-corner(statsPanel, 14)
-stroke(statsPanel, COLORS.Blue, 2, 0.22)
-
+corner(statsPanel, 15)
+outline(statsPanel, COLORS.Gold, 2, 0.18)
+gradient(statsPanel, Color3.fromRGB(78, 108, 65), Color3.fromRGB(35, 52, 39), 90)
 local statsConstraint = Instance.new("UISizeConstraint")
-statsConstraint.MinSize = Vector2.new(270, 86)
-statsConstraint.MaxSize = Vector2.new(540, 86)
+statsConstraint.MinSize = Vector2.new(285, 100)
+statsConstraint.MaxSize = Vector2.new(590, 100)
 statsConstraint.Parent = statsPanel
-
-local title = makeLabel(
-    statsPanel,
-    "Title",
-    "ROUBE UM ANIMAL",
-    UDim2.new(1, -20, 0, 24),
-    UDim2.new(0, 10, 0, 3),
-    16,
-    COLORS.Blue,
-    Enum.TextXAlignment.Center
-)
-title.Font = Enum.Font.GothamBlack
-
+local header = label(statsPanel, "Title", "STEAL AN ANIMAL", UDim2.new(1, -20, 0, 24), UDim2.new(0, 10, 0, 3), 16, COLORS.Gold, Enum.TextXAlignment.Center)
+header.Font = Enum.Font.GothamBlack
 local statRow = Instance.new("Frame")
-statRow.Name = "StatsRow"
-statRow.Size = UDim2.new(1, -12, 0, 25)
-statRow.Position = UDim2.new(0, 6, 0, 27)
+statRow.Name = "FarmStats"
+statRow.Size = UDim2.new(1, -12, 0, 31)
+statRow.Position = UDim2.new(0, 6, 0, 29)
 statRow.BackgroundTransparency = 1
 statRow.Parent = statsPanel
-
 local statLayout = Instance.new("UIListLayout")
 statLayout.FillDirection = Enum.FillDirection.Horizontal
 statLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 statLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 statLayout.SortOrder = Enum.SortOrder.LayoutOrder
-statLayout.Padding = UDim.new(0, 2)
+statLayout.Padding = UDim.new(0, 3)
 statLayout.Parent = statRow
 
-local function statText(name, defaultText, order, color)
-    local text = Instance.new("TextLabel")
-    text.Name = name
-    text.Size = UDim2.new(0.25, -2, 1, 0)
-    text.BackgroundColor3 = COLORS.PanelLight
-    text.BorderSizePixel = 0
-    text.Font = Enum.Font.GothamBold
-    text.Text = defaultText
-    text.TextColor3 = color or COLORS.Text
-    text.TextScaled = true
-    text.TextWrapped = true
-    text.LayoutOrder = order
-    text.Parent = statRow
-    corner(text, 6)
-    return text
+local function statBox(name, text, order, color)
+    local object = Instance.new("TextLabel")
+    object.Name = name
+    object.Size = UDim2.new(0.25, -3, 1, 0)
+    object.BackgroundColor3 = COLORS.Panel
+    object.BorderSizePixel = 0
+    object.Font = Enum.Font.GothamBlack
+    object.Text = text
+    object.TextColor3 = color or COLORS.Text
+    object.TextSize = 12
+    object.TextScaled = true
+    object.TextWrapped = true
+    object.LayoutOrder = order
+    object.Parent = statRow
+    corner(object, 7)
+    outline(object, color or COLORS.Gold, 1, 0.5)
+    return object
 end
-
-local coinsLabel = statText("Coins", "Moedas: …", 1, COLORS.Gold)
-local speedLabel = statText("Speed", "Vel: …", 2, COLORS.Blue)
-local strengthLabel = statText("Strength", "Força: …", 3, COLORS.Red)
-local rebirthLabel = statText("Rebirths", "RB: 0", 4, COLORS.Orange)
-
-local carryLabel = makeLabel(
-    statsPanel,
-    "Carry",
-    "Carregando: nenhum animal",
-    UDim2.new(1, -18, 0, 20),
-    UDim2.new(0, 9, 0, 60),
-    11,
-    COLORS.Muted,
-    Enum.TextXAlignment.Center
-)
+local coinsLabel = statBox("Coins", "COINS $0", 1, COLORS.Gold)
+local incomeLabel = statBox("Income", "$0/s", 2, COLORS.Green)
+local barnLabel = statBox("Barn", "BARN 0/6", 3, COLORS.Cream)
+local speedLabel = statBox("Speed", "SPD 16", 4, COLORS.Blue)
+local carryLabel = label(statsPanel, "CarryStatus", "No animal carried • Steal one and return to your barn", UDim2.new(1, -18, 0, 24), UDim2.new(0, 9, 0, 69), 11, COLORS.Muted, Enum.TextXAlignment.Center)
 
 local navPanel = Instance.new("Frame")
 navPanel.Name = "MainNavigation"
-navPanel.Size = UDim2.new(0.94, 0, 0, 62)
-navPanel.Position = UDim2.new(0.5, 0, 1, -10)
+navPanel.Size = UDim2.new(0.97, 0, 0, 58)
+navPanel.Position = UDim2.new(0.5, 0, 1, -7)
 navPanel.AnchorPoint = Vector2.new(0.5, 1)
 navPanel.BackgroundColor3 = COLORS.Background
-navPanel.BackgroundTransparency = 0.04
+navPanel.BackgroundTransparency = 0.03
 navPanel.BorderSizePixel = 0
 navPanel.Parent = gui
-corner(navPanel, 13)
-stroke(navPanel, COLORS.Blue, 1.5, 0.25)
-
+corner(navPanel, 14)
+outline(navPanel, COLORS.Gold, 1.5, 0.22)
+gradient(navPanel, COLORS.Panel, COLORS.Dark, 90)
 local navConstraint = Instance.new("UISizeConstraint")
-navConstraint.MinSize = Vector2.new(270, 62)
-navConstraint.MaxSize = Vector2.new(520, 62)
+navConstraint.MinSize = Vector2.new(285, 58)
+navConstraint.MaxSize = Vector2.new(590, 58)
 navConstraint.Parent = navPanel
-
 local navPadding = Instance.new("UIPadding")
-navPadding.PaddingLeft = UDim.new(0, 6)
-navPadding.PaddingRight = UDim.new(0, 6)
-navPadding.PaddingTop = UDim.new(0, 6)
-navPadding.PaddingBottom = UDim.new(0, 6)
+navPadding.PaddingLeft = UDim.new(0, 5)
+navPadding.PaddingRight = UDim.new(0, 5)
+navPadding.PaddingTop = UDim.new(0, 5)
+navPadding.PaddingBottom = UDim.new(0, 5)
 navPadding.Parent = navPanel
-
 local navLayout = Instance.new("UIListLayout")
 navLayout.FillDirection = Enum.FillDirection.Horizontal
 navLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 navLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 navLayout.SortOrder = Enum.SortOrder.LayoutOrder
-navLayout.Padding = UDim.new(0, 6)
+navLayout.Padding = UDim.new(0, 4)
 navLayout.Parent = navPanel
 
-local modalBackdrop = Instance.new("Frame")
-modalBackdrop.Name = "ModalBackdrop"
-modalBackdrop.Size = UDim2.fromScale(1, 1)
-modalBackdrop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-modalBackdrop.BackgroundTransparency = 0.38
-modalBackdrop.Visible = false
-modalBackdrop.Active = true
-modalBackdrop.ZIndex = 30
-modalBackdrop.Parent = gui
-
+local backdrop = Instance.new("Frame")
+backdrop.Name = "WindowBackdrop"
+backdrop.Size = UDim2.fromScale(1, 1)
+backdrop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+backdrop.BackgroundTransparency = 0.42
+backdrop.Visible = false
+backdrop.Active = true
+backdrop.ZIndex = 30
+backdrop.Parent = gui
 local modal = Instance.new("Frame")
 modal.Name = "Window"
-modal.Size = UDim2.fromOffset(330, 440)
+modal.Size = UDim2.fromOffset(350, 510)
 modal.Position = UDim2.fromScale(0.5, 0.5)
 modal.AnchorPoint = Vector2.new(0.5, 0.5)
 modal.BackgroundColor3 = COLORS.Background
 modal.BorderSizePixel = 0
 modal.ZIndex = 31
-modal.Parent = modalBackdrop
-corner(modal, 16)
-stroke(modal, COLORS.Blue, 2, 0.1)
-
-local activeScreen
-local lastSelectable
-
+modal.Parent = backdrop
+corner(modal, 17)
+outline(modal, COLORS.Gold, 2, 0.1)
+gradient(modal, COLORS.Panel, COLORS.Dark, 90)
 local modalScale = Instance.new("UIScale")
-modalScale.Scale = 0.92
+modalScale.Scale = 0.94
 modalScale.Parent = modal
-
-local modalTitle = makeLabel(
-    modal,
-    "WindowTitle",
-    "LOJA",
-    UDim2.new(1, -68, 0, 36),
-    UDim2.new(0, 16, 0, 8),
-    20,
-    COLORS.Text
-)
+local modalTitle = label(modal, "WindowTitle", "BARN", UDim2.new(1, -72, 0, 38), UDim2.new(0, 14, 0, 8), 20, COLORS.Gold)
 modalTitle.ZIndex = 33
 modalTitle.Font = Enum.Font.GothamBlack
-
-local closeButton = makeButton(
-    modal,
-    "Close",
-    "X",
-    UDim2.fromOffset(38, 34),
-    UDim2.new(1, -48, 0, 9),
-    COLORS.Red,
-    function()
-        modalBackdrop.Visible = false
-        activeScreen = nil
-        GuiService.SelectedObject = nil
-    end
-)
+local activeScreen
+local lastSelectable
+local closeButton = button(modal, "Close", "X", UDim2.fromOffset(38, 34), UDim2.new(1, -48, 0, 9), COLORS.Red, function()
+    backdrop.Visible = false
+    activeScreen = nil
+    GuiService.SelectedObject = nil
+end)
 closeButton.ZIndex = 34
-
 local content = Instance.new("ScrollingFrame")
 content.Name = "WindowContent"
-content.Size = UDim2.new(1, -20, 1, -58)
-content.Position = UDim2.new(0, 10, 0, 50)
-content.BackgroundColor3 = COLORS.Panel
-content.BackgroundTransparency = 0.08
+content.Size = UDim2.new(1, -18, 1, -58)
+content.Position = UDim2.new(0, 9, 0, 50)
+content.BackgroundColor3 = COLORS.Dark
+content.BackgroundTransparency = 0.06
 content.BorderSizePixel = 0
-content.ScrollBarThickness = 6
-content.ScrollBarImageColor3 = COLORS.Blue
+content.ScrollBarThickness = 5
+content.ScrollBarImageColor3 = COLORS.Gold
 content.CanvasSize = UDim2.new(0, 0, 0, 0)
 content.AutomaticCanvasSize = Enum.AutomaticSize.Y
 content.ScrollingDirection = Enum.ScrollingDirection.Y
 content.Active = true
 content.ZIndex = 32
 content.Parent = modal
-corner(content, 11)
-
+corner(content, 12)
 local contentPadding = Instance.new("UIPadding")
-contentPadding.PaddingLeft = UDim.new(0, 8)
-contentPadding.PaddingRight = UDim.new(0, 8)
-contentPadding.PaddingTop = UDim.new(0, 8)
-contentPadding.PaddingBottom = UDim.new(0, 8)
+contentPadding.PaddingLeft = UDim.new(0, 7)
+contentPadding.PaddingRight = UDim.new(0, 7)
+contentPadding.PaddingTop = UDim.new(0, 7)
+contentPadding.PaddingBottom = UDim.new(0, 7)
 contentPadding.Parent = content
-
 local contentLayout = Instance.new("UIListLayout")
 contentLayout.FillDirection = Enum.FillDirection.Vertical
 contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-contentLayout.Padding = UDim.new(0, 8)
+contentLayout.Padding = UDim.new(0, 7)
 contentLayout.Parent = content
 
 local function resizeUI()
@@ -403,13 +369,11 @@ local function resizeUI()
     if not camera then
         return
     end
-
     local viewport = camera.ViewportSize
-    statsPanel.Size = UDim2.new(0.96, 0, 0, 86)
-    navPanel.Size = UDim2.new(0.94, 0, 0, 62)
-
-    local width = math.max(220, math.min(610, viewport.X - 20, viewport.X * 0.94))
-    local height = math.max(170, math.min(540, viewport.Y - 48, viewport.Y * 0.82))
+    statsPanel.Size = UDim2.new(0.97, 0, 0, viewport.X < 400 and 106 or 100)
+    navPanel.Size = UDim2.new(0.97, 0, 0, 58)
+    local width = math.max(245, math.min(630, viewport.X - 18, viewport.X * 0.95))
+    local height = math.max(230, math.min(610, viewport.Y - 88, viewport.Y * 0.78))
     modal.Size = UDim2.fromOffset(width, height)
 end
 
@@ -422,461 +386,515 @@ local function clearContent()
     lastSelectable = nil
 end
 
-local function addInfo(text, order)
-    local object = makeLabel(
-        content,
-        "Info" .. tostring(order or 0),
-        text,
-        UDim2.new(1, -8, 0, 58),
-        UDim2.new(0, 0, 0, 0),
-        13,
-        COLORS.Muted
-    )
-    object.LayoutOrder = order or 1
-    object.ZIndex = 33
-    object.TextYAlignment = Enum.TextYAlignment.Center
-    return object
-end
-
-local function addAction(name, titleText, description, buttonText, color, callback, order, disabled, markerText)
+local function addInfo(order, text, accent, height)
     local card = Instance.new("Frame")
-    card.Name = name .. "Card"
-    card.Size = UDim2.new(1, -4, 0, markerText and 84 or 74)
-    card.BackgroundColor3 = COLORS.PanelLight
+    card.Name = "Info_" .. tostring(order)
+    card.Size = UDim2.new(1, -3, 0, height or 64)
+    card.BackgroundColor3 = COLORS.Panel
     card.BorderSizePixel = 0
-    card.LayoutOrder = order or 1
+    card.LayoutOrder = order
     card.ZIndex = 33
     card.Parent = content
-    corner(card, 10)
-    stroke(card, color or COLORS.Blue, 1.2, 0.3)
+    corner(card, 11)
+    outline(card, accent or COLORS.Meadow, 1.2, 0.35)
+    gradient(card, Color3.fromRGB(74, 100, 65), Color3.fromRGB(40, 57, 43), 90)
+    local stripe = Instance.new("Frame")
+    stripe.Name = "Accent"
+    stripe.Size = UDim2.new(0, 5, 1, -12)
+    stripe.Position = UDim2.new(0, 6, 0, 6)
+    stripe.BackgroundColor3 = accent or COLORS.Meadow
+    stripe.BorderSizePixel = 0
+    stripe.ZIndex = 34
+    stripe.Parent = card
+    corner(stripe, 3)
+    local textLabel = label(card, "Text", text, UDim2.new(1, -24, 1, -10), UDim2.new(0, 17, 0, 5), 12, COLORS.Cream)
+    textLabel.ZIndex = 34
+    textLabel.TextYAlignment = Enum.TextYAlignment.Center
+    return card
+end
 
+local function addAction(order, marker, titleText, description, cta, accent, callback, disabled, height)
+    local card = Instance.new("Frame")
+    card.Name = "Action_" .. tostring(order) .. "_" .. tostring(marker)
+    card.Size = UDim2.new(1, -3, 0, height or 86)
+    card.BackgroundColor3 = COLORS.Panel
+    card.BorderSizePixel = 0
+    card.LayoutOrder = order
+    card.ZIndex = 33
+    card.Parent = content
+    corner(card, 12)
+    outline(card, accent or COLORS.Meadow, 1.25, 0.25)
+    gradient(card, Color3.fromRGB(76, 99, 66), Color3.fromRGB(40, 57, 43), 90)
+
+    local icon = Instance.new("TextLabel")
+    icon.Name = "AnimalMarker"
+    icon.Size = UDim2.fromOffset(38, 38)
+    icon.Position = UDim2.new(0, 7, 0.5, -19)
+    icon.BackgroundColor3 = accent or COLORS.Meadow
+    icon.BorderSizePixel = 0
+    icon.Font = Enum.Font.GothamBlack
+    icon.Text = tostring(marker)
+    icon.TextColor3 = COLORS.Text
+    icon.TextScaled = true
+    icon.TextWrapped = true
+    icon.ZIndex = 34
+    icon.Parent = card
+    corner(icon, 10)
+    outline(icon, COLORS.Cream, 1, 0.65)
+    gradient(icon, accent or COLORS.Meadow, COLORS.Moss, 90)
+
+    local titleLabel = label(card, "Title", titleText, UDim2.new(1, -136, 0, 27), UDim2.new(0, 52, 0, 5), 12, accent or COLORS.Gold)
+    titleLabel.ZIndex = 34
+    titleLabel.Font = Enum.Font.GothamBlack
+    local descLabel = label(card, "Description", description, UDim2.new(1, -136, 1, -36), UDim2.new(0, 52, 0, 32), 10, COLORS.Muted)
+    descLabel.ZIndex = 34
+    descLabel.TextYAlignment = Enum.TextYAlignment.Top
     local action = Instance.new("TextButton")
-    action.Name = name
-    action.Size = UDim2.new(1, 0, 1, 0)
-    action.BackgroundTransparency = 1
+    action.Name = "ActionButton"
+    action.Size = UDim2.new(0, 78, 0, 44)
+    action.Position = UDim2.new(1, -85, 0.5, -22)
+    action.BackgroundColor3 = disabled and Color3.fromRGB(88, 93, 77) or accent or COLORS.Leaf
     action.BorderSizePixel = 0
-    action.Text = ""
+    action.Font = Enum.Font.GothamBlack
+    action.Text = cta
+    action.TextColor3 = COLORS.Text
+    action.TextSize = 11
+    action.TextScaled = true
+    action.TextWrapped = true
     action.Active = not disabled
     action.Selectable = not disabled
     action.AutoButtonColor = not disabled
     action.ZIndex = 34
     action.Parent = card
-
-    local textOffset = markerText and 49 or 9
-    local textWidth = markerText and 0.46 or 0.66
-    if markerText then
-        local marker = Instance.new("TextLabel")
-        marker.Name = "DistinctiveMarker"
-        marker.Size = UDim2.fromOffset(34, 34)
-        marker.Position = UDim2.new(0, 8, 0.5, -17)
-        marker.BackgroundColor3 = color or COLORS.Blue
-        marker.BorderSizePixel = 0
-        marker.Font = Enum.Font.GothamBlack
-        marker.Text = markerText
-        marker.TextColor3 = COLORS.Text
-        marker.TextScaled = true
-        marker.TextWrapped = true
-        marker.ZIndex = 35
-        marker.Parent = action
-        corner(marker, 9)
-        stroke(marker, COLORS.Text, 1, 0.7)
-    end
-
-    local titleLabel = makeLabel(
-        action,
-        "Title",
-        titleText,
-        UDim2.new(textWidth, -14, 0, 26),
-        UDim2.new(0, textOffset, 0, 7),
-        markerText and 12 or 14,
-        color or COLORS.Text
-    )
-    titleLabel.ZIndex = 35
-    titleLabel.Font = Enum.Font.GothamBlack
-
-    local descLabel = makeLabel(
-        action,
-        "Description",
-        description,
-        UDim2.new(markerText and 0.46 or 0.66, -8, 0, markerText and 38 or 30),
-        UDim2.new(0, textOffset, 0, 34),
-        11,
-        COLORS.Muted
-    )
-    descLabel.ZIndex = 35
-
-    local buttonLabel = makeLabel(
-        action,
-        "ButtonText",
-        buttonText or "ABRIR",
-        UDim2.new(0.29, -4, 0, markerText and 42 or 36),
-        UDim2.new(0.70, 0, 0.5, markerText and -21 or -18),
-        10,
-        disabled and COLORS.Muted or COLORS.Text,
-        Enum.TextXAlignment.Center
-    )
-    buttonLabel.ZIndex = 36
-    buttonLabel.Font = Enum.Font.GothamBlack
-
+    corner(action, 9)
+    outline(action, COLORS.Dark, 1, 0.3)
+    gradient(action, action.BackgroundColor3, COLORS.Moss, 90)
     if not disabled then
         action.Activated:Connect(callback)
     end
-
-    if not lastSelectable and not disabled then
-        lastSelectable = action
-    end
-
+    lastSelectable = lastSelectable or action
     return card
 end
 
-local function formatNumber(value)
-    local amount = tonumber(value) or 0
-    if amount >= 1000000 then
-        return string.format("%.1fM", amount / 1000000)
-    end
-    if amount >= 1000 then
-        return string.format("%.1fK", amount / 1000)
-    end
-    return tostring(math.floor(amount))
+local function addTextInput(order, placeholder)
+    local frame = Instance.new("Frame")
+    frame.Name = "TextInputRow"
+    frame.Size = UDim2.new(1, -3, 0, 48)
+    frame.BackgroundTransparency = 1
+    frame.LayoutOrder = order
+    frame.Parent = content
+    local input = Instance.new("TextBox")
+    input.Name = "CodeInput"
+    input.Size = UDim2.new(1, -6, 1, 0)
+    input.Position = UDim2.new(0, 3, 0, 0)
+    input.BackgroundColor3 = COLORS.PanelLight
+    input.BorderSizePixel = 0
+    input.ClearTextOnFocus = false
+    input.PlaceholderText = placeholder
+    input.Text = ""
+    input.Font = Enum.Font.GothamBold
+    input.TextColor3 = COLORS.Cream
+    input.PlaceholderColor3 = COLORS.Muted
+    input.TextSize = 14
+    input.TextXAlignment = Enum.TextXAlignment.Center
+    input.ZIndex = 34
+    input.Parent = frame
+    corner(input, 10)
+    outline(input, COLORS.Gold, 1.2, 0.35)
+    lastSelectable = lastSelectable or input
+    return input
 end
 
-local function displayToast(message, messageType)
-    local toast = gui:FindFirstChild("Toast")
-    if not toast then
-        toast = Instance.new("TextLabel")
-        toast.Name = "Toast"
-        toast.Size = UDim2.new(0.86, 0, 0, 52)
-        toast.Position = UDim2.new(0.5, 0, 0.5, 0)
-        toast.AnchorPoint = Vector2.new(0.5, 0.5)
-        toast.BackgroundColor3 = COLORS.Background
-        toast.BorderSizePixel = 0
-        toast.Font = Enum.Font.GothamBold
-        toast.TextColor3 = COLORS.Text
-        toast.TextSize = 15
-        toast.TextWrapped = true
-        toast.Visible = false
-        toast.ZIndex = 50
-        toast.Parent = gui
-        corner(toast, 12)
-        stroke(toast, COLORS.Blue, 1.5, 0.15)
+local lowEffects = false
+local function setLowEffects(enabled)
+    lowEffects = enabled
+    for _, object in ipairs(Lighting:GetDescendants()) do
+        if object:IsA("BloomEffect") or object:IsA("BlurEffect") or object:IsA("SunRaysEffect") then
+            object.Enabled = not enabled
+        elseif object:IsA("PointLight") or object:IsA("SpotLight") or object:IsA("SurfaceLight") then
+            object.Enabled = not enabled
+        end
+    end
+end
 
+local function toast(message, messageType)
+    local existing = gui:FindFirstChild("Toast")
+    if not existing then
+        existing = Instance.new("TextLabel")
+        existing.Name = "Toast"
+        existing.Size = UDim2.new(0.9, 0, 0, 52)
+        existing.Position = UDim2.new(0.5, 0, 0, 116)
+        existing.AnchorPoint = Vector2.new(0.5, 0)
+        existing.BackgroundColor3 = COLORS.Background
+        existing.BackgroundTransparency = 0.04
+        existing.BorderSizePixel = 0
+        existing.Font = Enum.Font.GothamBold
+        existing.TextWrapped = true
+        existing.TextSize = 13
+        existing.TextColor3 = COLORS.Text
+        existing.Visible = false
+        existing.ZIndex = 70
+        existing.Parent = gui
+        corner(existing, 12)
+        outline(existing, COLORS.Gold, 1.5, 0.2)
+        gradient(existing, COLORS.Panel, COLORS.Dark, 90)
         local constraint = Instance.new("UISizeConstraint")
         constraint.MinSize = Vector2.new(240, 52)
-        constraint.MaxSize = Vector2.new(480, 52)
-        constraint.Parent = toast
+        constraint.MaxSize = Vector2.new(500, 52)
+        constraint.Parent = existing
     end
-
-    toast:SetAttribute("ToastSequence", (toast:GetAttribute("ToastSequence") or 0) + 1)
-    local sequence = toast:GetAttribute("ToastSequence")
-    toast.Text = tostring(message)
-
-    if messageType == "Success" then
-        toast.TextColor3 = COLORS.Green
-    elseif messageType == "Warning" then
-        toast.TextColor3 = COLORS.Gold
-    elseif messageType == "Error" then
-        toast.TextColor3 = COLORS.Red
-    else
-        toast.TextColor3 = COLORS.Text
-    end
-
-    toast.Visible = true
-    task.delay(3.5, function()
-        if toast.Parent and toast:GetAttribute("ToastSequence") == sequence then
-            toast.Visible = false
+    existing:SetAttribute("Sequence", (existing:GetAttribute("Sequence") or 0) + 1)
+    local sequence = existing:GetAttribute("Sequence")
+    existing.Text = tostring(message)
+    existing.TextColor3 = messageType == "Success" and COLORS.Green
+        or messageType == "Warning" and COLORS.Gold
+        or messageType == "Error" and COLORS.Red
+        or COLORS.Text
+    existing.Visible = true
+    task.delay(3.4, function()
+        if existing.Parent and existing:GetAttribute("Sequence") == sequence then
+            existing.Visible = false
         end
     end)
 end
 
-local function updateStats()
-    coinsLabel.Text = "MOEDAS\n" .. formatNumber(player:GetAttribute("Coins"))
-    speedLabel.Text = "VEL " .. formatNumber(player:GetAttribute("SpeedLevel"))
-    strengthLabel.Text = "FOR " .. formatNumber(player:GetAttribute("Strength"))
-    rebirthLabel.Text = "RB " .. formatNumber(player:GetAttribute("Rebirths"))
-
+local function refreshStats()
+    local coins = tonumber(player:GetAttribute("Coins")) or 0
+    local income = tonumber(player:GetAttribute("BarnIncomeRate")) or 0
+    local count = tonumber(player:GetAttribute("BarnAnimalCount")) or 0
+    local capacity = tonumber(player:GetAttribute("BarnCapacity")) or Config.Barn.BaseSlots
+    local speed = Config.BaseWalkSpeed + (tonumber(player:GetAttribute("SpeedLevel")) or 0) * Config.SpeedPerLevel
+    header.Text = "STEAL AN ANIMAL  •  REBIRTH " .. tostring(player:GetAttribute("Rebirths") or 0)
+    coinsLabel.Text = "COINS $" .. number(coins)
+    incomeLabel.Text = "$" .. number(income) .. "/s"
+    barnLabel.Text = "BARN " .. tostring(count) .. "/" .. tostring(capacity)
+    speedLabel.Text = "SPD " .. number(speed)
     if player:GetAttribute("CarryingAnimal") == true then
-        carryLabel.Text = "CARREGANDO: " .. tostring(player:GetAttribute("CarriedAnimalName") or "ANIMAL")
-            .. "  •  PESO " .. formatNumber(player:GetAttribute("CarriedAnimalWeight"))
+        carryLabel.Text = "CARRYING: " .. tostring(player:GetAttribute("CarriedAnimalName") or "ANIMAL")
+            .. "  •  $" .. number(player:GetAttribute("CarriedAnimalIncome")) .. "/s in barn"
         carryLabel.TextColor3 = COLORS.Gold
     else
-        carryLabel.Text = "Nenhum animal carregado • volte ao seu curral para vender"
+        carryLabel.Text = "No animal carried • find a creature, hold STEAL, then return home"
         carryLabel.TextColor3 = COLORS.Muted
+    end
+end
+
+local openScreen
+
+local function renderBarn()
+    clearContent()
+    local count = tonumber(player:GetAttribute("BarnAnimalCount")) or 0
+    local capacity = tonumber(player:GetAttribute("BarnCapacity")) or Config.Barn.BaseSlots
+    local income = tonumber(player:GetAttribute("BarnIncomeRate")) or 0
+    local bank = tonumber(player:GetAttribute("BarnBank")) or 0
+    local carried = player:GetAttribute("CarryingAnimal") == true
+    addInfo(1, "YOUR BARN  •  STORE ANIMALS HERE AND THEY WILL GENERATE COINS EVERY SECOND.", COLORS.Gold, 70)
+    addAction(2, "$", "UNCLAIMED BARN INCOME", "$" .. number(bank) .. " waiting to collect. Your animals earn $" .. number(income) .. " each second.", "COLLECT", COLORS.Gold, function()
+        toast("Step on the gold COLLECT COINS pad inside your own barn.", "Info")
+    end, false, 90)
+    addAction(3, "🐾", "ANIMAL CAPACITY", tostring(count) .. "/" .. tostring(capacity) .. " occupied slots. Deposit animals at the green pad.", "SLOTS", COLORS.Green, function()
+        toast("Find wild animals in a biome, hold STEAL, and bring one to the green pad at your own barn.", "Info")
+    end, false, 82)
+    if carried then
+        addInfo(4, "CARRYING " .. tostring(player:GetAttribute("CarriedAnimalName")) .. " • $" .. number(player:GetAttribute("CarriedAnimalIncome")) .. "/s. Return to your barn before a guardian catches you.", COLORS.Orange, 65)
+    else
+        addInfo(4, "TIP: each animal has a different income rate. Rarer creatures usually generate more coins, but their guardian patrols are more dangerous.", COLORS.Meadow, 75)
+    end
+    local decoded = {}
+    local ok, value = pcall(function()
+        return HttpService:JSONDecode(player:GetAttribute("BarnAnimalsJson") or "[]")
+    end)
+    if ok and type(value) == "table" then
+        decoded = value
+    end
+    addInfo(5, "STORED ANIMALS  •  " .. tostring(#decoded) .. "/" .. tostring(capacity), COLORS.Cream, 44)
+    if #decoded == 0 then
+        addInfo(6, "Your barn is empty. Capture your first animal in Sunny Meadow and bring it home.", COLORS.Muted, 54)
+    else
+        for index, animalId in ipairs(decoded) do
+            local spec = Catalog.Get(animalId)
+            if spec then
+                addAction(5 + index, "🐾", spec.DisplayName, biomeName(spec.Biome) .. " • " .. spec.Rarity .. " • $" .. number(spec.IncomePerSecond) .. "/second", "DETAILS", rarityColor(spec.Rarity), function()
+                    toast(spec.DisplayName .. " generates $" .. tostring(spec.IncomePerSecond) .. " every second while stored.", "Info")
+                end, false, 78)
+            end
+        end
+    end
+end
+
+local function renderAnimals()
+    clearContent()
+    addInfo(1, "ANIMAL INDEX  •  EACH CREATURE HAS A BIOME, RARITY, WEIGHT AND COIN RATE.", COLORS.Meadow, 62)
+    for index, spec in ipairs(Catalog.All()) do
+        local marker = spec.Shape == "Bird" and "BIRD" or spec.Shape == "Reptile" and "REPT" or "PAWS"
+        addAction(index + 1, marker, spec.DisplayName .. "  •  " .. string.upper(spec.Rarity),
+            biomeName(spec.Biome) .. "  •  $" .. number(spec.IncomePerSecond) .. "/s  •  weight " .. tostring(spec.Weight),
+            "FIND", rarityColor(spec.Rarity), function()
+                toast("Explore " .. biomeName(spec.Biome) .. " and hold the STEAL prompt near " .. spec.DisplayName .. ".", "Info")
+            end, false, 80)
     end
 end
 
 local function renderShop()
     clearContent()
-    addInfo("LOJA DE MELHORIAS — use suas moedas para evoluir sem Robux.", 1)
-    addAction("BuySpeed", "Treino de Velocidade", "Compra +1 nível de velocidade. O custo cresce conforme você evolui.", "MELHORAR", COLORS.Blue, function() upgradeRemote:FireServer("Speed") end, 2, false, "SPD")
-    addAction("BuyStrength", "Treino de Força", "Compra +5 de Força. Necessária para roubar espécies mais raras.", "MELHORAR", COLORS.Red, function() upgradeRemote:FireServer("Strength") end, 3, false, "STR")
-    addInfo("DICA: a esteira aumenta Velocidade e o supino aumenta Força sem gastar moedas.", 4)
+    local level = tonumber(player:GetAttribute("SpeedLevel")) or 0
+    local nextCost = math.min(Config.CoinsLimit, math.floor(Config.Upgrades.SpeedBaseCost * (Config.Upgrades.SpeedCostGrowth ^ level)))
+    local boost = (player:GetAttribute("HasDoubleSpeed") == true) and Config.Training.DoubleSpeedMultiplier or 1
+    addInfo(1, "FARM UPGRADES  •  SPEND EARNED COINS TO RUN FASTER AND ESCAPE GUARDIANS.", COLORS.Green, 66)
+    addAction(2, "SPD", "SPEED LEVEL " .. tostring(level) .. "/" .. tostring(Config.MaxSpeedLevel),
+        "Next level costs $" .. number(nextCost) .. ". More speed helps you bring rare animals home before the guardian catches you.", "UPGRADE", COLORS.Blue, function()
+            upgradeRemote:FireServer("Speed")
+        end, level >= Config.MaxSpeedLevel, 96)
+    addAction(3, "2X", "DOUBLE SPEED", "Permanent pass. Increases speed upgrade and treadmill gains. Status: " .. (player:GetAttribute("HasDoubleSpeed") and "OWNED" or "NOT OWNED"), "PASSES", COLORS.Aqua, function()
+        openScreen("Passes")
+    end, false, 80)
+    addInfo(4, "TIP: the treadmill beside your barn gives speed over time while you run on it. No strength or bench-press system exists in this game.", COLORS.Gold, 68)
+end
+
+local function passEntries()
+    return {
+        { key = "DoubleIncome", title = "PROFIT FARM • 2X INCOME", description = "Doubles the passive coin income of every animal stored in your barn.", marker = "2X $", color = COLORS.Gold, attr = "HasDoubleIncome" },
+        { key = "DoubleSpeed", title = "QUICK ESCAPE • 2X SPEED", description = "Doubles speed training gains and improves movement while carrying animals.", marker = "2X", color = COLORS.Blue, attr = "HasDoubleSpeed" },
+        { key = "VIPFarm", title = "VIP FARM", description = "Adds a permanent movement bonus and a 25% boost to barn income.", marker = "VIP", color = COLORS.Purple, attr = "HasVIPFarm" },
+        { key = "ExtraBarnSlots", title = "EXPANDED BARN", description = "Unlocks four additional animal storage slots (6 → 10).", marker = "+4", color = COLORS.Green, attr = "HasExtraBarnSlots" },
+    }
 end
 
 local function renderPasses()
     clearContent()
-    addInfo("PASSES PERMANENTES — cada item tem um efeito diferente e é comprado uma única vez.", 1)
-    local passes = {
-        { key = "DoubleSpeed", title = "Turbo: 2x Velocidade", desc = "Dobra a velocidade de movimento e os ganhos da esteira.", attr = "HasDoubleSpeed", color = COLORS.Blue, marker = "2X\nSPD", cta = "TURBO" },
-        { key = "DoubleStrength", title = "Força: 2x Treino", desc = "Dobra os ganhos de Força no supino e nos upgrades com moedas.", attr = "HasDoubleStrength", color = COLORS.Purple, marker = "2X\nSTR", cta = "FORÇA" },
-        { key = "DoubleCoins", title = "Magnata: 2x Moedas", desc = "Receba o dobro de moedas ao vender animais.", attr = "HasDoubleCoins", color = COLORS.Gold, marker = "2X\n$", cta = "MOEDAS" },
-        { key = "VIPSpeed", title = "VIP: +50 Velocidade", desc = "Bônus fixo de +50 na velocidade-base, respeitando o limite do jogo.", attr = "HasVIPSpeed", color = COLORS.Teal, marker = "VIP", cta = "VIP" },
-    }
-    for index, item in ipairs(passes) do
-        local active = player:GetAttribute(item.attr) == true
-        local passId = MonetizationIds.Passes[item.key]
-        local configured = type(passId) == "number" and passId > 0
-        local description = item.desc
-        if not configured then description = description .. " ID pendente no Creator Dashboard." end
-        addAction(item.key, active and (item.title .. " — ATIVO") or item.title, description, active and "ATIVO" or (configured and item.cta or "ID PENDENTE"), item.color, function() passRequestRemote:FireServer(item.key) end, index + 2, active, item.marker)
+    addInfo(1, "PERMANENT GAMEPASSES  •  EACH PASS HAS A DIFFERENT EFFECT. THEY ARE NOT REPEATABLE PRODUCTS.", COLORS.Gold, 62)
+    for index, item in ipairs(passEntries()) do
+        local owns = player:GetAttribute(item.attr) == true
+        local id = MonetizationIds.Passes[item.key]
+        local configured = type(id) == "number" and id > 0
+        local description = item.description .. (configured and "" or " Purchase ID not configured yet.")
+        addAction(index + 1, item.marker, item.title, description, owns and "OWNED" or (configured and "BUY" or "SETUP"), item.color, function()
+            if owns then
+                toast("You already own this pass.", "Info")
+            elseif not configured then
+                toast("Create this pass in Creator Dashboard and configure its ID before purchase can be enabled.", "Warning")
+            else
+                passRequestRemote:FireServer(item.key)
+            end
+        end, owns, 88)
     end
-    addInfo("PRODUTOS ACUMULÁVEIS — compras repetíveis, com entrega confirmada e salva pelo servidor.", 7)
-    local speedConfigured = type(MonetizationIds.Products.StackableSpeed) == "number" and MonetizationIds.Products.StackableSpeed > 0
-    addAction("StackableSpeed", "+10 Velocidade", speedConfigured and "Compra repetível que soma +10 níveis até o limite." or "Compra repetível: +10 níveis. ID pendente no Creator Dashboard.", speedConfigured and "COMPRAR" or "ID PENDENTE", COLORS.Green, function() productRequestRemote:FireServer("StackableSpeed") end, 8, (tonumber(player:GetAttribute("SpeedLevel")) or 0) >= Config.MaxSpeedLevel, "+10\nSPD")
-    local strengthConfigured = type(MonetizationIds.Products.StackableStrength) == "number" and MonetizationIds.Products.StackableStrength > 0
-    addAction("StackableStrength", "+10 Força", strengthConfigured and "Compra repetível que soma +10 de Força até o limite." or "Compra repetível: +10 de Força. ID pendente no Creator Dashboard.", strengthConfigured and "COMPRAR" or "ID PENDENTE", COLORS.Orange, function() productRequestRemote:FireServer("StackableStrength") end, 9, (tonumber(player:GetAttribute("Strength")) or 0) >= Config.MaxStrength, "+10\nSTR")
+    addInfo(6, "REPEATABLE DEVELOPER PRODUCTS  •  EACH SUCCESSFUL RECEIPT IS SAVED BY THE SERVER.", COLORS.Aqua, 54)
+    local products = {
+        { key = "SpeedBoost", title = "+10 SPEED", description = "A repeatable speed bundle, useful for long guardian escapes.", marker = "+10", color = COLORS.Blue },
+        { key = "CoinBundle", title = "+5,000 COINS", description = "Adds 5,000 coins to your wallet. Can be purchased more than once.", marker = "$5K", color = COLORS.Gold },
+    }
+    for index, item in ipairs(products) do
+        local id = MonetizationIds.Products[item.key]
+        local configured = type(id) == "number" and id > 0
+        addAction(6 + index, item.marker, item.title, item.description .. (configured and "" or " Product ID not configured yet."),
+            configured and "BUY" or "SETUP", item.color, function()
+                if configured then
+                    productRequestRemote:FireServer(item.key)
+                else
+                    toast("Create this Developer Product in Creator Dashboard and configure its ID first.", "Warning")
+                end
+            end, false, 86)
+    end
 end
 
-local biomeOrder = {
-    Farm = 1,
-    Jungle = 2,
-    Volcano = 3,
-}
-
-local biomeNames = {
-    Farm = "FAZENDA",
-    Jungle = "SELVA",
-    Volcano = "VULCÃO",
-}
-
-local rarityNames = {
-    Common = "Comum",
-    Uncommon = "Incomum",
-    Rare = "Raro",
-    Epic = "Épico",
-    Legendary = "Lendário",
-    Mythic = "Mítico",
-}
-
-local function renderAnimals()
+local function renderQuests()
     clearContent()
-    addInfo("Catálogo dos animais que podem ser roubados e vendidos. Esta experiência não guarda animais como pets no inventário.", 1)
-
-    local animals = {}
-    for _, animal in pairs(Catalog.Animals) do
-        table.insert(animals, animal)
+    local captures = tonumber(player:GetAttribute("TotalCaptured")) or 0
+    local deposits = tonumber(player:GetAttribute("TotalDeposited")) or 0
+    local barnCount = tonumber(player:GetAttribute("BarnAnimalCount")) or 0
+    addInfo(1, "FARM QUESTS  •  COMPLETE OBJECTIVES TO EARN EXTRA COINS.", COLORS.Purple, 56)
+    local quests = {
+        { id = "FirstCapture", title = "FIRST CAPTURE", marker = "1", desc = "Capture your first animal. Progress: " .. tostring(math.min(captures, 1)) .. "/1.", ready = captures >= 1, reward = "$250" },
+        { id = "FirstBarn", title = "FIRST BARN DEPOSIT", marker = "B", desc = "Store an animal in your barn. Progress: " .. tostring(math.min(deposits, 1)) .. "/1.", ready = deposits >= 1, reward = "$750" },
+        { id = "Collector", title = "ANIMAL COLLECTOR", marker = "5", desc = "Capture five animals. Progress: " .. tostring(math.min(captures, 5)) .. "/5.", ready = captures >= 5, reward = "$1.5K" },
+        { id = "FullBarn", title = "FULL BARN", marker = "6", desc = "Store six animals in your barn. Progress: " .. tostring(math.min(barnCount, Config.Barn.BaseSlots)) .. "/" .. tostring(Config.Barn.BaseSlots) .. ".", ready = barnCount >= Config.Barn.BaseSlots, reward = "$5K" },
+    }
+    for index, item in ipairs(quests) do
+        addAction(index + 1, item.marker, item.title, item.desc .. " Reward: " .. item.reward .. ".",
+            item.ready and "CLAIM" or "IN PROGRESS", COLORS.Purple, function()
+                questClaimRemote:FireServer(item.id)
+            end, not item.ready, 82)
     end
+end
 
-    table.sort(animals, function(a, b)
-        local biomeA = biomeOrder[a.Biome] or 99
-        local biomeB = biomeOrder[b.Biome] or 99
-        if biomeA == biomeB then
-            return a.RequiredStrength < b.RequiredStrength
+local function renderDaily()
+    clearContent()
+    local streak = tonumber(player:GetAttribute("DailyStreak")) or 0
+    addInfo(1, "DAILY HARVEST  •  CLAIM COINS ONCE PER DAY. KEEP YOUR STREAK ALIVE FOR BIGGER REWARDS.", COLORS.Gold, 68)
+    addAction(2, "DAY", "DAY " .. tostring(math.min(streak + 1, 7)) .. " REWARD",
+        "$500 base reward + $250 per streak day, up to a seven-day streak. Current streak: " .. tostring(streak) .. "/7.",
+        "CLAIM", COLORS.Gold, function()
+            dailyRewardRemote:FireServer()
+        end, false, 92)
+    addInfo(3, "REDEEM A CODE  •  CODES ARE CASE-INSENSITIVE.", COLORS.Green, 48)
+    local input = addTextInput(4, "Enter a farm code...")
+    addAction(5, "CODE", "REDEEM CODE", "FARMFAMILY, WILDSTART and BARNBOOST are currently supported.", "REDEEM", COLORS.Green, function()
+        local code = string.gsub(input.Text, "%s+", "")
+        if code == "" then
+            toast("Enter a code first.", "Warning")
+            return
         end
-        return biomeA < biomeB
-    end)
+        redeemCodeRemote:FireServer(code)
+    end, false, 82)
+end
 
-    for index, animal in ipairs(animals) do
-        local color = animal.Biome == "Farm" and COLORS.Green
-            or animal.Biome == "Jungle" and COLORS.Teal
-            or COLORS.Orange
-        local requirementMet = (tonumber(player:GetAttribute("Strength")) or 0) >= animal.RequiredStrength
-        addAction(
-            "Animal_" .. animal.Id,
-            animal.DisplayName .. " • " .. (rarityNames[animal.Rarity] or animal.Rarity),
-            biomeNames[animal.Biome] .. "  |  Força " .. tostring(animal.RequiredStrength)
-                .. "  |  Peso " .. tostring(animal.Weight)
-                .. "  |  Valor-base " .. formatNumber(animal.BaseValue)
-                .. (requirementMet and "  |  REQUISITO OK" or "  |  FORÇA INSUFICIENTE"),
-            requirementMet and "PODE ROUBAR" or "TREINE",
-            color,
-            function()
-                displayToast(
-                    requirementMet and ("Procure " .. animal.DisplayName .. " no bioma " .. biomeNames[animal.Biome] .. ".")
-                        or ("Treine até Força " .. tostring(animal.RequiredStrength) .. "."),
-                    requirementMet and "Info" or "Warning"
-                )
-            end,
-            index + 1
-        )
+local function renderStats()
+    clearContent()
+    local data = {
+        { "Coins in wallet", "$" .. number(player:GetAttribute("Coins")), COLORS.Gold },
+        { "Coins waiting in barn", "$" .. number(player:GetAttribute("BarnBank")), COLORS.Green },
+        { "Passive income", "$" .. number(player:GetAttribute("BarnIncomeRate")) .. "/second", COLORS.Aqua },
+        { "Stored animals", tostring(player:GetAttribute("BarnAnimalCount") or 0) .. "/" .. tostring(player:GetAttribute("BarnCapacity") or Config.Barn.BaseSlots), COLORS.Cream },
+        { "Animals captured", number(player:GetAttribute("TotalCaptured")), COLORS.Purple },
+        { "Animals delivered to barn", number(player:GetAttribute("TotalDeposited")), COLORS.Meadow },
+        { "Speed", number(player:GetAttribute("SpeedLevel")) .. "/" .. tostring(Config.MaxSpeedLevel), COLORS.Blue },
+        { "Rebirths", tostring(player:GetAttribute("Rebirths") or 0) .. "/" .. tostring(Config.MaxRebirths), COLORS.Orange },
+    }
+    addInfo(1, "FARM STATISTICS  •  ALL VALUES COME FROM YOUR SERVER-SAVED PROFILE.", COLORS.Gold, 58)
+    for index, item in ipairs(data) do
+        addAction(index + 1, "STAT", item[1], item[2], "VIEW", item[3], function()
+            toast(item[1] .. ": " .. item[2], "Info")
+        end, false, 70)
     end
+end
+
+local function renderSettings()
+    clearContent()
+    addInfo(1, "SETTINGS  •  CHANGES APPLY TO YOUR CURRENT CLIENT SESSION.", COLORS.Blue, 58)
+    addAction(2, "FX", "REDUCED VISUAL EFFECTS", "Disables bloom, sun rays and local point lights to improve readability on lower-end phones. Current: " .. (lowEffects and "ON" or "OFF"), lowEffects and "TURN OFF" or "TURN ON", COLORS.Aqua, function()
+        setLowEffects(not lowEffects)
+        renderSettings()
+    end, false, 86)
+    addAction(3, "HUD", "INTERFACE SCALE", "The HUD automatically adapts to the current viewport and respects the device safe area.", "RESIZE", COLORS.Green, function()
+        resizeUI()
+        toast("HUD layout recalculated for this screen.", "Success")
+    end, false, 78)
+    addInfo(4, "TIP: on mobile, use the on-screen STEAL prompt and keep the barn's green deposit pad visible when you return.", COLORS.Cream, 62)
 end
 
 local function renderRebirth()
     clearContent()
     local rebirths = tonumber(player:GetAttribute("Rebirths")) or 0
     local speed = tonumber(player:GetAttribute("SpeedLevel")) or 0
-    local strength = tonumber(player:GetAttribute("Strength")) or 0
+    local coins = tonumber(player:GetAttribute("Coins")) or 0
     local carrying = player:GetAttribute("CarryingAnimal") == true
-    local atCap = rebirths >= Config.MaxRebirths
-    local eligible = speed >= Config.MaxSpeedLevel and strength >= Config.MaxStrength and not carrying and not atCap
-    local bonus = math.floor(rebirths * Config.RebirthCoinBonusPerRebirth * 100)
-
-    addInfo(
-        "Renascimento " .. tostring(rebirths) .. " / " .. tostring(Config.MaxRebirths)
-            .. "\nBônus atual de vendas: +" .. tostring(bonus) .. "% de moedas."
-            .. "\nAo renascer: Velocidade volta a 0 e Força a 10. O bônus permanente aumenta em "
-            .. tostring(math.floor(Config.RebirthCoinBonusPerRebirth * 100)) .. "%.",
-        1
-    )
-
-    addInfo(
-        "REQUISITOS\nVelocidade: " .. tostring(speed) .. " / " .. tostring(Config.MaxSpeedLevel)
-            .. "\nForça: " .. tostring(strength) .. " / " .. tostring(Config.MaxStrength)
-            .. "\nNão pode estar carregando um animal.",
-        2
-    )
-
-    addAction(
-        "RequestRebirth",
-        atCap and "Limite de renascimentos atingido" or "Confirmar Renascimento",
-        eligible
-            and "Seu progresso será salvo no servidor antes da confirmação."
-            or (atCap and "Você já atingiu o limite." or "Complete os requisitos antes de renascer."),
-        eligible and "RENASCER" or "BLOQUEADO",
-        COLORS.Orange,
-        function()
-            rebirthRequestRemote:FireServer()
-        end,
-        3,
-        not eligible
-    )
-
-    addInfo("As moedas e gamepasses permanentes são mantidos. O renascimento só é confirmado se a gravação no DataStore for bem-sucedida.", 4)
+    local eligible = speed >= Config.MaxSpeedLevel and coins >= Config.RebirthCoinsRequired
+        and not carrying and rebirths < Config.MaxRebirths
+    addInfo(1, "REBIRTH  •  RESET SPEED AND WALLET TO GAIN A PERMANENT +10% BARN INCOME MULTIPLIER.", COLORS.Orange, 72)
+    addInfo(2, "Current rebirths: " .. tostring(rebirths) .. "/" .. tostring(Config.MaxRebirths)
+        .. "
+Required speed: " .. tostring(speed) .. "/" .. tostring(Config.MaxSpeedLevel)
+        .. "
+Required coins: $" .. number(coins) .. "/$" .. number(Config.RebirthCoinsRequired)
+        .. "
+You cannot rebirth while carrying an animal.", COLORS.Cream, 106)
+    addAction(3, "RB", "CONFIRM REBIRTH", "The server verifies your requirements and saves the change before confirming it.", "REBIRTH", COLORS.Orange, function()
+        rebirthRequestRemote:FireServer()
+    end, not eligible, 86)
 end
 
-local function openScreen(name)
-    activeScreen = name
-    modalTitle.Text = name == "Shop" and "LOJA DE MELHORIAS"
-        or name == "Passes" and "PASSES & ROBUX"
-        or name == "Animals" and "CATÁLOGO DE ANIMAIS"
-        or "RENASCIMENTO"
-    if name == "Shop" then
-        renderShop()
-    elseif name == "Passes" then
-        renderPasses()
-    elseif name == "Animals" then
-        renderAnimals()
-    else
-        renderRebirth()
+local function renderMore()
+    clearContent()
+    addInfo(1, "FARM MENU  •  YOUR COLLECTION, PROGRESS AND SETTINGS.", COLORS.Gold, 58)
+    addAction(2, "Q", "QUESTS", "Earn bonuses for your first capture, first deposit and a full barn.", "OPEN", COLORS.Purple, function() openScreen("Quests") end, false, 72)
+    addAction(3, "D", "DAILY HARVEST & CODES", "Claim a daily reward or redeem a supported farm code.", "OPEN", COLORS.Gold, function() openScreen("Daily") end, false, 72)
+    addAction(4, "ST", "STATISTICS", "Inspect income, captured animals, stored animals and rebirths.", "OPEN", COLORS.Blue, function() openScreen("Stats") end, false, 72)
+    addAction(5, "FX", "SETTINGS", "Adjust visual effects for your device.", "OPEN", COLORS.Aqua, function() openScreen("Settings") end, false, 72)
+    addAction(6, "RB", "REBIRTH", "Trade your current speed and wallet for a permanent barn-income bonus.", "OPEN", COLORS.Orange, function() openScreen("Rebirth") end, false, 78)
+end
+
+local renderers = {
+    Barn = renderBarn,
+    Animals = renderAnimals,
+    Shop = renderShop,
+    Passes = renderPasses,
+    Quests = renderQuests,
+    Daily = renderDaily,
+    Stats = renderStats,
+    Settings = renderSettings,
+    Rebirth = renderRebirth,
+    More = renderMore,
+}
+
+openScreen = function(name)
+    local renderer = renderers[name]
+    if not renderer then
+        return
     end
-
+    activeScreen = name
+    modalTitle.Text = ({
+        Barn = "YOUR BARN",
+        Animals = "ANIMAL INDEX",
+        Shop = "FARM UPGRADES",
+        Passes = "PASSES & PRODUCTS",
+        Quests = "QUEST BOARD",
+        Daily = "DAILY HARVEST",
+        Stats = "FARM STATISTICS",
+        Settings = "SETTINGS",
+        Rebirth = "REBIRTH",
+        More = "FARM MENU",
+    })[name] or "FARM"
+    renderer()
     resizeUI()
-    modalBackdrop.Visible = true
-    modalScale.Scale = 0.92
+    backdrop.Visible = true
+    modalScale.Scale = 0.9
     TweenService:Create(modalScale, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-
     task.defer(function()
-        if modalBackdrop.Visible and lastSelectable and UserInputService.GamepadEnabled then
+        if backdrop.Visible and lastSelectable and UserInputService.GamepadEnabled then
             GuiService.SelectedObject = lastSelectable
         end
     end)
 end
 
-makeButton(
-    navPanel,
-    "OpenShop",
-    "LOJA",
-    UDim2.new(0.25, -8, 1, -12),
-    UDim2.new(),
-    COLORS.Green,
-    function()
-        openScreen("Shop")
-    end
-).LayoutOrder = 1
-
-makeButton(
-    navPanel,
-    "OpenPasses",
-    "PASSES",
-    UDim2.new(0.25, -8, 1, -12),
-    UDim2.new(),
-    COLORS.Blue,
-    function()
-        openScreen("Passes")
-    end
-).LayoutOrder = 2
-
-makeButton(
-    navPanel,
-    "OpenAnimals",
-    "ANIMAIS",
-    UDim2.new(0.25, -8, 1, -12),
-    UDim2.new(),
-    COLORS.Purple,
-    function()
-        openScreen("Animals")
-    end
-).LayoutOrder = 3
-
-makeButton(
-    navPanel,
-    "OpenRebirth",
-    "RENASCER",
-    UDim2.new(0.25, -8, 1, -12),
-    UDim2.new(),
-    COLORS.Orange,
-    function()
-        openScreen("Rebirth")
-    end
-).LayoutOrder = 4
+button(navPanel, "OpenBarn", "BARN", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Green, function() openScreen("Barn") end, 1)
+button(navPanel, "OpenAnimals", "ANIMALS", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Pink, function() openScreen("Animals") end, 2)
+button(navPanel, "OpenShop", "SHOP", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Gold, function() openScreen("Shop") end, 3)
+button(navPanel, "OpenPasses", "PASSES", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Blue, function() openScreen("Passes") end, 4)
+button(navPanel, "OpenMore", "MORE", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Purple, function() openScreen("More") end, 5)
 
 local function promptPass(passId)
     if type(passId) ~= "number" or passId <= 0 then
-        displayToast("Gamepass ainda não configurado.", "Warning")
+        toast("This gamepass has not been configured yet.", "Warning")
         return
     end
-
     local success, err = pcall(function()
         MarketplaceService:PromptGamePassPurchase(player, passId)
     end)
-
     if not success then
-        displayToast("Não foi possível abrir o gamepass: " .. tostring(err), "Error")
+        toast("Could not open the pass purchase: " .. tostring(err), "Error")
     end
 end
 
 local function promptProduct(productId)
     if type(productId) ~= "number" or productId <= 0 then
-        displayToast("Produto acumulável ainda não configurado.", "Warning")
+        toast("This developer product has not been configured yet.", "Warning")
         return
     end
-
     local success, err = pcall(function()
         MarketplaceService:PromptProductPurchase(player, productId)
     end)
-
     if not success then
-        displayToast("Não foi possível abrir o produto: " .. tostring(err), "Error")
+        toast("Could not open the product purchase: " .. tostring(err), "Error")
     end
 end
 
-notifyRemote.OnClientEvent:Connect(displayToast)
+notifyRemote.OnClientEvent:Connect(toast)
 passPromptRemote.OnClientEvent:Connect(promptPass)
 productPromptRemote.OnClientEvent:Connect(promptProduct)
 
-for _, attribute in ipairs({
-    "Coins",
-    "SpeedLevel",
-    "Strength",
-    "Rebirths",
-    "CarryingAnimal",
-    "CarriedAnimalName",
-    "CarriedAnimalWeight",
-    "HasDoubleSpeed",
-    "HasDoubleStrength",
-    "HasDoubleCoins",
-    "HasVIPSpeed",
-}) do
+local attributes = {
+    "Coins", "SpeedLevel", "Rebirths", "BarnAnimalCount", "BarnCapacity", "BarnIncomeRate", "BarnBank",
+    "TotalCaptured", "TotalDeposited", "BarnAnimalsJson", "CarryingAnimal", "CarriedAnimalName",
+    "CarriedAnimalWeight", "CarriedAnimalIncome", "HasDoubleIncome", "HasDoubleSpeed", "HasVIPFarm", "HasExtraBarnSlots", "DailyStreak",
+}
+for _, attribute in ipairs(attributes) do
     player:GetAttributeChangedSignal(attribute):Connect(function()
-        updateStats()
-        if activeScreen == "Shop" then
-            renderShop()
-        elseif activeScreen == "Passes" then
-            renderPasses()
-        elseif activeScreen == "Animals" then
-            renderAnimals()
-        elseif activeScreen == "Rebirth" then
-            renderRebirth()
+        refreshStats()
+        if activeScreen and activeScreen ~= "Daily" and activeScreen ~= "Settings" then
+            if attribute ~= "BarnBank" and attribute ~= "BarnIncomeRate" and attribute ~= "Coins" then
+                local renderer = renderers[activeScreen]
+                if renderer then renderer() end
+            end
         end
     end)
 end
@@ -888,18 +906,16 @@ local function setupCamera()
         resizeUI()
     end
 end
-
 workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(setupCamera)
 setupCamera()
-updateStats()
+refreshStats()
 
 UserInputService.InputBegan:Connect(function(input, processed)
-    if processed or not modalBackdrop.Visible then
+    if processed or not backdrop.Visible then
         return
     end
-
     if input.KeyCode == Enum.KeyCode.Escape or input.KeyCode == Enum.KeyCode.ButtonB then
-        modalBackdrop.Visible = false
+        backdrop.Visible = false
         activeScreen = nil
         GuiService.SelectedObject = nil
     end

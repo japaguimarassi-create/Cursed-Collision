@@ -70,8 +70,8 @@ end
 local function moveToward(humanoid, root, destination)
     local success, path = pcall(function()
         local result = PathfindingService:CreatePath({
-            AgentRadius = 2,
-            AgentHeight = 5,
+            AgentRadius = Config.Guardian.AgentRadius,
+            AgentHeight = Config.Guardian.AgentHeight,
             AgentCanJump = true,
             AgentCanClimb = true,
             WaypointSpacing = 5,
@@ -110,7 +110,7 @@ local function runGuardian(guardian, onCaught, notify)
     local root = guardian:FindFirstChild("HumanoidRootPart")
 
     if not humanoid or not root then
-        warn("RoubeUmAnimal: guardião sem rig Humanoid: " .. guardian:GetFullName())
+        warn("StealAnAnimal: guardian creature has no humanoid rig: " .. guardian:GetFullName())
         return
     end
 
@@ -193,7 +193,7 @@ function GuardianService.Start(builder, animalService, notify)
 
         task.spawn(function()
             runGuardian(guardian, function(player)
-                animalService.Lose(player, "O guardião pegou você! Você perdeu o animal.")
+                animalService.Lose(player, "The giant guardian caught you. Your carried animal escaped.")
             end, notify)
         end)
     end

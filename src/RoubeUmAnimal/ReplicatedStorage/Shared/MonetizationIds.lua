@@ -1,12 +1,12 @@
 return table.freeze({
     Passes = table.freeze({
+        DoubleIncome = 0,
         DoubleSpeed = 0,
-        DoubleStrength = 0,
-        DoubleCoins = 0,
-        VIPSpeed = 0,
+        VIPFarm = 0,
+        ExtraBarnSlots = 0,
     }),
     Products = table.freeze({
-        StackableSpeed = 0,
-        StackableStrength = 0,
+        SpeedBoost = 0,
+        CoinBundle = 0,
     }),
 })

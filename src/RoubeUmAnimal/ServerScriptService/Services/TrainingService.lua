@@ -13,136 +13,62 @@ local notify
 local cooldowns = {}
 local started = false
 
-local function playerCharacter(player)
+local function characterState(player)
     local character = player.Character
-
     if not character then
         return nil, nil, nil
     end
-
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local root = character:FindFirstChild("HumanoidRootPart")
-
     if not humanoid or humanoid.Health <= 0 or not root then
         return nil, nil, nil
     end
-
     return character, humanoid, root
 end
 
 local function insidePart(part, position)
     local localPosition = part.CFrame:PointToObjectSpace(position)
-
     return math.abs(localPosition.X) <= part.Size.X * 0.5 + 1.5
         and math.abs(localPosition.Z) <= part.Size.Z * 0.5 + 1.5
         and localPosition.Y >= -4
         and localPosition.Y <= part.Size.Y * 0.5 + 6
 end
 
-local function available(player, kind, duration)
-    cooldowns[player] = cooldowns[player] or {}
-    local now = os.clock()
-    local last = cooldowns[player][kind] or 0
-
-    if now - last < duration then
-        return false
-    end
-
-    cooldowns[player][kind] = now
-    return true
-end
-
-local function train(player, kind)
-    if not profiles.IsLoaded(player) then
+local function train(player)
+    if not profiles.IsLoaded(player) or player:GetAttribute("RebirthInProgress") then
         return
     end
-
     if player:GetAttribute("CarryingAnimal") then
-        notify(player, "Venda ou perca o animal atual antes de treinar.", "Warning")
+        notify(player, "Return your carried animal to the barn before training.", "Warning")
         return
     end
-
-    local _, humanoid = playerCharacter(player)
-
+    local _, humanoid = characterState(player)
     if not humanoid then
         return
     end
-
     local data = profiles.Get(player)
-
-    if not data then
+    if not data or data.Speed >= Config.MaxSpeedLevel then
+        notify(player, "Speed is at the maximum level.", "Info")
         return
     end
-
-    if kind == "Treadmill" then
-        if data.Speed >= Config.MaxSpeedLevel then
-            notify(player, "Velocidade no nível máximo.", "Info")
-            return
-        end
-
-        if not available(player, "TreadmillReward", Config.Training.TreadmillInterval) then
-            return
-        end
-
-        local multiplier = passService and passService.Has(player, "DoubleSpeed")
-            and Config.Training.DoubleSpeedMultiplier or 1
-        local gain = math.floor(Config.Training.TreadmillGain * multiplier)
-        local success = profiles.AddStat(player, "Speed", gain)
-
-        if success then
-            animalService.ApplyMovement(player)
-            notify(player, "+" .. tostring(gain) .. " Velocidade! Continue correndo para treinar.", "Success")
-        end
-
+    cooldowns[player] = cooldowns[player] or 0
+    local now = os.clock()
+    if now - cooldowns[player] < Config.Training.TreadmillInterval then
         return
     end
-
-    if kind == "BenchPress" then
-        if data.Strength >= Config.MaxStrength then
-            notify(player, "Força no nível máximo.", "Info")
-            return
-        end
-
-        if not available(player, "BenchPressReward", Config.Training.BenchPressCooldown) then
-            return
-        end
-
-        local multiplier = passService and passService.Has(player, "DoubleStrength")
-            and Config.Training.DoubleStrengthMultiplier or 1
-        local gain = math.floor(Config.Training.BenchPressGain * multiplier)
-        local success = profiles.AddStat(player, "Strength", gain)
-
-        if success then
-            animalService.ApplyMovement(player)
-            notify(player, "+" .. tostring(gain) .. " Força! Você consegue carregar animais mais pesados.", "Success")
-        end
+    cooldowns[player] = now
+    local multiplier = passService.Has(player, "DoubleSpeed") and Config.Training.DoubleSpeedMultiplier or 1
+    local gain = math.floor(Config.Training.TreadmillGain * multiplier)
+    if profiles.AddStat(player, "Speed", gain) then
+        animalService.ApplyMovement(player)
+        notify(player, "+" .. tostring(gain) .. " speed. Sprint to improve your chances of escaping guardians.", "Success")
     end
-end
-
-local function preparePrompt(prompt, trainingType)
-    if trainingType == "Treadmill" then
-        prompt.ActionText = "Treinar Velocidade"
-        prompt.ObjectText = "Esteira"
-        prompt.HoldDuration = 0.5
-        prompt.MaxActivationDistance = 9
-        prompt.RequiresLineOfSight = false
-        prompt:SetAttribute("InteractionType", "Treadmill")
-        return
-    end
-
-    prompt.ActionText = "Fazer supino"
-    prompt.ObjectText = "Treino de Força"
-    prompt.HoldDuration = 0.7
-    prompt.MaxActivationDistance = 9
-    prompt.RequiresLineOfSight = false
-    prompt:SetAttribute("InteractionType", "BenchPress")
 end
 
 function TrainingService.Start(profileService, builder, animals, passes, notifyFunction)
     if started then
         return
     end
-
     started = true
     profiles = profileService
     worldBuilder = builder
@@ -150,73 +76,57 @@ function TrainingService.Start(profileService, builder, animals, passes, notifyF
     passService = passes
     notify = notifyFunction
 
-    local trainingParts = worldBuilder.GetTrainingParts()
-
-    for _, part in ipairs(trainingParts) do
-        local trainingType = part:GetAttribute("TrainingType")
-
-        if trainingType == "BenchPress" or trainingType == "Treadmill" then
-            local prompt = part:FindFirstChildWhichIsA("ProximityPrompt")
-
+    for _, trainingPart in ipairs(worldBuilder.GetTrainingParts()) do
+        if trainingPart:GetAttribute("TrainingType") == "Treadmill" then
+            local prompt = trainingPart:FindFirstChildWhichIsA("ProximityPrompt")
             if not prompt then
                 prompt = Instance.new("ProximityPrompt")
-                prompt.Name = trainingType == "Treadmill" and "TreadmillPrompt" or "BenchPressPrompt"
-                prompt.Parent = part
+                prompt.Name = "TreadmillPrompt"
+                prompt.Parent = trainingPart
             end
-
-            preparePrompt(prompt, trainingType)
+            prompt.ActionText = "Train Speed"
+            prompt.ObjectText = "Farm Treadmill"
+            prompt.HoldDuration = 0.35
+            prompt.MaxActivationDistance = 9
+            prompt.RequiresLineOfSight = false
+            prompt:SetAttribute("InteractionType", "Treadmill")
         end
     end
 
     ProximityPromptService.PromptTriggered:Connect(function(prompt, player)
-        local trainingType = prompt:GetAttribute("InteractionType")
-
-        if trainingType ~= "BenchPress" and trainingType ~= "Treadmill" then
+        if prompt:GetAttribute("InteractionType") ~= "Treadmill" then
             return
         end
-
         local part = prompt.Parent
-
-        if not part
-            or not part:IsA("BasePart")
-            or part:GetAttribute("TrainingType") ~= trainingType
+        if not part or not part:IsA("BasePart")
+            or part:GetAttribute("TrainingType") ~= "Treadmill"
             or not part:IsDescendantOf(worldBuilder.GetTrainingFolder()) then
             return
         end
-
-        local _, _, root = playerCharacter(player)
-
-        if not root
-            or (root.Position - part.Position).Magnitude
-                > math.min(prompt.MaxActivationDistance, Config.MaxInteractionDistance) + 2 then
+        local _, _, root = characterState(player)
+        if not root or (root.Position - part.Position).Magnitude > math.min(prompt.MaxActivationDistance, Config.MaxInteractionDistance) + 2 then
             return
         end
-
-        local success, err = pcall(train, player, trainingType)
-
+        local success, err = pcall(train, player)
         if not success then
-            warn("RoubeUmAnimal: falha no treino " .. trainingType .. ": " .. tostring(err))
+            warn("StealAnAnimal: treadmill error: " .. tostring(err))
         end
     end)
 
     task.spawn(function()
         while true do
             task.wait(0.35)
-
             for _, player in ipairs(Players:GetPlayers()) do
-                local _, humanoid, root = playerCharacter(player)
-
+                local _, humanoid, root = characterState(player)
                 if root and humanoid and humanoid.MoveDirection.Magnitude > 0.15 then
-                    for _, part in ipairs(trainingParts) do
-                        if part.Parent
-                            and part:GetAttribute("TrainingType") == "Treadmill"
-                            and insidePart(part, root.Position) then
-                            local success, err = pcall(train, player, "Treadmill")
-
+                    for _, trainingPart in ipairs(worldBuilder.GetTrainingParts()) do
+                        if trainingPart.Parent
+                            and trainingPart:GetAttribute("TrainingType") == "Treadmill"
+                            and insidePart(trainingPart, root.Position) then
+                            local success, err = pcall(train, player)
                             if not success then
-                                warn("RoubeUmAnimal: falha na esteira: " .. tostring(err))
+                                warn("StealAnAnimal: treadmill reward error: " .. tostring(err))
                             end
-
                             break
                         end
                     end

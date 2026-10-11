@@ -15,7 +15,6 @@ function RebirthService.Start(profileService, animals, remote, notifyFunction)
     if started then
         return
     end
-
     started = true
     profiles = profileService
     animalService = animals
@@ -23,59 +22,47 @@ function RebirthService.Start(profileService, animals, remote, notifyFunction)
     notify = notifyFunction
 
     requestRemote.OnServerEvent:Connect(function(player)
-        if player.Parent ~= Players or not profiles.IsLoaded(player) then
+        if player.Parent ~= Players or not profiles.IsLoaded(player) or player:GetAttribute("RebirthInProgress") then
             return
         end
-
         local now = os.clock()
         if now - (cooldowns[player] or 0) < 2 then
             return
         end
         cooldowns[player] = now
-
-        if player:GetAttribute("CarryingAnimal") then
-            notify(player, "Venda ou perca o animal carregado antes de renascer.", "Warning")
+        if animalService.GetCarried(player) then
+            notify(player, "Store your carried animal before rebirthing.", "Warning")
             return
         end
-
         player:SetAttribute("RebirthInProgress", true)
-        local callSucceeded, success, result = pcall(profiles.PerformRebirth, player)
+        local ok, success, result = pcall(profiles.PerformRebirth, player)
         player:SetAttribute("RebirthInProgress", false)
-
-        if not callSucceeded then
-            warn("RoubeUmAnimal: falha no renascimento: " .. tostring(success))
-            notify(player, "O renascimento falhou com segurança. Seus dados não foram reiniciados.", "Error")
+        if not ok then
+            warn("StealAnAnimal: rebirth error: " .. tostring(success))
+            notify(player, "Rebirth was cancelled safely; your saved data was not reset.", "Error")
             return
         end
-
         if not success then
             local messages = {
-                ["requirements"] = "Para renascer, alcance Velocidade " .. Config.MaxSpeedLevel .. " e Força " .. Config.MaxStrength .. ".",
-                ["carrying-animal"] = "Você não pode renascer enquanto carrega um animal.",
-                ["max-rebirths"] = "Você já atingiu o limite de renascimentos.",
-                ["profile-not-loaded"] = "Seus dados ainda não estão prontos.",
-                ["profile-busy"] = "Seus dados estão sendo salvos. Tente novamente.",
-                ["datastore-error"] = "Não foi possível salvar o renascimento. Nenhum progresso foi reiniciado.",
-                ["session-lock"] = "A sessão perdeu o bloqueio dos dados. Entre novamente para evitar perda de progresso.",
+                requirements = "Reach Speed " .. tostring(Config.MaxSpeedLevel) .. " and save at least " .. tostring(Config.RebirthCoinsRequired) .. " coins first.",
+                ["carrying-animal"] = "Store your carried animal before rebirthing.",
+                ["max-rebirths"] = "You reached the rebirth limit.",
+                ["profile-not-loaded"] = "Your profile is still loading.",
+                ["profile-busy"] = "Your profile is saving. Try again shortly.",
+                ["datastore-error"] = "Rebirth could not be saved. Nothing was reset.",
+                ["session-lock"] = "Your session lost its profile lock. Rejoin to protect your data.",
             }
-            notify(player, messages[result] or "Renascimento cancelado com segurança.", "Warning")
+            notify(player, messages[result] or "Rebirth is unavailable right now.", "Warning")
             return
         end
-
         animalService.ApplyMovement(player)
-        notify(
-            player,
-            "Renascimento " .. tostring(result) .. " concluído! Você ganhou +" .. tostring(Config.RebirthCoinBonusPerRebirth * 100) .. "% de moedas permanentes por renascimento.",
-            "Success"
-        )
+        notify(player, "Rebirth " .. tostring(result) .. " complete. Your barn income bonus increased by 10%.", "Success")
     end)
 end
 
 function RebirthService.RemovePlayer(player)
     cooldowns[player] = nil
-    if player:GetAttribute("RebirthInProgress") then
-        player:SetAttribute("RebirthInProgress", false)
-    end
+    player:SetAttribute("RebirthInProgress", false)
 end
 
 return RebirthService

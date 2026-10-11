@@ -21,8 +21,11 @@ REQUIRED_FILES = [
     "src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua",
+    "src/RoubeUmAnimal/ServerScriptService/Services/BarnService.lua",
+    "src/RoubeUmAnimal/ServerScriptService/Services/ProgressionService.lua",
     "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
     "tools/tests/run.luau",
+    "tools/tests/test_map_layout.py",
     "tools/tests/test_monetization.py",
     "docs/ROUBE_UM_ANIMAL.md",
 ]
@@ -54,8 +57,8 @@ def main():
         project = json.loads(PROJECT.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         fail(f"invalid default.project.json: {exc}")
-    if project.get("name") != "RoubeUmAnimal":
-        fail("default.project.json must target RoubeUmAnimal")
+    if project.get("name") != "StealAnAnimal":
+        fail("default.project.json must target StealAnAnimal")
 
     tree = project.get("tree", {})
     expected = {
@@ -72,74 +75,79 @@ def main():
 
     config = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/Config.lua")
     catalog = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua")
+    rules = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/GameplayRules.lua")
+    ids = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua")
     profiles = read("src/RoubeUmAnimal/ServerScriptService/Services/ProfileService.lua")
     animals = read("src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua")
     training = read("src/RoubeUmAnimal/ServerScriptService/Services/TrainingService.lua")
     shop = read("src/RoubeUmAnimal/ServerScriptService/Services/ShopService.lua")
     passes = read("src/RoubeUmAnimal/ServerScriptService/Services/PassService.lua")
-    product_service = read("src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua")
-    rebirth_service = read("src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua")
-    monetization_ids = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua")
+    products = read("src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua")
+    rebirth = read("src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua")
     guardians = read("src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua")
     world = read("src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua")
+    barn = read("src/RoubeUmAnimal/ServerScriptService/Services/BarnService.lua")
+    progression = read("src/RoubeUmAnimal/ServerScriptService/Services/ProgressionService.lua")
     client = read("src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
-    rules = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/GameplayRules.lua")
+    main = read("src/RoubeUmAnimal/ServerScriptService/Main.server.lua")
 
     checks = [
-        ("DataStore update and session locking", "UpdateAsync" in profiles and "SessionLock" in profiles),
-        ("leaderstats", all(token in profiles for token in ('ensureValue("Moedas"', 'ensureValue("Velocidade"', 'ensureValue("Força"'))),
-        ("capture and sale rules", "Rules.CanCapture" in animals and "Rules.SalePrice" in animals and "RarityMultipliers" in catalog),
-        ("weight movement rule", "Rules.CarrySpeed" in animals and "CarryPenaltyStartRatio" in config),
-        ("shared upgrade rule", "Rules.UpgradePrice" in shop),
-        ("training stations", "Treadmill" in training and "BenchPress" in training),
-        ("gamepass checks", all(token in passes for token in ("UserOwnsGamePassAsync", "PromptGamePassPurchaseFinished", "DoubleSpeed", "DoubleStrength", "DoubleCoins", "VIPSpeed"))),
-        ("monetization ID registry", all(token in monetization_ids for token in ("DoubleSpeed", "DoubleStrength", "DoubleCoins", "VIPSpeed", "StackableSpeed", "StackableStrength"))),
-        ("stackable purchase receipts", all(token in product_service for token in ("ProcessReceipt", "PurchaseGranted", "NotProcessedYet", "GrantStackableProduct", "PurchaseId")) and "ProcessedPurchases" in profiles),
-        ("rebirth persistence", "PerformRebirth" in profiles and "PerformRebirth" in rebirth_service and "MaxRebirths" in profiles and "RebirthCoinBonusPerRebirth" in config and "RequestRebirth" in client),
-        ("cross-platform HUD", all(token in client for token in ("DeviceSafeInsets", ".Activated:Connect", "ViewportSize", "RequestStackableProduct", "RequestRebirth"))),
-        ("distinct monetization interface", all(token in client for token in ("renderPasses", "Turbo: 2x Velocidade", "Força: 2x Treino", "Magnata: 2x Moedas", "VIP: +50 Velocidade", "DistinctiveMarker", "OpenPasses", "ID PENDENTE"))),
-        ("map startup diagnostics", all(token in world for token in ("xpcall(callback, debug.traceback)", "MapReady", "FallbackGround", "PORTAL_DA_FAZENDA", "PORTAL_DA_SELVA", "PORTAL_DO_VULCAO"))),
-        ("guardian pathfinding", "PathfindingService" in guardians and "ComputeAsync" in guardians),
-        ("all three biomes", all(token in world for token in ('"Farm"', '"Jungle"', '"Volcano"'))),
-        ("HUD remotes", 'gui.Name = "RoubeUmAnimalHUD"' in client and "RequestUpgrade" in client and "RequestGamepass" in client),
-        ("shared rules API", all(name in rules for name in ("IsFinite", "Integer", "CanCapture", "CarrySpeed", "SalePrice", "UpgradePrice"))),
+        ("DataStore session lock and atomic writes", "UpdateAsync" in profiles and "SessionLock" in profiles and "function transact" in profiles),
+        ("legacy strength data is discarded safely", "current.Strength = nil" in profiles and "Config.SchemaVersion" in profiles),
+        ("barn data persists", all(token in profiles for token in ("BarnAnimals", "BarnBank", "LastIncomeAt", "AddBarnAnimal", "CollectBarnIncome"))),
+        ("offline income is bounded and atomically claimed", "ClaimOfflineIncome" in profiles and "OfflineIncomeCapSeconds" in config and "current.LastIncomeAt = now" in profiles),
+        ("capture-to-barn gameplay", all(token in animals for token in ("Rules.CanCapture", "AnimalService.Deposit", "scheduleRespawn", "CarryingAnimal")) and "AddBarnAnimal" in barn),
+        ("no immediate animal sale", "SellPart" not in world and "salePrice" not in animals and "function deposit" in barn),
+        ("passive income economy", all(token in barn for token in ("IncomePerSecond", "AccrueBarnIncome", "CollectBarnIncome", "BarnIncomeRate"))),
+        ("six world regions", all(token in world for token in ('"Meadow"', '"Forest"', '"Wetlands"', '"Snow"', '"Savannah"', '"Volcano"')) and "BiomeCount" in world),
+        ("eight player farms", "for index = 1, 8 do" in world and "OwnerUserId" in world),
+        ("giant animal guardians", "createGuardianBeast" in world and "IsGiantAnimal" in world and "BeastTorso" in world),
+        ("guardian pathfinding", "PathfindingService" in guardians and "ComputeAsync" in guardians and "AgentRadius = Config.Guardian.AgentRadius" in guardians),
+        ("map errors are isolated", "xpcall(callback, debug.traceback)" in world and "MapReady" in world and "FallbackGround" in world),
+        ("speed-only progression", "Rules.UpgradePrice" in shop and "Rules.CanCapture" in animals and "Treadmill" in training and "BenchPress" not in training and "Strength" not in config),
+        ("catalog species support passive income", "IncomePerSecond" in catalog and "Catalog.All()" in catalog),
+        ("distinct server-owned gamepasses", all(token in passes for token in ("UserOwnsGamePassAsync", "PromptGamePassPurchaseFinished", "DoubleIncome", "DoubleSpeed", "VIPFarm", "ExtraBarnSlots"))),
+        ("repeatable receipts are idempotent", all(token in products for token in ("ProcessReceipt", "PurchaseId", "PurchaseGranted", "NotProcessedYet", "SpeedBoost", "CoinBundle")) and "ProcessedPurchases" in profiles),
+        ("rebirth persists an income bonus", "PerformRebirth" in profiles and "RebirthCoinsRequired" in config and "RebirthIncomeBonusPerRebirth" in config),
+        ("daily rewards, quest claims and codes persist", all(token in progression for token in ("ClaimDailyReward", "ClaimQuest", "RedeemCode", "FARMFAMILY", "WILDSTART", "BARNBOOST"))),
+        ("adapted UI pack features", all(token in client for token in ("UIGradient", "renderBarn", "renderAnimals", "renderPasses", "renderQuests", "renderDaily", "renderSettings", "renderStats", "StealAnAnimalHUD"))),
+        ("mobile input and safe area", all(token in client for token in ("DeviceSafeInsets", ".Activated:Connect", "ViewportSize", "ScrollingFrame"))),
+        ("client-server remote wiring", all(token in main for token in ("RequestUpgrade", "RequestGamepass", "RequestStackableProduct", "RequestDailyReward", "RequestRedeemCode", "RequestQuest"))),
+        ("no strength in client-facing gameplay", "Strength" not in catalog and "RequiredStrength" not in catalog and "Strength" not in client and "Força" not in client),
     ]
-    failed = [name for name, passed in checks if not passed]
+    failed = [name for name, ok in checks if not ok]
     if failed:
         fail("failed checks: " + ", ".join(failed))
 
-    catalog_definitions = re.findall(r'^\s{4}(\w+) = table\.freeze\(\{\s*\n\s{8}Id = "([^"]+)"', catalog, re.MULTILINE)
-    catalog_ids = {animal_id for _, animal_id in catalog_definitions}
+    definitions = re.findall(r'^\s{4}(\w+) = table\.freeze\(\{\s*\n\s{8}Id = "([^"]+)"', catalog, re.MULTILINE)
+    catalog_ids = {animal_id for _, animal_id in definitions}
     spawn_ids = set(re.findall(r'\{\s*"([A-Za-z0-9]+)",\s*CFrame\.new\(', world))
-    if not catalog_ids:
-        fail("animal catalogue could not be parsed")
+    if len(catalog_ids) < 20:
+        fail("animal catalogue should contain at least 20 species")
     missing_spawns = sorted(catalog_ids - spawn_ids)
     if missing_spawns:
-        fail("catalog animals without map spawns: " + ", ".join(missing_spawns))
+        fail("catalog species without world spawns: " + ", ".join(missing_spawns))
 
-    max_strength_match = re.search(r"MaxStrength\s*=\s*(\d+)", config)
-    requirements = [int(value) for value in re.findall(r"RequiredStrength\s*=\s*(\d+)", catalog)]
-    if not max_strength_match or not requirements:
-        fail("strength limits could not be validated")
-    if max(requirements) > int(max_strength_match.group(1)):
-        fail("an animal requires more strength than the configured maximum")
-
-    publisher = read(".github/workflows/roblox-publish.yml")
-    for token in ("workflow_dispatch:", "ROBLOX_API_KEY", "ROUBE_ANIMAL_UNIVERSE_ID", "ROUBE_ANIMAL_PLACE_ID"):
-        if token not in publisher:
-            fail("publisher is missing required safety setting: " + token)
-    if "push:" in publisher and "contains(github.event.head_commit.message, '[publish-roube-um-animal]')" not in publisher:
-        fail("production push publishing must require the explicit release marker")
-    if "5290480963" not in publisher or "15338267657" not in publisher:
-        fail("publisher target must match the explicitly confirmed existing experience")
-    monetization_ids = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua")
-    pass_section = re.search(r"Passes = table\.freeze\(\{(.*?)\}\)", monetization_ids, re.S)
-    product_section = re.search(r"Products = table\.freeze\(\{(.*?)\}\)", monetization_ids, re.S)
+    pass_section = re.search(r"Passes = table\.freeze\(\{(.*?)\}\)", ids, re.S)
+    product_section = re.search(r"Products = table\.freeze\(\{(.*?)\}\)", ids, re.S)
     if not pass_section or not product_section:
         fail("monetization ID registry could not be parsed")
-    configured_ids = [int(value) for value in re.findall(r"=\s*(\d+)", pass_section.group(1) + product_section.group(1)) if int(value) > 0]
-    if len(configured_ids) != len(set(configured_ids)):
-        fail("configured gamepass and Developer Product IDs must be unique")
+    pass_ids = dict((name, int(value)) for name, value in re.findall(r"(\w+)\s*=\s*(\d+)", pass_section.group(1)))
+    product_ids = dict((name, int(value)) for name, value in re.findall(r"(\w+)\s*=\s*(\d+)", product_section.group(1)))
+    if set(pass_ids) != {"DoubleIncome", "DoubleSpeed", "VIPFarm", "ExtraBarnSlots"}:
+        fail("gamepass keys do not match the implemented benefits")
+    if set(product_ids) != {"SpeedBoost", "CoinBundle"}:
+        fail("developer product keys do not match the implemented receipt handlers")
+    configured = [value for value in list(pass_ids.values()) + list(product_ids.values()) if value > 0]
+    if len(configured) != len(set(configured)):
+        fail("nonzero monetization IDs must be unique")
+
+    publisher = read(".github/workflows/roblox-publish.yml")
+    for token in ("workflow_dispatch:", "ROBLOX_API_KEY", "ROUBE_ANIMAL_UNIVERSE_ID", "ROUBE_ANIMAL_PLACE_ID", "15338267657", "5290480963"):
+        if token not in publisher:
+            fail("publisher is missing a target safety setting: " + token)
+    if "contains(github.event.head_commit.message, '[publish-roube-um-animal]')" not in publisher:
+        fail("production publishing must require explicit release confirmation")
 
     for name in REQUIRED_FILES:
         if name.endswith((".lua", ".luau")):
@@ -151,8 +159,8 @@ def main():
             if "src/CollisionBattlestar/" in content:
                 fail("legacy runtime reference found in " + name)
 
-    print(f"Roube Um Animal validation passed: {len(REQUIRED_FILES)} required files checked.")
-    print("DataStore, authoritative economy, capture, movement, upgrades, training, passes, guardians, map spawns and publisher controls verified.")
+    print(f"Steal An Animal validation passed: {len(REQUIRED_FILES)} required files and {len(checks)} architecture checks.")
+    print("Verified: barn storage and income, six biomes, animal spawns, giant guardians, speed-only progression, remotes and monetization separation.")
 
 if __name__ == "__main__":
     main()

@@ -12,15 +12,10 @@ local requestRemote
 local cooldowns = {}
 local started = false
 
-local function priceFor(stat, data)
-    return Rules.UpgradePrice(stat, data, Config)
-end
-
 function ShopService.Start(profileService, animals, passes, remote, notifyFunction)
     if started then
         return
     end
-
     started = true
     profiles = profileService
     animalService = animals
@@ -28,60 +23,40 @@ function ShopService.Start(profileService, animals, passes, remote, notifyFuncti
     requestRemote = remote
     notify = notifyFunction
 
-    requestRemote.OnServerEvent:Connect(function(player, stat)
-        if type(stat) ~= "string" or (stat ~= "Speed" and stat ~= "Strength") then
+    requestRemote.OnServerEvent:Connect(function(player, statName)
+        if statName ~= "Speed" or not profiles.IsLoaded(player) or player:GetAttribute("RebirthInProgress") then
             return
         end
-
-        if not profiles.IsLoaded(player) then
-            return
-        end
-
         local now = os.clock()
-        local last = cooldowns[player] or 0
-
-        if now - last < 0.35 then
+        if now - (cooldowns[player] or 0) < 0.4 then
             return
         end
-
         cooldowns[player] = now
 
         local data = profiles.Get(player)
-        local cost = data and priceFor(stat, data)
-
+        local cost = data and Rules.UpgradePrice("Speed", data, Config)
         if not cost then
-            notify(player, "Este atributo já está no nível máximo.", "Info")
+            notify(player, "Speed is already at the maximum level.", "Info")
             return
         end
-
         if data.Coins < cost then
-            notify(player, "Você precisa de " .. tostring(cost) .. " Moedas.", "Warning")
+            notify(player, "You need " .. tostring(cost) .. " coins for the next speed upgrade.", "Warning")
             return
         end
-
         local spent = profiles.SpendCoins(player, cost)
-
         if not spent then
-            notify(player, "Saldo insuficiente. A compra foi cancelada.", "Warning")
+            notify(player, "The upgrade was cancelled because your balance changed.", "Warning")
             return
         end
-
-        local amount = stat == "Speed" and 1 or 5
-        local passName = stat == "Speed" and "DoubleSpeed" or "DoubleStrength"
-        local multiplier = passService and passService.Has(player, passName)
-            and (stat == "Speed" and Config.Training.DoubleSpeedMultiplier or Config.Training.DoubleStrengthMultiplier) or 1
-        local gained = profiles.AddStat(player, stat, amount * multiplier)
-
-        if not gained then
+        local amount = passService.Has(player, "DoubleSpeed") and Config.Training.DoubleSpeedMultiplier or 1
+        local upgraded = profiles.AddStat(player, "Speed", amount)
+        if not upgraded then
             profiles.AddCoins(player, cost)
-            notify(player, "Falha no upgrade. As moedas foram devolvidas.", "Error")
+            notify(player, "Upgrade failed safely. Your coins were refunded.", "Error")
             return
         end
-
         animalService.ApplyMovement(player)
-
-        local statLabel = stat == "Speed" and "Velocidade" or "Força"
-        notify(player, statLabel .. " aprimorada por " .. tostring(cost) .. " Moedas.", "Success")
+        notify(player, "Speed upgraded for " .. tostring(cost) .. " coins.", "Success")
     end)
 end
 

@@ -57,12 +57,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build
-          rojo build default.project.json --output build/RoubeUmAnimal.rbxl
-          test -s build/RoubeUmAnimal.rbxl
-          stat -c "%s bytes" build/RoubeUmAnimal.rbxl
+          rojo build default.project.json --output build/StealAnAnimal.rbxl
+          test -s build/StealAnAnimal.rbxl
+          stat -c "%s bytes" build/StealAnAnimal.rbxl
       - name: Upload place artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RoubeUmAnimal
-          path: build/RoubeUmAnimal.rbxl
+          name: StealAnAnimal
+          path: build/StealAnAnimal.rbxl
           if-no-files-found: error

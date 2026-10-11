@@ -14,20 +14,34 @@ local guardiansFolder
 local basesFolder
 local trainingFolder
 local basesByUserId = {}
+local displaySlotsByUserId = {}
 local allTrainingParts = {}
 
+local BIOME_CENTERS = {
+    Meadow = 160,
+    Forest = 315,
+    Wetlands = 470,
+    Snow = 625,
+    Savannah = 780,
+    Volcano = 935,
+}
+
 local COLORS = {
-    Grass = Color3.fromRGB(116, 196, 105),
-    FarmGrass = Color3.fromRGB(152, 220, 129),
-    FarmAccent = Color3.fromRGB(255, 221, 131),
-    JungleGrass = Color3.fromRGB(46, 126, 82),
-    JungleAccent = Color3.fromRGB(84, 219, 168),
-    VolcanoGround = Color3.fromRGB(75, 56, 61),
-    Lava = Color3.fromRGB(255, 89, 29),
-    Wood = Color3.fromRGB(121, 78, 52),
-    Cream = Color3.fromRGB(255, 244, 217),
-    Blue = Color3.fromRGB(73, 182, 255),
-    Green = Color3.fromRGB(65, 220, 145),
+    Cream = Color3.fromRGB(255, 247, 225),
+    Wood = Color3.fromRGB(126, 83, 52),
+    DarkWood = Color3.fromRGB(76, 48, 34),
+    Gold = Color3.fromRGB(255, 205, 89),
+    Meadow = Color3.fromRGB(143, 207, 104),
+    Forest = Color3.fromRGB(57, 125, 77),
+    Wetlands = Color3.fromRGB(72, 145, 133),
+    Snow = Color3.fromRGB(190, 222, 234),
+    Savannah = Color3.fromRGB(200, 171, 99),
+    Volcano = Color3.fromRGB(72, 55, 62),
+    Green = Color3.fromRGB(75, 207, 112),
+    Blue = Color3.fromRGB(83, 185, 255),
+    Aqua = Color3.fromRGB(78, 222, 220),
+    Lava = Color3.fromRGB(255, 89, 46),
+    Pink = Color3.fromRGB(255, 137, 171),
 }
 
 local function part(parent, name, size, cframe, color, material, shape, canCollide, transparency)
@@ -39,25 +53,23 @@ local function part(parent, name, size, cframe, color, material, shape, canColli
     object.Material = material or Enum.Material.SmoothPlastic
     object.Anchored = true
     object.CanCollide = canCollide ~= false
-    object.CanTouch = true
-    object.CanQuery = true
+    object.CanTouch = canCollide ~= false
+    object.CanQuery = canCollide ~= false
     object.Transparency = transparency or 0
     object.TopSurface = Enum.SurfaceType.Smooth
     object.BottomSurface = Enum.SurfaceType.Smooth
-
     if shape then
         object.Shape = shape
     end
-
     object.Parent = parent
     return object
 end
 
-local function createFolder(parent, name)
-    local folder = Instance.new("Folder")
-    folder.Name = name
-    folder.Parent = parent
-    return folder
+local function folder(parent, name)
+    local object = Instance.new("Folder")
+    object.Name = name
+    object.Parent = parent
+    return object
 end
 
 local function addLight(target, color, brightness, range)
@@ -65,698 +77,596 @@ local function addLight(target, color, brightness, range)
     light.Color = color
     light.Brightness = brightness
     light.Range = range
-    light.Shadows = true
+    light.Shadows = false
     light.Parent = target
     return light
 end
 
-local function createBillboard(parent, text, color, width, height)
+local function addSurfaceLabel(parent, titleText, subtitleText, accent)
     local gui = Instance.new("BillboardGui")
     gui.Name = "WorldLabel"
-    gui.Size = UDim2.fromOffset(width or 240, height or 58)
-    gui.StudsOffset = Vector3.new(0, 4, 0)
+    gui.Size = UDim2.fromOffset(260, 76)
+    gui.StudsOffset = Vector3.new(0, 5, 0)
     gui.AlwaysOnTop = true
-    gui.MaxDistance = 300
+    gui.MaxDistance = 400
     gui.Parent = parent
 
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.fromScale(1, 1)
-    label.BackgroundColor3 = Color3.fromRGB(25, 33, 43)
-    label.BackgroundTransparency = 0.12
-    label.BorderSizePixel = 0
-    label.Font = Enum.Font.GothamBlack
-    label.Text = text
-    label.TextColor3 = color or COLORS.Cream
-    label.TextScaled = true
-    label.TextWrapped = true
-    label.Parent = gui
-
+    local card = Instance.new("Frame")
+    card.Size = UDim2.fromScale(1, 1)
+    card.BackgroundColor3 = Color3.fromRGB(43, 54, 48)
+    card.BackgroundTransparency = 0.08
+    card.BorderSizePixel = 0
+    card.Parent = gui
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
-    corner.Parent = label
-
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = card
     local stroke = Instance.new("UIStroke")
-    stroke.Color = color or COLORS.Cream
+    stroke.Color = accent
     stroke.Thickness = 2
-    stroke.Transparency = 0.2
-    stroke.Parent = label
+    stroke.Parent = card
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new(Color3.fromRGB(53, 76, 59), Color3.fromRGB(37, 49, 46))
+    gradient.Rotation = 90
+    gradient.Parent = card
 
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Size = UDim2.new(1, -14, 0.58, 0)
+    title.Position = UDim2.new(0, 7, 0, 3)
+    title.BackgroundTransparency = 1
+    title.Font = Enum.Font.GothamBlack
+    title.Text = titleText
+    title.TextColor3 = accent
+    title.TextScaled = true
+    title.TextWrapped = true
+    title.Parent = card
+
+    local subtitle = Instance.new("TextLabel")
+    subtitle.Name = "Subtitle"
+    subtitle.Size = UDim2.new(1, -14, 0.32, 0)
+    subtitle.Position = UDim2.new(0, 7, 0.61, 0)
+    subtitle.BackgroundTransparency = 1
+    subtitle.Font = Enum.Font.GothamMedium
+    subtitle.Text = subtitleText
+    subtitle.TextColor3 = COLORS.Cream
+    subtitle.TextScaled = true
+    subtitle.TextWrapped = true
+    subtitle.Parent = card
     return gui
 end
 
-local function createSign(parent, name, position, title, subtitle, accent)
+local function createSign(parent, name, position, titleText, subtitleText, accent)
     local model = Instance.new("Model")
     model.Name = name
     model.Parent = parent
-
     part(model, "Post", Vector3.new(1.2, 7, 1.2), CFrame.new(position + Vector3.new(0, 3.5, 0)), COLORS.Wood, Enum.Material.WoodPlanks)
-    local board = part(model, "Board", Vector3.new(12, 4, 0.8), CFrame.new(position + Vector3.new(0, 7, 0)), Color3.fromRGB(28, 39, 51), Enum.Material.SmoothPlastic)
-    local face = Instance.new("SurfaceGui")
-    face.Face = Enum.NormalId.Front
-    face.CanvasSize = Vector2.new(900, 300)
-    face.Parent = board
-
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, -20, 0.62, 0)
-    titleLabel.Position = UDim2.new(0, 10, 0, 0)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Font = Enum.Font.GothamBlack
-    titleLabel.Text = title
-    titleLabel.TextColor3 = accent or COLORS.Cream
-    titleLabel.TextScaled = true
-    titleLabel.Parent = face
-
-    local subtitleLabel = Instance.new("TextLabel")
-    subtitleLabel.Size = UDim2.new(1, -20, 0.28, 0)
-    subtitleLabel.Position = UDim2.new(0, 10, 0.66, 0)
-    subtitleLabel.BackgroundTransparency = 1
-    subtitleLabel.Font = Enum.Font.GothamMedium
-    subtitleLabel.Text = subtitle
-    subtitleLabel.TextColor3 = COLORS.Cream
-    subtitleLabel.TextScaled = true
-    subtitleLabel.Parent = face
-
+    local board = part(model, "Board", Vector3.new(14, 4.5, 0.9), CFrame.new(position + Vector3.new(0, 7.2, 0)), Color3.fromRGB(43, 54, 48), Enum.Material.SmoothPlastic)
+    addSurfaceLabel(board, titleText, subtitleText, accent)
     return model
 end
 
-local function createTree(parent, position, trunkColor, leafColor, scale)
+local function createTree(parent, position, trunkColor, leafColor, scale, shapeName)
     scale = scale or 1
-
     local model = Instance.new("Model")
-    model.Name = "StylizedTree"
+    model.Name = shapeName or "LowPolyTree"
     model.Parent = parent
-
-    part(
-        model,
-        "Trunk",
-        Vector3.new(2 * scale, 7 * scale, 2 * scale),
-        CFrame.new(position + Vector3.new(0, 3.5 * scale, 0)),
-        trunkColor or COLORS.Wood,
-        Enum.Material.Wood
-    )
-
-    for index, offset in ipairs({
-        Vector3.new(0, 7.4, 0),
-        Vector3.new(-1.5, 6.4, 0.3),
-        Vector3.new(1.4, 6.5, -0.2),
-        Vector3.new(0.2, 8.8, 0),
-    }) do
-        part(
-            model,
-            "Canopy_" .. index,
-            Vector3.new(5.5 * scale, 5 * scale, 5.5 * scale),
-            CFrame.new(position + offset * scale),
-            leafColor or COLORS.Grass,
-            Enum.Material.SmoothPlastic,
-            Enum.PartType.Ball,
-            false
-        )
+    part(model, "Trunk", Vector3.new(2 * scale, 7 * scale, 2 * scale), CFrame.new(position + Vector3.new(0, 3.5 * scale, 0)), trunkColor or COLORS.Wood, Enum.Material.Wood)
+    local canopyShape = shapeName == "PineTree" and Enum.PartType.Ball or Enum.PartType.Ball
+    if shapeName == "PineTree" then
+        for index = 1, 3 do
+            part(model, "Needles" .. index, Vector3.new((7 - index) * scale, 4 * scale, (7 - index) * scale), CFrame.new(position + Vector3.new(0, (6 + index * 2) * scale, 0)), leafColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+        end
+    elseif shapeName == "Acacia" then
+        part(model, "Canopy", Vector3.new(10 * scale, 3 * scale, 7 * scale), CFrame.new(position + Vector3.new(0, 7.8 * scale, 0)), leafColor, Enum.Material.SmoothPlastic, canopyShape, false)
+        part(model, "CanopyLeft", Vector3.new(5 * scale, 3 * scale, 5 * scale), CFrame.new(position + Vector3.new(-3 * scale, 7.6 * scale, 0)), leafColor, Enum.Material.SmoothPlastic, canopyShape, false)
+        part(model, "CanopyRight", Vector3.new(5 * scale, 3 * scale, 5 * scale), CFrame.new(position + Vector3.new(3 * scale, 7.6 * scale, 0)), leafColor, Enum.Material.SmoothPlastic, canopyShape, false)
+    else
+        part(model, "CanopyA", Vector3.new(6 * scale, 5 * scale, 6 * scale), CFrame.new(position + Vector3.new(0, 7 * scale, 0)), leafColor, Enum.Material.SmoothPlastic, canopyShape, false)
+        part(model, "CanopyB", Vector3.new(4.5 * scale, 4.5 * scale, 4.5 * scale), CFrame.new(position + Vector3.new(-2 * scale, 6 * scale, 1 * scale)), leafColor, Enum.Material.SmoothPlastic, canopyShape, false)
+        part(model, "CanopyC", Vector3.new(4.5 * scale, 4.5 * scale, 4.5 * scale), CFrame.new(position + Vector3.new(2 * scale, 6.2 * scale, -1 * scale)), leafColor, Enum.Material.SmoothPlastic, canopyShape, false)
     end
-
     return model
 end
 
 local function createRock(parent, position, size, color, rotation)
-    local rock = part(
-        parent,
-        "StylizedRock",
-        size,
-        CFrame.new(position) * CFrame.Angles(rotation.X, rotation.Y, rotation.Z),
-        color,
-        Enum.Material.Slate,
-        Enum.PartType.Ball,
-        true
-    )
-
+    local rock = part(parent, "LowPolyRock", size, CFrame.new(position) * CFrame.Angles(rotation.X, rotation.Y, rotation.Z), color, Enum.Material.Slate, Enum.PartType.Ball, false)
     rock.CanTouch = false
+    rock.CanQuery = false
     return rock
-end
-
-local function createAnimalPart(model, name, size, position, color, shape, material)
-    local object = part(
-        model,
-        name,
-        size,
-        CFrame.new(position),
-        color,
-        material or Enum.Material.SmoothPlastic,
-        shape or Enum.PartType.Ball,
-        true
-    )
-    object.Anchored = true
-    object.CanCollide = false
-    object.CanTouch = false
-    object.CanQuery = false
-    object.Massless = true
-    return object
-end
-
-local function makeAnimal(speciesId, spawnCFrame)
-    local spec = Catalog.Get(speciesId)
-
-    if not spec then
-        return nil
-    end
-
-    local model = Instance.new("Model")
-    model.Name = spec.DisplayName:gsub("%s+", "") .. "_" .. speciesId
-    model:SetAttribute("AnimalId", spec.Id)
-    model:SetAttribute("DisplayName", spec.DisplayName)
-    model:SetAttribute("Weight", spec.Weight)
-    model:SetAttribute("RequiredStrength", spec.RequiredStrength)
-    model:SetAttribute("BaseValue", spec.BaseValue)
-    model:SetAttribute("Rarity", spec.Rarity)
-    model:SetAttribute("Biome", spec.Biome)
-    model:SetAttribute("RespawnSeconds", spec.RespawnSeconds)
-
-    local origin = spawnCFrame.Position
-    local facing = spawnCFrame.Rotation
-    local bodySize = spec.Shape == "Bird" and Vector3.new(1.8, 1.8, 1.6) or Vector3.new(2.5, 1.65, 1.6)
-    local body = createAnimalPart(model, "Body", bodySize, origin + Vector3.new(0, 1.4, 0), spec.Color)
-    model.PrimaryPart = body
-
-    local headSize = spec.Shape == "Bird" and Vector3.new(1.05, 1.05, 1.05) or Vector3.new(1.1, 1.05, 1.1)
-    local head = createAnimalPart(model, "Head", headSize, origin + Vector3.new(0, 1.85, -0.95), spec.Color)
-    createAnimalPart(model, "Eye_L", Vector3.new(0.16, 0.16, 0.1), origin + Vector3.new(-0.25, 1.98, -1.43), Color3.fromRGB(26, 31, 37))
-    createAnimalPart(model, "Eye_R", Vector3.new(0.16, 0.16, 0.1), origin + Vector3.new(0.25, 1.98, -1.43), Color3.fromRGB(26, 31, 37))
-
-    if spec.Shape == "Bird" then
-        createAnimalPart(model, "Beak", Vector3.new(0.45, 0.3, 0.5), origin + Vector3.new(0, 1.7, -1.55), spec.Accent, Enum.PartType.Ball)
-        createAnimalPart(model, "Wing_L", Vector3.new(0.5, 1.0, 0.9), origin + Vector3.new(-0.85, 1.42, -0.05), spec.Accent)
-        createAnimalPart(model, "Wing_R", Vector3.new(0.5, 1.0, 0.9), origin + Vector3.new(0.85, 1.42, -0.05), spec.Accent)
-        createAnimalPart(model, "Crest", Vector3.new(0.45, 0.45, 0.35), origin + Vector3.new(0, 2.45, -0.9), spec.Accent)
-    else
-        createAnimalPart(model, "Muzzle", Vector3.new(0.52, 0.42, 0.5), origin + Vector3.new(0, 1.65, -1.45), spec.Accent)
-        createAnimalPart(model, "Ear_L", Vector3.new(0.32, 0.5, 0.25), origin + Vector3.new(-0.4, 2.35, -0.9), spec.Accent)
-        createAnimalPart(model, "Ear_R", Vector3.new(0.32, 0.5, 0.25), origin + Vector3.new(0.4, 2.35, -0.9), spec.Accent)
-
-        for _, offset in ipairs({
-            Vector3.new(-0.75, 0.55, -0.45),
-            Vector3.new(0.75, 0.55, -0.45),
-            Vector3.new(-0.75, 0.55, 0.45),
-            Vector3.new(0.75, 0.55, 0.45),
-        }) do
-            createAnimalPart(model, "Leg", Vector3.new(0.48, 0.75, 0.48), origin + offset, spec.Accent, Enum.PartType.Ball)
-        end
-
-        createAnimalPart(model, "Tail", Vector3.new(0.45, 0.45, 0.65), origin + Vector3.new(0, 1.35, 0.95), spec.Accent)
-    end
-
-    model:PivotTo(CFrame.new(origin + Vector3.new(0, 1.4, 0)) * facing)
-    model.Parent = animalsFolder
-    return model
-end
-
-local function createR6Guardian(position, name, accent, visionRange)
-    local model = Instance.new("Model")
-    model.Name = name
-    model:SetAttribute("VisionRange", visionRange or Config.Guardian.VisionRange)
-    model:SetAttribute("PatrolRadius", Config.Guardian.PatrolRadius)
-    model:SetAttribute("PatrolSpeed", Config.Guardian.PatrolSpeed)
-    model:SetAttribute("ChaseSpeed", Config.Guardian.ChaseSpeed)
-    model:SetAttribute("CatchDistance", Config.Guardian.CatchDistance)
-
-    local rootPart = part(model, "HumanoidRootPart", Vector3.new(2, 2, 1), CFrame.new(position + Vector3.new(0, 3, 0)), Color3.new(1, 1, 1), Enum.Material.SmoothPlastic, nil, false, 1)
-    rootPart.Anchored = false
-    rootPart.CanTouch = false
-
-    local torso = part(model, "Torso", Vector3.new(2, 2, 1), CFrame.new(position + Vector3.new(0, 3, 0)), accent, Enum.Material.SmoothPlastic)
-    local head = part(model, "Head", Vector3.new(2, 1, 1), CFrame.new(position + Vector3.new(0, 4.5, 0)), Color3.fromRGB(242, 205, 164), Enum.Material.SmoothPlastic)
-    local leftArm = part(model, "Left Arm", Vector3.new(1, 2, 1), CFrame.new(position + Vector3.new(-1.5, 3, 0)), accent, Enum.Material.SmoothPlastic)
-    local rightArm = part(model, "Right Arm", Vector3.new(1, 2, 1), CFrame.new(position + Vector3.new(1.5, 3, 0)), accent, Enum.Material.SmoothPlastic)
-    local leftLeg = part(model, "Left Leg", Vector3.new(1, 2, 1), CFrame.new(position + Vector3.new(-0.5, 1, 0)), Color3.fromRGB(37, 46, 59), Enum.Material.SmoothPlastic)
-    local rightLeg = part(model, "Right Leg", Vector3.new(1, 2, 1), CFrame.new(position + Vector3.new(0.5, 1, 0)), Color3.fromRGB(37, 46, 59), Enum.Material.SmoothPlastic)
-
-    for _, bodyPart in ipairs({ torso, head, leftArm, rightArm, leftLeg, rightLeg }) do
-        bodyPart.Anchored = false
-    end
-
-    local function joint(name, parent, part0, part1, c0, c1)
-        local motor = Instance.new("Motor6D")
-        motor.Name = name
-        motor.Part0 = part0
-        motor.Part1 = part1
-        motor.C0 = c0
-        motor.C1 = c1
-        motor.Parent = parent
-    end
-
-    joint("RootJoint", rootPart, rootPart, torso, CFrame.new(), CFrame.new())
-    joint("Neck", torso, torso, head, CFrame.new(0, 1, 0), CFrame.new(0, -0.5, 0))
-    joint("Left Shoulder", torso, torso, leftArm, CFrame.new(-1, 0.5, 0), CFrame.new(0.5, 0.5, 0))
-    joint("Right Shoulder", torso, torso, rightArm, CFrame.new(1, 0.5, 0), CFrame.new(-0.5, 0.5, 0))
-    joint("Left Hip", torso, torso, leftLeg, CFrame.new(-1, -1, 0), CFrame.new(-0.5, 1, 0))
-    joint("Right Hip", torso, torso, rightLeg, CFrame.new(1, -1, 0), CFrame.new(0.5, 1, 0))
-
-    local badge = part(model, "GuardianBadge", Vector3.new(0.45, 0.45, 0.15), CFrame.new(position + Vector3.new(0, 3.25, -0.57)), COLORS.FarmAccent, Enum.Material.Neon, Enum.PartType.Ball, false)
-    badge.Anchored = false
-    local badgeWeld = Instance.new("WeldConstraint")
-    badgeWeld.Part0 = torso
-    badgeWeld.Part1 = badge
-    badgeWeld.Parent = badge
-
-    local humanoid = Instance.new("Humanoid")
-    humanoid.Name = "Humanoid"
-    humanoid.DisplayName = "Guardião"
-    humanoid.MaxHealth = 100
-    humanoid.Health = 100
-    humanoid.WalkSpeed = Config.Guardian.PatrolSpeed
-    humanoid.RequiresNeck = true
-    humanoid.Parent = model
-
-    model.PrimaryPart = rootPart
-    model.Parent = guardiansFolder
-    pcall(function()
-        rootPart:SetNetworkOwner(nil)
-    end)
-
-    return model
-end
-
-local function setupLighting()
-    pcall(function()
-        Lighting.Technology = Enum.Technology.Future
-    end)
-    Lighting.ClockTime = 14
-    Lighting.Brightness = 2.1
-    Lighting.ExposureCompensation = 0.05
-    Lighting.GlobalShadows = true
-    Lighting.EnvironmentDiffuseScale = 0.4
-    Lighting.EnvironmentSpecularScale = 0.65
-    Lighting.Ambient = Color3.fromRGB(115, 126, 150)
-    Lighting.OutdoorAmbient = Color3.fromRGB(163, 185, 194)
-    Lighting.FogColor = Color3.fromRGB(199, 225, 236)
-    Lighting.FogStart = 700
-    Lighting.FogEnd = 2000
-
-    local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
-    atmosphere.Name = "RoubeAtmosphere"
-    atmosphere.Color = Color3.fromRGB(199, 225, 245)
-    atmosphere.Decay = Color3.fromRGB(116, 156, 188)
-    atmosphere.Density = 0.16
-    atmosphere.Offset = 0.1
-    atmosphere.Glare = 0.18
-    atmosphere.Haze = 0.85
-    atmosphere.Parent = Lighting
-
-    local correction = Lighting:FindFirstChildOfClass("ColorCorrectionEffect") or Instance.new("ColorCorrectionEffect")
-    correction.Name = "RoubeColorCorrection"
-    correction.Brightness = 0.02
-    correction.Contrast = 0.08
-    correction.Saturation = 0.14
-    correction.TintColor = Color3.fromRGB(255, 247, 232)
-    correction.Parent = Lighting
-
-    local bloom = Lighting:FindFirstChildOfClass("BloomEffect") or Instance.new("BloomEffect")
-    bloom.Name = "RoubeBloom"
-    bloom.Intensity = 0.22
-    bloom.Size = 28
-    bloom.Threshold = 1.05
-    bloom.Parent = Lighting
-
-    local rays = Lighting:FindFirstChildOfClass("SunRaysEffect") or Instance.new("SunRaysEffect")
-    rays.Name = "RoubeSunRays"
-    rays.Intensity = 0.075
-    rays.Spread = 0.72
-    rays.Parent = Lighting
-
-    local clouds = Terrain:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
-    clouds.Name = "RoubeSoftClouds"
-    clouds.Cover = 0.34
-    clouds.Density = 0.28
-    clouds.Color = Color3.fromRGB(245, 249, 255)
-    clouds.Parent = Terrain
-end
-
-local function createBiome(parent, biomeName, center, size, groundColor, material, signTitle, subtitle, accent)
-    part(parent, biomeName .. "Ground", size, CFrame.new(center), groundColor, material)
-    createSign(parent, biomeName .. "Sign", center + Vector3.new(0, 1, -size.Z / 2 + 12), signTitle, subtitle, accent)
-end
-
-local function createGateway(name, center, accent, subtitle)
-    local model = Instance.new("Model")
-    model.Name = name
-    model.Parent = mapFolder
-    part(model, "PillarLeft", Vector3.new(3, 12, 3), CFrame.new(center + Vector3.new(0, 6, -13)), Color3.fromRGB(42, 53, 64), Enum.Material.Slate)
-    part(model, "PillarRight", Vector3.new(3, 12, 3), CFrame.new(center + Vector3.new(0, 6, 13)), Color3.fromRGB(42, 53, 64), Enum.Material.Slate)
-    part(model, "PillarCapLeft", Vector3.new(3.8, 1.2, 3.8), CFrame.new(center + Vector3.new(0, 12.4, -13)), accent, Enum.Material.Neon, nil, false)
-    part(model, "PillarCapRight", Vector3.new(3.8, 1.2, 3.8), CFrame.new(center + Vector3.new(0, 12.4, 13)), accent, Enum.Material.Neon, nil, false)
-    local beam = part(model, "Header", Vector3.new(3, 2.2, 29), CFrame.new(center + Vector3.new(0, 12, 0)), accent, Enum.Material.SmoothPlastic, nil, false)
-    createBillboard(beam, name:gsub("_", " ") .. "\n" .. subtitle, accent, 230, 62)
-    local leftLight = part(model, "LeftBeacon", Vector3.new(1.2, 1.2, 1.2), CFrame.new(center + Vector3.new(0, 13.6, -13)), accent, Enum.Material.Neon, Enum.PartType.Ball, false)
-    local rightLight = part(model, "RightBeacon", Vector3.new(1.2, 1.2, 1.2), CFrame.new(center + Vector3.new(0, 13.6, 13)), accent, Enum.Material.Neon, Enum.PartType.Ball, false)
-    addLight(leftLight, accent, 0.8, 16)
-    addLight(rightLight, accent, 0.8, 16)
-    return model
-end
-
-local function createLantern(parent, position, accent)
-    local model = Instance.new("Model")
-    model.Name = "PathLantern"
-    model.Parent = parent
-    part(model, "Post", Vector3.new(0.65, 5, 0.65), CFrame.new(position + Vector3.new(0, 2.5, 0)), COLORS.Wood, Enum.Material.Wood)
-    part(model, "Foot", Vector3.new(1.8, 0.45, 1.8), CFrame.new(position + Vector3.new(0, 0.25, 0)), COLORS.Cream, Enum.Material.Slate)
-    local lamp = part(model, "Lamp", Vector3.new(1.3, 1.3, 1.3), CFrame.new(position + Vector3.new(0, 5.3, 0)), accent, Enum.Material.Neon, Enum.PartType.Ball, false)
-    addLight(lamp, accent, 0.65, 13)
-    return model
 end
 
 local function createFlowerPatch(parent, center, count, palette)
     for index = 1, count do
         local angle = index * 2.399963
-        local radius = 2 + (index % 4) * 1.15
+        local radius = 2 + (index % 4) * 1.25
         local position = center + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
-        local flower = palette[(index - 1) % #palette + 1]
-        part(parent, "FlowerStem", Vector3.new(0.18, 1.1, 0.18), CFrame.new(position + Vector3.new(0, 0.55, 0)), Color3.fromRGB(55, 142, 76), Enum.Material.Grass, nil, false)
-        part(parent, "FlowerHead", Vector3.new(0.85, 0.65, 0.85), CFrame.new(position + Vector3.new(0, 1.18, 0)), flower, Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
-        part(parent, "FlowerCenter", Vector3.new(0.28, 0.28, 0.28), CFrame.new(position + Vector3.new(0, 1.44, 0)), Color3.fromRGB(255, 224, 107), Enum.Material.Neon, Enum.PartType.Ball, false)
+        part(parent, "FlowerStem", Vector3.new(0.16, 0.9, 0.16), CFrame.new(position + Vector3.new(0, 0.45, 0)), Color3.fromRGB(63, 140, 67), Enum.Material.Grass, nil, false)
+        part(parent, "FlowerPetal", Vector3.new(0.72, 0.54, 0.72), CFrame.new(position + Vector3.new(0, 0.98, 0)), palette[(index - 1) % #palette + 1], Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+        part(parent, "FlowerHeart", Vector3.new(0.22, 0.22, 0.22), CFrame.new(position + Vector3.new(0, 1.22, 0)), COLORS.Gold, Enum.Material.Neon, Enum.PartType.Ball, false)
+    end
+end
+
+local function createReeds(parent, position, scale, color)
+    for index = 1, 4 do
+        local offset = Vector3.new((index - 2.5) * 0.65, 0, (index % 2 == 0) and 0.5 or -0.5)
+        part(parent, "Reed", Vector3.new(0.22, (3 + index % 2) * scale, 0.22), CFrame.new(position + offset + Vector3.new(0, (1.5 + index % 2) * scale, 0)), color or Color3.fromRGB(76, 140, 91), Enum.Material.Grass, nil, false)
     end
 end
 
 local function createMushroom(parent, position, capColor, scale)
     scale = scale or 1
     local model = Instance.new("Model")
-    model.Name = "GiantMushroom"
+    model.Name = "ForestMushroom"
     model.Parent = parent
-    part(model, "Stem", Vector3.new(1.5 * scale, 2.8 * scale, 1.5 * scale), CFrame.new(position + Vector3.new(0, 1.4 * scale, 0)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(230, 219, 185), Enum.Material.SmoothPlastic, Enum.PartType.Cylinder, false)
-    part(model, "Cap", Vector3.new(4.5 * scale, 1.5 * scale, 4.5 * scale), CFrame.new(position + Vector3.new(0, 3.1 * scale, 0)), capColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
-    part(model, "Spot", Vector3.new(0.65 * scale, 0.35 * scale, 0.65 * scale), CFrame.new(position + Vector3.new(-0.8 * scale, 3.65 * scale, -0.8 * scale)), Color3.fromRGB(255, 245, 222), Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+    part(model, "Stem", Vector3.new(1.4 * scale, 2.6 * scale, 1.4 * scale), CFrame.new(position + Vector3.new(0, 1.3 * scale, 0)), Color3.fromRGB(239, 226, 194), Enum.Material.SmoothPlastic, nil, false)
+    part(model, "Cap", Vector3.new(4.2 * scale, 1.7 * scale, 4.2 * scale), CFrame.new(position + Vector3.new(0, 2.8 * scale, 0)), capColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+    part(model, "Spot", Vector3.new(0.7 * scale, 0.3 * scale, 0.7 * scale), CFrame.new(position + Vector3.new(-0.6 * scale, 3.35 * scale, -0.7 * scale)), COLORS.Cream, Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+end
+
+local function createCrystal(parent, position, color, scale)
+    scale = scale or 1
+    local model = Instance.new("Model")
+    model.Name = "CrystalCluster"
+    model.Parent = parent
+    for index, entry in ipairs({
+        { Vector3.new(-1.2, 1.5, 0), Vector3.new(1.1, 3 * scale, 1.1), -0.14 },
+        { Vector3.new(0.1, 2, 0.2), Vector3.new(1.3, 4 * scale, 1.3), 0.09 },
+        { Vector3.new(1.5, 1.15, -0.3), Vector3.new(0.9, 2.3 * scale, 0.9), 0.18 },
+    }) do
+        part(model, "Crystal", entry[2], CFrame.new(position + Vector3.new(entry[1].X, entry[1].Y * scale, entry[1].Z)) * CFrame.Angles(0, 0, entry[3]), color, Enum.Material.Neon, nil, false, 0.1)
+    end
+end
+
+local function makeAnimalPart(model, name, size, position, color, shape)
+    local object = part(model, name, size, CFrame.new(position), color, Enum.Material.SmoothPlastic, shape or Enum.PartType.Ball, false)
+    object.CanTouch = false
+    object.CanQuery = false
+    object.Massless = true
+    return object
+end
+
+local function makeAnimalModel(speciesId, spawnCFrame, parent, includePrompt)
+    local spec = Catalog.Get(speciesId)
+    if not spec then
+        return nil
+    end
+
+    local model = Instance.new("Model")
+    model.Name = "Animal_" .. speciesId
+    model:SetAttribute("AnimalId", spec.Id)
+    model:SetAttribute("DisplayName", spec.DisplayName)
+    model:SetAttribute("Weight", spec.Weight)
+    model:SetAttribute("BaseValue", spec.BaseValue)
+    model:SetAttribute("IncomePerSecond", spec.IncomePerSecond)
+    model:SetAttribute("Rarity", spec.Rarity)
+    model:SetAttribute("Biome", spec.Biome)
+    model:SetAttribute("RespawnSeconds", spec.RespawnSeconds)
+
+    local origin = spawnCFrame.Position
+    local bird = spec.Shape == "Bird"
+    local reptile = spec.Shape == "Reptile"
+    local bodySize = bird and Vector3.new(2, 1.8, 1.7) or reptile and Vector3.new(3.4, 1.2, 1.8) or Vector3.new(2.6, 1.8, 1.8)
+    local body = makeAnimalPart(model, "Body", bodySize, origin + Vector3.new(0, 1.4, 0), spec.Color)
+    model.PrimaryPart = body
+
+    local headSize = bird and Vector3.new(1, 1, 1) or reptile and Vector3.new(1.4, 0.8, 1.2) or Vector3.new(1.15, 1.1, 1.1)
+    makeAnimalPart(model, "Head", headSize, origin + Vector3.new(0, 1.8, -1.05), spec.Color)
+    makeAnimalPart(model, "EyeLeft", Vector3.new(0.16, 0.16, 0.1), origin + Vector3.new(-0.24, 1.95, -1.49), Color3.fromRGB(30, 33, 31))
+    makeAnimalPart(model, "EyeRight", Vector3.new(0.16, 0.16, 0.1), origin + Vector3.new(0.24, 1.95, -1.49), Color3.fromRGB(30, 33, 31))
+
+    if bird then
+        makeAnimalPart(model, "Beak", Vector3.new(0.5, 0.32, 0.46), origin + Vector3.new(0, 1.64, -1.65), spec.Accent, Enum.PartType.Ball)
+        makeAnimalPart(model, "WingLeft", Vector3.new(0.5, 1.05, 0.9), origin + Vector3.new(-1, 1.4, 0), spec.Accent)
+        makeAnimalPart(model, "WingRight", Vector3.new(0.5, 1.05, 0.9), origin + Vector3.new(1, 1.4, 0), spec.Accent)
+        makeAnimalPart(model, "Crest", Vector3.new(0.36, 0.45, 0.36), origin + Vector3.new(0, 2.5, -0.75), spec.Accent)
+    else
+        makeAnimalPart(model, "Muzzle", Vector3.new(reptile and 1.1 or 0.56, 0.45, 0.55), origin + Vector3.new(0, 1.55, -1.55), spec.Accent)
+        makeAnimalPart(model, "EarLeft", Vector3.new(0.33, 0.5, 0.3), origin + Vector3.new(-0.42, 2.36, -0.88), spec.Accent)
+        makeAnimalPart(model, "EarRight", Vector3.new(0.33, 0.5, 0.3), origin + Vector3.new(0.42, 2.36, -0.88), spec.Accent)
+        for _, offset in ipairs({
+            Vector3.new(-0.75, 0.56, -0.45),
+            Vector3.new(0.75, 0.56, -0.45),
+            Vector3.new(-0.75, 0.56, 0.45),
+            Vector3.new(0.75, 0.56, 0.45),
+        }) do
+            makeAnimalPart(model, "Leg", Vector3.new(0.42, 0.7, 0.42), origin + offset, spec.Accent, Enum.PartType.Ball)
+        end
+        makeAnimalPart(model, "Tail", Vector3.new(0.45, 0.45, 0.75), origin + Vector3.new(0, 1.3, 0.95), spec.Accent)
+    end
+
+    model:PivotTo(CFrame.new(origin + Vector3.new(0, 1.4, 0)) * spawnCFrame.Rotation)
+    model.Parent = parent or animalsFolder
+
+    if includePrompt then
+        local promptPart = model:FindFirstChild("Head") or model.PrimaryPart
+        local prompt = Instance.new("ProximityPrompt")
+        prompt.Name = "AnimalPrompt"
+        prompt.ActionText = "STEAL"
+        prompt.ObjectText = spec.DisplayName .. "  •  $" .. tostring(spec.IncomePerSecond) .. "/s"
+        prompt.HoldDuration = Config.CaptureHoldDuration
+        prompt.MaxActivationDistance = 11
+        prompt.RequiresLineOfSight = false
+        prompt:SetAttribute("InteractionType", "StealAnimal")
+        prompt.Parent = promptPart
+        addSurfaceLabel(promptPart, spec.DisplayName, "$" .. tostring(spec.IncomePerSecond) .. " per second in your barn", Catalog.BiomeInfo[spec.Biome].Accent)
+    end
+
     return model
 end
 
-local function createCrystalCluster(parent, center, accent)
-    for _, entry in ipairs({
-        { Vector3.new(-1.6, 2.1, 0), Vector3.new(1.5, 4.2, 1.5), -0.14 },
-        { Vector3.new(0, 3.1, 0.8), Vector3.new(1.8, 6.2, 1.8), 0.08 },
-        { Vector3.new(1.8, 1.7, -0.3), Vector3.new(1.3, 3.4, 1.3), 0.18 },
-    }) do
-        part(parent, "ObsidianCrystal", entry[2], CFrame.new(center + entry[1]) * CFrame.Angles(entry[3], 0, entry[3] * -0.7), accent, Enum.Material.Neon, nil, false, 0.08)
+local function createBarnAnimalDisplay(parent, speciesId, position, slotIndex)
+    local model = makeAnimalModel(speciesId, CFrame.new(position + Vector3.new(0, 0.1, 0)), parent, false)
+    if not model then
+        return nil
     end
+    model.Name = "Stored_" .. slotIndex
+    model:SetAttribute("IsBarnDisplay", true)
+    for _, object in ipairs(model:GetDescendants()) do
+        if object:IsA("ProximityPrompt") or object:IsA("BillboardGui") then
+            object:Destroy()
+        elseif object:IsA("BasePart") then
+            object.CanCollide = false
+            object.CanTouch = false
+            object.CanQuery = false
+        end
+    end
+    return model
+end
+
+local function createGuardianBeast(position, name, primaryColor, accentColor, scale, visionRange, kind)
+    local model = Instance.new("Model")
+    model.Name = name
+    model:SetAttribute("GuardianType", kind or "ForestBeast")
+    model:SetAttribute("VisionRange", visionRange or Config.Guardian.VisionRange)
+    model:SetAttribute("PatrolRadius", Config.Guardian.PatrolRadius)
+    model:SetAttribute("PatrolSpeed", Config.Guardian.PatrolSpeed)
+    model:SetAttribute("ChaseSpeed", Config.Guardian.ChaseSpeed)
+    model:SetAttribute("CatchDistance", Config.Guardian.CatchDistance)
+    model:SetAttribute("IsGiantAnimal", true)
+
+    local rootPart = part(model, "HumanoidRootPart", Vector3.new(3.2, 3.2, 4.2) * scale, CFrame.new(position + Vector3.new(0, 3.2 * scale, 0)), Color3.new(1, 1, 1), Enum.Material.SmoothPlastic, nil, false, 1)
+    rootPart.Anchored = false
+    rootPart.CanCollide = false
+    rootPart.CanTouch = false
+
+    local body = part(model, "BeastTorso", Vector3.new(7.2, 4.5, 10.5) * scale, CFrame.new(position + Vector3.new(0, 3.25 * scale, 1.2 * scale)), primaryColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+    local head = part(model, "BeastHead", Vector3.new(5.6, 4.9, 4.6) * scale, CFrame.new(position + Vector3.new(0, 4.2 * scale, -5.2 * scale)), primaryColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+    local muzzle = part(model, "BeastMuzzle", Vector3.new(3.5, 2.2, 2.8) * scale, CFrame.new(position + Vector3.new(0, 3.45 * scale, -7.5 * scale)), accentColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+    local eyeLeft = part(model, "BeastEyeLeft", Vector3.new(0.6, 0.6, 0.28) * scale, CFrame.new(position + Vector3.new(-1.15 * scale, 4.7 * scale, -7.1 * scale)), Color3.fromRGB(255, 221, 100), Enum.Material.Neon, Enum.PartType.Ball, false)
+    local eyeRight = part(model, "BeastEyeRight", Vector3.new(0.6, 0.6, 0.28) * scale, CFrame.new(position + Vector3.new(1.15 * scale, 4.7 * scale, -7.1 * scale)), Color3.fromRGB(255, 221, 100), Enum.Material.Neon, Enum.PartType.Ball, false)
+    local earLeft = part(model, "BeastEarLeft", Vector3.new(1.6, 2.5, 1.5) * scale, CFrame.new(position + Vector3.new(-1.8 * scale, 6.2 * scale, -5.4 * scale)), accentColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+    local earRight = part(model, "BeastEarRight", Vector3.new(1.6, 2.5, 1.5) * scale, CFrame.new(position + Vector3.new(1.8 * scale, 6.2 * scale, -5.4 * scale)), accentColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+
+    local legs = {}
+    for _, offset in ipairs({
+        Vector3.new(-2.2, 1.1, -2.6),
+        Vector3.new(2.2, 1.1, -2.6),
+        Vector3.new(-2.2, 1.1, 4.2),
+        Vector3.new(2.2, 1.1, 4.2),
+    }) do
+        local leg = part(model, "BeastLeg", Vector3.new(1.7, 3.1, 1.8) * scale, CFrame.new(position + Vector3.new(offset.X * scale, offset.Y * scale, offset.Z * scale)), primaryColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+        table.insert(legs, leg)
+    end
+    local tail = part(model, "BeastTail", Vector3.new(1.2, 1.2, 4.8) * scale, CFrame.new(position + Vector3.new(0, 3.6 * scale, 7.1 * scale)) * CFrame.Angles(math.rad(12), 0, 0), accentColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+    local tusks = {}
+    for _, side in ipairs({ -1, 1 }) do
+        local tusk = part(model, "BeastTusks", Vector3.new(0.65, 2.5, 0.65) * scale, CFrame.new(position + Vector3.new(side * 1.45 * scale, 2.5 * scale, -7.3 * scale)) * CFrame.Angles(math.rad(-18), 0, side * math.rad(12)), Color3.fromRGB(255, 242, 213), Enum.Material.SmoothPlastic, Enum.PartType.Ball, false)
+        table.insert(tusks, tusk)
+    end
+
+    model.PrimaryPart = rootPart
+    local welded = { body, head, muzzle, eyeLeft, eyeRight, earLeft, earRight, tail }
+    for _, leg in ipairs(legs) do
+        table.insert(welded, leg)
+    end
+    for _, tusk in ipairs(tusks) do
+        table.insert(welded, tusk)
+    end
+
+    for _, bodyPart in ipairs(welded) do
+        bodyPart.Anchored = false
+        bodyPart.Massless = true
+        if bodyPart ~= body then
+            bodyPart.CanCollide = false
+            bodyPart.CanTouch = false
+        end
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = rootPart
+        weld.Part1 = bodyPart
+        weld.Parent = rootPart
+    end
+
+    local humanoid = Instance.new("Humanoid")
+    humanoid.Name = "Humanoid"
+    humanoid.DisplayName = name:gsub("_", " ")
+    humanoid.MaxHealth = 1000
+    humanoid.Health = 1000
+    humanoid.WalkSpeed = Config.Guardian.PatrolSpeed
+    humanoid.RequiresNeck = false
+    humanoid.Parent = model
+    model.Parent = guardiansFolder
+
+    pcall(function()
+        rootPart:SetNetworkOwner(nil)
+    end)
+    addSurfaceLabel(head, "GIANT GUARDIAN", "Return home with your animal!", accentColor)
+    return model
+end
+
+local function createGateway(name, center, accent, subtitle)
+    local model = Instance.new("Model")
+    model.Name = name
+    model.Parent = mapFolder
+    part(model, "PillarLeft", Vector3.new(3, 12, 3), CFrame.new(center + Vector3.new(0, 6, -14)), Color3.fromRGB(59, 67, 60), Enum.Material.Slate)
+    part(model, "PillarRight", Vector3.new(3, 12, 3), CFrame.new(center + Vector3.new(0, 6, 14)), Color3.fromRGB(59, 67, 60), Enum.Material.Slate)
+    part(model, "LeftEmblem", Vector3.new(2.1, 2.1, 1.3), CFrame.new(center + Vector3.new(0, 10.8, -14)), accent, Enum.Material.Neon, Enum.PartType.Ball, false)
+    part(model, "RightEmblem", Vector3.new(2.1, 2.1, 1.3), CFrame.new(center + Vector3.new(0, 10.8, 14)), accent, Enum.Material.Neon, Enum.PartType.Ball, false)
+    local beam = part(model, "Header", Vector3.new(2.6, 2, 31), CFrame.new(center + Vector3.new(0, 11.1, 0)), accent, Enum.Material.SmoothPlastic, nil, false)
+    addSurfaceLabel(beam, name:gsub("_", " "), subtitle, accent)
+    addLight(model.LeftEmblem, accent, 1.1, 20)
+    addLight(model.RightEmblem, accent, 1.1, 20)
+end
+
+local function createZoneFloor(biomeName, centerX, color, material, title, subtitle, accent)
+    part(mapFolder, biomeName .. "Ground", Vector3.new(140, 2, 136), CFrame.new(centerX, -1, 0), color, material)
+    createSign(mapFolder, biomeName .. "Sign", Vector3.new(centerX, 0, -55), title, subtitle, accent)
+end
+
+local function createBarn(parent, position, index)
+    local barn = Instance.new("Model")
+    barn.Name = "Barn"
+    barn.Parent = parent
+    part(barn, "Foundation", Vector3.new(20, 1, 16), CFrame.new(position + Vector3.new(0, 0.5, 0)), COLORS.Cream, Enum.Material.Slate)
+    part(barn, "BackWall", Vector3.new(18, 10, 0.8), CFrame.new(position + Vector3.new(0, 5.5, 7.2)), Color3.fromRGB(174, 67, 52), Enum.Material.WoodPlanks)
+    part(barn, "SideLeft", Vector3.new(0.8, 10, 14), CFrame.new(position + Vector3.new(-9.2, 5.5, 0)), Color3.fromRGB(190, 75, 57), Enum.Material.WoodPlanks)
+    part(barn, "SideRight", Vector3.new(0.8, 10, 14), CFrame.new(position + Vector3.new(9.2, 5.5, 0)), Color3.fromRGB(190, 75, 57), Enum.Material.WoodPlanks)
+    part(barn, "FrontWallLeft", Vector3.new(5.5, 10, 0.8), CFrame.new(position + Vector3.new(-6.2, 5.5, -7.2)), Color3.fromRGB(190, 75, 57), Enum.Material.WoodPlanks)
+    part(barn, "FrontWallRight", Vector3.new(5.5, 10, 0.8), CFrame.new(position + Vector3.new(6.2, 5.5, -7.2)), Color3.fromRGB(190, 75, 57), Enum.Material.WoodPlanks)
+    part(barn, "DoorTop", Vector3.new(6.5, 2, 0.8), CFrame.new(position + Vector3.new(0, 9.5, -7.2)), Color3.fromRGB(143, 48, 42), Enum.Material.WoodPlanks)
+    part(barn, "RoofLeft", Vector3.new(11, 1.2, 18), CFrame.new(position + Vector3.new(-4, 11, 0)) * CFrame.Angles(0, 0, math.rad(-16)), Color3.fromRGB(103, 46, 43), Enum.Material.Slate)
+    part(barn, "RoofRight", Vector3.new(11, 1.2, 18), CFrame.new(position + Vector3.new(4, 11, 0)) * CFrame.Angles(0, 0, math.rad(16)), Color3.fromRGB(124, 51, 45), Enum.Material.Slate)
+    part(barn, "Door", Vector3.new(5.7, 7.8, 0.35), CFrame.new(position + Vector3.new(0, 4.2, -7.65)), Color3.fromRGB(111, 60, 39), Enum.Material.WoodPlanks)
+    part(barn, "DoorSlatLeft", Vector3.new(0.3, 7.1, 0.2), CFrame.new(position + Vector3.new(-1.4, 4.2, -7.85)), COLORS.Cream, Enum.Material.WoodPlanks, nil, false)
+    part(barn, "DoorSlatRight", Vector3.new(0.3, 7.1, 0.2), CFrame.new(position + Vector3.new(1.4, 4.2, -7.85)), COLORS.Cream, Enum.Material.WoodPlanks, nil, false)
+    local sign = part(barn, "BarnSign", Vector3.new(7, 2.2, 0.45), CFrame.new(position + Vector3.new(0, 7.4, -7.8)), Color3.fromRGB(62, 50, 40), Enum.Material.SmoothPlastic, nil, false)
+    addSurfaceLabel(sign, "YOUR BARN", "STORE • EARN • COLLECT", COLORS.Gold)
+    return barn
 end
 
 local function createBase(index, position, angle)
     local base = Instance.new("Model")
-    base.Name = string.format("Curral_%02d", index)
+    base.Name = string.format("Farm_%02d", index)
     base:SetAttribute("OwnerUserId", 0)
     base.Parent = basesFolder
 
-    part(base, "BaseFloor", Vector3.new(27, 1, 27), CFrame.new(position + Vector3.new(0, 0.4, 0)), Color3.fromRGB(238, 223, 191), Enum.Material.Sand)
-    part(base, "BaseTrim", Vector3.new(29, 0.55, 29), CFrame.new(position + Vector3.new(0, 0.05, 0)), COLORS.Wood, Enum.Material.WoodPlanks)
+    part(base, "BaseTrim", Vector3.new(39, 0.55, 39), CFrame.new(position + Vector3.new(0, 0.1, 0)), COLORS.Wood, Enum.Material.WoodPlanks)
+    part(base, "BaseFloor", Vector3.new(36, 1, 36), CFrame.new(position + Vector3.new(0, 0.65, 0)), Color3.fromRGB(154, 208, 116), Enum.Material.Grass)
 
     for _, entry in ipairs({
-        { Vector3.new(-13, 2, 0), Vector3.new(1, 3, 25) },
-        { Vector3.new(13, 2, 0), Vector3.new(1, 3, 25) },
-        { Vector3.new(0, 2, -13), Vector3.new(25, 3, 1) },
-        { Vector3.new(-8, 2, 13), Vector3.new(9, 3, 1) },
-        { Vector3.new(8, 2, 13), Vector3.new(9, 3, 1) },
+        { Vector3.new(-17.5, 2.3, 0), Vector3.new(0.8, 3.4, 35) },
+        { Vector3.new(17.5, 2.3, 0), Vector3.new(0.8, 3.4, 35) },
+        { Vector3.new(0, 2.3, -17.5), Vector3.new(35, 3.4, 0.8) },
+        { Vector3.new(-11, 2.3, 17.5), Vector3.new(13, 3.4, 0.8) },
+        { Vector3.new(11, 2.3, 17.5), Vector3.new(13, 3.4, 0.8) },
     }) do
-        part(base, "Fence", entry[2], CFrame.new(position + entry[1]), COLORS.Cream, Enum.Material.WoodPlanks)
+        part(base, "WhiteFence", entry[2], CFrame.new(position + entry[1]), COLORS.Cream, Enum.Material.WoodPlanks)
     end
 
-    local sign = part(base, "OwnerSign", Vector3.new(10, 3, 0.5), CFrame.new(position + Vector3.new(0, 4.5, -12.5)), Color3.fromRGB(35, 51, 68), Enum.Material.SmoothPlastic)
-    createBillboard(sign, "CURRAL " .. index .. "\nVazio", COLORS.Cream, 170, 64)
+    local sign = part(base, "OwnerSign", Vector3.new(9, 2.6, 0.5), CFrame.new(position + Vector3.new(0, 5.2, -16.3)), Color3.fromRGB(65, 69, 55), Enum.Material.SmoothPlastic, nil, false)
+    addSurfaceLabel(sign, "FARM " .. index, "OWNER: FREE", COLORS.Gold)
 
-    local spawn = part(base, "BaseSpawn", Vector3.new(4, 0.4, 4), CFrame.new(position + Vector3.new(0, 1.2, 7)), COLORS.Green, Enum.Material.Neon, nil, false, 0.55)
-    spawn.Transparency = 0.65
+    local spawn = part(base, "BaseSpawn", Vector3.new(4.5, 0.35, 4.5), CFrame.new(position + Vector3.new(0, 1.4, 12)), COLORS.Green, Enum.Material.Neon, nil, false, 0.4)
+    spawn:SetAttribute("IsSpawn", true)
 
-    local sell = part(base, "SellPart", Vector3.new(7, 1, 5), CFrame.new(position + Vector3.new(0, 1.15, -4)), Color3.fromRGB(50, 220, 137), Enum.Material.Neon)
-    sell:SetAttribute("SellSurface", true)
-    addLight(sell, Color3.fromRGB(67, 255, 157), 1.2, 13)
-    createBillboard(sell, "VENDER ANIMAL", Color3.fromRGB(88, 255, 165), 190, 45)
+    createBarn(base, position + Vector3.new(0, 1.1, -3.8), index)
 
-    local treadmill = part(trainingFolder, "Esteira_" .. index, Vector3.new(17, 0.8, 4.6), CFrame.new(position + Vector3.new(-3.5, 1.2, 5)), Color3.fromRGB(31, 47, 64), Enum.Material.Metal)
+    local deposit = part(base, "BarnDepositPad", Vector3.new(7, 0.35, 4), CFrame.new(position + Vector3.new(-7, 1.28, 8)), Color3.fromRGB(72, 211, 113), Enum.Material.Neon, nil, false, 0.12)
+    deposit:SetAttribute("BaseIndex", index)
+    addSurfaceLabel(deposit, "STORE ANIMAL", "Bring your animal here", Color3.fromRGB(132, 255, 157))
+    addLight(deposit, Color3.fromRGB(95, 255, 135), 0.55, 9)
+
+    local collect = part(base, "IncomeCollectPad", Vector3.new(7, 0.35, 4), CFrame.new(position + Vector3.new(7, 1.28, 8)), Color3.fromRGB(255, 198, 71), Enum.Material.Neon, nil, false, 0.12)
+    collect:SetAttribute("BaseIndex", index)
+    addSurfaceLabel(collect, "COLLECT COINS", "Your animals are earning!", COLORS.Gold)
+    addLight(collect, COLORS.Gold, 0.55, 9)
+
+    local treadmill = part(trainingFolder, "Treadmill_" .. index, Vector3.new(10, 0.8, 3.6), CFrame.new(position + Vector3.new(-10, 1.4, -12)), Color3.fromRGB(53, 68, 71), Enum.Material.Metal)
     treadmill:SetAttribute("TrainingType", "Treadmill")
     treadmill:SetAttribute("BaseIndex", index)
     table.insert(allTrainingParts, treadmill)
-
     for lane = -1, 1, 2 do
-        part(base, "TreadmillRail", Vector3.new(17, 0.45, 0.35), CFrame.new(position + Vector3.new(-3.5, 1.85, 5 + lane * 2.1)), COLORS.Blue, Enum.Material.Neon, nil, false)
+        part(base, "TreadmillRail", Vector3.new(10, 0.35, 0.28), CFrame.new(position + Vector3.new(-10, 1.95, -12 + lane * 1.85)), COLORS.Blue, Enum.Material.Neon, nil, false)
     end
 
-    local bench = part(trainingFolder, "Supino_" .. index, Vector3.new(4, 1, 3), CFrame.new(position + Vector3.new(6, 1.3, 5)), Color3.fromRGB(49, 65, 84), Enum.Material.Metal)
-    bench:SetAttribute("TrainingType", "BenchPress")
-    bench:SetAttribute("BaseIndex", index)
-    table.insert(allTrainingParts, bench)
-
-    part(base, "BenchBar", Vector3.new(5.5, 0.25, 0.25), CFrame.new(position + Vector3.new(6, 3.1, 5)), COLORS.Cream, Enum.Material.Metal)
-    for _, offset in ipairs({ -2.15, 2.15 }) do
-        part(base, "BenchWeight", Vector3.new(0.7, 1.2, 1.2), CFrame.new(position + Vector3.new(6 + offset, 3.1, 5)), COLORS.Blue, Enum.Material.Neon, Enum.PartType.Cylinder, false)
+    local display = folder(base, "StoredAnimals")
+    local slots = {}
+    for slotIndex = 1, Config.Barn.BaseSlots + Config.Barn.ExtraPassSlots do
+        local column = (slotIndex - 1) % 3
+        local row = math.floor((slotIndex - 1) / 3)
+        local slotPosition = position + Vector3.new(-10 + column * 10, 1.3, -2 + row * 9)
+        local pad = part(display, "AnimalSlot_" .. slotIndex, Vector3.new(5.5, 0.28, 5.5), CFrame.new(slotPosition), Color3.fromRGB(223, 213, 177), Enum.Material.Sand, nil, false, 0.08)
+        pad:SetAttribute("SlotIndex", slotIndex)
+        local plate = part(display, "SlotLabel_" .. slotIndex, Vector3.new(4.7, 0.22, 0.3), CFrame.new(slotPosition + Vector3.new(0, 0.5, 2.35)), Color3.fromRGB(69, 63, 53), Enum.Material.SmoothPlastic, nil, false)
+        addSurfaceLabel(plate, "SLOT " .. slotIndex, "EMPTY", COLORS.Cream)
+        table.insert(slots, { Pad = pad, LabelPart = plate, Label = plate:FindFirstChild("WorldLabel") })
     end
-
-    local anchor = part(base, "BaseLight", Vector3.new(0.7, 7, 0.7), CFrame.new(position + Vector3.new(-11, 4, -10)), COLORS.Wood, Enum.Material.Metal)
-    local lamp = part(base, "Lamp", Vector3.new(1.7, 0.8, 1.7), CFrame.new(position + Vector3.new(-11, 7.7, -10)), Color3.fromRGB(255, 232, 166), Enum.Material.Neon, Enum.PartType.Ball, false)
-    addLight(lamp, Color3.fromRGB(255, 220, 150), 0.75, 12)
+    displaySlotsByUserId[index] = slots
 
     base.PrimaryPart = base:FindFirstChild("BaseFloor")
     return base
 end
 
-
-local function createFountain(position)
-    local fountain = Instance.new("Model")
-    fountain.Name = "Fountain"
-    fountain.Parent = mapFolder
-
-    local plinth = part(
-        fountain, "FountainPlinth", Vector3.new(2, 9, 9),
-        CFrame.new(position + Vector3.new(0, 1, 0)) * CFrame.Angles(0, 0, math.rad(90)),
-        Color3.fromRGB(226, 236, 239), Enum.Material.Marble, Enum.PartType.Cylinder
-    )
-
-    local basin = part(
-        fountain, "FountainBasin", Vector3.new(1.1, 12, 12),
-        CFrame.new(position + Vector3.new(0, 2.4, 0)) * CFrame.Angles(0, 0, math.rad(90)),
-        Color3.fromRGB(105, 166, 184), Enum.Material.Slate, Enum.PartType.Cylinder
-    )
-
-    local water = part(
-        fountain, "FountainWater", Vector3.new(0.35, 9.6, 9.6),
-        CFrame.new(position + Vector3.new(0, 3, 0)) * CFrame.Angles(0, 0, math.rad(90)),
-        Color3.fromRGB(66, 203, 255), Enum.Material.Neon, Enum.PartType.Cylinder, false, 0.12
-    )
-    addLight(water, Color3.fromRGB(70, 200, 255), 1.1, 18)
-
-    part(
-        fountain, "FountainPillar", Vector3.new(2.3, 1.3, 1.3),
-        CFrame.new(position + Vector3.new(0, 4.1, 0)) * CFrame.Angles(0, 0, math.rad(90)),
-        Color3.fromRGB(225, 239, 241), Enum.Material.Marble, Enum.PartType.Cylinder
-    )
-
-    local jewel = part(
-        fountain, "FountainJewel", Vector3.new(2.1, 2.1, 2.1),
-        CFrame.new(position + Vector3.new(0, 6, 0)),
-        Color3.fromRGB(123, 233, 255), Enum.Material.Neon, Enum.PartType.Ball, false
-    )
-    addLight(jewel, Color3.fromRGB(85, 215, 255), 1.6, 24)
-
-    local attachment = Instance.new("Attachment")
-    attachment.Name = "WaterSparkles"
-    attachment.Position = Vector3.new(0, 0.9, 0)
-    attachment.Parent = jewel
-
-    local emitter = Instance.new("ParticleEmitter")
-    emitter.Name = "FountainParticles"
-    emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-    emitter.Color = ColorSequence.new(Color3.fromRGB(139, 234, 255), Color3.fromRGB(255, 255, 255))
-    emitter.LightEmission = 0.8
-    emitter.Rate = 8
-    emitter.Lifetime = NumberRange.new(0.55, 1.1)
-    emitter.Speed = NumberRange.new(1, 2.5)
-    emitter.SpreadAngle = Vector2.new(180, 180)
-    emitter.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.18),
-        NumberSequenceKeypoint.new(1, 0),
-    })
-    emitter.Parent = attachment
-
-    return fountain
-end
-
-local function buildDecorations()
-    createFountain(Vector3.new(0, 0, -20))
-
-    for index = 1, 12 do
-        local angle = math.rad(index * 30)
-        local position = Vector3.new(math.cos(angle) * 63, 0, math.sin(angle) * 63)
-        createTree(mapFolder, position, Color3.fromRGB(122, 83, 51), Color3.fromRGB(83, 183, 91), 0.7)
-    end
-
-    for index, x in ipairs({ 120, 140, 185, 205, 124, 205, 150, 196 }) do
-        local z = ({ -48, 47, -43, 42, 49, -45, 47, 30 })[index]
-        createTree(mapFolder, Vector3.new(x, 0, z), COLORS.Wood, Color3.fromRGB(88, 183, 83), 0.85)
-    end
-
-    for index, offset in ipairs({
-        Vector3.new(-45, 0, -46),
-        Vector3.new(-18, 0, -48),
-        Vector3.new(14, 0, -49),
-        Vector3.new(42, 0, -42),
-        Vector3.new(-46, 0, 43),
-        Vector3.new(-18, 0, 48),
-        Vector3.new(18, 0, 44),
-        Vector3.new(43, 0, 39),
-    }) do
-        createTree(mapFolder, Vector3.new(320, 0, 0) + offset, Color3.fromRGB(75, 60, 42), Color3.fromRGB(31, 102, 71), 1.1)
-    end
-
-    for index, offset in ipairs({
-        Vector3.new(-54, 0, -45),
-        Vector3.new(-35, 0, -60),
-        Vector3.new(0, 0, -63),
-        Vector3.new(35, 0, -60),
-        Vector3.new(54, 0, -42),
-        Vector3.new(57, 0, -10),
-        Vector3.new(56, 0, 25),
-        Vector3.new(39, 0, 57),
-        Vector3.new(10, 0, 62),
-        Vector3.new(-20, 0, 62),
-        Vector3.new(-48, 0, 54),
-        Vector3.new(-59, 0, 16),
-    }) do
-        local scale = index % 3 == 0 and 0.76 or 0.9
-        createTree(mapFolder, Vector3.new(320, 0, 0) + offset, Color3.fromRGB(65, 54, 41), Color3.fromRGB(38, 113, 76), scale)
-    end
-
-    createRock(mapFolder, Vector3.new(548, 4, -48), Vector3.new(32, 10, 28), Color3.fromRGB(67, 49, 55), Vector3.new(0.08, 0.4, 0.04))
-    createRock(mapFolder, Vector3.new(548, 10, -48), Vector3.new(23, 9, 20), Color3.fromRGB(54, 43, 50), Vector3.new(0.02, 0.8, 0.04))
-    createRock(mapFolder, Vector3.new(548, 15, -48), Vector3.new(15, 7, 14), Color3.fromRGB(46, 39, 47), Vector3.new(0.06, 0.2, 0.02))
-    local craterGlow = part(mapFolder, "VolcanoCraterGlow", Vector3.new(7, 2, 7), CFrame.new(548, 17.4, -48), COLORS.Lava, Enum.Material.Neon, Enum.PartType.Ball, false)
-    addLight(craterGlow, COLORS.Lava, 2.4, 32)
-
-    for index = 1, 10 do
-        local angle = math.rad(index * 36)
-        local x = 495 + math.cos(angle) * 64
-        local z = math.sin(angle) * 63
-        createRock(mapFolder, Vector3.new(x, 2, z), Vector3.new(8, 5, 7), Color3.fromRGB(61, 48, 54), Vector3.new(0.2, angle, 0.1))
-    end
-
-    local lava = part(
-        mapFolder,
-        "LavaRiver",
-        Vector3.new(110, 0.4, 6),
-        CFrame.new(495, 0.25, 59),
-        COLORS.Lava,
-        Enum.Material.Neon,
-        nil,
-        false
-    )
-    addLight(lava, COLORS.Lava, 2.2, 28)
-    lava.Touched:Connect(function(hit)
-        local character = hit:FindFirstAncestorOfClass("Model")
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
-        if humanoid and humanoid.Health > 0 then
-            local now = os.clock()
-            local last = character:GetAttribute("LavaDebounce") or 0
-
-            if now - last >= 1.25 then
-                character:SetAttribute("LavaDebounce", now)
-                humanoid:TakeDamage(12)
-            end
-        end
+local function setupLighting()
+    pcall(function()
+        Lighting.Technology = Enum.Technology.Future
     end)
+    Lighting.ClockTime = 14.2
+    Lighting.Brightness = 2.2
+    Lighting.ExposureCompensation = 0.02
+    Lighting.GlobalShadows = true
+    Lighting.EnvironmentDiffuseScale = 0.45
+    Lighting.EnvironmentSpecularScale = 0.35
+    Lighting.Ambient = Color3.fromRGB(134, 148, 130)
+    Lighting.OutdoorAmbient = Color3.fromRGB(171, 193, 164)
+    Lighting.FogColor = Color3.fromRGB(195, 221, 196)
+    Lighting.FogStart = 520
+    Lighting.FogEnd = 1400
+
+    local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
+    atmosphere.Name = "StealAnimalAtmosphere"
+    atmosphere.Color = Color3.fromRGB(205, 227, 204)
+    atmosphere.Decay = Color3.fromRGB(118, 159, 142)
+    atmosphere.Density = 0.18
+    atmosphere.Offset = 0.05
+    atmosphere.Glare = 0.08
+    atmosphere.Haze = 0.75
+    atmosphere.Parent = Lighting
+
+    local correction = Lighting:FindFirstChildOfClass("ColorCorrectionEffect") or Instance.new("ColorCorrectionEffect")
+    correction.Name = "StealAnimalColorCorrection"
+    correction.Brightness = 0.015
+    correction.Contrast = 0.08
+    correction.Saturation = 0.11
+    correction.TintColor = Color3.fromRGB(255, 249, 231)
+    correction.Parent = Lighting
+
+    local bloom = Lighting:FindFirstChildOfClass("BloomEffect") or Instance.new("BloomEffect")
+    bloom.Name = "StealAnimalBloom"
+    bloom.Intensity = 0.14
+    bloom.Size = 20
+    bloom.Threshold = 1.2
+    bloom.Parent = Lighting
+
+    local clouds = Terrain:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
+    clouds.Name = "StealAnimalClouds"
+    clouds.Cover = 0.25
+    clouds.Density = 0.22
+    clouds.Color = Color3.fromRGB(248, 251, 243)
+    clouds.Parent = Terrain
 end
 
-local function applyAnimalPrompt(model)
-    if not model or not model:IsA("Model") then
-        return
+local function buildZoneDecorations()
+    for index, x in ipairs({ 115, 208, 258, 362, 412, 515, 567, 670, 722, 825, 878, 980 }) do
+        local biomeIndex = math.floor((x - 85) / 155) + 1
+        local color = biomeIndex <= 1 and COLORS.Gold
+            or biomeIndex == 2 and Color3.fromRGB(84, 181, 106)
+            or biomeIndex == 3 and COLORS.Aqua
+            or biomeIndex == 4 and Color3.fromRGB(135, 217, 246)
+            or biomeIndex == 5 and Color3.fromRGB(243, 191, 82)
+            or COLORS.Lava
+        for _, z in ipairs({ -51, 51 }) do
+            createTree(mapFolder, Vector3.new(x, 0, z), COLORS.Wood, color, 0.55 + (index % 3) * 0.12)
+        end
     end
 
-    local head = model:FindFirstChild("Head") or model.PrimaryPart
-    if not head then
-        return
+    for _, x in ipairs({ 113, 143, 190, 213 }) do
+        createFlowerPatch(mapFolder, Vector3.new(x, 0, -34 + (x % 3) * 25), 6, { COLORS.Pink, COLORS.Gold, COLORS.Cream })
     end
 
-    local prompt = head:FindFirstChild("AnimalPrompt")
-
-    if not prompt then
-        prompt = Instance.new("ProximityPrompt")
-        prompt.Name = "AnimalPrompt"
-        prompt.Parent = head
+    for _, pos in ipairs({
+        Vector3.new(274, 0, -38), Vector3.new(296, 0, 44), Vector3.new(348, 0, -44), Vector3.new(371, 0, 38),
+    }) do
+        createTree(mapFolder, pos, Color3.fromRGB(101, 70, 47), Color3.fromRGB(38, 97, 60), 1.05, "PineTree")
+        createMushroom(mapFolder, pos + Vector3.new(7, 0, -4), Color3.fromRGB(203, 92, 215), 0.7)
     end
 
-    prompt.ActionText = "Roubar"
-    prompt.ObjectText = tostring(model:GetAttribute("DisplayName") or model.Name)
-    prompt.HoldDuration = 1
+    for _, pos in ipairs({
+        Vector3.new(426, 0, -32), Vector3.new(448, 0, 37), Vector3.new(495, 0, -42), Vector3.new(516, 0, 29),
+    }) do
+        part(mapFolder, "WetlandPool", Vector3.new(24, 0.18, 15), CFrame.new(pos + Vector3.new(0, 0.03, 0)), Color3.fromRGB(66, 173, 180), Enum.Material.Glass, nil, false, 0.24)
+        createReeds(mapFolder, pos + Vector3.new(13, 0, 0), 0.8, Color3.fromRGB(79, 139, 101))
+        createRock(mapFolder, pos + Vector3.new(-10, 0.8, 4), Vector3.new(4, 2, 4), Color3.fromRGB(102, 133, 128), Vector3.new(0.2, 0.3, 0.1))
+    end
+
+    for _, pos in ipairs({
+        Vector3.new(578, 0, -38), Vector3.new(601, 0, 43), Vector3.new(646, 0, -43), Vector3.new(668, 0, 32),
+    }) do
+        createTree(mapFolder, pos, Color3.fromRGB(90, 107, 116), Color3.fromRGB(131, 198, 219), 1.05, "PineTree")
+        createCrystal(mapFolder, pos + Vector3.new(8, 0, -5), Color3.fromRGB(118, 219, 255), 0.9)
+    end
+
+    for _, pos in ipairs({
+        Vector3.new(728, 0, -43), Vector3.new(754, 0, 44), Vector3.new(802, 0, -39), Vector3.new(828, 0, 40),
+    }) do
+        createTree(mapFolder, pos, Color3.fromRGB(121, 85, 48), Color3.fromRGB(215, 181, 91), 1.05, "Acacia")
+        createRock(mapFolder, pos + Vector3.new(7, 0.9, 6), Vector3.new(5, 2, 4), Color3.fromRGB(152, 131, 85), Vector3.new(0.1, 0.4, 0.1))
+    end
+
+    for index, pos in ipairs({
+        Vector3.new(884, 0, -43), Vector3.new(905, 0, 36), Vector3.new(960, 0, -40), Vector3.new(984, 0, 40),
+    }) do
+        createRock(mapFolder, pos + Vector3.new(0, 2, 0), Vector3.new(12, 7, 11), Color3.fromRGB(74, 56, 64), Vector3.new(0.2, index * 0.3, 0.1))
+        createCrystal(mapFolder, pos + Vector3.new(7, 0, -4), Color3.fromRGB(255, 102, 65), 1.0)
+    end
+
+    for index = 1, 8 do
+        local angle = math.rad(index * 45)
+        local pos = Vector3.new(math.cos(angle) * 68, 0, math.sin(angle) * 68)
+        createTree(mapFolder, pos, COLORS.Wood, Color3.fromRGB(98, 171, 90), 0.75)
+    end
+
+    local fountain = Instance.new("Model")
+    fountain.Name = "FarmFountain"
+    fountain.Parent = mapFolder
+    part(fountain, "Basin", Vector3.new(1.1, 12, 12), CFrame.new(0, 1.6, -20) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(135, 176, 173), Enum.Material.Slate, Enum.PartType.Cylinder)
+    local water = part(fountain, "Water", Vector3.new(0.25, 9.4, 9.4), CFrame.new(0, 2.5, -20) * CFrame.Angles(0, 0, math.rad(90)), COLORS.Blue, Enum.Material.Neon, Enum.PartType.Cylinder, false, 0.15)
+    addLight(water, COLORS.Blue, 0.65, 14)
+end
+
+local function addPrompt(target, name, action, objectText, interactionType, holdDuration)
+    local prompt = Instance.new("ProximityPrompt")
+    prompt.Name = name
+    prompt.ActionText = action
+    prompt.ObjectText = objectText
+    prompt.HoldDuration = holdDuration or 0.5
     prompt.MaxActivationDistance = 10
     prompt.RequiresLineOfSight = false
-    prompt:SetAttribute("InteractionType", "StealAnimal")
+    prompt:SetAttribute("InteractionType", interactionType)
+    prompt.Parent = target
+    return prompt
 end
 
 function WorldBuilder.SpawnAnimal(speciesId, spawnCFrame)
-    local model = makeAnimal(speciesId, spawnCFrame)
-
-    if model then
-        applyAnimalPrompt(model)
-    end
-
+    local model = makeAnimalModel(speciesId, spawnCFrame, animalsFolder, true)
     return model
 end
 
 function WorldBuilder.Build()
-    local existing = workspace:FindFirstChild("RoubeUmAnimal")
+    local existing = workspace:FindFirstChild("StealAnAnimal")
     if existing then
         existing:Destroy()
     end
 
-    root = createFolder(workspace, "RoubeUmAnimal")
-    mapFolder = createFolder(root, "Map")
-    animalsFolder = createFolder(root, "Animals")
-    guardiansFolder = createFolder(root, "Guardians")
-    basesFolder = createFolder(root, "Bases")
-    trainingFolder = createFolder(root, "Training")
+    root = folder(workspace, "StealAnAnimal")
+    root:SetAttribute("MapReady", false)
+    mapFolder = folder(root, "Map")
+    animalsFolder = folder(root, "Animals")
+    guardiansFolder = folder(root, "Guardians")
+    basesFolder = folder(root, "Farms")
+    trainingFolder = folder(root, "Training")
     table.clear(basesByUserId)
+    table.clear(displaySlotsByUserId)
     table.clear(allTrainingParts)
 
     local function step(label, callback)
         local ok, result = xpcall(callback, debug.traceback)
         if not ok then
-            warn("[RoubeUmAnimal] Etapa do mapa falhou (" .. label .. "): " .. tostring(result))
-            root:SetAttribute("MapBuildError_" .. label:gsub("%W", ""), true)
+            warn("[StealAnAnimal] Map step failed (" .. label .. "): " .. tostring(result))
+            root:SetAttribute("MapError_" .. label:gsub("%W", ""), true)
             return false
         end
         return true
     end
 
     step("Lighting", setupLighting)
-    pcall(function()
-        workspace.FallenPartsDestroyHeight = -120
-    end)
-    step("HubGround", function()
-        part(mapFolder, "HubGround", Vector3.new(145, 2, 145), CFrame.new(0, -1, 0), COLORS.Grass, Enum.Material.Grass)
-    end)
-    step("FarmPath", function()
-        part(mapFolder, "FarmPath", Vector3.new(45, 1, 18), CFrame.new(80, -0.35, 0), Color3.fromRGB(214, 193, 151), Enum.Material.Ground)
-        part(mapFolder, "FarmPathEdgeL", Vector3.new(45, 0.25, 0.65), CFrame.new(80, 0.27, -9.2), COLORS.FarmAccent, Enum.Material.SmoothPlastic, nil, false)
-        part(mapFolder, "FarmPathEdgeR", Vector3.new(45, 0.25, 0.65), CFrame.new(80, 0.27, 9.2), COLORS.FarmAccent, Enum.Material.SmoothPlastic, nil, false)
-    end)
-    step("JunglePath", function()
-        part(mapFolder, "JunglePath", Vector3.new(48, 1, 18), CFrame.new(240, -0.35, 0), Color3.fromRGB(123, 101, 70), Enum.Material.Ground)
-        part(mapFolder, "JunglePathEdgeL", Vector3.new(48, 0.25, 0.65), CFrame.new(240, 0.27, -9.2), COLORS.JungleAccent, Enum.Material.SmoothPlastic, nil, false)
-        part(mapFolder, "JunglePathEdgeR", Vector3.new(48, 0.25, 0.65), CFrame.new(240, 0.27, 9.2), COLORS.JungleAccent, Enum.Material.SmoothPlastic, nil, false)
-    end)
-    step("VolcanoPath", function()
-        part(mapFolder, "VolcanoPath", Vector3.new(48, 1, 18), CFrame.new(396, -0.35, 0), Color3.fromRGB(78, 65, 71), Enum.Material.Slate)
-        part(mapFolder, "VolcanoPathEdgeL", Vector3.new(48, 0.25, 0.65), CFrame.new(396, 0.27, -9.2), COLORS.Lava, Enum.Material.Neon, nil, false)
-        part(mapFolder, "VolcanoPathEdgeR", Vector3.new(48, 0.25, 0.65), CFrame.new(396, 0.27, 9.2), COLORS.Lava, Enum.Material.Neon, nil, false)
-    end)
+    workspace.FallenPartsDestroyHeight = -120
 
-    local biomes = {
-        { "Farm", Vector3.new(160, -1, 0), Vector3.new(120, 2, 132), COLORS.FarmGrass, Enum.Material.Grass, "ZONA 1 · FAZENDA", "Animais comuns e raros", Color3.fromRGB(255, 229, 150) },
-        { "Jungle", Vector3.new(320, -1, 0), Vector3.new(120, 2, 138), COLORS.JungleGrass, Enum.Material.Grass, "ZONA 2 · SELVA MÍSTICA", "Território dos guardiões", Color3.fromRGB(91, 255, 190) },
-        { "Volcano", Vector3.new(495, -1, 0), Vector3.new(150, 2, 145), COLORS.VolcanoGround, Enum.Material.Slate, "ZONA 3 · VULCÃO", "Animais míticos e lava", Color3.fromRGB(255, 113, 64) },
-    }
-    for _, biome in ipairs(biomes) do
-        step(biome[1] .. "Biome", function()
-            createBiome(mapFolder, biome[1], biome[2], biome[3], biome[4], biome[5], biome[6], biome[7], biome[8])
-        end)
-        task.wait()
-    end
-
-    step("HubSign", function()
-        createSign(mapFolder, "HubSign", Vector3.new(0, 0, -65), "ROUBE UM ANIMAL", "Treine · Explore · Escape · Venda", COLORS.Blue)
-    end)
-    step("WorldSpawn", function()
+    step("Hub", function()
+        part(mapFolder, "HubGround", Vector3.new(150, 2, 150), CFrame.new(0, -1, 0), Color3.fromRGB(130, 201, 104), Enum.Material.Grass)
+        part(mapFolder, "MainPath", Vector3.new(1090, 0.18, 25), CFrame.new(495, 0.09, 0), Color3.fromRGB(206, 183, 143), Enum.Material.Ground)
+        part(mapFolder, "PathEdgeLeft", Vector3.new(1090, 0.2, 0.7), CFrame.new(495, 0.13, -13), COLORS.Gold, Enum.Material.SmoothPlastic, nil, false)
+        part(mapFolder, "PathEdgeRight", Vector3.new(1090, 0.2, 0.7), CFrame.new(495, 0.13, 13), COLORS.Gold, Enum.Material.SmoothPlastic, nil, false)
+        createSign(mapFolder, "MainWelcomeSign", Vector3.new(0, 0, -63), "STEAL AN ANIMAL", "STEAL • ESCAPE • STORE • EARN", COLORS.Gold)
         local spawn = Instance.new("SpawnLocation")
         spawn.Name = "WorldSpawn"
         spawn.Size = Vector3.new(8, 1, 8)
@@ -764,136 +674,132 @@ function WorldBuilder.Build()
         spawn.Anchored = true
         spawn.Neutral = true
         spawn.Duration = 0
-        spawn.Color = COLORS.Blue
+        spawn.Color = COLORS.Green
         spawn.Material = Enum.Material.Neon
         spawn.Transparency = 0.35
         spawn.Parent = mapFolder
     end)
 
+    local zones = {
+        { "Meadow", 160, COLORS.Meadow, Enum.Material.Grass, "SUNNY MEADOW", "Friendly farm animals", COLORS.Gold },
+        { "Forest", 315, COLORS.Forest, Enum.Material.Grass, "WHISPERING FOREST", "Woodland animals", Color3.fromRGB(95, 221, 137) },
+        { "Wetlands", 470, COLORS.Wetlands, Enum.Material.Ground, "MISTY WETLANDS", "Water-loving animals", COLORS.Aqua },
+        { "Snow", 625, COLORS.Snow, Enum.Material.Snow, "FROST PEAK", "Snow creatures", Color3.fromRGB(138, 223, 255) },
+        { "Savannah", 780, COLORS.Savannah, Enum.Material.Ground, "GOLDEN SAVANNA", "Wild giants", Color3.fromRGB(255, 184, 78) },
+        { "Volcano", 935, COLORS.Volcano, Enum.Material.Slate, "EMBER VOLCANO", "Legendary creatures", COLORS.Lava },
+    }
+
+    for _, zone in ipairs(zones) do
+        step(zone[1] .. "Terrain", function()
+            createZoneFloor(zone[1], zone[2], zone[3], zone[4], zone[5], zone[6], zone[7])
+            createGateway(zone[1] .. "Gateway", Vector3.new(zone[2] - 66, 0, 0), zone[7], zone[5])
+        end)
+        task.wait()
+    end
+
     for index = 1, 8 do
-        local angle = math.rad((index - 1) * 45)
-        local position = Vector3.new(math.cos(angle) * 47, 0, math.sin(angle) * 47)
-        step("Base" .. index, function()
+        local angle = math.rad((index - 1) * 45 + 22.5)
+        local position = Vector3.new(math.cos(angle) * 54, 0, math.sin(angle) * 54)
+        step("Farm" .. index, function()
             createBase(index, position, angle)
         end)
         task.wait()
     end
 
-    step("Decorations", buildDecorations)
-    step("FarmGateway", function()
-        createGateway("PORTAL_DA_FAZENDA", Vector3.new(100, 0, 0), Color3.fromRGB(255, 215, 104), "FAZENDA")
-    end)
-    step("JungleGateway", function()
-        createGateway("PORTAL_DA_SELVA", Vector3.new(250, 0, 0), Color3.fromRGB(72, 238, 161), "SELVA MÍSTICA")
-    end)
-    step("VolcanoGateway", function()
-        createGateway("PORTAL_DO_VULCAO", Vector3.new(420, 0, 0), Color3.fromRGB(255, 105, 61), "VULCÃO")
-    end)
-    step("PathLanterns", function()
-        for _, entry in ipairs({
-            { Vector3.new(52, 0, -12), COLORS.Blue },
-            { Vector3.new(52, 0, 12), COLORS.Blue },
-            { Vector3.new(94, 0, -13), Color3.fromRGB(255, 215, 104) },
-            { Vector3.new(94, 0, 13), Color3.fromRGB(255, 215, 104) },
-            { Vector3.new(243, 0, -13), Color3.fromRGB(72, 238, 161) },
-            { Vector3.new(243, 0, 13), Color3.fromRGB(72, 238, 161) },
-            { Vector3.new(412, 0, -13), Color3.fromRGB(255, 105, 61) },
-            { Vector3.new(412, 0, 13), Color3.fromRGB(255, 105, 61) },
-        }) do
-            createLantern(mapFolder, entry[1], entry[2])
-        end
-    end)
-    step("FarmFlowers", function()
-        createFlowerPatch(mapFolder, Vector3.new(130, 0, -40), 7, { Color3.fromRGB(255, 113, 163), Color3.fromRGB(255, 232, 122), Color3.fromRGB(255, 255, 242) })
-        createFlowerPatch(mapFolder, Vector3.new(191, 0, 39), 7, { Color3.fromRGB(255, 113, 163), Color3.fromRGB(255, 232, 122), Color3.fromRGB(255, 255, 242) })
-    end)
-    step("JungleMushrooms", function()
-        createMushroom(mapFolder, Vector3.new(279, 0, -43), Color3.fromRGB(210, 91, 218), 1.2)
-        createMushroom(mapFolder, Vector3.new(347, 0, 38), Color3.fromRGB(255, 119, 173), 0.9)
-        createMushroom(mapFolder, Vector3.new(357, 0, -38), Color3.fromRGB(112, 220, 190), 0.8)
-    end)
-    step("VolcanoCrystals", function()
-        createCrystalCluster(mapFolder, Vector3.new(452, 0, -42), Color3.fromRGB(255, 103, 64))
-        createCrystalCluster(mapFolder, Vector3.new(532, 0, 44), Color3.fromRGB(255, 137, 71))
-        createCrystalCluster(mapFolder, Vector3.new(562, 0, 13), Color3.fromRGB(219, 77, 62))
-    end)
+    step("Landmarks", buildZoneDecorations)
 
     local animalSpawns = {
-        { "Chicken", CFrame.new(127, 0, -23) },
-        { "Chicken", CFrame.new(145, 0, 28) },
-        { "Capybara", CFrame.new(173, 0, -8) },
-        { "Goat", CFrame.new(196, 0, 25) },
-        { "Capybara", CFrame.new(194, 0, -29) },
-        { "Monkey", CFrame.new(286, 0, -28) },
-        { "Monkey", CFrame.new(304, 0, 29) },
-        { "Macaw", CFrame.new(338, 0, -16) },
-        { "Jaguar", CFrame.new(356, 0, 26) },
-        { "Panda", CFrame.new(328, 0, 44) },
-        { "LavaFox", CFrame.new(447, 0, -33) },
-        { "Tiger", CFrame.new(485, 0, -44) },
-        { "LavaFox", CFrame.new(516, 0, -30) },
-        { "Phoenix", CFrame.new(543, 0, 25) },
-        { "Tiger", CFrame.new(482, 0, 46) },
+        { "Chicken", CFrame.new(128, 0, -20) },
+        { "Goat", CFrame.new(150, 0, 30) },
+        { "Rabbit", CFrame.new(180, 0, -30) },
+        { "Deer", CFrame.new(202, 0, 20) },
+        { "Monkey", CFrame.new(274, 0, -20) },
+        { "Macaw", CFrame.new(301, 0, 29) },
+        { "Fox", CFrame.new(333, 0, -29) },
+        { "Jaguar", CFrame.new(349, 0, 18) },
+        { "Panda", CFrame.new(292, 0, 43) },
+        { "Wolf", CFrame.new(343, 0, -44) },
+        { "Capybara", CFrame.new(426, 0, -21) },
+        { "Frog", CFrame.new(454, 0, 24) },
+        { "Otter", CFrame.new(492, 0, -27) },
+        { "Crocodile", CFrame.new(510, 0, 37) },
+        { "Penguin", CFrame.new(580, 0, -26) },
+        { "ArcticFox", CFrame.new(615, 0, 28) },
+        { "Reindeer", CFrame.new(658, 0, -29) },
+        { "Zebra", CFrame.new(731, 0, -21) },
+        { "Lion", CFrame.new(758, 0, 27) },
+        { "Elephant", CFrame.new(810, 0, -32) },
+        { "LavaFox", CFrame.new(887, 0, -24) },
+        { "Tiger", CFrame.new(928, 0, 26) },
+        { "Phoenix", CFrame.new(970, 0, -23) },
     }
+
     for index, entry in ipairs(animalSpawns) do
         step("Animal" .. index, function()
             if not WorldBuilder.SpawnAnimal(entry[1], entry[2]) then
-                error("Não foi possível criar " .. entry[1])
+                error("Unable to create " .. entry[1])
             end
         end)
-        task.wait()
+        if index % 4 == 0 then
+            task.wait()
+        end
     end
 
-    for index, entry in ipairs({
-        { Vector3.new(161, 0, 42), "Guardiao_Fazenda", Color3.fromRGB(65, 117, 70), 44 },
-        { Vector3.new(320, 0, 45), "Guardiao_Selva", Color3.fromRGB(46, 95, 84), 62 },
-        { Vector3.new(501, 0, -30), "Guardiao_Vulcao", Color3.fromRGB(103, 56, 58), 72 },
-    }) do
+    local guardians = {
+        { Vector3.new(188, 0, 43), "Guardian_MeadowBear", Color3.fromRGB(157, 105, 62), Color3.fromRGB(240, 206, 151), 1.35, 50, "MeadowBear" },
+        { Vector3.new(333, 0, 43), "Guardian_ForestWolf", Color3.fromRGB(83, 103, 88), Color3.fromRGB(172, 193, 165), 1.45, 62, "ForestWolf" },
+        { Vector3.new(486, 0, 43), "Guardian_WetlandsCroc", Color3.fromRGB(63, 123, 88), Color3.fromRGB(189, 203, 117), 1.5, 66, "WetlandsCroc" },
+        { Vector3.new(642, 0, 43), "Guardian_SnowBear", Color3.fromRGB(220, 235, 242), Color3.fromRGB(102, 178, 205), 1.6, 70, "SnowBear" },
+        { Vector3.new(800, 0, 43), "Guardian_SavannahLion", Color3.fromRGB(208, 159, 77), Color3.fromRGB(255, 218, 122), 1.65, 74, "SavannahLion" },
+        { Vector3.new(951, 0, 43), "Guardian_VolcanoTitan", Color3.fromRGB(84, 52, 58), Color3.fromRGB(255, 110, 56), 1.8, 80, "VolcanoTitan" },
+    }
+
+    for index, guardian in ipairs(guardians) do
         step("Guardian" .. index, function()
-            createR6Guardian(entry[1], entry[2], entry[3], entry[4])
+            createGuardianBeast(guardian[1], guardian[2], guardian[3], guardian[4], guardian[5], guardian[6], guardian[7])
         end)
         task.wait()
-    end
-
-    if not mapFolder:FindFirstChild("HubGround") then
-        step("FallbackGround", function()
-            part(mapFolder, "HubGround", Vector3.new(145, 2, 145), CFrame.new(0, -1, 0), COLORS.Grass, Enum.Material.Grass)
-        end)
-    end
-    if not mapFolder:FindFirstChild("WorldSpawn") then
-        step("FallbackSpawn", function()
-            local spawn = Instance.new("SpawnLocation")
-            spawn.Name = "WorldSpawn"
-            spawn.Size = Vector3.new(8, 1, 8)
-            spawn.Position = Vector3.new(0, 1, 0)
-            spawn.Anchored = true
-            spawn.Neutral = true
-            spawn.Duration = 0
-            spawn.Parent = mapFolder
-        end)
     end
 
     local baseCount = #basesFolder:GetChildren()
     local animalCount = #animalsFolder:GetChildren()
     local biomeCount = 0
-    for _, name in ipairs({ "FarmGround", "JungleGround", "VolcanoGround" }) do
-        if mapFolder:FindFirstChild(name) then
+    for _, zone in ipairs(zones) do
+        if mapFolder:FindFirstChild(zone[1] .. "Ground") then
             biomeCount += 1
         end
     end
     local ready = mapFolder:FindFirstChild("HubGround") ~= nil
         and mapFolder:FindFirstChild("WorldSpawn") ~= nil
         and baseCount == 8
-        and biomeCount == 3
-        and animalCount >= 1
+        and biomeCount == 6
+        and animalCount >= #Catalog.All()
+
     root:SetAttribute("MapReady", ready)
     root:SetAttribute("BaseCount", baseCount)
     root:SetAttribute("AnimalCount", animalCount)
     root:SetAttribute("BiomeCount", biomeCount)
+
     if not ready then
-        warn(string.format("[RoubeUmAnimal] Mapa parcialmente carregado: bases=%d, animais=%d, biomas=%d", baseCount, animalCount, biomeCount))
+        warn(string.format("[StealAnAnimal] Partial map: farms=%d, animals=%d, biomes=%d", baseCount, animalCount, biomeCount))
+        if not mapFolder:FindFirstChild("HubGround") then
+            step("FallbackGround", function()
+                part(mapFolder, "HubGround", Vector3.new(150, 2, 150), CFrame.new(0, -1, 0), COLORS.Meadow, Enum.Material.Grass)
+            end)
+        end
+        if not mapFolder:FindFirstChild("WorldSpawn") then
+            step("FallbackSpawn", function()
+                local spawn = Instance.new("SpawnLocation")
+                spawn.Name = "WorldSpawn"
+                spawn.Size = Vector3.new(8, 1, 8)
+                spawn.Position = Vector3.new(0, 1, 0)
+                spawn.Anchored = true
+                spawn.Neutral = true
+                spawn.Parent = mapFolder
+            end)
+        end
     else
-        print(string.format("[RoubeUmAnimal] Mapa carregado: 8 currais, %d animais, 3 biomas.", animalCount))
+        print(string.format("[StealAnAnimal] World ready: %d animals, %d biomes, %d farms, %d guardians", animalCount, biomeCount, baseCount, #guardians))
     end
     return root
 end
@@ -918,9 +824,14 @@ function WorldBuilder.GetTrainingFolder()
     return trainingFolder
 end
 
+function WorldBuilder.GetTrainingParts()
+    return allTrainingParts
+end
+
 function WorldBuilder.AssignBase(player)
-    if basesByUserId[player.UserId] and basesByUserId[player.UserId].Parent then
-        return basesByUserId[player.UserId]
+    local current = basesByUserId[player.UserId]
+    if current and current.Parent and current:GetAttribute("OwnerUserId") == player.UserId then
+        return current
     end
 
     for _, base in ipairs(basesFolder:GetChildren()) do
@@ -928,71 +839,169 @@ function WorldBuilder.AssignBase(player)
             base:SetAttribute("OwnerUserId", player.UserId)
             basesByUserId[player.UserId] = base
             player:SetAttribute("OwnedBase", base.Name)
-
             local sign = base:FindFirstChild("OwnerSign")
-            local gui = sign and sign:FindFirstChildWhichIsA("BillboardGui")
-            local label = gui and gui:FindFirstChildWhichIsA("TextLabel")
-
-            if label then
-                label.Text = "CURRAL\n" .. player.DisplayName
+            local label = sign and sign:FindFirstChildWhichIsA("BillboardGui", true)
+            local card = label and label:FindFirstChildWhichIsA("Frame")
+            local title = card and card:FindFirstChild("Title")
+            local subtitle = card and card:FindFirstChild("Subtitle")
+            if title then
+                title.Text = "YOUR FARM"
             end
-
+            if subtitle then
+                subtitle.Text = player.DisplayName
+            end
             WorldBuilder.TeleportToBase(player)
             return base
         end
     end
-
     return nil
 end
 
 function WorldBuilder.GetOwnedBase(player)
     local base = basesByUserId[player.UserId]
-
     if base and base.Parent and base:GetAttribute("OwnerUserId") == player.UserId then
         return base
     end
-
     return nil
 end
 
 function WorldBuilder.TeleportToBase(player)
     local base = WorldBuilder.GetOwnedBase(player)
-
     if not base then
         return false
     end
-
     local spawnPart = base:FindFirstChild("BaseSpawn")
-
-    if not spawnPart then
+    local character = player.Character
+    if not spawnPart or not character or not character.Parent then
         return false
     end
-
-    local character = player.Character
-
-    if character and character.Parent then
-        pcall(function()
-            character:PivotTo(spawnPart.CFrame * CFrame.new(0, 3, 0))
-        end)
-        return true
-    end
-
-    return false
+    pcall(function()
+        character:PivotTo(spawnPart.CFrame * CFrame.new(0, 3, 0))
+    end)
+    return true
 end
 
 function WorldBuilder.ReleaseBase(player)
     local base = basesByUserId[player.UserId]
-
     if base and base.Parent then
         base:SetAttribute("OwnerUserId", 0)
+        local sign = base:FindFirstChild("OwnerSign")
+        local label = sign and sign:FindFirstChildWhichIsA("BillboardGui", true)
+        local card = label and label:FindFirstChildWhichIsA("Frame")
+        local title = card and card:FindFirstChild("Title")
+        local subtitle = card and card:FindFirstChild("Subtitle")
+        if title then
+            title.Text = "FARM"
+        end
+        if subtitle then
+            subtitle.Text = "OWNER: FREE"
+        end
+        local display = base:FindFirstChild("StoredAnimals")
+        if display then
+            for _, child in ipairs(display:GetChildren()) do
+                if child:IsA("Model") and child.Name:match("^Stored_") then
+                    child:Destroy()
+                end
+            end
+        end
     end
-
     basesByUserId[player.UserId] = nil
     player:SetAttribute("OwnedBase", nil)
 end
 
-function WorldBuilder.GetTrainingParts()
-    return allTrainingParts
+function WorldBuilder.SetBarnAnimals(player, animalIds)
+    local base = WorldBuilder.GetOwnedBase(player)
+    if not base then
+        return false
+    end
+    local display = base:FindFirstChild("StoredAnimals")
+    if not display then
+        return false
+    end
+    local slots = {}
+    for _, child in ipairs(display:GetChildren()) do
+        if child:IsA("BasePart") and child.Name:match("^AnimalSlot_") then
+            table.insert(slots, child)
+        end
+    end
+    table.sort(slots, function(a, b)
+        return (a:GetAttribute("SlotIndex") or 0) < (b:GetAttribute("SlotIndex") or 0)
+    end)
+
+    for _, child in ipairs(display:GetChildren()) do
+        if child:IsA("Model") and child.Name:match("^Stored_") then
+            child:Destroy()
+        end
+    end
+
+    local capacity = Config.Barn.BaseSlots
+    if player:GetAttribute("HasExtraBarnSlots") == true then
+        capacity += Config.Barn.ExtraBarnSlots
+    end
+
+    for index, slot in ipairs(slots) do
+        local animalId = animalIds[index]
+        local labelPart = display:FindFirstChild("SlotLabel_" .. index)
+        local label = labelPart and labelPart:FindFirstChildWhichIsA("BillboardGui", true)
+        local card = label and label:FindFirstChildWhichIsA("Frame")
+        local title = card and card:FindFirstChild("Title")
+        local subtitle = card and card:FindFirstChild("Subtitle")
+        if animalId and index <= capacity then
+            local spec = Catalog.Get(animalId)
+            if spec then
+                createBarnAnimalDisplay(display, animalId, slot.Position + Vector3.new(0, 0.1, 0), index)
+                if title then
+                    title.Text = spec.DisplayName
+                end
+                if subtitle then
+                    subtitle.Text = "$" .. tostring(spec.IncomePerSecond) .. "/s"
+                end
+                slot.Color = spec.Color
+                slot.Transparency = 0.08
+            end
+        elseif index > capacity then
+            if title then
+                title.Text = "LOCKED SLOT"
+            end
+            if subtitle then
+                subtitle.Text = "VIP UPGRADE"
+            end
+            slot.Color = Color3.fromRGB(92, 95, 83)
+            slot.Transparency = 0.3
+        else
+            if title then
+                title.Text = "SLOT " .. tostring(index)
+            end
+            if subtitle then
+                subtitle.Text = "EMPTY"
+            end
+            slot.Color = Color3.fromRGB(223, 213, 177)
+            slot.Transparency = 0.08
+        end
+    end
+    return true
+end
+
+function WorldBuilder.GetDepositPads()
+    local results = {}
+    for _, base in ipairs(basesFolder:GetChildren()) do
+        local pad = base:FindFirstChild("BarnDepositPad", true)
+        if pad then
+            table.insert(results, { Base = base, Pad = pad })
+        end
+    end
+    return results
+end
+
+function WorldBuilder.GetIncomePads()
+    local results = {}
+    for _, base in ipairs(basesFolder:GetChildren()) do
+        local pad = base:FindFirstChild("IncomeCollectPad", true)
+        if pad then
+            table.insert(results, { Base = base, Pad = pad })
+        end
+    end
+    return results
 end
 
 return WorldBuilder
