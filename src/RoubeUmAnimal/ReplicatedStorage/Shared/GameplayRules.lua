@@ -89,7 +89,7 @@ function Rules.UpgradePrice(statName, data, config)
     if not Rules.IsFinite(value) then
         return config.CoinsLimit
     end
-    return math.clamp(math.floor(value), 1, config.CoinsLimit)
+    return math.clamp(math.floor(value + 0.0000001), 1, config.CoinsLimit)
 end
 
 return Rules
