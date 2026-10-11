@@ -538,6 +538,30 @@ local function buildDecorations()
         createTree(mapFolder, Vector3.new(320, 0, 0) + offset, Color3.fromRGB(75, 60, 42), Color3.fromRGB(31, 102, 71), 1.1)
     end
 
+    for index, offset in ipairs({
+        Vector3.new(-54, 0, -45),
+        Vector3.new(-35, 0, -60),
+        Vector3.new(0, 0, -63),
+        Vector3.new(35, 0, -60),
+        Vector3.new(54, 0, -42),
+        Vector3.new(57, 0, -10),
+        Vector3.new(56, 0, 25),
+        Vector3.new(39, 0, 57),
+        Vector3.new(10, 0, 62),
+        Vector3.new(-20, 0, 62),
+        Vector3.new(-48, 0, 54),
+        Vector3.new(-59, 0, 16),
+    }) do
+        local scale = index % 3 == 0 and 0.76 or 0.9
+        createTree(mapFolder, Vector3.new(320, 0, 0) + offset, Color3.fromRGB(65, 54, 41), Color3.fromRGB(38, 113, 76), scale)
+    end
+
+    createRock(mapFolder, Vector3.new(548, 4, -48), Vector3.new(32, 10, 28), Color3.fromRGB(67, 49, 55), Vector3.new(0.08, 0.4, 0.04))
+    createRock(mapFolder, Vector3.new(548, 10, -48), Vector3.new(23, 9, 20), Color3.fromRGB(54, 43, 50), Vector3.new(0.02, 0.8, 0.04))
+    createRock(mapFolder, Vector3.new(548, 15, -48), Vector3.new(15, 7, 14), Color3.fromRGB(46, 39, 47), Vector3.new(0.06, 0.2, 0.02))
+    local craterGlow = part(mapFolder, "VolcanoCraterGlow", Vector3.new(7, 2, 7), CFrame.new(548, 17.4, -48), COLORS.Lava, Enum.Material.Neon, Enum.PartType.Ball, false)
+    addLight(craterGlow, COLORS.Lava, 2.4, 32)
+
     for index = 1, 10 do
         local angle = math.rad(index * 36)
         local x = 495 + math.cos(angle) * 64
@@ -630,7 +654,7 @@ function WorldBuilder.Build()
     part(mapFolder, "HubGround", Vector3.new(145, 2, 145), CFrame.new(0, -1, 0), COLORS.Grass, Enum.Material.Grass)
     part(mapFolder, "FarmPath", Vector3.new(45, 1, 18), CFrame.new(80, -0.35, 0), Color3.fromRGB(214, 193, 151), Enum.Material.Ground)
     part(mapFolder, "JunglePath", Vector3.new(48, 1, 18), CFrame.new(240, -0.35, 0), Color3.fromRGB(123, 101, 70), Enum.Material.Ground)
-    part(mapFolder, "VolcanoPath", Vector3.new(34, 1, 18), CFrame.new(396, -0.35, 0), Color3.fromRGB(78, 65, 71), Enum.Material.Slate)
+    part(mapFolder, "VolcanoPath", Vector3.new(48, 1, 18), CFrame.new(396, -0.35, 0), Color3.fromRGB(78, 65, 71), Enum.Material.Slate)
 
     createBiome(mapFolder, "Farm", Vector3.new(160, -1, 0), Vector3.new(120, 2, 132), COLORS.FarmGrass, Enum.Material.Grass, "ZONA 1 · FAZENDA", "Animais comuns e raros", Color3.fromRGB(255, 229, 150))
     createBiome(mapFolder, "Jungle", Vector3.new(320, -1, 0), Vector3.new(120, 2, 138), COLORS.JungleGrass, Enum.Material.Grass, "ZONA 2 · SELVA MÍSTICA", "Território dos guardiões", Color3.fromRGB(91, 255, 190))
@@ -682,7 +706,7 @@ function WorldBuilder.Build()
 
     createR6Guardian(Vector3.new(161, 0, 42), "Guardiao_Fazenda", Color3.fromRGB(65, 117, 70), 44)
     createR6Guardian(Vector3.new(320, 0, 45), "Guardiao_Selva", Color3.fromRGB(46, 95, 84), 62)
-    createR6Guardian(Vector3.new(501, 0, -52), "Guardiao_Vulcao", Color3.fromRGB(103, 56, 58), 72)
+    createR6Guardian(Vector3.new(501, 0, -30), "Guardiao_Vulcao", Color3.fromRGB(103, 56, 58), 72)
 
     return root
 end
