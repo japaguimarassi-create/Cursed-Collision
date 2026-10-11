@@ -16,6 +16,7 @@ local productPromptRemote = remotes:WaitForChild("PromptStackableProduct")
 local rebirthRequestRemote = remotes:WaitForChild("RequestRebirth")
 local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("AnimalCatalog"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local MonetizationIds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("MonetizationIds"))
 
 local COLORS = {
     Background = Color3.fromRGB(22, 30, 44),
@@ -309,8 +310,8 @@ local function resizeUI()
     statsPanel.Size = UDim2.new(0.96, 0, 0, 86)
     navPanel.Size = UDim2.new(0.94, 0, 0, 62)
 
-    local width = math.max(260, math.min(610, viewport.X - 24, viewport.X * 0.92))
-    local height = math.max(230, math.min(540, viewport.Y - 64, viewport.Y * 0.78))
+    local width = math.max(220, math.min(610, viewport.X - 20, viewport.X * 0.94))
+    local height = math.max(170, math.min(540, viewport.Y - 48, viewport.Y * 0.82))
     modal.Size = UDim2.fromOffset(width, height)
 end
 
@@ -339,10 +340,10 @@ local function addInfo(text, order)
     return object
 end
 
-local function addAction(name, titleText, description, buttonText, color, callback, order, disabled)
+local function addAction(name, titleText, description, buttonText, color, callback, order, disabled, markerText)
     local card = Instance.new("Frame")
     card.Name = name .. "Card"
-    card.Size = UDim2.new(1, -4, 0, 74)
+    card.Size = UDim2.new(1, -4, 0, markerText and 84 or 74)
     card.BackgroundColor3 = COLORS.PanelLight
     card.BorderSizePixel = 0
     card.LayoutOrder = order or 1
@@ -363,13 +364,33 @@ local function addAction(name, titleText, description, buttonText, color, callba
     action.ZIndex = 34
     action.Parent = card
 
+    local textOffset = markerText and 49 or 9
+    local textWidth = markerText and 0.46 or 0.66
+    if markerText then
+        local marker = Instance.new("TextLabel")
+        marker.Name = "DistinctiveMarker"
+        marker.Size = UDim2.fromOffset(34, 34)
+        marker.Position = UDim2.new(0, 8, 0.5, -17)
+        marker.BackgroundColor3 = color or COLORS.Blue
+        marker.BorderSizePixel = 0
+        marker.Font = Enum.Font.GothamBlack
+        marker.Text = markerText
+        marker.TextColor3 = COLORS.Text
+        marker.TextScaled = true
+        marker.TextWrapped = true
+        marker.ZIndex = 35
+        marker.Parent = action
+        corner(marker, 9)
+        stroke(marker, COLORS.Text, 1, 0.7)
+    end
+
     local titleLabel = makeLabel(
         action,
         "Title",
         titleText,
-        UDim2.new(0.66, -14, 0, 26),
-        UDim2.new(0, 9, 0, 7),
-        14,
+        UDim2.new(textWidth, -14, 0, 26),
+        UDim2.new(0, textOffset, 0, 7),
+        markerText and 12 or 14,
         color or COLORS.Text
     )
     titleLabel.ZIndex = 35
@@ -379,8 +400,8 @@ local function addAction(name, titleText, description, buttonText, color, callba
         action,
         "Description",
         description,
-        UDim2.new(0.66, -14, 0, 30),
-        UDim2.new(0, 9, 0, 34),
+        UDim2.new(markerText and 0.46 or 0.66, -8, 0, markerText and 38 or 30),
+        UDim2.new(0, textOffset, 0, 34),
         11,
         COLORS.Muted
     )
@@ -390,8 +411,8 @@ local function addAction(name, titleText, description, buttonText, color, callba
         action,
         "ButtonText",
         buttonText or "ABRIR",
-        UDim2.new(0.30, -4, 0, 36),
-        UDim2.new(0.70, 0, 0.5, -18),
+        UDim2.new(0.29, -4, 0, markerText and 42 or 36),
+        UDim2.new(0.70, 0, 0.5, markerText and -21 or -18),
         10,
         disabled and COLORS.Muted or COLORS.Text,
         Enum.TextXAlignment.Center
@@ -487,80 +508,34 @@ end
 
 local function renderShop()
     clearContent()
-    addInfo("Melhorias com moedas, gamepasses permanentes e produtos acumuláveis. Os IDs de compra precisam estar configurados pelo criador.", 1)
+    addInfo("LOJA DE MELHORIAS — use suas moedas para evoluir sem Robux.", 1)
+    addAction("BuySpeed", "Treino de Velocidade", "Compra +1 nível de velocidade. O custo cresce conforme você evolui.", "MELHORAR", COLORS.Blue, function() upgradeRemote:FireServer("Speed") end, 2, false, "SPD")
+    addAction("BuyStrength", "Treino de Força", "Compra +5 de Força. Necessária para roubar espécies mais raras.", "MELHORAR", COLORS.Red, function() upgradeRemote:FireServer("Strength") end, 3, false, "STR")
+    addInfo("DICA: a esteira aumenta Velocidade e o supino aumenta Força sem gastar moedas.", 4)
+end
 
-    addAction(
-        "BuySpeed",
-        "Melhorar Velocidade",
-        "Aumenta 1 nível usando as moedas do jogo.",
-        "COMPRAR",
-        COLORS.Blue,
-        function()
-            upgradeRemote:FireServer("Speed")
-        end,
-        2
-    )
-
-    addAction(
-        "BuyStrength",
-        "Melhorar Força",
-        "Aumenta 5 pontos de Força usando moedas.",
-        "COMPRAR",
-        COLORS.Red,
-        function()
-            upgradeRemote:FireServer("Strength")
-        end,
-        3
-    )
-
+local function renderPasses()
+    clearContent()
+    addInfo("PASSES PERMANENTES — cada item tem um efeito diferente e é comprado uma única vez.", 1)
     local passes = {
-        { key = "DoubleSpeed", title = "2x Velocidade", desc = "Pass permanente: duplica o movimento e a velocidade de treino.", attr = "HasDoubleSpeed", color = COLORS.Blue },
-        { key = "DoubleStrength", title = "2x Força", desc = "Pass permanente: dobra os ganhos de treino e os upgrades de Força.", attr = "HasDoubleStrength", color = COLORS.Purple },
-        { key = "DoubleCoins", title = "2x Moedas", desc = "Pass permanente: dobra o valor-base das vendas.", attr = "HasDoubleCoins", color = COLORS.Gold },
-        { key = "VIPSpeed", title = "VIP +50 Velocidade", desc = "Pass permanente que adiciona o bônus VIP, respeitando o limite.", attr = "HasVIPSpeed", color = COLORS.Teal },
+        { key = "DoubleSpeed", title = "Turbo: 2x Velocidade", desc = "Dobra a velocidade de movimento e os ganhos da esteira.", attr = "HasDoubleSpeed", color = COLORS.Blue, marker = "2X\nSPD", cta = "TURBO" },
+        { key = "DoubleStrength", title = "Força: 2x Treino", desc = "Dobra os ganhos de Força no supino e nos upgrades com moedas.", attr = "HasDoubleStrength", color = COLORS.Purple, marker = "2X\nSTR", cta = "FORÇA" },
+        { key = "DoubleCoins", title = "Magnata: 2x Moedas", desc = "Receba o dobro de moedas ao vender animais.", attr = "HasDoubleCoins", color = COLORS.Gold, marker = "2X\n$", cta = "MOEDAS" },
+        { key = "VIPSpeed", title = "VIP: +50 Velocidade", desc = "Bônus fixo de +50 na velocidade-base, respeitando o limite do jogo.", attr = "HasVIPSpeed", color = COLORS.Teal, marker = "VIP", cta = "VIP" },
     }
-
     for index, item in ipairs(passes) do
         local active = player:GetAttribute(item.attr) == true
-        addAction(
-            item.key,
-            active and (item.title .. " — ATIVO") or item.title,
-            item.desc,
-            active and "JÁ POSSUI" or "GAMEPASS",
-            item.color,
-            function()
-                passRequestRemote:FireServer(item.key)
-            end,
-            3 + index,
-            active
-        )
+        local passId = MonetizationIds.Passes[item.key]
+        local configured = type(passId) == "number" and passId > 0
+        local description = item.desc
+        if not configured then description = description .. " ID pendente no Creator Dashboard." end
+        addAction(item.key, active and (item.title .. " — ATIVO") or item.title, description, active and "ATIVO" or (configured and item.cta or "ID PENDENTE"), item.color, function() passRequestRemote:FireServer(item.key) end, index + 2, active, item.marker)
     end
-
-    addAction(
-        "StackableSpeed",
-        "+10 Velocidade",
-        "Developer Product repetível. Cada compra soma até o limite de Velocidade.",
-        "COMPRAR",
-        COLORS.Green,
-        function()
-            productRequestRemote:FireServer("StackableSpeed")
-        end,
-        8,
-        (tonumber(player:GetAttribute("SpeedLevel")) or 0) >= Config.MaxSpeedLevel
-    )
-
-    addAction(
-        "StackableStrength",
-        "+10 Força",
-        "Developer Product repetível. Cada compra soma até o limite de Força.",
-        "COMPRAR",
-        COLORS.Orange,
-        function()
-            productRequestRemote:FireServer("StackableStrength")
-        end,
-        9,
-        (tonumber(player:GetAttribute("Strength")) or 0) >= Config.MaxStrength
-    )
+    addInfo("PRODUTOS ACUMULÁVEIS — compras repetíveis, com entrega confirmada e salva pelo servidor.", 7)
+    local speedConfigured = type(MonetizationIds.Products.StackableSpeed) == "number" and MonetizationIds.Products.StackableSpeed > 0
+    addAction("StackableSpeed", "+10 Velocidade", speedConfigured and "Compra repetível que soma +10 níveis até o limite." or "Compra repetível: +10 níveis. ID pendente no Creator Dashboard.", speedConfigured and "COMPRAR" or "ID PENDENTE", COLORS.Green, function() productRequestRemote:FireServer("StackableSpeed") end, 8, (tonumber(player:GetAttribute("SpeedLevel")) or 0) >= Config.MaxSpeedLevel, "+10\nSPD")
+    local strengthConfigured = type(MonetizationIds.Products.StackableStrength) == "number" and MonetizationIds.Products.StackableStrength > 0
+    addAction("StackableStrength", "+10 Força", strengthConfigured and "Compra repetível que soma +10 de Força até o limite." or "Compra repetível: +10 de Força. ID pendente no Creator Dashboard.", strengthConfigured and "COMPRAR" or "ID PENDENTE", COLORS.Orange, function() productRequestRemote:FireServer("StackableStrength") end, 9, (tonumber(player:GetAttribute("Strength")) or 0) >= Config.MaxStrength, "+10\nSTR")
 end
 
 local biomeOrder = {
@@ -673,12 +648,14 @@ end
 
 local function openScreen(name)
     activeScreen = name
-    modalTitle.Text = name == "Shop" and "LOJA & PASSES"
+    modalTitle.Text = name == "Shop" and "LOJA DE MELHORIAS"
+        or name == "Passes" and "PASSES & ROBUX"
         or name == "Animals" and "CATÁLOGO DE ANIMAIS"
         or "RENASCIMENTO"
-
     if name == "Shop" then
         renderShop()
+    elseif name == "Passes" then
+        renderPasses()
     elseif name == "Animals" then
         renderAnimals()
     else
@@ -701,7 +678,7 @@ makeButton(
     navPanel,
     "OpenShop",
     "LOJA",
-    UDim2.new(1 / 3, -10, 1, -12),
+    UDim2.new(0.25, -8, 1, -12),
     UDim2.new(),
     COLORS.Green,
     function()
@@ -711,27 +688,39 @@ makeButton(
 
 makeButton(
     navPanel,
-    "OpenAnimals",
-    "ANIMAIS",
-    UDim2.new(1 / 3, -10, 1, -12),
+    "OpenPasses",
+    "PASSES",
+    UDim2.new(0.25, -8, 1, -12),
     UDim2.new(),
-    COLORS.Purple,
+    COLORS.Blue,
     function()
-        openScreen("Animals")
+        openScreen("Passes")
     end
 ).LayoutOrder = 2
 
 makeButton(
     navPanel,
+    "OpenAnimals",
+    "ANIMAIS",
+    UDim2.new(0.25, -8, 1, -12),
+    UDim2.new(),
+    COLORS.Purple,
+    function()
+        openScreen("Animals")
+    end
+).LayoutOrder = 3
+
+makeButton(
+    navPanel,
     "OpenRebirth",
     "RENASCER",
-    UDim2.new(1 / 3, -10, 1, -12),
+    UDim2.new(0.25, -8, 1, -12),
     UDim2.new(),
     COLORS.Orange,
     function()
         openScreen("Rebirth")
     end
-).LayoutOrder = 3
+).LayoutOrder = 4
 
 local function promptPass(passId)
     if type(passId) ~= "number" or passId <= 0 then
@@ -784,6 +773,8 @@ for _, attribute in ipairs({
         updateStats()
         if activeScreen == "Shop" then
             renderShop()
+        elseif activeScreen == "Passes" then
+            renderPasses()
         elseif activeScreen == "Animals" then
             renderAnimals()
         elseif activeScreen == "Rebirth" then
