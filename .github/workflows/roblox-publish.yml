@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Confirm publishing to the ROUBE UM ANIMAL experience configured in repository variables"
+        description: "Confirm publishing ROUBE UM ANIMAL to the existing confirmed Roblox experience"
         required: true
         type: boolean
         default: false
@@ -64,22 +64,18 @@ jobs:
           mkdir -p build
           rojo build default.project.json --output build/RoubeUmAnimal.rbxl
           test -s build/RoubeUmAnimal.rbxl
-      - name: Publish only to explicitly configured target
+      - name: Publish only to the confirmed existing experience
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          UNIVERSE_ID: ${{ vars.ROUBE_ANIMAL_UNIVERSE_ID }}
-          PLACE_ID: ${{ vars.ROUBE_ANIMAL_PLACE_ID }}
+          UNIVERSE_ID: ${{ vars.ROUBE_ANIMAL_UNIVERSE_ID || '5290480963' }}
+          PLACE_ID: ${{ vars.ROUBE_ANIMAL_PLACE_ID || '15338267657' }}
         run: |
           set -euo pipefail
           test -n "${ROBLOX_API_KEY}" || { echo "::error::Missing repository secret ROBLOX_API_KEY"; exit 1; }
-          test -n "${UNIVERSE_ID}" || { echo "::error::Set repository variable ROUBE_ANIMAL_UNIVERSE_ID"; exit 1; }
-          test -n "${PLACE_ID}" || { echo "::error::Set repository variable ROUBE_ANIMAL_PLACE_ID"; exit 1; }
+          test -n "${UNIVERSE_ID}" || { echo "::error::Universe ID is empty"; exit 1; }
+          test -n "${PLACE_ID}" || { echo "::error::Place ID is empty"; exit 1; }
           [[ "${UNIVERSE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::Universe ID must be numeric"; exit 1; }
           [[ "${PLACE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::Place ID must be numeric"; exit 1; }
-          if [[ "${UNIVERSE_ID}" == "5290480963" || "${PLACE_ID}" == "15338267657" ]]; then
-            echo "::error::Refusing to overwrite the retired Collision Battlestar experience."
-            exit 1
-          fi
           endpoint="https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published"
           code="$(curl --silent --show-error --location --request POST --url "${endpoint}" --header "x-api-key: ${ROBLOX_API_KEY}" --header "Content-Type: application/octet-stream" --data-binary "@build/RoubeUmAnimal.rbxl" --output build/publish-response.json --write-out "%{http_code}")"
           cat build/publish-response.json
