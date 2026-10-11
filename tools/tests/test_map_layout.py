@@ -15,6 +15,8 @@ spawn_ids = set(re.findall(r'\{\s*"([A-Za-z0-9]+)",\s*CFrame\.new\(', WORLD))
 assert len(animal_ids) >= 20, "Expected a varied animal catalogue"
 assert animal_ids.issubset(spawn_ids), "Every catalog animal must have a world spawn"
 assert "for index = 1, 8 do" in WORLD, "Expected eight player farms"
+assert "Vector3.new(math.cos(angle) * 86, 0, math.sin(angle) * 86)" in WORLD, "Farms must leave clearance around the main escape path"
+assert "Vector3.new(230, 2, 230), CFrame.new(-10, -1, 0)" in WORLD, "Hub ground must cover all eight farm plots"
 assert 'part(base, "BarnDepositPad"' in WORLD, "Barn deposit pad missing"
 assert 'part(base, "IncomeCollectPad"' in WORLD, "Income collection pad missing"
 assert 'SetAttribute("TrainingType", "Treadmill")' in WORLD, "Speed treadmill missing"

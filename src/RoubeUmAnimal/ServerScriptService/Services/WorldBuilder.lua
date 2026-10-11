@@ -662,7 +662,7 @@ function WorldBuilder.Build()
     workspace.FallenPartsDestroyHeight = -120
 
     step("Hub", function()
-        part(mapFolder, "HubGround", Vector3.new(150, 2, 150), CFrame.new(0, -1, 0), Color3.fromRGB(130, 201, 104), Enum.Material.Grass)
+        part(mapFolder, "HubGround", Vector3.new(230, 2, 230), CFrame.new(-10, -1, 0), Color3.fromRGB(130, 201, 104), Enum.Material.Grass)
         part(mapFolder, "MainPath", Vector3.new(1090, 0.18, 25), CFrame.new(495, 0.09, 0), Color3.fromRGB(206, 183, 143), Enum.Material.Ground)
         part(mapFolder, "PathEdgeLeft", Vector3.new(1090, 0.2, 0.7), CFrame.new(495, 0.13, -13), COLORS.Gold, Enum.Material.SmoothPlastic, nil, false)
         part(mapFolder, "PathEdgeRight", Vector3.new(1090, 0.2, 0.7), CFrame.new(495, 0.13, 13), COLORS.Gold, Enum.Material.SmoothPlastic, nil, false)
@@ -699,7 +699,7 @@ function WorldBuilder.Build()
 
     for index = 1, 8 do
         local angle = math.rad((index - 1) * 45 + 22.5)
-        local position = Vector3.new(math.cos(angle) * 54, 0, math.sin(angle) * 54)
+        local position = Vector3.new(math.cos(angle) * 86, 0, math.sin(angle) * 86)
         step("Farm" .. index, function()
             createBase(index, position, angle)
         end)
