@@ -130,7 +130,7 @@ O código preserva um Sky existente. Para trocar o céu, escolha um skybox de us
 - Dados usam UpdateAsync e um token de sessão com expiração. Ainda é necessário testar comportamento em falhas de rede e reconexão antes de produção.
 - A arte dos animais e os guardiões são geométricos. Os portais, flores, cogumelos, cristais e lanternas foram construídos com peças nativas para não depender de assets externos. Este é um protótipo funcional de gameplay, não uma produção AAA final.
 - A construção do mapa informa a etapa que falhou nos logs do servidor e marca MapReady=false quando faltar um bioma, um curral, a área de spawn ou todos os animais. Teste o valor de Workspace.RoubeUmAnimal.MapReady no servidor privado.
-- A publicação no Roblox é manual e requer IDs próprios configurados no GitHub Actions. Não configure o novo projeto para sobrescrever a antiga experiência.
+- A publicação automatizada usa a experiência existente que foi explicitamente confirmada pelo criador. Alterações em código só são publicadas quando o commit inclui a marca de lançamento ou quando o workflow é executado manualmente com confirmação.
 
 
 ## Monetização, HUD e renascimento

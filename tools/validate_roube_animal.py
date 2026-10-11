@@ -133,11 +133,11 @@ def main():
     if "5290480963" not in publisher or "15338267657" not in publisher:
         fail("publisher target must match the explicitly confirmed existing experience")
     monetization_ids = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua")
-    pass_section = re.search(r"Passes = table\\.freeze\\(\\{(.*?)\\}\\)", monetization_ids, re.S)
-    product_section = re.search(r"Products = table\\.freeze\\(\\{(.*?)\\}\\)", monetization_ids, re.S)
+    pass_section = re.search(r"Passes = table\.freeze\(\{(.*?)\}\)", monetization_ids, re.S)
+    product_section = re.search(r"Products = table\.freeze\(\{(.*?)\}\)", monetization_ids, re.S)
     if not pass_section or not product_section:
         fail("monetization ID registry could not be parsed")
-    configured_ids = [int(value) for value in re.findall(r"=\\s*(\\d+)", pass_section.group(1) + product_section.group(1)) if int(value) > 0]
+    configured_ids = [int(value) for value in re.findall(r"=\s*(\d+)", pass_section.group(1) + product_section.group(1)) if int(value) > 0]
     if len(configured_ids) != len(set(configured_ids)):
         fail("configured gamepass and Developer Product IDs must be unique")
 

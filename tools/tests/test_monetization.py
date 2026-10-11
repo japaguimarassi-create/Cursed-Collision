@@ -6,9 +6,9 @@ IDS = (ROOT / "src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua").
 
 blocks = {}
 for section in ("Passes", "Products"):
-    match = re.search(rf"{section} = table\\.freeze\\(\\{{(.*?)\\}}\\)", IDS, re.S)
+    match = re.search(rf"{section} = table\.freeze\(\{{(.*?)\}}\)", IDS, re.S)
     assert match, f"{section} registry missing"
-    blocks[section] = dict((name, int(value)) for name, value in re.findall(r"(\\w+)\\s*=\\s*(\\d+)", match.group(1)))
+    blocks[section] = dict((name, int(value)) for name, value in re.findall(r"(\w+)\s*=\s*(\d+)", match.group(1)))
 
 assert set(blocks["Passes"]) == {"DoubleSpeed", "DoubleStrength", "DoubleCoins", "VIPSpeed"}
 assert set(blocks["Products"]) == {"StackableSpeed", "StackableStrength"}
