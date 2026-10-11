@@ -149,6 +149,14 @@ function CoreKernel.Start()
     setAttribute(core, "FallbackPresent", false)
 
     local modules = { WorldBuilder = WorldBuilder, MapProbe = mapProbe }
+    if mapProbe and type(mapProbe.StartVirtualPlayer) == "function" then
+        local probeStarted = safeCall(core, states, "MapProbe.StartVirtualPlayer", function()
+            assert(mapProbe.StartVirtualPlayer(WorldBuilder, Config), "Virtual player scan did not start")
+        end)
+        if not probeStarted then
+            setAttribute(core, "BootState", "Degraded")
+        end
+    end
     local serviceNames = {
         "ProfileService", "AnimalService", "TrainingService", "ShopService", "PassService",
         "GuardianService", "AnimalBrain", "StackableProductService", "RebirthService",
