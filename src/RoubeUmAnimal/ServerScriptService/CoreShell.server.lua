@@ -167,9 +167,21 @@ end)
 
 task.spawn(function()
     while core.Parent do
+        local previousRemotes = remotes
+        remotes = ensureInstance(ReplicatedStorage, "RoubeAnimalRemotes", "Folder")
+        local remotesRepaired = previousRemotes ~= remotes
         for _, name in ipairs(remoteNames) do
-            ensureInstance(remotes, name, "RemoteEvent")
+            local previousRemote = remotes:FindFirstChild(name)
+            local currentRemote = ensureInstance(remotes, name, "RemoteEvent")
+            if previousRemote ~= currentRemote then
+                remotesRepaired = true
+            end
         end
+        if remotesRepaired and core:GetAttribute("BootState") == "Ready" then
+            core:SetAttribute("BootState", "Degraded")
+            core:SetAttribute("LastFailure", "A gameplay remote was restored after startup. Service listeners may need a new server session.")
+        end
+
         local activeRoot = Workspace:FindFirstChild("StealAnAnimal")
         if not activeRoot then
             local wasReady = core:GetAttribute("WorldState") == "Ready"
@@ -181,8 +193,14 @@ task.spawn(function()
                 core:SetAttribute("LastFailure", "Active map root disappeared; fallback world restored.")
             end
         elseif activeRoot:GetAttribute("MapReady") ~= true then
+            local wasReady = core:GetAttribute("WorldState") == "Ready" and activeRoot:GetAttribute("CoreFallback") ~= true
             ensureFallbackWorld()
             core:SetAttribute("FallbackPresent", true)
+            if wasReady then
+                core:SetAttribute("BootState", "Degraded")
+                core:SetAttribute("WorldState", "Degraded")
+                core:SetAttribute("LastFailure", "Active map lost readiness; fallback floor/spawn checked.")
+            end
         else
             core:SetAttribute("FallbackPresent", false)
         end
