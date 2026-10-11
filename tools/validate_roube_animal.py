@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -8,6 +9,7 @@ PROJECT = ROOT / "default.project.json"
 REQUIRED_FILES = [
     "src/RoubeUmAnimal/ReplicatedStorage/Shared/Config.lua",
     "src/RoubeUmAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua",
+    "src/RoubeUmAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
     "src/RoubeUmAnimal/ServerScriptService/Main.server.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/ProfileService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua",
@@ -17,7 +19,13 @@ REQUIRED_FILES = [
     "src/RoubeUmAnimal/ServerScriptService/Services/PassService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua",
     "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
+    "tools/tests/run.luau",
     "docs/ROUBE_UM_ANIMAL.md",
+]
+
+RETIRED_WORKFLOWS = [
+    ".github/workflows/developer-product-provision.yml",
+    ".github/workflows/gamepass-provision.yml",
 ]
 
 def fail(message):
@@ -34,12 +42,14 @@ def main():
     missing = [name for name in REQUIRED_FILES if not (ROOT / name).is_file()]
     if missing:
         fail("missing required files: " + ", ".join(missing))
+    for path in RETIRED_WORKFLOWS:
+        if (ROOT / path).exists():
+            fail("retired workflow still enabled: " + path)
 
     try:
         project = json.loads(PROJECT.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         fail(f"invalid default.project.json: {exc}")
-
     if project.get("name") != "RoubeUmAnimal":
         fail("default.project.json must target RoubeUmAnimal")
 
@@ -49,7 +59,6 @@ def main():
         "ServerScriptService": "src/RoubeUmAnimal/ServerScriptService",
         "StarterPlayer.StarterPlayerScripts": "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts",
     }
-
     for route, path in expected.items():
         node = tree
         for part_name in route.split("."):
@@ -58,41 +67,69 @@ def main():
             fail(f"project mapping mismatch for {route}")
 
     config = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/Config.lua")
+    catalog = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua")
     profiles = read("src/RoubeUmAnimal/ServerScriptService/Services/ProfileService.lua")
     animals = read("src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua")
     training = read("src/RoubeUmAnimal/ServerScriptService/Services/TrainingService.lua")
+    shop = read("src/RoubeUmAnimal/ServerScriptService/Services/ShopService.lua")
     passes = read("src/RoubeUmAnimal/ServerScriptService/Services/PassService.lua")
     guardians = read("src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua")
     world = read("src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua")
     client = read("src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
+    rules = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/GameplayRules.lua")
 
     checks = [
-        ("DataStore autosave", "AutosaveSeconds = 300" in config and "UpdateAsync" in profiles),
-        ("session locking", "SessionLock" in profiles and "SessionId" in profiles),
-        ("leaderstats", 'ensureValue("Moedas"' in profiles and 'ensureValue("Velocidade"' in profiles and 'ensureValue("Força"' in profiles),
-        ("animal capture and sale", "StealAnimal" in animals and "SellPart" in animals and "RarityMultipliers" in animals),
+        ("DataStore update and session locking", "UpdateAsync" in profiles and "SessionLock" in profiles),
+        ("leaderstats", all(token in profiles for token in ('ensureValue("Moedas"', 'ensureValue("Velocidade"', 'ensureValue("Força"'))),
+        ("capture and sale rules", "Rules.CanCapture" in animals and "Rules.SalePrice" in animals and "RarityMultipliers" in catalog),
+        ("weight movement rule", "Rules.CarrySpeed" in animals and "CarryPenaltyStartRatio" in config),
+        ("shared upgrade rule", "Rules.UpgradePrice" in shop),
         ("training stations", "Treadmill" in training and "BenchPress" in training),
-        ("gamepass ownership checks", "UserOwnsGamePassAsync" in passes and "PromptGamePassPurchaseFinished" in passes),
+        ("gamepass checks", "UserOwnsGamePassAsync" in passes and "PromptGamePassPurchaseFinished" in passes),
         ("guardian pathfinding", "PathfindingService" in guardians and "ComputeAsync" in guardians),
-        ("generated biomes", all(token in world for token in ('"Farm"', '"Jungle"', '"Volcano"'))),
-        ("upgrade and pass buttons", "RequestUpgrade" in client and "RequestGamepass" in client),
+        ("all three biomes", all(token in world for token in ('"Farm"', '"Jungle"', '"Volcano"'))),
+        ("HUD remotes", 'gui.Name = "RoubeUmAnimalHUD"' in client and "RequestUpgrade" in client and "RequestGamepass" in client),
+        ("shared rules API", all(name in rules for name in ("IsFinite", "Integer", "CanCapture", "CarrySpeed", "SalePrice", "UpgradePrice"))),
     ]
-
     failed = [name for name, passed in checks if not passed]
     if failed:
         fail("failed checks: " + ", ".join(failed))
 
-    for name in REQUIRED_FILES:
-        content = read(name)
-        if "TODO" in content or "ADD CODE HERE" in content:
-            fail(f"unfinished placeholder found in {name}")
+    catalog_definitions = re.findall(r'^\s{4}(\w+) = table\.freeze\(\{\s*\n\s{8}Id = "([^"]+)"', catalog, re.MULTILINE)
+    catalog_ids = {animal_id for _, animal_id in catalog_definitions}
+    spawn_ids = set(re.findall(r'\{\s*"([A-Za-z0-9]+)",\s*CFrame\.new\(', world))
+    if not catalog_ids:
+        fail("animal catalogue could not be parsed")
+    missing_spawns = sorted(catalog_ids - spawn_ids)
+    if missing_spawns:
+        fail("catalog animals without map spawns: " + ", ".join(missing_spawns))
 
-    publish = read(".github/workflows/roblox-publish.yml")
-    if "on:\n  push:" in publish or "5290480963" in publish or "15338267657" in publish:
-        fail("production publisher must not auto-publish to the retired experience")
+    max_strength_match = re.search(r"MaxStrength\s*=\s*(\d+)", config)
+    requirements = [int(value) for value in re.findall(r"RequiredStrength\s*=\s*(\d+)", catalog)]
+    if not max_strength_match or not requirements:
+        fail("strength limits could not be validated")
+    if max(requirements) > int(max_strength_match.group(1)):
+        fail("an animal requires more strength than the configured maximum")
+
+    publisher = read(".github/workflows/roblox-publish.yml")
+    for token in ("workflow_dispatch:", "ROBLOX_API_KEY", "ROUBE_ANIMAL_UNIVERSE_ID", "ROUBE_ANIMAL_PLACE_ID"):
+        if token not in publisher:
+            fail("publisher is missing required safety setting: " + token)
+    if "on:\n  push:" in publisher:
+        fail("production publishing must not be automatic")
+
+    for name in REQUIRED_FILES:
+        if name.endswith((".lua", ".luau")):
+            content = read(name)
+            if any(marker in content for marker in ("<<<<<<<", "=======", ">>>>>>>")):
+                fail("merge marker found in " + name)
+            if "TODO" in content or "ADD CODE HERE" in content:
+                fail("unfinished placeholder found in " + name)
+            if "src/CollisionBattlestar/" in content:
+                fail("legacy runtime reference found in " + name)
 
     print(f"Roube Um Animal validation passed: {len(REQUIRED_FILES)} required files checked.")
-    print("Project mappings, saving, capture/sale, training, gamepasses, guardians, UI, and publish guard verified.")
+    print("DataStore, authoritative economy, capture, movement, upgrades, training, passes, guardians, map spawns and publisher controls verified.")
 
 if __name__ == "__main__":
     main()

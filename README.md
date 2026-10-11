@@ -34,9 +34,11 @@ A implementação Luau está em src/RoubeUmAnimal/. A configuração Rojo está 
 Com Rokit instalado:
 
     python3 tools/validate_roube_animal.py
+    luau tools/tests/run.luau
+    python3 tools/tests/test_map_layout.py
     rojo build default.project.json --output build/RoubeUmAnimal.rbxl
 
-O GitHub Actions executa a validação estrutural e constrói um arquivo de experiência para inspeção.
+O GitHub Actions testa regras de captura, venda, peso e upgrades; verifica a cobertura do mapa, analisa toda a sintaxe Luau e compila um arquivo de experiência para inspeção. Isso não substitui um teste dentro do Roblox Studio.
 
 ## Configuração necessária antes da produção
 

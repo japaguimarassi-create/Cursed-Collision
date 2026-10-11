@@ -1,4 +1,4 @@
-name: LuaSmith Scheduled Maintenance
+name: Roube Um Animal - Scheduled Validation
 
 on:
   schedule:
@@ -37,7 +37,7 @@ jobs:
           python3 tools/tests/test_map_layout.py
           rm -rf build
           mkdir -p build
-          rojo build default.project.json --output build/CollisionBattlestar.rbxl
+          rojo build default.project.json --output build/RoubeUmAnimal.rbxl
           test -s build/CollisionBattlestar.rbxl
       - name: Open maintenance PR
         uses: peter-evans/create-pull-request@v7

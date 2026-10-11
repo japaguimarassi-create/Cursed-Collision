@@ -27,6 +27,10 @@ jobs:
           cache: true
       - name: Validate project structure and gameplay wiring
         run: python3 tools/validate_roube_animal.py
+      - name: Run gameplay rule tests
+        run: luau tools/tests/run.luau
+      - name: Validate map and animal spawn coverage
+        run: python3 tools/tests/test_map_layout.py
       - name: Install pinned Luau syntax checker
         shell: bash
         run: |

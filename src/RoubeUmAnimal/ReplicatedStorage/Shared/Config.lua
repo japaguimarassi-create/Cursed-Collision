@@ -6,7 +6,7 @@ local Config = {
     ProfileLoadAttempts = 5,
     CoinsLimit = 2000000000,
     MaxSpeedLevel = 80,
-    MaxStrength = 10000,
+    MaxStrength = 200,
     BaseWalkSpeed = 16,
     SpeedPerLevel = 0.75,
     VipSpeedBonus = 50,
@@ -29,9 +29,11 @@ local Config = {
     },
     Upgrades = {
         SpeedBaseCost = 75,
-        SpeedCostGrowth = 1.22,
+        SpeedCostGrowth = 1.12,
         StrengthBaseCost = 100,
         StrengthCostGrowth = 1.16,
+        StrengthCostStart = 10,
+        StrengthCostStep = 5,
     },
     Guardian = {
         VisionRange = 55,

@@ -4,24 +4,18 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Rules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GameplayRules"))
 local Store = DataStoreService:GetDataStore(Config.DataStoreName)
 
 local ProfileService = {}
 local profiles = {}
 
 local function finiteNumber(value)
-    return type(value) == "number"
-        and value == value
-        and value ~= math.huge
-        and value ~= -math.huge
+    return Rules.IsFinite(value)
 end
 
 local function integer(value, minimum, maximum, fallback)
-    if not finiteNumber(value) then
-        return fallback
-    end
-
-    return math.clamp(math.floor(value), minimum, maximum)
+    return Rules.Integer(value, minimum, maximum, fallback)
 end
 
 local function defaults()
@@ -282,7 +276,7 @@ end
 function ProfileService.AddCoins(player, amount)
     local profile = profiles[player]
 
-    if not profile or not profile.Loaded or not finiteNumber(amount) then
+    if not profile or not profile.Loaded or not finiteNumber(amount) or amount < 0 then
         return false, 0
     end
 
@@ -323,6 +317,9 @@ function ProfileService.AddStat(player, statName, amount)
     end
 
     amount = math.floor(amount)
+    if amount <= 0 then
+        return false
+    end
 
     if statName == "Speed" then
         profile.Data.Speed = math.clamp(

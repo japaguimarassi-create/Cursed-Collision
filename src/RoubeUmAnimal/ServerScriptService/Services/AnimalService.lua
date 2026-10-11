@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("AnimalCatalog"))
+local Rules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GameplayRules"))
 
 local AnimalService = {}
 
@@ -66,13 +67,17 @@ function AnimalService.ApplyMovement(player)
     local entry = carried[player]
 
     if entry then
-        local ratio = entry.Weight / math.max(data.Strength, 1)
-        local penalty = math.clamp(
-            (ratio - Config.CarryPenaltyStartRatio) * Config.CarryPenaltyPerRatio,
-            0,
-            0.78
+        local carrySpeed = Rules.CarrySpeed(
+            baseSpeed,
+            entry.Weight,
+            data.Strength,
+            Config.CarryPenaltyStartRatio,
+            Config.CarryPenaltyPerRatio,
+            Config.MinimumCarrySpeed
         )
-        effectiveSpeed = math.max(Config.MinimumCarrySpeed, baseSpeed * (1 - penalty))
+        if carrySpeed then
+            effectiveSpeed = carrySpeed
+        end
     end
 
     local _, humanoid = getCharacterState(player)
@@ -299,7 +304,7 @@ local function capture(player, prompt)
 
     local data = profiles.Get(player)
 
-    if not data or data.Strength < spec.RequiredStrength then
+    if not data or not Rules.CanCapture(data.Strength, spec.RequiredStrength, carried[player] ~= nil) then
         notify(
             player,
             "Você precisa de Força " .. tostring(spec.RequiredStrength) .. " para roubar " .. spec.DisplayName .. ".",
@@ -365,13 +370,12 @@ local function salePrice(player, entry)
         return 0
     end
 
-    local amount = math.floor(entry.BaseValue * multiplier)
-
-    if passService and passService.Has(player, "DoubleCoins") then
-        amount *= 2
-    end
-
-    return math.clamp(amount, 0, Config.CoinsLimit)
+    return Rules.SalePrice(
+        entry.BaseValue,
+        multiplier,
+        passService ~= nil and passService.Has(player, "DoubleCoins"),
+        Config.CoinsLimit
+    )
 end
 
 local function sell(player, base, sellPart)

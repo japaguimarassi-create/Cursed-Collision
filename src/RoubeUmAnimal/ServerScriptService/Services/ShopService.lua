@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Rules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GameplayRules"))
 
 local ShopService = {}
 local profiles
@@ -11,30 +12,7 @@ local cooldowns = {}
 local started = false
 
 local function priceFor(stat, data)
-    if stat == "Speed" then
-        if data.Speed >= Config.MaxSpeedLevel then
-            return nil
-        end
-
-        return math.min(
-            Config.CoinsLimit,
-            math.floor(Config.Upgrades.SpeedBaseCost * (Config.Upgrades.SpeedCostGrowth ^ data.Speed))
-        )
-    end
-
-    if stat == "Strength" then
-        if data.Strength >= Config.MaxStrength then
-            return nil
-        end
-
-        local tier = math.max(0, math.floor((data.Strength - 10) / 5))
-        return math.min(
-            Config.CoinsLimit,
-            math.floor(Config.Upgrades.StrengthBaseCost * (Config.Upgrades.StrengthCostGrowth ^ tier))
-        )
-    end
-
-    return nil
+    return Rules.UpgradePrice(stat, data, Config)
 end
 
 function ShopService.Start(profileService, animals, remote, notifyFunction)
