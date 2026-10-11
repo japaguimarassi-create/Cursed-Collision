@@ -31,6 +31,8 @@ jobs:
         run: luau tools/tests/run.luau
       - name: Validate map and animal spawn coverage
         run: python3 tools/tests/test_map_layout.py
+      - name: Validate monetization IDs and product separation
+        run: python3 tools/tests/test_monetization.py
       - name: Install pinned Luau syntax checker
         shell: bash
         run: |

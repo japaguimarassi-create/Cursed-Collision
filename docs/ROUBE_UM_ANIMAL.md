@@ -4,7 +4,7 @@
 
 ROUBE UM ANIMAL é um simulador de exploração e risco para Roblox. O jogador treina na própria base, entra em biomas progressivamente mais perigosos, captura um animal, sofre uma penalidade de velocidade baseada no peso e tenta voltar ao próprio curral antes de ser alcançado por um guardião. A venda credita moedas de acordo com o valor-base, a raridade e os gamepasses ativos.
 
-O mapa inicial é montado por código no servidor para que a experiência seja reproduzível por Rojo. Os animais procedurais são modelos estilizados de formas geométricas: servem como arte-base jogável e devem ser substituídos ou refinados com meshes, animações e efeitos próprios antes de uma versão comercial.
+O mapa inicial é montado por código no servidor para que a experiência seja reproduzível por Rojo. A construção é dividida em etapas isoladas: uma falha de iluminação, decoração ou de um animal é registrada sem impedir a criação das demais áreas. O root do mapa publica atributos de diagnóstico (MapReady, BaseCount, AnimalCount e BiomeCount). Portais visuais, bordas nos caminhos, lanternas, flores, cogumelos e cristais diferenciam os três biomas sem depender de IDs externos de modelos. Os animais procedurais continuam sendo arte-base geométrica e devem receber meshes/animações próprias antes de uma versão comercial.
 
 ## Estrutura
 
@@ -128,7 +128,8 @@ O código preserva um Sky existente. Para trocar o céu, escolha um skybox de us
 - Todas as recompensas, custos, capturas e vendas são calculados no servidor.
 - Eventos de proximidade são validados por distância e contexto; as propriedades visuais do prompt não são tratadas como segurança.
 - Dados usam UpdateAsync e um token de sessão com expiração. Ainda é necessário testar comportamento em falhas de rede e reconexão antes de produção.
-- A arte dos animais e os guardiões são geométricos. Este é um protótipo funcional de gameplay, não uma produção AAA final.
+- A arte dos animais e os guardiões são geométricos. Os portais, flores, cogumelos, cristais e lanternas foram construídos com peças nativas para não depender de assets externos. Este é um protótipo funcional de gameplay, não uma produção AAA final.
+- A construção do mapa informa a etapa que falhou nos logs do servidor e marca MapReady=false quando faltar um bioma, um curral, a área de spawn ou todos os animais. Teste o valor de Workspace.RoubeUmAnimal.MapReady no servidor privado.
 - A publicação no Roblox é manual e requer IDs próprios configurados no GitHub Actions. Não configure o novo projeto para sobrescrever a antiga experiência.
 
 
@@ -136,8 +137,8 @@ O código preserva um Sky existente. Para trocar o céu, escolha um skybox de us
 
 Crie no Creator Dashboard quatro gamepasses permanentes: **2x Velocidade**, **2x Força**, **2x Moedas** e **VIP +50 Velocidade**. Crie também dois Developer Products repetíveis: **+10 Velocidade** e **+10 Força**. Os preços são configurados no Dashboard, não no código.
 
-Preencha os IDs em `src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua`. Os campos começam em `0`, por isso cada compra permanece desativada até o respectivo ID real ser cadastrado. A entrega de Developer Products usa `ProcessReceipt` e grava o `PurchaseId` com a concessão para evitar que um recibo seja processado duas vezes. Se o DataStore falhar, o recibo retorna como não processado para nova tentativa.
+Preencha IDs diferentes em `src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua`. Todos os campos começam em `0` por segurança: isso indica que o passe/produto ainda não foi criado, e nenhuma compra real será aberta até que o ID correspondente seja cadastrado. O menu de passes tem uma página própria, marcadores visuais diferentes por benefício e informa claramente os itens que ainda estão pendentes. O validador rejeita IDs duplicados assim que valores reais são inseridos. A entrega de Developer Products usa `ProcessReceipt` e grava o `PurchaseId` com a concessão para evitar que um recibo seja processado duas vezes. Se o DataStore falhar, o recibo retorna como não processado para nova tentativa.
 
 O renascimento exige Velocidade 80, Força 200 e que o jogador não esteja carregando um animal. Reinicia Velocidade para 0 e Força para 10, preserva moedas e passes permanentes e acrescenta 10% às vendas por renascimento, até 25 renascimentos (+250%). O servidor valida os requisitos e persiste a transação.
 
-A HUD é responsiva ao viewport, respeita as áreas seguras da tela, usa botões `Activated` e janelas roláveis, atendendo toque, mouse e controle. Antes de lançar, teste em servidor privado as compras, recibos repetidos, os limites e o fluxo de renascimento.
+A HUD é responsiva ao viewport, respeita as áreas seguras da tela, usa botões `Activated` e janelas roláveis, atendendo toque, mouse e controle. A navegação separa melhorias por moedas, passes permanentes/produtos Robux, catálogo de animais e renascimento. Antes de lançar, teste em servidor privado as compras, recibos repetidos, os limites e o fluxo de renascimento.

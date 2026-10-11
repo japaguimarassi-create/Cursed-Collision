@@ -23,6 +23,7 @@ REQUIRED_FILES = [
     "src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua",
     "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
     "tools/tests/run.luau",
+    "tools/tests/test_monetization.py",
     "docs/ROUBE_UM_ANIMAL.md",
 ]
 
@@ -96,6 +97,8 @@ def main():
         ("stackable purchase receipts", all(token in product_service for token in ("ProcessReceipt", "PurchaseGranted", "NotProcessedYet", "GrantStackableProduct", "PurchaseId")) and "ProcessedPurchases" in profiles),
         ("rebirth persistence", "PerformRebirth" in profiles and "PerformRebirth" in rebirth_service and "MaxRebirths" in profiles and "RebirthCoinBonusPerRebirth" in config and "RequestRebirth" in client),
         ("cross-platform HUD", all(token in client for token in ("DeviceSafeInsets", ".Activated:Connect", "ViewportSize", "RequestStackableProduct", "RequestRebirth"))),
+        ("distinct monetization interface", all(token in client for token in ("renderPasses", "Turbo: 2x Velocidade", "Força: 2x Treino", "Magnata: 2x Moedas", "VIP: +50 Velocidade", "DistinctiveMarker", "OpenPasses", "ID PENDENTE"))),
+        ("map startup diagnostics", all(token in world for token in ("xpcall(callback, debug.traceback)", "MapReady", "FallbackGround", "PORTAL_DA_FAZENDA", "PORTAL_DA_SELVA", "PORTAL_DO_VULCAO"))),
         ("guardian pathfinding", "PathfindingService" in guardians and "ComputeAsync" in guardians),
         ("all three biomes", all(token in world for token in ('"Farm"', '"Jungle"', '"Volcano"'))),
         ("HUD remotes", 'gui.Name = "RoubeUmAnimalHUD"' in client and "RequestUpgrade" in client and "RequestGamepass" in client),
@@ -128,7 +131,15 @@ def main():
     if "push:" in publisher and "contains(github.event.head_commit.message, '[publish-roube-um-animal]')" not in publisher:
         fail("production push publishing must require the explicit release marker")
     if "5290480963" not in publisher or "15338267657" not in publisher:
-        fail("publisher must explicitly block the retired experience IDs")
+        fail("publisher target must match the explicitly confirmed existing experience")
+    monetization_ids = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua")
+    pass_section = re.search(r"Passes = table\\.freeze\\(\\{(.*?)\\}\\)", monetization_ids, re.S)
+    product_section = re.search(r"Products = table\\.freeze\\(\\{(.*?)\\}\\)", monetization_ids, re.S)
+    if not pass_section or not product_section:
+        fail("monetization ID registry could not be parsed")
+    configured_ids = [int(value) for value in re.findall(r"=\\s*(\\d+)", pass_section.group(1) + product_section.group(1)) if int(value) > 0]
+    if len(configured_ids) != len(set(configured_ids)):
+        fail("configured gamepass and Developer Product IDs must be unique")
 
     for name in REQUIRED_FILES:
         if name.endswith((".lua", ".luau")):
