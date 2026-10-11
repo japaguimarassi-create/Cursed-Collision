@@ -92,6 +92,7 @@ def main():
     main = read("src/RoubeUmAnimal/ServerScriptService/Main.server.lua")
 
     checks = [
+        ("release identifier", 'ReleaseTag = "StealAnAnimal-2026.10.11"' in config),
         ("DataStore session lock and atomic writes", "UpdateAsync" in profiles and "SessionLock" in profiles and "function transact" in profiles),
         ("legacy strength data is discarded safely", "current.Strength = nil" in profiles and "Config.SchemaVersion" in profiles),
         ("barn data persists", all(token in profiles for token in ("BarnAnimals", "BarnBank", "LastIncomeAt", "AddBarnAnimal", "CollectBarnIncome")) and "ExtraPassSlots" not in profiles and "ExtraBarnSlots" in profiles),

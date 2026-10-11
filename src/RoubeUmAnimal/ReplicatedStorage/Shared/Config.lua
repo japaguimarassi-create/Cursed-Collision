@@ -1,5 +1,6 @@
 local Config = {
     GameName = "STEAL AN ANIMAL",
+    ReleaseTag = "StealAnAnimal-2026.10.11",
     DataStoreName = "RoubeUmAnimal_Profile_v1",
     SchemaVersion = 2,
     AutosaveSeconds = 180,
