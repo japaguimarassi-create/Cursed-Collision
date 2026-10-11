@@ -186,30 +186,29 @@ mapLoadClose.Visible = false
 mapLoadClose.ZIndex = 82
 
 task.spawn(function()
-    local root = workspace:WaitForChild("StealAnAnimal", 40)
-    if not root then
-        mapLoadOverlay.Visible = true
-        mapLoadTitle.Text = "WORLD DID NOT START"
-        mapLoadTitle.TextColor3 = COLORS.Red
-        mapLoadDetails.Text = "The server did not create the world root. Leave and join another server. If it keeps happening, the creator needs to inspect the server logs."
-        mapLoadClose.Visible = true
-        return
-    end
-    local deadline = os.clock() + 40
-    while root.Parent and root:GetAttribute("MapReady") == nil and os.clock() < deadline do
+    local deadline = os.clock() + 55
+    local core = ReplicatedStorage:WaitForChild("StealAnimalCore", 12)
+    while os.clock() < deadline do
+        local root = workspace:FindFirstChild("StealAnAnimal")
+        local worldState = core and core:GetAttribute("WorldState") or "Bootstrapping"
+        local bootState = core and core:GetAttribute("BootState") or "Bootstrapping"
+        if root and root.Parent and root:GetAttribute("MapReady") == true and worldState == "Ready" then
+            mapLoadOverlay.Visible = false
+            break
+        end
+
+        if worldState == "Degraded" or bootState == "Degraded" then
+            mapLoadOverlay.Visible = true
+            mapLoadTitle.Text = "WORLD IN SAFE MODE"
+            mapLoadTitle.TextColor3 = COLORS.Orange
+            local failure = core and core:GetAttribute("LastFailure") or "The world did not pass startup checks."
+            mapLoadDetails.Text = tostring(failure)
+                .. "\nFallback floor/spawn remains available. Use the bootstrap card for diagnostics."
+            mapLoadClose.Visible = true
+            break
+        end
         task.wait(0.25)
     end
-    if root.Parent and root:GetAttribute("MapReady") == true then
-        return
-    end
-    mapLoadOverlay.Visible = true
-    mapLoadTitle.Text = "WORLD STARTED INCOMPLETE"
-    mapLoadTitle.TextColor3 = COLORS.Orange
-    mapLoadDetails.Text = "Farms: " .. tostring(root:GetAttribute("BaseCount") or 0) .. "/8"
-        .. "\nBiomes: " .. tostring(root:GetAttribute("BiomeCount") or 0) .. "/6"
-        .. "\nAnimals: " .. tostring(root:GetAttribute("AnimalCount") or 0)
-        .. "\nTry another server. The server logs include the failed construction step."
-    mapLoadClose.Visible = true
 end)
 
 local statsPanel = Instance.new("Frame")
@@ -921,3 +920,33 @@ UserInputService.InputBegan:Connect(function(input, processed)
         GuiService.SelectedObject = nil
     end
 end)
+
+local function sendClientProbe(phase)
+    local core = ReplicatedStorage:FindFirstChild("StealAnimalCore")
+    local diagnostics = core and core:FindFirstChild("Diagnostics")
+    local remote = diagnostics and diagnostics:FindFirstChild("ClientProbeReport")
+    local camera = workspace.CurrentCamera
+    local playerGui = player:FindFirstChild("PlayerGui")
+    if remote and remote:IsA("RemoteEvent") then
+        pcall(function()
+            remote:FireServer({
+                phase = phase or "HudReady",
+                hudPresent = playerGui ~= nil and gui.Parent == playerGui,
+                mainHudReady = gui:GetAttribute("CoreBootstrapComplete") == true,
+                activeRootPresent = workspace:FindFirstChild("StealAnAnimal") ~= nil,
+                mapReady = workspace:FindFirstChild("StealAnAnimal") ~= nil
+                    and workspace.StealAnAnimal:GetAttribute("MapReady") == true,
+                remoteFolderPresent = remotes.Parent == ReplicatedStorage,
+                viewportWidth = camera and camera.ViewportSize.X or 0,
+                viewportHeight = camera and camera.ViewportSize.Y or 0,
+            })
+        end)
+    end
+end
+
+gui:SetAttribute("CoreBootstrapComplete", true)
+player:SetAttribute("CoreBootstrapComplete", true)
+task.delay(2, function()
+    sendClientProbe("HudReady")
+end)
+
