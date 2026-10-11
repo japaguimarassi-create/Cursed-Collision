@@ -37,12 +37,14 @@ end
 local function safeRequire(core, states, container, name)
     local module = container and container:FindFirstChild(name)
     if not module or not module:IsA("ModuleScript") then
+        setAttribute(core, "BootState", "Degraded")
         setServiceStatus(core, states, name, "Failed", "ModuleScript missing.")
         warn("[StealAnAnimal/CoreKernel] Missing ModuleScript: " .. name)
         return nil
     end
     local ok, result = pcall(require, module)
     if not ok then
+        setAttribute(core, "BootState", "Degraded")
         setServiceStatus(core, states, name, "Failed", "Module require failed; see server Output.")
         warn("[StealAnAnimal/CoreKernel] require(" .. name .. ") failed: " .. tostring(result))
         return nil
