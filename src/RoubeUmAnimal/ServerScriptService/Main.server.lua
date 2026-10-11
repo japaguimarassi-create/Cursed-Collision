@@ -11,6 +11,8 @@ local TrainingService = require(Services:WaitForChild("TrainingService"))
 local ShopService = require(Services:WaitForChild("ShopService"))
 local PassService = require(Services:WaitForChild("PassService"))
 local GuardianService = require(Services:WaitForChild("GuardianService"))
+local StackableProductService = require(Services:WaitForChild("StackableProductService"))
+local RebirthService = require(Services:WaitForChild("RebirthService"))
 
 local function folder(parent, name)
     local object = parent:FindFirstChild(name)
@@ -45,6 +47,9 @@ local notifyRemote = remote(remotes, "Notify")
 local upgradeRemote = remote(remotes, "RequestUpgrade")
 local passRequestRemote = remote(remotes, "RequestGamepass")
 local passPromptRemote = remote(remotes, "PromptGamepass")
+local stackableProductRequestRemote = remote(remotes, "RequestStackableProduct")
+local stackableProductPromptRemote = remote(remotes, "PromptStackableProduct")
+local rebirthRequestRemote = remote(remotes, "RequestRebirth")
 
 local function notify(player, message, messageType)
     if not player or player.Parent ~= Players then
@@ -69,6 +74,7 @@ AnimalService.Start(
 ShopService.Start(
     ProfileService,
     AnimalService,
+    PassService,
     upgradeRemote,
     notify
 )
@@ -84,12 +90,27 @@ TrainingService.Start(
     ProfileService,
     WorldBuilder,
     AnimalService,
+    PassService,
     notify
 )
 
 GuardianService.Start(
     WorldBuilder,
     AnimalService,
+    notify
+)
+
+StackableProductService.Start(
+    ProfileService,
+    stackableProductRequestRemote,
+    stackableProductPromptRemote,
+    notify
+)
+
+RebirthService.Start(
+    ProfileService,
+    AnimalService,
+    rebirthRequestRemote,
     notify
 )
 
@@ -192,6 +213,8 @@ Players.PlayerRemoving:Connect(function(player)
     TrainingService.RemovePlayer(player)
     ShopService.RemovePlayer(player)
     PassService.RemovePlayer(player)
+    StackableProductService.RemovePlayer(player)
+    RebirthService.RemovePlayer(player)
     WorldBuilder.ReleaseBase(player)
 
     if deathConnections[player] then

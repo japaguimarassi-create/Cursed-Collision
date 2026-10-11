@@ -2,28 +2,23 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local MonetizationIds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("MonetizationIds"))
 
 local PassService = {}
 local ownership = {}
 local promptCooldown = {}
 local notify
 local promptRemote
-local ids = {}
+local ids = MonetizationIds.Passes
 local started = false
 local applyMovement
 
-local function idFor(passName)
-    if passName == "DoubleCoins" then
-        return ids.DoubleCoins
-    end
-
-    if passName == "VIPSpeed" then
-        return ids.VIPSpeed
-    end
-
-    return 0
-end
+local ATTRIBUTE_NAMES = table.freeze({
+    DoubleSpeed = "HasDoubleSpeed",
+    DoubleStrength = "HasDoubleStrength",
+    DoubleCoins = "HasDoubleCoins",
+    VIPSpeed = "HasVIPSpeed",
+})
 
 function PassService.Has(player, passName)
     local values = ownership[player]
@@ -35,13 +30,13 @@ function PassService.Load(player)
         return false
     end
 
-    local state = {
-        DoubleCoins = false,
-        VIPSpeed = false,
-    }
+    local state = {}
+    for name in pairs(ids) do
+        state[name] = false
+    end
 
     for name, passId in pairs(ids) do
-        if passId > 0 and player.Parent == Players then
+        if type(passId) == "number" and passId > 0 and player.Parent == Players then
             local success, owns = pcall(function()
                 return MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId)
             end)
@@ -59,8 +54,10 @@ function PassService.Load(player)
     end
 
     ownership[player] = state
-    player:SetAttribute("HasDoubleCoins", state.DoubleCoins)
-    player:SetAttribute("HasVIPSpeed", state.VIPSpeed)
+
+    for passName, attributeName in pairs(ATTRIBUTE_NAMES) do
+        player:SetAttribute(attributeName, state[passName] == true)
+    end
 
     if applyMovement then
         applyMovement(player)
@@ -79,34 +76,25 @@ function PassService.Start(promptRequestRemote, promptClientRemote, notifyFuncti
     notify = notifyFunction
     applyMovement = movementCallback
 
-    ids = {
-        DoubleCoins = Config.DoubleCoinsGamepassId,
-        VIPSpeed = Config.VipSpeedGamepassId,
-    }
-
     promptRequestRemote.OnServerEvent:Connect(function(player, passName)
-        if type(passName) ~= "string" or (passName ~= "DoubleCoins" and passName ~= "VIPSpeed") then
+        if type(passName) ~= "string" or ids[passName] == nil then
             return
         end
 
         local now = os.clock()
-        local lastPrompt = promptCooldown[player] or 0
-
-        if now - lastPrompt < 2 then
+        if now - (promptCooldown[player] or 0) < 2 then
             return
         end
-
         promptCooldown[player] = now
 
-        local passId = idFor(passName)
-
-        if passId <= 0 then
-            notify(player, "O criador ainda precisa configurar o ID deste gamepass no Config.lua.", "Warning")
+        local passId = ids[passName]
+        if type(passId) ~= "number" or passId <= 0 then
+            notify(player, "Este gamepass ainda precisa ser criado no Creator Dashboard e ter seu ID configurado.", "Warning")
             return
         end
 
         if PassService.Has(player, passName) then
-            notify(player, "Você já possui este gamepass.", "Info")
+            notify(player, "Você já possui este gamepass permanente.", "Info")
             return
         end
 
@@ -114,12 +102,11 @@ function PassService.Start(promptRequestRemote, promptClientRemote, notifyFuncti
     end)
 
     MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, gamePassId, purchased)
-        if not purchased or not player or not player.Parent then
+        if not purchased or not player or player.Parent ~= Players then
             return
         end
 
-        local matched = nil
-
+        local matched
         for name, passId in pairs(ids) do
             if passId > 0 and passId == gamePassId then
                 matched = name
@@ -141,13 +128,13 @@ function PassService.Start(promptRequestRemote, promptClientRemote, notifyFuncti
             end
 
             if not success or not owns then
-                notify(player, "Compra recebida; a posse ainda não pôde ser confirmada. Aguarde e tente novamente.", "Warning")
+                notify(player, "A posse não pôde ser confirmada. Entre novamente ou tente depois.", "Warning")
                 return
             end
 
             ownership[player] = ownership[player] or {}
             ownership[player][matched] = true
-            player:SetAttribute(matched == "DoubleCoins" and "HasDoubleCoins" or "HasVIPSpeed", true)
+            player:SetAttribute(ATTRIBUTE_NAMES[matched], true)
 
             if applyMovement then
                 applyMovement(player)

@@ -8,6 +8,7 @@ local TrainingService = {}
 local profiles
 local worldBuilder
 local animalService
+local passService
 local notify
 local cooldowns = {}
 local started = false
@@ -83,11 +84,14 @@ local function train(player, kind)
             return
         end
 
-        local success = profiles.AddStat(player, "Speed", Config.Training.TreadmillGain)
+        local multiplier = passService and passService.Has(player, "DoubleSpeed")
+            and Config.Training.DoubleSpeedMultiplier or 1
+        local gain = math.floor(Config.Training.TreadmillGain * multiplier)
+        local success = profiles.AddStat(player, "Speed", gain)
 
         if success then
             animalService.ApplyMovement(player)
-            notify(player, "+1 Velocidade! Continue correndo para treinar.", "Success")
+            notify(player, "+" .. tostring(gain) .. " Velocidade! Continue correndo para treinar.", "Success")
         end
 
         return
@@ -103,11 +107,14 @@ local function train(player, kind)
             return
         end
 
-        local success = profiles.AddStat(player, "Strength", Config.Training.BenchPressGain)
+        local multiplier = passService and passService.Has(player, "DoubleStrength")
+            and Config.Training.DoubleStrengthMultiplier or 1
+        local gain = math.floor(Config.Training.BenchPressGain * multiplier)
+        local success = profiles.AddStat(player, "Strength", gain)
 
         if success then
             animalService.ApplyMovement(player)
-            notify(player, "+2 Força! Você consegue carregar animais mais pesados.", "Success")
+            notify(player, "+" .. tostring(gain) .. " Força! Você consegue carregar animais mais pesados.", "Success")
         end
     end
 end
@@ -131,7 +138,7 @@ local function preparePrompt(prompt, trainingType)
     prompt:SetAttribute("InteractionType", "BenchPress")
 end
 
-function TrainingService.Start(profileService, builder, animals, notifyFunction)
+function TrainingService.Start(profileService, builder, animals, passes, notifyFunction)
     if started then
         return
     end
@@ -140,6 +147,7 @@ function TrainingService.Start(profileService, builder, animals, notifyFunction)
     profiles = profileService
     worldBuilder = builder
     animalService = animals
+    passService = passes
     notify = notifyFunction
 
     local trainingParts = worldBuilder.GetTrainingParts()

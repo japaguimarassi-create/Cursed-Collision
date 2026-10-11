@@ -16,7 +16,10 @@ O mapa inicial é montado por código no servidor para que a experiência seja r
 - Services/AnimalService.lua: captura, ferramenta, modelo carregado, venda e respawn.
 - Services/TrainingService.lua: esteiras e supinos.
 - Services/ShopService.lua: upgrades comprados com moedas.
-- Services/PassService.lua: propriedade e prompts de gamepasses.
+- Services/PassService.lua: propriedade e prompts de gamepasses permanentes.
+- Services/StackableProductService.lua: Developer Products acumuláveis e entrega segura por recibo.
+- Services/RebirthService.lua: validação do renascimento no servidor.
+- ReplicatedStorage/Shared/MonetizationIds.lua: IDs comerciais configurados no Creator Dashboard.
 - Services/GuardianService.lua: visão, patrulha, perseguição e PathfindingService.
 - StarterPlayer/StarterPlayerScripts/GameClient.client.lua: HUD móvel e notificações.
 
@@ -37,7 +40,9 @@ O mapa inicial é montado por código no servidor para que a experiência seja r
 
 Velocidade-base:
 
-**BaseSpeed = min(160, 16 + SpeedLevel × 0.75 + VIPBonus)**
+**BaseSpeed = clamp((16 + SpeedLevel × 0.75) × SpeedMultiplier + VIPBonus, 16, 160)**
+
+SpeedMultiplier é 2 com DoubleSpeed e 1 sem ele. VIPBonus é 50 com VIPSpeed e 0 sem ele.
 
 O gamepass VIP acrescenta 50 à velocidade-base calculada. O valor é aplicado ao Humanoid pelo servidor, mas WalkSpeed não é uma barreira antitrapaça; jogos competitivos devem acrescentar validações de deslocamento.
 
@@ -53,9 +58,9 @@ RequiredStrength é um requisito de captura distinto da penalidade de peso. Assi
 
 ### Venda
 
-**Sale = floor(BaseValue × RarityMultiplier)**
+**Sale = floor(BaseValue × RarityMultiplier × DoubleCoinsMultiplier × (1 + Rebirths × 0.10))**
 
-O pass de moedas em dobro multiplica essa venda por dois. Os valores e os multiplicadores encontram-se no catálogo e no Config.lua; o cliente nunca informa quanto deve receber.
+DoubleCoinsMultiplier vale 2 com DoubleCoins e 1 sem ele. Cada renascimento acrescenta 10% às vendas, até 250% no limite de 25 renascimentos. Os valores e os multiplicadores encontram-se no catálogo e no Config.lua; o cliente nunca informa quanto deve receber.
 
 ## Mapa procedural
 
@@ -125,3 +130,14 @@ O código preserva um Sky existente. Para trocar o céu, escolha um skybox de us
 - Dados usam UpdateAsync e um token de sessão com expiração. Ainda é necessário testar comportamento em falhas de rede e reconexão antes de produção.
 - A arte dos animais e os guardiões são geométricos. Este é um protótipo funcional de gameplay, não uma produção AAA final.
 - A publicação no Roblox é manual e requer IDs próprios configurados no GitHub Actions. Não configure o novo projeto para sobrescrever a antiga experiência.
+
+
+## Monetização, HUD e renascimento
+
+Crie no Creator Dashboard quatro gamepasses permanentes: **2x Velocidade**, **2x Força**, **2x Moedas** e **VIP +50 Velocidade**. Crie também dois Developer Products repetíveis: **+10 Velocidade** e **+10 Força**. Os preços são configurados no Dashboard, não no código.
+
+Preencha os IDs em `src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua`. Os campos começam em `0`, por isso cada compra permanece desativada até o respectivo ID real ser cadastrado. A entrega de Developer Products usa `ProcessReceipt` e grava o `PurchaseId` com a concessão para evitar que um recibo seja processado duas vezes. Se o DataStore falhar, o recibo retorna como não processado para nova tentativa.
+
+O renascimento exige Velocidade 80, Força 200 e que o jogador não esteja carregando um animal. Reinicia Velocidade para 0 e Força para 10, preserva moedas e passes permanentes e acrescenta 10% às vendas por renascimento, até 25 renascimentos (+250%). O servidor valida os requisitos e persiste a transação.
+
+A HUD é responsiva ao viewport, respeita as áreas seguras da tela, usa botões `Activated` e janelas roláveis, atendendo toque, mouse e controle. Antes de lançar, teste em servidor privado as compras, recibos repetidos, os limites e o fluxo de renascimento.

@@ -10,6 +10,7 @@ REQUIRED_FILES = [
     "src/RoubeUmAnimal/ReplicatedStorage/Shared/Config.lua",
     "src/RoubeUmAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua",
     "src/RoubeUmAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
+    "src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua",
     "src/RoubeUmAnimal/ServerScriptService/Main.server.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/ProfileService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua",
@@ -17,6 +18,8 @@ REQUIRED_FILES = [
     "src/RoubeUmAnimal/ServerScriptService/Services/TrainingService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/ShopService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/PassService.lua",
+    "src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua",
+    "src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua",
     "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
     "tools/tests/run.luau",
@@ -73,6 +76,9 @@ def main():
     training = read("src/RoubeUmAnimal/ServerScriptService/Services/TrainingService.lua")
     shop = read("src/RoubeUmAnimal/ServerScriptService/Services/ShopService.lua")
     passes = read("src/RoubeUmAnimal/ServerScriptService/Services/PassService.lua")
+    product_service = read("src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua")
+    rebirth_service = read("src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua")
+    monetization_ids = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua")
     guardians = read("src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua")
     world = read("src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua")
     client = read("src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
@@ -85,7 +91,11 @@ def main():
         ("weight movement rule", "Rules.CarrySpeed" in animals and "CarryPenaltyStartRatio" in config),
         ("shared upgrade rule", "Rules.UpgradePrice" in shop),
         ("training stations", "Treadmill" in training and "BenchPress" in training),
-        ("gamepass checks", "UserOwnsGamePassAsync" in passes and "PromptGamePassPurchaseFinished" in passes),
+        ("gamepass checks", all(token in passes for token in ("UserOwnsGamePassAsync", "PromptGamePassPurchaseFinished", "DoubleSpeed", "DoubleStrength", "DoubleCoins", "VIPSpeed"))),
+        ("monetization ID registry", all(token in monetization_ids for token in ("DoubleSpeed", "DoubleStrength", "DoubleCoins", "VIPSpeed", "StackableSpeed", "StackableStrength"))),
+        ("stackable purchase receipts", all(token in product_service for token in ("ProcessReceipt", "PurchaseGranted", "NotProcessedYet", "GrantStackableProduct", "PurchaseId")) and "ProcessedPurchases" in profiles),
+        ("rebirth persistence", all(token in profiles and token in rebirth_service for token in ("PerformRebirth", "MaxRebirths")) and "RebirthCoinBonusPerRebirth" in config),
+        ("cross-platform HUD", all(token in client for token in ("DeviceSafeInsets", ".Activated:Connect", "ViewportSize", "RequestStackableProduct", "RequestRebirth"))),
         ("guardian pathfinding", "PathfindingService" in guardians and "ComputeAsync" in guardians),
         ("all three biomes", all(token in world for token in ('"Farm"', '"Jungle"', '"Volcano"'))),
         ("HUD remotes", 'gui.Name = "RoubeUmAnimalHUD"' in client and "RequestUpgrade" in client and "RequestGamepass" in client),

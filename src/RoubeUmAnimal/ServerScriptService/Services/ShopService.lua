@@ -6,6 +6,7 @@ local Rules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Gam
 local ShopService = {}
 local profiles
 local animalService
+local passService
 local notify
 local requestRemote
 local cooldowns = {}
@@ -15,7 +16,7 @@ local function priceFor(stat, data)
     return Rules.UpgradePrice(stat, data, Config)
 end
 
-function ShopService.Start(profileService, animals, remote, notifyFunction)
+function ShopService.Start(profileService, animals, passes, remote, notifyFunction)
     if started then
         return
     end
@@ -23,6 +24,7 @@ function ShopService.Start(profileService, animals, remote, notifyFunction)
     started = true
     profiles = profileService
     animalService = animals
+    passService = passes
     requestRemote = remote
     notify = notifyFunction
 
@@ -64,7 +66,11 @@ function ShopService.Start(profileService, animals, remote, notifyFunction)
             return
         end
 
-        local gained = profiles.AddStat(player, stat, stat == "Speed" and 1 or 5)
+        local amount = stat == "Speed" and 1 or 5
+        local passName = stat == "Speed" and "DoubleSpeed" or "DoubleStrength"
+        local multiplier = passService and passService.Has(player, passName)
+            and (stat == "Speed" and Config.Training.DoubleSpeedMultiplier or Config.Training.DoubleStrengthMultiplier) or 1
+        local gained = profiles.AddStat(player, stat, amount * multiplier)
 
         if not gained then
             profiles.AddCoins(player, cost)

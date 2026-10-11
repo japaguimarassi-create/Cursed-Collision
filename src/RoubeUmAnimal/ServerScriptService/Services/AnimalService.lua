@@ -57,8 +57,10 @@ function AnimalService.ApplyMovement(player)
     end
 
     local vipBonus = passService and passService.Has(player, "VIPSpeed") and Config.VipSpeedBonus or 0
+    local speedMultiplier = passService and passService.Has(player, "DoubleSpeed")
+        and Config.Training.DoubleSpeedMultiplier or 1
     local baseSpeed = math.clamp(
-        Config.BaseWalkSpeed + data.Speed * Config.SpeedPerLevel + vipBonus,
+        (Config.BaseWalkSpeed + data.Speed * Config.SpeedPerLevel) * speedMultiplier + vipBonus,
         Config.BaseWalkSpeed,
         Config.MaximumWalkSpeed
     )
@@ -265,7 +267,7 @@ function AnimalService.RemovePlayer(player)
 end
 
 local function capture(player, prompt)
-    if not profiles.IsLoaded(player) or carried[player] then
+    if not profiles.IsLoaded(player) or carried[player] or player:GetAttribute("RebirthInProgress") then
         return
     end
 
@@ -370,12 +372,22 @@ local function salePrice(player, entry)
         return 0
     end
 
-    return Rules.SalePrice(
+    local amount = Rules.SalePrice(
         entry.BaseValue,
         multiplier,
         passService ~= nil and passService.Has(player, "DoubleCoins"),
         Config.CoinsLimit
     )
+
+    local data = profiles.Get(player)
+    local rebirths = data and data.Rebirths or 0
+
+    if not amount then
+        return nil
+    end
+
+    local rebirthMultiplier = 1 + rebirths * Config.RebirthCoinBonusPerRebirth
+    return math.clamp(math.floor(amount * rebirthMultiplier), 0, Config.CoinsLimit)
 end
 
 local function sell(player, base, sellPart)
