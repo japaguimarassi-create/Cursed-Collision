@@ -94,7 +94,7 @@ def main():
         ("gamepass checks", all(token in passes for token in ("UserOwnsGamePassAsync", "PromptGamePassPurchaseFinished", "DoubleSpeed", "DoubleStrength", "DoubleCoins", "VIPSpeed"))),
         ("monetization ID registry", all(token in monetization_ids for token in ("DoubleSpeed", "DoubleStrength", "DoubleCoins", "VIPSpeed", "StackableSpeed", "StackableStrength"))),
         ("stackable purchase receipts", all(token in product_service for token in ("ProcessReceipt", "PurchaseGranted", "NotProcessedYet", "GrantStackableProduct", "PurchaseId")) and "ProcessedPurchases" in profiles),
-        ("rebirth persistence", all(token in profiles and token in rebirth_service for token in ("PerformRebirth", "MaxRebirths")) and "RebirthCoinBonusPerRebirth" in config),
+        ("rebirth persistence", "PerformRebirth" in profiles and "PerformRebirth" in rebirth_service and "MaxRebirths" in profiles and "RebirthCoinBonusPerRebirth" in config and "RequestRebirth" in client),
         ("cross-platform HUD", all(token in client for token in ("DeviceSafeInsets", ".Activated:Connect", "ViewportSize", "RequestStackableProduct", "RequestRebirth"))),
         ("guardian pathfinding", "PathfindingService" in guardians and "ComputeAsync" in guardians),
         ("all three biomes", all(token in world for token in ('"Farm"', '"Jungle"', '"Volcano"'))),
