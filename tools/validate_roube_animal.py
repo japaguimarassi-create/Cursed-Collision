@@ -95,6 +95,7 @@ def main():
         ("DataStore session lock and atomic writes", "UpdateAsync" in profiles and "SessionLock" in profiles and "function transact" in profiles),
         ("legacy strength data is discarded safely", "current.Strength = nil" in profiles and "Config.SchemaVersion" in profiles),
         ("barn data persists", all(token in profiles for token in ("BarnAnimals", "BarnBank", "LastIncomeAt", "AddBarnAnimal", "CollectBarnIncome")) and "ExtraPassSlots" not in profiles and "ExtraBarnSlots" in profiles),
+        ("one barn capacity setting across runtime", "ExtraPassSlots" not in world and "ExtraPassSlots" not in barn and "ExtraBarnSlots" in world and "ExtraBarnSlots" in barn),
         ("offline income is bounded and atomically claimed", "ClaimOfflineIncome" in profiles and "OfflineIncomeCapSeconds" in config and "current.LastIncomeAt = now" in profiles),
         ("capture-to-barn gameplay", all(token in animals for token in ("Rules.CanCapture", "AnimalService.Deposit", "scheduleRespawn", "CarryingAnimal")) and "AddBarnAnimal" in barn),
         ("no immediate animal sale", "SellPart" not in world and "salePrice" not in animals and "function deposit" in barn),
@@ -111,8 +112,9 @@ def main():
         ("rebirth persists an income bonus", "PerformRebirth" in profiles and "RebirthCoinsRequired" in config and "RebirthIncomeBonusPerRebirth" in config),
         ("daily rewards, quest claims and codes persist", all(token in progression for token in ("ClaimDailyReward", "ClaimQuest", "RedeemCode", "FARMFAMILY", "WILDSTART", "BARNBOOST"))),
         ("adapted UI pack features", all(token in client for token in ("UIGradient", "renderBarn", "renderAnimals", "renderPasses", "renderQuests", "renderDaily", "renderSettings", "renderStats", "StealAnAnimalHUD"))),
-        ("mobile input and safe area", all(token in client for token in ("DeviceSafeInsets", ".Activated:Connect", "ViewportSize", "ScrollingFrame"))),
+        ("mobile input and safe area", all(token in client for token in ("CoreUISafeInsets", ".Activated:Connect", "ViewportSize", "ScrollingFrame"))),
         ("client-server remote wiring", all(token in main for token in ("RequestUpgrade", "RequestGamepass", "RequestStackableProduct", "RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestCollectBarnIncome"))),
+        ("barn collection UI checks ownership and distance", "collectBarnRemote:FireServer()" in client and "local function collectFromUI(player)" in barn and "validAtPad(player, base, pad)" in barn),
         ("no strength in client-facing gameplay", "Strength" not in catalog and "RequiredStrength" not in catalog and "Strength" not in client and "Força" not in client),
     ]
     failed = [name for name, ok in checks if not ok]
