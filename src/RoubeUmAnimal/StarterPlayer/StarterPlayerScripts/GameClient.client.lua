@@ -791,6 +791,97 @@ local function renderRebirth()
     end, not eligible, 86)
 end
 
+local function renderDiagnostics()
+    clearContent()
+    addInfo(1, "CORE SHELL • MAP PROBE • CLIENT HUD • SERVER REMOTES. THE VIRTUAL PLAYER IS A DIAGNOSTIC AGENT, NOT A REAL ROBLOX PLAYER.", COLORS.Aqua, 66)
+
+    local reportCard = addInfo(3, "Waiting for the first health report...", COLORS.Cream, 188)
+    local reportLabel = reportCard:FindFirstChild("Text")
+    if reportLabel then
+        reportLabel.TextSize = 11
+        reportLabel.TextScaled = false
+        reportLabel.TextYAlignment = Enum.TextYAlignment.Top
+    end
+
+    local refreshing = false
+    local function refreshReport()
+        if refreshing then
+            return
+        end
+        refreshing = true
+        if reportLabel then
+            reportLabel.Text = "Requesting server state and MapBot route report..."
+        end
+        task.spawn(function()
+            local core = ReplicatedStorage:FindFirstChild("StealAnimalCore")
+            local diagnosticsFolder = core and core:FindFirstChild("Diagnostics")
+            local healthRemote = diagnosticsFolder and diagnosticsFolder:FindFirstChild("RequestHealthReport")
+            if not healthRemote or not healthRemote:IsA("RemoteFunction") then
+                if reportLabel then
+                    reportLabel.Text = "Health endpoint not found. Check CoreShell initialization."
+                end
+                refreshing = false
+                return
+            end
+
+            local ok, report = pcall(function()
+                return healthRemote:InvokeServer()
+            end)
+            if not ok or type(report) ~= "table" then
+                if reportLabel then
+                    reportLabel.Text = "Health request failed or was rate-limited. Press REFRESH again."
+                end
+                refreshing = false
+                return
+            end
+
+            local active = report.activeRoot or {}
+            local staging = report.stagingRoot or {}
+            local virtual = report.virtualPlayer or {}
+            local clientReport = report.latestClientProbe or {}
+            local lines = {
+                "CORE: " .. tostring(report.bootState) .. " • WORLD: " .. tostring(report.worldState),
+                string.format("ACTIVE: %s • farms %s/8 • biomes %s/6 • animals %s • guardians %s",
+                    tostring(active.role or "absent"), tostring(active.farms or 0), tostring(active.biomes or 0),
+                    tostring(active.animals or 0), tostring(active.guardians or 0)),
+                string.format("STAGING: %s • farms %s/8 • biomes %s/6 • animals %s",
+                    tostring(staging.role or "absent"), tostring(staging.farms or 0),
+                    tostring(staging.biomes or 0), tostring(staging.animals or 0)),
+                "MAPBOT: " .. tostring(virtual.status or "waiting")
+                    .. " • routes " .. tostring(type(virtual.routes) == "table" and #virtual.routes or 0) .. "/7"
+                    .. " • returned " .. tostring(virtual.startAndReturn == true),
+                "CLIENT HUD: " .. tostring(clientReport.mainHudReady == true)
+                    .. " • root " .. tostring(clientReport.activeRootPresent == true)
+                    .. " • map ready " .. tostring(clientReport.mapReady == true),
+                "REMOTES: " .. tostring(report.remoteCount or 0) .. "/" .. tostring(report.required and report.required.remotes or 11)
+                    .. " • missing: " .. table.concat(report.missingRemotes or {}, ", "),
+            }
+            if type(report.lastFailure) == "string" and report.lastFailure ~= "" then
+                table.insert(lines, "FAILURE: " .. report.lastFailure)
+            end
+            local failedServices = {}
+            for name, entry in pairs(report.serviceStates or {}) do
+                if type(entry) == "table" and entry.state == "Failed" then
+                    table.insert(failedServices, name)
+                end
+            end
+            table.sort(failedServices)
+            if #failedServices > 0 then
+                table.insert(lines, "FAILED MODULES: " .. table.concat(failedServices, ", "))
+            end
+            if reportLabel then
+                reportLabel.Text = table.concat(lines, "\n")
+            end
+            refreshing = false
+        end)
+    end
+
+    addAction(2, "BOT", "REFRESH MAPBOT REPORT",
+        "Inspect the active map, staging map, real client probe, server modules and virtual-player route scan.",
+        "REFRESH", COLORS.Aqua, refreshReport, false, 70)
+    refreshReport()
+end
+
 local function renderMore()
     clearContent()
     addInfo(1, "FARM MENU  •  YOUR COLLECTION, PROGRESS AND SETTINGS.", COLORS.Gold, 58)
@@ -799,6 +890,7 @@ local function renderMore()
     addAction(4, "ST", "STATISTICS", "Inspect income, captured animals, stored animals and rebirths.", "OPEN", COLORS.Blue, function() openScreen("Stats") end, false, 72)
     addAction(5, "FX", "SETTINGS", "Adjust visual effects for your device.", "OPEN", COLORS.Aqua, function() openScreen("Settings") end, false, 72)
     addAction(6, "RB", "REBIRTH", "Trade your current speed and wallet for a permanent barn-income bonus.", "OPEN", COLORS.Orange, function() openScreen("Rebirth") end, false, 78)
+    addAction(7, "AI", "CORE HEALTH & MAPBOT", "Inspect map loading, client HUD detection, server modules and the virtual-player traversal result.", "SCAN", COLORS.Aqua, function() openScreen("Diagnostics") end, false, 82)
 end
 
 local renderers = {
@@ -812,6 +904,7 @@ local renderers = {
     Settings = renderSettings,
     Rebirth = renderRebirth,
     More = renderMore,
+    Diagnostics = renderDiagnostics,
 }
 
 openScreen = function(name)
@@ -831,6 +924,7 @@ openScreen = function(name)
         Settings = "SETTINGS",
         Rebirth = "REBIRTH",
         More = "FARM MENU",
+        Diagnostics = "CORE HEALTH • MAPBOT",
     })[name] or "FARM"
     renderer()
     resizeUI()
