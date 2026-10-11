@@ -205,12 +205,9 @@ task.spawn(function()
     mapLoadTitle.Text = "WORLD STARTED INCOMPLETE"
     mapLoadTitle.TextColor3 = COLORS.Orange
     mapLoadDetails.Text = "Farms: " .. tostring(root:GetAttribute("BaseCount") or 0) .. "/8"
-        .. "
-Biomes: " .. tostring(root:GetAttribute("BiomeCount") or 0) .. "/6"
-        .. "
-Animals: " .. tostring(root:GetAttribute("AnimalCount") or 0)
-        .. "
-Try another server. The server logs include the failed construction step."
+        .. "\nBiomes: " .. tostring(root:GetAttribute("BiomeCount") or 0) .. "/6"
+        .. "\nAnimals: " .. tostring(root:GetAttribute("AnimalCount") or 0)
+        .. "\nTry another server. The server logs include the failed construction step."
     mapLoadClose.Visible = true
 end)
 
@@ -782,12 +779,9 @@ local function renderRebirth()
         and not carrying and rebirths < Config.MaxRebirths
     addInfo(1, "REBIRTH  •  RESET SPEED AND WALLET TO GAIN A PERMANENT +10% BARN INCOME MULTIPLIER.", COLORS.Orange, 72)
     addInfo(2, "Current rebirths: " .. tostring(rebirths) .. "/" .. tostring(Config.MaxRebirths)
-        .. "
-Required speed: " .. tostring(speed) .. "/" .. tostring(Config.MaxSpeedLevel)
-        .. "
-Required coins: $" .. number(coins) .. "/$" .. number(Config.RebirthCoinsRequired)
-        .. "
-You cannot rebirth while carrying an animal.", COLORS.Cream, 106)
+        .. "\nRequired speed: " .. tostring(speed) .. "/" .. tostring(Config.MaxSpeedLevel)
+        .. "\nRequired coins: $" .. number(coins) .. "/$" .. number(Config.RebirthCoinsRequired)
+        .. "\nYou cannot rebirth while carrying an animal.", COLORS.Cream, 106)
     addAction(3, "RB", "CONFIRM REBIRTH", "The server verifies your requirements and saves the change before confirming it.", "REBIRTH", COLORS.Orange, function()
         rebirthRequestRemote:FireServer()
     end, not eligible, 86)
