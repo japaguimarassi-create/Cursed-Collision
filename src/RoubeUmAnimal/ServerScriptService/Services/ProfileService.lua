@@ -144,7 +144,7 @@ local function ensureLeaderstats(player, data)
         leaderstats.Parent = player
     end
 
-    for _, legacyName in ipairs({ "Força", "Velocidade", "Moedas" }) do
+    for _, legacyName in ipairs({ "Força", "Velocidade", "Moedas", "Renascimentos" }) do
         local legacy = leaderstats:FindFirstChild(legacyName)
         if legacy then
             legacy:Destroy()

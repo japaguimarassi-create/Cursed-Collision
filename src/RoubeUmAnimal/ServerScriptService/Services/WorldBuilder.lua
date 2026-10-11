@@ -339,10 +339,10 @@ local function createGuardianBeast(position, name, primaryColor, accentColor, sc
 
     local legs = {}
     for _, offset in ipairs({
-        Vector3.new(-2.2, 1.1, -2.6),
-        Vector3.new(2.2, 1.1, -2.6),
-        Vector3.new(-2.2, 1.1, 4.2),
-        Vector3.new(2.2, 1.1, 4.2),
+        Vector3.new(-2.2, 2.1, -2.6),
+        Vector3.new(2.2, 2.1, -2.6),
+        Vector3.new(-2.2, 2.1, 4.2),
+        Vector3.new(2.2, 2.1, 4.2),
     }) do
         local leg = part(model, "BeastLeg", Vector3.new(1.7, 3.1, 1.8) * scale, CFrame.new(position + Vector3.new(offset.X * scale, offset.Y * scale, offset.Z * scale)), primaryColor, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
         table.insert(legs, leg)

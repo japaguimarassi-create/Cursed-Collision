@@ -593,7 +593,7 @@ local function renderBarn()
     addAction(2, "$", "UNCLAIMED BARN INCOME", "$" .. number(bank) .. " waiting to collect. Your animals earn $" .. number(income) .. " each second.", "COLLECT", COLORS.Gold, function()
         collectBarnRemote:FireServer()
     end, false, 90)
-    addAction(3, "🐾", "ANIMAL CAPACITY", tostring(count) .. "/" .. tostring(capacity) .. " occupied slots. Deposit animals at the green pad.", "SLOTS", COLORS.Green, function()
+    addAction(3, "PAW", "ANIMAL CAPACITY", tostring(count) .. "/" .. tostring(capacity) .. " occupied slots. Deposit animals at the green pad.", "SLOTS", COLORS.Green, function()
         toast("Find wild animals in a biome, hold STEAL, and bring one to the green pad at your own barn.", "Info")
     end, false, 82)
     if carried then
@@ -615,7 +615,7 @@ local function renderBarn()
         for index, animalId in ipairs(decoded) do
             local spec = Catalog.Get(animalId)
             if spec then
-                addAction(5 + index, "🐾", spec.DisplayName, biomeName(spec.Biome) .. " • " .. spec.Rarity .. " • $" .. number(spec.IncomePerSecond) .. "/second", "DETAILS", rarityColor(spec.Rarity), function()
+                addAction(5 + index, "PAW", spec.DisplayName, biomeName(spec.Biome) .. " • " .. spec.Rarity .. " • $" .. number(spec.IncomePerSecond) .. "/second", "DETAILS", rarityColor(spec.Rarity), function()
                     toast(spec.DisplayName .. " generates $" .. tostring(spec.IncomePerSecond) .. " every second while stored.", "Info")
                 end, false, 78)
             end
@@ -889,7 +889,9 @@ for _, attribute in ipairs(attributes) do
     player:GetAttributeChangedSignal(attribute):Connect(function()
         refreshStats()
         if activeScreen and activeScreen ~= "Daily" and activeScreen ~= "Settings" then
-            if attribute ~= "BarnBank" and attribute ~= "BarnIncomeRate" and attribute ~= "Coins" then
+            local currencyChange = attribute == "BarnBank" or attribute == "BarnIncomeRate" or attribute == "Coins"
+            local shouldRefresh = not currencyChange or activeScreen == "Barn" or activeScreen == "Stats" or activeScreen == "Rebirth"
+            if shouldRefresh then
                 local renderer = renderers[activeScreen]
                 if renderer then renderer() end
             end
