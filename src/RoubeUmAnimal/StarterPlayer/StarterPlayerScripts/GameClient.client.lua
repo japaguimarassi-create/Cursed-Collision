@@ -104,6 +104,104 @@ local function makeButton(parent, name, text, size, position, color, callback)
     return object
 end
 
+local mapLoadOverlay = Instance.new("Frame")
+mapLoadOverlay.Name = "MapLoadDiagnostic"
+mapLoadOverlay.Size = UDim2.fromScale(1, 1)
+mapLoadOverlay.BackgroundColor3 = COLORS.Dark
+mapLoadOverlay.BackgroundTransparency = 0.08
+mapLoadOverlay.BorderSizePixel = 0
+mapLoadOverlay.Visible = false
+mapLoadOverlay.Active = true
+mapLoadOverlay.ZIndex = 60
+mapLoadOverlay.Parent = gui
+
+local mapLoadCard = Instance.new("Frame")
+mapLoadCard.Name = "MapLoadCard"
+mapLoadCard.Size = UDim2.new(0.9, 0, 0, 220)
+mapLoadCard.Position = UDim2.fromScale(0.5, 0.5)
+mapLoadCard.AnchorPoint = Vector2.new(0.5, 0.5)
+mapLoadCard.BackgroundColor3 = COLORS.Background
+mapLoadCard.BorderSizePixel = 0
+mapLoadCard.ZIndex = 61
+mapLoadCard.Parent = mapLoadOverlay
+corner(mapLoadCard, 16)
+stroke(mapLoadCard, COLORS.Orange, 2, 0.12)
+
+local mapLoadTitle = Instance.new("TextLabel")
+mapLoadTitle.Name = "StatusTitle"
+mapLoadTitle.Size = UDim2.new(1, -24, 0, 42)
+mapLoadTitle.Position = UDim2.new(0, 12, 0, 12)
+mapLoadTitle.BackgroundTransparency = 1
+mapLoadTitle.Font = Enum.Font.GothamBlack
+mapLoadTitle.Text = "CARREGANDO O MAPA"
+mapLoadTitle.TextColor3 = COLORS.Blue
+mapLoadTitle.TextSize = 19
+mapLoadTitle.TextWrapped = true
+mapLoadTitle.ZIndex = 62
+mapLoadTitle.Parent = mapLoadCard
+
+local mapLoadDetails = Instance.new("TextLabel")
+mapLoadDetails.Name = "StatusDetails"
+mapLoadDetails.Size = UDim2.new(1, -24, 0, 92)
+mapLoadDetails.Position = UDim2.new(0, 12, 0, 58)
+mapLoadDetails.BackgroundTransparency = 1
+mapLoadDetails.Font = Enum.Font.GothamMedium
+mapLoadDetails.Text = "Preparando fazenda, selva e vulcão..."
+mapLoadDetails.TextColor3 = COLORS.Muted
+mapLoadDetails.TextSize = 14
+mapLoadDetails.TextWrapped = true
+mapLoadDetails.ZIndex = 62
+mapLoadDetails.Parent = mapLoadCard
+
+local mapLoadClose = Instance.new("TextButton")
+mapLoadClose.Name = "ContinueButton"
+mapLoadClose.Size = UDim2.new(1, -24, 0, 42)
+mapLoadClose.Position = UDim2.new(0, 12, 1, -54)
+mapLoadClose.BackgroundColor3 = COLORS.Orange
+mapLoadClose.BorderSizePixel = 0
+mapLoadClose.Font = Enum.Font.GothamBlack
+mapLoadClose.Text = "CONTINUAR MESMO ASSIM"
+mapLoadClose.TextColor3 = COLORS.Text
+mapLoadClose.TextSize = 14
+mapLoadClose.TextWrapped = true
+mapLoadClose.Visible = false
+mapLoadClose.ZIndex = 62
+mapLoadClose.Parent = mapLoadCard
+corner(mapLoadClose, 10)
+mapLoadClose.Activated:Connect(function()
+    mapLoadOverlay.Visible = false
+end)
+
+task.spawn(function()
+    local root = workspace:WaitForChild("RoubeUmAnimal", 35)
+    if not root then
+        mapLoadOverlay.Visible = true
+        mapLoadTitle.Text = "MAPA NÃO INICIALIZOU"
+        mapLoadTitle.TextColor3 = COLORS.Red
+        mapLoadDetails.Text = "O servidor não criou Workspace.RoubeUmAnimal. Reentre em outro servidor; se continuar, o criador precisa verificar os logs do servidor."
+        mapLoadClose.Visible = true
+        return
+    end
+
+    local deadline = os.clock() + 35
+    while root.Parent and root:GetAttribute("MapReady") == nil and os.clock() < deadline do
+        task.wait(0.25)
+    end
+
+    if root.Parent and root:GetAttribute("MapReady") == true then
+        return
+    end
+
+    mapLoadOverlay.Visible = true
+    mapLoadTitle.Text = "MAPA CARREGADO PARCIALMENTE"
+    mapLoadTitle.TextColor3 = COLORS.Orange
+    mapLoadDetails.Text = "Bases: " .. tostring(root:GetAttribute("BaseCount") or 0)
+        .. " / 8\nBiomas: " .. tostring(root:GetAttribute("BiomeCount") or 0)
+        .. " / 3\nAnimais: " .. tostring(root:GetAttribute("AnimalCount") or 0)
+        .. "\nTente entrar novamente. O diagnóstico foi registrado pelo servidor."
+    mapLoadClose.Visible = true
+end)
+
 local statsPanel = Instance.new("Frame")
 statsPanel.Name = "StatsPanel"
 statsPanel.Size = UDim2.new(0.96, 0, 0, 86)
