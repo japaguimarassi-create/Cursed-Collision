@@ -275,6 +275,8 @@ local function makeAnimalModel(speciesId, spawnCFrame, parent, includePrompt)
     end
 
     model:PivotTo(CFrame.new(origin + Vector3.new(0, 1.4, 0)) * spawnCFrame.Rotation)
+    model:SetAttribute("HomePosition", model:GetPivot().Position)
+    model:SetAttribute("HomeRadius", 10)
     model.Parent = parent or animalsFolder
 
     if includePrompt then
@@ -642,12 +644,14 @@ function WorldBuilder.SpawnAnimal(speciesId, spawnCFrame)
 end
 
 function WorldBuilder.Build()
-    local existing = workspace:FindFirstChild("StealAnAnimal")
-    if existing then
-        existing:Destroy()
+    local existingStaging = workspace:FindFirstChild("StealAnAnimal_Staging")
+    if existingStaging then
+        existingStaging:Destroy()
     end
 
-    root = folder(workspace, "StealAnAnimal")
+    root = folder(workspace, "StealAnAnimal_Staging")
+    root:SetAttribute("RootRole", "Staging")
+    root:SetAttribute("BuildStartedAt", os.time())
     root:SetAttribute("MapReady", false)
     mapFolder = folder(root, "Map")
     animalsFolder = folder(root, "Animals")
@@ -773,6 +777,7 @@ function WorldBuilder.Build()
 
     local baseCount = #basesFolder:GetChildren()
     local animalCount = #animalsFolder:GetChildren()
+    local guardianCount = #guardiansFolder:GetChildren()
     local biomeCount = 0
     for _, zone in ipairs(zones) do
         if mapFolder:FindFirstChild(zone[1] .. "Ground") then
@@ -784,14 +789,17 @@ function WorldBuilder.Build()
         and baseCount == 8
         and biomeCount == 6
         and animalCount >= #Catalog.All()
+        and guardianCount == #guardians
 
     root:SetAttribute("MapReady", ready)
     root:SetAttribute("BaseCount", baseCount)
     root:SetAttribute("AnimalCount", animalCount)
     root:SetAttribute("BiomeCount", biomeCount)
+    root:SetAttribute("GuardianCount", guardianCount)
 
     if not ready then
-        warn(string.format("[StealAnAnimal] Partial map: farms=%d, animals=%d, biomes=%d", baseCount, animalCount, biomeCount))
+        root:SetAttribute("RootRole", "Staging")
+        warn(string.format("[StealAnAnimal] Staged map not ready: farms=%d, animals=%d, biomes=%d, guardians=%d", baseCount, animalCount, biomeCount, guardianCount))
         if not mapFolder:FindFirstChild("HubGround") then
             step("FallbackGround", function()
                 part(mapFolder, "HubGround", Vector3.new(150, 2, 150), CFrame.new(0, -1, 0), COLORS.Meadow, Enum.Material.Grass)
@@ -805,11 +813,19 @@ function WorldBuilder.Build()
                 spawn.Position = Vector3.new(0, 1, 0)
                 spawn.Anchored = true
                 spawn.Neutral = true
+                spawn.Duration = 0
                 spawn.Parent = mapFolder
             end)
         end
     else
-        print(string.format("[StealAnAnimal] World ready: %d animals, %d biomes, %d farms, %d guardians", animalCount, biomeCount, baseCount, #guardians))
+        local previous = workspace:FindFirstChild("StealAnAnimal")
+        if previous and previous ~= root then
+            previous:Destroy()
+        end
+        root.Name = "StealAnAnimal"
+        root:SetAttribute("CoreFallback", nil)
+        root:SetAttribute("RootRole", "Active")
+        print(string.format("[StealAnAnimal] World ready and activated: %d animals, %d biomes, %d farms, %d guardians", animalCount, biomeCount, baseCount, guardianCount))
     end
     return root
 end
