@@ -24,6 +24,7 @@ checks = [
         "RequestQuest", "RequestCollectBarnIncome"
     ))),
     ("CoreShell receives bounded client diagnostics", "lastProbeAt" in shell and "ClientProbeReport" in shell and "viewportWidth" in shell),
+    ("client diagnostic payload excludes personal identity", "playerName = string.sub(player.Name" not in shell and "userId = player.UserId" not in shell),
     ("CoreShell watchdog restores fallback and remotes", "task.wait(5)" in shell and "Active map root disappeared" in shell),
     ("Main delegates to a small CoreKernel entry point", "CoreKernel" in main and "require(Services:WaitForChild(\"ProfileService\"))" not in main),
     ("CoreKernel isolates module loads and startup", "pcall(require, module)" in kernel and "safeCall" in kernel and "ServiceStatusJson" in kernel),
