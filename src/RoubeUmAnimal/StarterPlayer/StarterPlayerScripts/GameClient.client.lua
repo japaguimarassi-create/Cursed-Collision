@@ -19,6 +19,7 @@ local rebirthRequestRemote = remotes:WaitForChild("RequestRebirth")
 local dailyRewardRemote = remotes:WaitForChild("RequestDailyReward")
 local redeemCodeRemote = remotes:WaitForChild("RequestRedeemCode")
 local questClaimRemote = remotes:WaitForChild("RequestQuest")
+local collectBarnRemote = remotes:WaitForChild("RequestCollectBarnIncome")
 local Catalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("AnimalCatalog"))
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local MonetizationIds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("MonetizationIds"))
@@ -508,7 +509,10 @@ local function setLowEffects(enabled)
     for _, object in ipairs(Lighting:GetDescendants()) do
         if object:IsA("BloomEffect") or object:IsA("BlurEffect") or object:IsA("SunRaysEffect") then
             object.Enabled = not enabled
-        elseif object:IsA("PointLight") or object:IsA("SpotLight") or object:IsA("SurfaceLight") then
+        end
+    end
+    for _, object in ipairs(workspace:GetDescendants()) do
+        if object:IsA("PointLight") or object:IsA("SpotLight") or object:IsA("SurfaceLight") then
             object.Enabled = not enabled
         end
     end
@@ -587,7 +591,7 @@ local function renderBarn()
     local carried = player:GetAttribute("CarryingAnimal") == true
     addInfo(1, "YOUR BARN  •  STORE ANIMALS HERE AND THEY WILL GENERATE COINS EVERY SECOND.", COLORS.Gold, 70)
     addAction(2, "$", "UNCLAIMED BARN INCOME", "$" .. number(bank) .. " waiting to collect. Your animals earn $" .. number(income) .. " each second.", "COLLECT", COLORS.Gold, function()
-        toast("Step on the gold COLLECT COINS pad inside your own barn.", "Info")
+        collectBarnRemote:FireServer()
     end, false, 90)
     addAction(3, "🐾", "ANIMAL CAPACITY", tostring(count) .. "/" .. tostring(capacity) .. " occupied slots. Deposit animals at the green pad.", "SLOTS", COLORS.Green, function()
         toast("Find wild animals in a biome, hold STEAL, and bring one to the green pad at your own barn.", "Info")

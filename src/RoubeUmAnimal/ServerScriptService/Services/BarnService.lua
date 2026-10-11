@@ -12,6 +12,7 @@ local worldBuilder
 local animalService
 local passService
 local notify
+local collectRemote
 local lastTick = {}
 local fractionalIncome = {}
 local promptCooldown = {}
@@ -188,7 +189,36 @@ local function collect(player, prompt)
     end
 end
 
-function BarnService.Start(profileService, builder, animals, passes, notifyFunction)
+local function collectFromUI(player)
+    if not profiles.IsLoaded(player) then
+        return
+    end
+    local base = worldBuilder.GetOwnedBase(player)
+    local pad = base and base:FindFirstChild("IncomeCollectPad", true)
+    if not base or not pad or not pad:IsA("BasePart") or not validAtPad(player, base, pad) then
+        notify(player, "Stand on the gold COLLECT COINS pad inside your own barn to collect income.", "Warning")
+        return
+    end
+    local now = os.clock()
+    if now - (promptCooldown[player] or 0) < Config.Barn.CollectionCooldown then
+        return
+    end
+    promptCooldown[player] = now
+    local success, amount = profiles.CollectBarnIncome(player)
+    if not success then
+        notify(player, "Unable to collect your saved income yet. Try again.", "Error")
+        return
+    end
+    BarnService.RefreshPlayer(player)
+    if amount > 0 then
+        notify(player, "Collected " .. tostring(amount) .. " coins from your barn!", "Success")
+    else
+        notify(player, "Your barn bank is empty. Your animals are still earning.", "Info")
+    end
+end
+
+
+function BarnService.Start(profileService, builder, animals, passes, requestCollectRemote, notifyFunction)
     if started then
         return
     end
@@ -197,6 +227,7 @@ function BarnService.Start(profileService, builder, animals, passes, notifyFunct
     worldBuilder = builder
     animalService = animals
     passService = passes
+    collectRemote = requestCollectRemote
     notify = notifyFunction
 
     for _, entry in ipairs(builder.GetDepositPads()) do
@@ -204,6 +235,16 @@ function BarnService.Start(profileService, builder, animals, passes, notifyFunct
     end
     for _, entry in ipairs(builder.GetIncomePads()) do
         addPrompt(entry.Base, entry.Pad, "COLLECT COINS", "Barn Income", "CollectBarnIncome", 0.25)
+    end
+
+    if collectRemote then
+        collectRemote.OnServerEvent:Connect(function(player)
+            local ok, err = pcall(collectFromUI, player)
+            if not ok then
+                warn("StealAnAnimal: UI income collection error: " .. tostring(err))
+                notify(player, "Income collection failed safely. Try again.", "Error")
+            end
+        end)
     end
 
     ProximityPromptService.PromptTriggered:Connect(function(prompt, player)

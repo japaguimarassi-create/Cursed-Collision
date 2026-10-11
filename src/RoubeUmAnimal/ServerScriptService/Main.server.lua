@@ -50,6 +50,7 @@ local rebirthRequestRemote = remote(remotes, "RequestRebirth")
 local dailyRewardRemote = remote(remotes, "RequestDailyReward")
 local redeemCodeRemote = remote(remotes, "RequestRedeemCode")
 local questClaimRemote = remote(remotes, "RequestQuest")
+local collectBarnRemote = remote(remotes, "RequestCollectBarnIncome")
 
 local function notify(player, message, messageType)
     if not player or player.Parent ~= Players then
@@ -69,7 +70,7 @@ TrainingService.Start(ProfileService, WorldBuilder, AnimalService, PassService, 
 GuardianService.Start(WorldBuilder, AnimalService, notify)
 StackableProductService.Start(ProfileService, productRequestRemote, productPromptRemote, notify)
 RebirthService.Start(ProfileService, AnimalService, rebirthRequestRemote, notify)
-BarnService.Start(ProfileService, WorldBuilder, AnimalService, PassService, notify)
+BarnService.Start(ProfileService, WorldBuilder, AnimalService, PassService, collectBarnRemote, notify)
 ProgressionService.Start(ProfileService, dailyRewardRemote, redeemCodeRemote, questClaimRemote, notify)
 ProfileService.StartAutosave()
 
