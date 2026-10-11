@@ -130,6 +130,7 @@ def main():
         ("client-server remote wiring", all(token in shell for token in ("RequestUpgrade", "RequestGamepass", "RequestStackableProduct", "RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestCollectBarnIncome")) and "RoubeAnimalRemotes" in kernel),
         ("independent core shell", "require(" not in shell and all(token in shell for token in ("CoreShellReady", "FallbackGround", "WorldSpawn", "ClientProbeReport", "RequestHealthReport"))),
         ("core shell runtime watchdog", "task.wait(5)" in shell and "Active map root disappeared" in shell),
+        ("diagnostic reports omit personal identity", "playerName = string.sub(player.Name" not in shell and "userId = player.UserId" not in shell),
         ("kernel marks failed imports degraded", "setAttribute(core, \"BootState\", \"Degraded\")" in kernel and "Module require failed" in kernel),
         ("virtual player map scan and return report", all(token in probe for token in ("StartVirtualPlayer", "CoreVirtualPlayer", "PathfindingService", "virtualPlayerCount", "startAndReturn"))),
         ("client can inspect the MapBot report", all(token in client for token in ("Diagnostics = renderDiagnostics", "CORE HEALTH & MAPBOT", "InvokeServer"))),
