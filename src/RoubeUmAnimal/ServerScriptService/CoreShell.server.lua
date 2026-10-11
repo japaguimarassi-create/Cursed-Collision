@@ -109,8 +109,6 @@ clientProbeRemote.OnServerEvent:Connect(function(player, payload)
     lastProbeAt[player.UserId] = now
 
     local report = {
-        userId = player.UserId,
-        playerName = string.sub(player.Name, 1, 32),
         phase = (payload.phase == "HudReady" and "HudReady") or (payload.phase == "Refresh" and "Refresh") or "Bootstrap",
         timestamp = os.time(),
         hudPresent = payload.hudPresent == true,
