@@ -55,7 +55,7 @@ gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = false
 gui.DisplayOrder = 20
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local function corner(instance, radius)
@@ -281,7 +281,7 @@ corner(navPanel, 14)
 outline(navPanel, COLORS.Gold, 1.5, 0.22)
 gradient(navPanel, COLORS.Panel, COLORS.Dark, 90)
 local navConstraint = Instance.new("UISizeConstraint")
-navConstraint.MinSize = Vector2.new(285, 58)
+navConstraint.MinSize = Vector2.new(240, 58)
 navConstraint.MaxSize = Vector2.new(590, 58)
 navConstraint.Parent = navPanel
 local navPadding = Instance.new("UIPadding")
@@ -369,7 +369,8 @@ local function resizeUI()
     end
     local viewport = camera.ViewportSize
     statsPanel.Size = UDim2.new(0.97, 0, 0, viewport.X < 400 and 106 or 100)
-    navPanel.Size = UDim2.new(0.97, 0, 0, 58)
+    navPanel.Size = UDim2.new(UserInputService.TouchEnabled and 0.72 or 0.97, 0, 0, 58)
+    navPanel.Position = UDim2.new(0.5, 0, 1, UserInputService.TouchEnabled and -math.max(95, math.floor(viewport.Y * 0.28)) or -7)
     local width = math.max(245, math.min(630, viewport.X - 18, viewport.X * 0.95))
     local height = math.max(230, math.min(610, viewport.Y - 88, viewport.Y * 0.78))
     modal.Size = UDim2.fromOffset(width, height)
@@ -564,7 +565,8 @@ local function refreshStats()
     local income = tonumber(player:GetAttribute("BarnIncomeRate")) or 0
     local count = tonumber(player:GetAttribute("BarnAnimalCount")) or 0
     local capacity = tonumber(player:GetAttribute("BarnCapacity")) or Config.Barn.BaseSlots
-    local speed = Config.BaseWalkSpeed + (tonumber(player:GetAttribute("SpeedLevel")) or 0) * Config.SpeedPerLevel
+    local speed = tonumber(player:GetAttribute("EffectiveWalkSpeed"))
+        or (Config.BaseWalkSpeed + (tonumber(player:GetAttribute("SpeedLevel")) or 0) * Config.SpeedPerLevel)
     header.Text = "STEAL AN ANIMAL  •  REBIRTH " .. tostring(player:GetAttribute("Rebirths") or 0)
     coinsLabel.Text = "COINS $" .. number(coins)
     incomeLabel.Text = "$" .. number(income) .. "/s"
@@ -640,7 +642,6 @@ local function renderShop()
     clearContent()
     local level = tonumber(player:GetAttribute("SpeedLevel")) or 0
     local nextCost = math.min(Config.CoinsLimit, math.floor(Config.Upgrades.SpeedBaseCost * (Config.Upgrades.SpeedCostGrowth ^ level)))
-    local boost = (player:GetAttribute("HasDoubleSpeed") == true) and Config.Training.DoubleSpeedMultiplier or 1
     addInfo(1, "FARM UPGRADES  •  SPEND EARNED COINS TO RUN FASTER AND ESCAPE GUARDIANS.", COLORS.Green, 66)
     addAction(2, "SPD", "SPEED LEVEL " .. tostring(level) .. "/" .. tostring(Config.MaxSpeedLevel),
         "Next level costs $" .. number(nextCost) .. ". More speed helps you bring rare animals home before the guardian catches you.", "UPGRADE", COLORS.Blue, function()
@@ -883,7 +884,7 @@ productPromptRemote.OnClientEvent:Connect(promptProduct)
 local attributes = {
     "Coins", "SpeedLevel", "Rebirths", "BarnAnimalCount", "BarnCapacity", "BarnIncomeRate", "BarnBank",
     "TotalCaptured", "TotalDeposited", "BarnAnimalsJson", "CarryingAnimal", "CarriedAnimalName",
-    "CarriedAnimalWeight", "CarriedAnimalIncome", "HasDoubleIncome", "HasDoubleSpeed", "HasVIPFarm", "HasExtraBarnSlots", "DailyStreak",
+    "CarriedAnimalWeight", "CarriedAnimalIncome", "EffectiveWalkSpeed", "HasDoubleIncome", "HasDoubleSpeed", "HasVIPFarm", "HasExtraBarnSlots", "DailyStreak",
 }
 for _, attribute in ipairs(attributes) do
     player:GetAttributeChangedSignal(attribute):Connect(function()
