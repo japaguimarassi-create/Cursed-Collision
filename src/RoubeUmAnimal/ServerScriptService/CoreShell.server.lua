@@ -165,6 +165,31 @@ Players.PlayerRemoving:Connect(function(player)
     core:SetAttribute("ClientProbeCount", count)
 end)
 
+task.spawn(function()
+    while core.Parent do
+        for _, name in ipairs(remoteNames) do
+            ensureInstance(remotes, name, "RemoteEvent")
+        end
+        local activeRoot = Workspace:FindFirstChild("StealAnAnimal")
+        if not activeRoot then
+            local wasReady = core:GetAttribute("WorldState") == "Ready"
+            local restored = ensureFallbackWorld()
+            core:SetAttribute("FallbackPresent", restored:GetAttribute("CoreFallback") == true)
+            if wasReady then
+                core:SetAttribute("BootState", "Degraded")
+                core:SetAttribute("WorldState", "Degraded")
+                core:SetAttribute("LastFailure", "Active map root disappeared; fallback world restored.")
+            end
+        elseif activeRoot:GetAttribute("MapReady") ~= true then
+            ensureFallbackWorld()
+            core:SetAttribute("FallbackPresent", true)
+        else
+            core:SetAttribute("FallbackPresent", false)
+        end
+        task.wait(5)
+    end
+end)
+
 core:SetAttribute("CoreShellReady", true)
 core:SetAttribute("BootState", "ShellReady")
 print("[StealAnAnimal/CoreShell] Bootstrap remotes, fallback and diagnostics are ready.")
