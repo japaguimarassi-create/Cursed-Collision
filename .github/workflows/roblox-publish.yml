@@ -30,12 +30,25 @@ jobs:
           cache: true
       - name: Validate project
         run: python3 tools/validate_roube_animal.py
+      - name: Install pinned Luau syntax checker
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="/tmp/luau-ubuntu.zip"
+          curl -fsSL "https://github.com/luau-lang/luau/releases/download/0.739/luau-ubuntu.zip" -o "$archive"
+          echo "8a9b4b381021722c82d6e6cda0964b5c9e7f354ec1035fcd8b657acc22e49247  $archive" | sha256sum -c -
+          mkdir -p /tmp/luau-cli
+          unzip -q "$archive" -d /tmp/luau-cli
+          compiler="$(find /tmp/luau-cli -type f -name 'luau-compile' -print -quit)"
+          test -n "$compiler"
+          chmod +x "$compiler"
+          echo "LUAU_COMPILER=$compiler" >> "$GITHUB_ENV"
       - name: Parse every Luau source file
         shell: bash
         run: |
           set -euo pipefail
           while IFS= read -r -d '' source_file; do
-            luau-compile --only-parse "$source_file" >/dev/null
+            "$LUAU_COMPILER" --only-parse "$source_file" >/dev/null
           done < <(find src/RoubeUmAnimal -type f -name '*.lua' -print0)
       - name: Build Roblox place
         run: |
