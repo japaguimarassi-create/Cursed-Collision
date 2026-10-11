@@ -117,7 +117,7 @@ def main():
         ("six world regions", all(token in world for token in ('"Meadow"', '"Forest"', '"Wetlands"', '"Snow"', '"Savannah"', '"Volcano"')) and "BiomeCount" in world),
         ("eight player farms", "for index = 1, 8 do" in world and "OwnerUserId" in world),
         ("giant animal guardians", "createGuardianBeast" in world and "IsGiantAnimal" in world and "BeastTorso" in world),
-        ("guardian pathfinding", "PathfindingService" in guardians and "ComputeAsync" in guardians and "AgentRadius = Config.Guardian.AgentRadius" in guardians),
+        ("guardian pathfinding", "PathfindingService" in brain and "ComputeAsync" in brain and "AgentRadius = Config.Guardian.AgentRadius" in brain),
         ("map errors are isolated", "xpcall(callback, debug.traceback)" in world and "MapReady" in world and "FallbackGround" in world),
         ("speed-only progression", "Rules.UpgradePrice" in shop and "Rules.CanCapture" in animals and "Treadmill" in training and "BenchPress" not in training and "Strength" not in config),
         ("catalog species support passive income", "IncomePerSecond" in catalog and "Catalog.All()" in catalog),
