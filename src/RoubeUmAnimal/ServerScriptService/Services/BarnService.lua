@@ -253,8 +253,12 @@ function BarnService.Start(profileService, builder, animals, passes, notifyFunct
                             * (1 + data.Rebirths * Config.RebirthIncomeBonusPerRebirth)
                         local accumulated = (fractionalIncome[player] or 0) + rate * elapsed
                         local whole = math.floor(accumulated)
-                        fractionalIncome[player] = accumulated - whole
-                        profiles.AccrueBarnIncome(player, whole, os.time())
+                        local credited = profiles.AccrueBarnIncome(player, whole, os.time())
+                        if credited then
+                            fractionalIncome[player] = accumulated - whole
+                        else
+                            fractionalIncome[player] = math.min(accumulated, Config.CoinsLimit)
+                        end
                         if whole > 0 then
                             player:SetAttribute("BarnIncomeRate", math.floor(rate))
                         end
