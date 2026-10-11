@@ -1,12 +1,10 @@
-name: Collision Battlestar Production Publisher
+name: Roube Um Animal - Manual Publisher
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Confirm production publication from main"
+        description: "Confirm publishing to the ROUBE UM ANIMAL experience configured in repository variables"
         required: true
         type: boolean
         default: false
@@ -15,12 +13,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: collision-battlestar-production
+  group: roube-animal-manual-publish
   cancel-in-progress: false
 
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.confirm == true)
+    if: inputs.confirm == true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -30,27 +28,34 @@ jobs:
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
-      - name: Run clean Luau tests
-        run: luau tools/tests/run.luau
-      - name: Validate clean runtime
-        run: python3 tools/validate_project.py
+      - name: Validate project
+        run: python3 tools/validate_roube_animal.py
+      - name: Parse every Luau source file
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' source_file; do
+            luau-compile --only-parse "$source_file" >/dev/null
+          done < <(find src/RoubeUmAnimal -type f -name '*.lua' -print0)
       - name: Build Roblox place
         run: |
           set -euo pipefail
-          rm -rf build
           mkdir -p build
-          rojo build default.project.json --output build/CollisionBattlestar.rbxl
-          test -s build/CollisionBattlestar.rbxl
-      - name: Publish production place
+          rojo build default.project.json --output build/RoubeUmAnimal.rbxl
+          test -s build/RoubeUmAnimal.rbxl
+      - name: Publish only to explicitly configured target
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          UNIVERSE_ID: "5290480963"
-          PLACE_ID: "15338267657"
+          UNIVERSE_ID: ${{ vars.ROUBE_ANIMAL_UNIVERSE_ID }}
+          PLACE_ID: ${{ vars.ROUBE_ANIMAL_PLACE_ID }}
         run: |
           set -euo pipefail
           test -n "${ROBLOX_API_KEY}"
-          test "${GITHUB_REF}" = "refs/heads/main"
+          test -n "${UNIVERSE_ID}"
+          test -n "${PLACE_ID}"
+          [[ "${UNIVERSE_ID}" =~ ^[0-9]+$ ]]
+          [[ "${PLACE_ID}" =~ ^[0-9]+$ ]]
           endpoint="https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published"
-          code="$(curl --silent --show-error --location --request POST --url "${endpoint}" --header "x-api-key: ${ROBLOX_API_KEY}" --header "Content-Type: application/octet-stream" --data-binary "@build/CollisionBattlestar.rbxl" --output build/publish-response.json --write-out "%{http_code}")"
+          code="$(curl --silent --show-error --location --request POST --url "${endpoint}" --header "x-api-key: ${ROBLOX_API_KEY}" --header "Content-Type: application/octet-stream" --data-binary "@build/RoubeUmAnimal.rbxl" --output build/publish-response.json --write-out "%{http_code}")"
           cat build/publish-response.json
           [[ "${code}" =~ ^2[0-9][0-9]$ ]]

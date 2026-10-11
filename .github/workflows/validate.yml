@@ -1,4 +1,4 @@
-name: Collision Battlestar Clean Runtime Validation
+name: Roube Um Animal - Validate and Build
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: collision-battlestar-clean-validation
+  group: roube-animal-validation
   cancel-in-progress: true
 
 jobs:
@@ -25,15 +25,25 @@ jobs:
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
-      - name: Run clean Luau tests
-        run: luau tools/tests/run.luau
-      - name: Validate clean runtime
-        run: python3 tools/validate_project.py
+      - name: Validate project structure and gameplay wiring
+        run: python3 tools/validate_roube_animal.py
+      - name: Parse every Luau source file
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' source_file; do
+            luau-compile --only-parse "$source_file" >/dev/null
+          done < <(find src/RoubeUmAnimal -type f -name '*.lua' -print0)
       - name: Build Roblox place
         run: |
           set -euo pipefail
-          rm -rf build
           mkdir -p build
-          rojo build default.project.json --output build/CollisionBattlestar.rbxl
-          test -s build/CollisionBattlestar.rbxl
-          stat -c "%s bytes" build/CollisionBattlestar.rbxl
+          rojo build default.project.json --output build/RoubeUmAnimal.rbxl
+          test -s build/RoubeUmAnimal.rbxl
+          stat -c "%s bytes" build/RoubeUmAnimal.rbxl
+      - name: Upload place artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RoubeUmAnimal
+          path: build/RoubeUmAnimal.rbxl
+          if-no-files-found: error

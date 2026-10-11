@@ -1,0 +1,12 @@
+{
+  "name": "RoubeUmAnimal",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": { "$path": "src/RoubeUmAnimal/ReplicatedStorage" },
+    "ServerScriptService": { "$path": "src/RoubeUmAnimal/ServerScriptService" },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": { "$path": "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts" }
+    }
+  }
+}

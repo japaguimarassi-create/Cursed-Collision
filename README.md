@@ -1,93 +1,53 @@
-# Collision Battlestar
+# ROUBE UM ANIMAL
 
-Where Worlds Collide
+Simulador de exploração, captura de animais, fuga dos guardiões e progressão por treino no Roblox.
 
-Collision Battlestar is an action-first PvE wave arena built around readable combat, a red Elite target, persistent progression, social Friend Echo companions, recurring content, and owner-controlled QA.
+Este repositório mantém o nome histórico Cursed-Collision, mas o projeto ativo de gameplay agora é **ROUBE UM ANIMAL**. Os códigos da experiência Collision Battlestar foram removidos da versão atual; arquivos de ferramentas de engenharia e documentação histórica que não faziam parte do runtime foram preservados.
 
-The repository name remains Cursed-Collision for history compatibility.
+## Ciclo do jogador
 
-## Player loop
+Entrar no servidor → receber um curral → treinar Velocidade na esteira e Força no supino → explorar a Fazenda, a Selva Mística e o Vulcão → roubar um animal → correr de volta ao próprio curral → vender o animal por Moedas.
 
-Join -> Spawn -> Fight -> Defeat enemies -> Earn Credits -> Defeat the red Elite -> Clear the wave -> Upgrade -> Survive a harder wave -> Repeat.
+Se um guardião alcançar o jogador durante o transporte, o animal é perdido e reaparece depois de um intervalo. Captura, requisitos de força, penalidade por peso, venda, preços, upgrades e gamepasses são validados no servidor.
 
-Each wave uses a visual theme and exactly one red Elite. Enemy cosmetics do not change combat statistics.
+## Sistemas incluídos
 
-## Systems
+- Leaderstats em português: Moedas, Velocidade e Força.
+- DataStore com UpdateAsync, token de sessão, autosave de cinco minutos e salvamento ao sair.
+- Catálogo de animais com peso, raridade, requisitos de força e valor-base.
+- Tool lógica com representação visual presa às costas durante o transporte.
+- Penalidade progressiva de velocidade conforme o peso carregado.
+- Venda restrita ao curral proprietário.
+- Treino na esteira e no supino.
+- Loja de upgrades de Força e Velocidade, com verificação de saldo no servidor.
+- Gamepasses configuráveis: Moedas em Dobro e VIP com +50 de velocidade-base.
+- Guardiões com detecção visual, patrulha e perseguição por PathfindingService.
+- Mapa procedural estilizado e HUD adaptada para celular.
+- Workflow para validar e gerar o arquivo Roblox place.
 
-- Server-authoritative M1, Dash, waves, damage, rewards and economy.
-- Persistent player progression with migration-safe profiles.
-- Enemy themes and deterministic visual variants.
-- Friend Echo companions with Vanguard, Striker, Guardian and Support classes.
-- Server-validated friend eligibility and real-player substitution.
-- Credits Shop with authoritative price and ownership checks.
-- Mobile-first HUD with Shop, Echo, onboarding and Test Lab entry.
-- Owner-only personal Test Lab at runtime.
-- Analytics hooks for session, wave, combat, economy, upgrade, shop, companion and social events.
-- Six runtime RemoteEvents: Combat, State, FX, Commerce, Companion, TestLab.
-- Procedural arena geometry with no third-party gameplay scripts.
+## Estrutura do projeto
 
-## Controls
+A implementação Luau está em src/RoubeUmAnimal/. A configuração Rojo está em default.project.json. O guia do mapa, das regras e do procedimento de teste fica em docs/ROUBE_UM_ANIMAL.md.
 
-Mobile: on-screen M1 and Dash buttons.
+## Build e validação
 
-Keyboard: Left Click = M1, Q = Dash.
+Com Rokit instalado:
 
-Controller: R2 = M1, B = Dash.
+    python3 tools/validate_roube_animal.py
+    rojo build default.project.json --output build/RoubeUmAnimal.rbxl
 
-## Test Lab
+O GitHub Actions executa a validação estrutural e constrói um arquivo de experiência para inspeção.
 
-The Test Lab is available only to the experience owner in supported user-owned experiences.
+## Configuração necessária antes da produção
 
-It provides controlled runtime actions such as:
+1. Publique uma experiência de teste separada e habilite DataStore para validar o salvamento.
+2. Crie os gamepasses e substitua os IDs 0 em Config.lua pelos IDs reais.
+3. Teste o comportamento dos guardiões, vendas, respawns, salvamento concorrente e HUD em dispositivos reais.
+4. Defina ROUBE_ANIMAL_UNIVERSE_ID e ROUBE_ANIMAL_PLACE_ID como Repository Variables e ROBLOX_API_KEY como Repository Secret somente quando decidir publicar explicitamente.
+5. Use manualmente o workflow de publicação e confirme o alvo antes de enviar uma versão.
 
-- Full heal
-- +1000 Credits
-- Spawn Elite
-- Clear Arena
-- Next Wave
-- Return to Arena
+A publicação automática da antiga experiência Collision Battlestar foi desativada para impedir que o novo jogo seja enviado para um ID antigo por engano.
 
-The Test Lab does not grant production authority to clients and is never used as a publication mechanism.
+## Ferramentas de engenharia preservadas
 
-## LuaSmith 4
-
-LuaSmith 4 is the repository-aware engineering agent.
-
-Capabilities:
-
-- repository index and dependency context
-- provenance-aware Roblox references
-- provider routing for Ollama, OpenAI, Gemini, Hugging Face and offline mode
-- fail-closed file operation policy
-- no autonomous delete operation
-- validation and Rojo build hooks
-- audit log and local backups
-- scheduled reference maintenance
-
-Commands:
-
-`npm test`
-`npm run validate`
-`node luasmith-v4.js --web 3000`
-`node luasmith-v4.js --sync-refs 24`
-`node luasmith-v4.js --repair "describe the concrete defect"`
-
-## Development verification
-
-`python3 tools/validate_project.py`
-
-`luau tools/tests/run.luau`
-
-`python3 tools/tests/test_map_layout.py`
-
-`rojo build default.project.json --output build/CollisionBattlestar.rbxl`
-
-`npm test`
-
-Production publication is isolated to the main branch by the release workflow. Scheduled LuaSmith maintenance produces a PR and never publishes the production Roblox place.
-
-## Documentation
-
-- `docs/superpowers/specs/2026-09-30-luasmith-engineering-agent-design.md`
-- `docs/superpowers/plans/2026-09-30-luasmith-collision-battlestar-renewal.md`
-- `tools/luasmith/references.json`
+O repositório também conserva utilitários LuaSmith, scripts de teste e documentação de engenharia anteriores. Eles não fazem parte do runtime de ROUBE UM ANIMAL; o workflow ativo valida este projeto pelo script tools/validate_roube_animal.py.
