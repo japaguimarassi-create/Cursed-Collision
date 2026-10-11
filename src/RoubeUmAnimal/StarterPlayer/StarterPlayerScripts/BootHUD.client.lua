@@ -128,6 +128,45 @@ local function sendProbe(phase)
     end
 end
 
+local reportRequested = false
+local reportSummary
+
+local function requestServerReport()
+    if reportRequested then
+        return
+    end
+    reportRequested = true
+    task.spawn(function()
+        local core = ReplicatedStorage:FindFirstChild("StealAnimalCore")
+        local diagnostics = core and core:FindFirstChild("Diagnostics")
+        local remote = diagnostics and diagnostics:FindFirstChild("RequestHealthReport")
+        if not remote or not remote:IsA("RemoteFunction") then
+            reportSummary = "Health report remote unavailable."
+            return
+        end
+        local ok, report = pcall(function()
+            return remote:InvokeServer()
+        end)
+        if not ok or type(report) ~= "table" then
+            reportSummary = "Health report failed; check server Output."
+            return
+        end
+        local active = report.activeRoot or {}
+        local staging = report.stagingRoot or {}
+        local chosen = staging.present and not staging.ready and staging or active
+        local bot = report.virtualPlayer or {}
+        local client = report.latestClientProbe or {}
+        reportSummary = string.format("Server %s • farms %s/8 • zones %s/6 • animals %s • guardians %s",
+            report.ok == true and "OK" or "WARN",
+            tostring(chosen.farms or 0),
+            tostring(chosen.biomes or 0),
+            tostring(chosen.animals or 0),
+            tostring(chosen.guardians or 0))
+            .. " • mapbot " .. tostring(bot.status or "waiting")
+            .. " • client HUD " .. (client.mainHudReady == true and "OK" or "not confirmed")
+    end)
+end
+
 local startedAt = os.clock()
 local function update()
     if dismissed then
@@ -173,8 +212,12 @@ local function update()
     local counts = root and ("Farms " .. tostring(root:GetAttribute("BaseCount") or 0)
         .. "/8 • Biomes " .. tostring(root:GetAttribute("BiomeCount") or 0) .. "/6 • Animals "
         .. tostring(root:GetAttribute("AnimalCount") or 0) .. "/23") or "Fallback spawn is available while the world builds."
+    if bootState == "Degraded" or worldState == "Degraded" or (os.clock() - startedAt > 35 and not mainHudReady) then
+        requestServerReport()
+    end
     details.Text = tostring(buildTag) .. "\n"
-        .. (type(lastFailure) == "string" and lastFailure ~= "" and lastFailure or counts)
+        .. (reportSummary or counts)
+        .. (type(lastFailure) == "string" and lastFailure ~= "" and "\n" .. lastFailure or "")
 end
 
 task.spawn(function()
