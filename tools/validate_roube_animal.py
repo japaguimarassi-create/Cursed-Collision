@@ -12,6 +12,14 @@ REQUIRED_FILES = [
     "src/RoubeUmAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
     "src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua",
     "src/RoubeUmAnimal/ServerScriptService/Main.server.lua",
+    "src/RoubeUmAnimal/ServerScriptService/CoreShell.server.lua",
+    "src/RoubeUmAnimal/ServerScriptService/Services/CoreKernel.lua",
+    "src/RoubeUmAnimal/ServerScriptService/Services/MapProbe.lua",
+    "src/RoubeUmAnimal/ServerScriptService/Services/AnimalBrain.lua",
+    "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/BootHUD.client.lua",
+    "tools/tests/test_core_reliability.py",
+    "docs/superpowers/specs/2026-10-11-steal-animal-core-shell-mapprobe-design.md",
+    "docs/superpowers/plans/2026-10-11-steal-animal-core-reliability.md",
     "src/RoubeUmAnimal/ServerScriptService/Services/ProfileService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua",
@@ -90,6 +98,11 @@ def main():
     progression = read("src/RoubeUmAnimal/ServerScriptService/Services/ProgressionService.lua")
     client = read("src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
     main = read("src/RoubeUmAnimal/ServerScriptService/Main.server.lua")
+    shell = read("src/RoubeUmAnimal/ServerScriptService/CoreShell.server.lua")
+    kernel = read("src/RoubeUmAnimal/ServerScriptService/Services/CoreKernel.lua")
+    probe = read("src/RoubeUmAnimal/ServerScriptService/Services/MapProbe.lua")
+    brain = read("src/RoubeUmAnimal/ServerScriptService/Services/AnimalBrain.lua")
+    boot_hud = read("src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/BootHUD.client.lua")
 
     checks = [
         ("release identifier", 'ReleaseTag = "StealAnAnimal-2026.10.11"' in config),
@@ -114,7 +127,13 @@ def main():
         ("daily rewards, quest claims and codes persist", all(token in progression for token in ("ClaimDailyReward", "ClaimQuest", "RedeemCode", "FARMFAMILY", "WILDSTART", "BARNBOOST"))),
         ("adapted UI pack features", all(token in client for token in ("UIGradient", "renderBarn", "renderAnimals", "renderPasses", "renderQuests", "renderDaily", "renderSettings", "renderStats", "StealAnAnimalHUD"))),
         ("mobile input and safe area", all(token in client for token in ("CoreUISafeInsets", ".Activated:Connect", "ViewportSize", "ScrollingFrame"))),
-        ("client-server remote wiring", all(token in main for token in ("RequestUpgrade", "RequestGamepass", "RequestStackableProduct", "RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestCollectBarnIncome"))),
+        ("client-server remote wiring", all(token in shell for token in ("RequestUpgrade", "RequestGamepass", "RequestStackableProduct", "RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestCollectBarnIncome")) and "RoubeAnimalRemotes" in kernel),
+        ("independent core shell", "require(" not in shell and all(token in shell for token in ("CoreShellReady", "FallbackGround", "WorldSpawn", "ClientProbeReport", "RequestHealthReport"))),
+        ("core kernel isolates module failures", "pcall(require, module)" in kernel and "WorldBuilder.Build" in kernel and "MapReady" in kernel and "ServiceStatusJson" in kernel),
+        ("map build is staged and activated after checks", "StealAnAnimal_Staging" in world and 'root.Name = "StealAnAnimal"' in world and "guardianCount == #guardians" in world),
+        ("map diagnostic distinguishes client and server", all(token in probe for token in ("activeRoot", "stagingRoot", "missingRemotes", "latestClientProbe", "CollectServerReport"))),
+        ("independent bootstrap HUD", "StealAnAnimalBootstrapHUD" in boot_hud and "ClientProbeReport" in boot_hud),
+        ("animal brain owns wild and guardian states", all(token in brain for token in ("StartWildlife", "StartGuardians", "Flee", "Wander", "Patrol", "Chase"))),
         ("barn collection UI checks ownership and distance", "collectBarnRemote:FireServer()" in client and "local function collectFromUI(player)" in barn and "validAtPad(player, base, pad)" in barn),
         ("no strength in client-facing gameplay", "Strength" not in catalog and "RequiredStrength" not in catalog and "Strength" not in client and "Força" not in client),
     ]
