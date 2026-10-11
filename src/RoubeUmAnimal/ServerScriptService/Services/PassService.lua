@@ -1,4 +1,5 @@
 local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
@@ -30,31 +31,42 @@ function PassService.Has(player, passName)
 end
 
 function PassService.Load(player)
-    ownership[player] = {
+    if player.Parent ~= Players then
+        return false
+    end
+
+    local state = {
         DoubleCoins = false,
         VIPSpeed = false,
     }
 
     for name, passId in pairs(ids) do
-        if passId > 0 and player.Parent then
+        if passId > 0 and player.Parent == Players then
             local success, owns = pcall(function()
                 return MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId)
             end)
 
             if success then
-                ownership[player][name] = owns == true
+                state[name] = owns == true
             else
                 warn("RoubeUmAnimal: não foi possível verificar " .. name .. " para " .. player.UserId)
             end
         end
     end
 
-    player:SetAttribute("HasDoubleCoins", ownership[player].DoubleCoins)
-    player:SetAttribute("HasVIPSpeed", ownership[player].VIPSpeed)
+    if player.Parent ~= Players then
+        return false
+    end
 
-    if applyMovement and player.Parent then
+    ownership[player] = state
+    player:SetAttribute("HasDoubleCoins", state.DoubleCoins)
+    player:SetAttribute("HasVIPSpeed", state.VIPSpeed)
+
+    if applyMovement then
         applyMovement(player)
     end
+
+    return true
 end
 
 function PassService.Start(promptRequestRemote, promptClientRemote, notifyFunction, movementCallback)
@@ -123,6 +135,10 @@ function PassService.Start(promptRequestRemote, promptClientRemote, notifyFuncti
             local success, owns = pcall(function()
                 return MarketplaceService:UserOwnsGamePassAsync(player.UserId, gamePassId)
             end)
+
+            if player.Parent ~= Players then
+                return
+            end
 
             if not success or not owns then
                 notify(player, "Compra recebida; a posse ainda não pôde ser confirmada. Aguarde e tente novamente.", "Warning")

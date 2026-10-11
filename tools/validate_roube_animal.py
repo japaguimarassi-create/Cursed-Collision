@@ -115,8 +115,10 @@ def main():
     for token in ("workflow_dispatch:", "ROBLOX_API_KEY", "ROUBE_ANIMAL_UNIVERSE_ID", "ROUBE_ANIMAL_PLACE_ID"):
         if token not in publisher:
             fail("publisher is missing required safety setting: " + token)
-    if "on:\n  push:" in publisher:
-        fail("production publishing must not be automatic")
+    if "push:" in publisher and "contains(github.event.head_commit.message, '[publish-roube-um-animal]')" not in publisher:
+        fail("production push publishing must require the explicit release marker")
+    if "5290480963" not in publisher or "15338267657" not in publisher:
+        fail("publisher must explicitly block the retired experience IDs")
 
     for name in REQUIRED_FILES:
         if name.endswith((".lua", ".luau")):

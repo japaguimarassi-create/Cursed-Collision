@@ -1,6 +1,10 @@
 name: Roube Um Animal - Manual Publisher
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/roblox-publish.yml"
   workflow_dispatch:
     inputs:
       confirm:
@@ -18,7 +22,7 @@ concurrency:
 
 jobs:
   publish:
-    if: inputs.confirm == true
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.confirm == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-roube-um-animal]')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -30,6 +34,10 @@ jobs:
           cache: true
       - name: Validate project
         run: python3 tools/validate_roube_animal.py
+      - name: Run gameplay rule tests
+        run: luau tools/tests/run.luau
+      - name: Validate map and animal spawns
+        run: python3 tools/tests/test_map_layout.py
       - name: Install pinned Luau syntax checker
         shell: bash
         run: |
@@ -63,12 +71,26 @@ jobs:
           PLACE_ID: ${{ vars.ROUBE_ANIMAL_PLACE_ID }}
         run: |
           set -euo pipefail
-          test -n "${ROBLOX_API_KEY}"
-          test -n "${UNIVERSE_ID}"
-          test -n "${PLACE_ID}"
-          [[ "${UNIVERSE_ID}" =~ ^[0-9]+$ ]]
-          [[ "${PLACE_ID}" =~ ^[0-9]+$ ]]
+          test -n "${ROBLOX_API_KEY}" || { echo "::error::Missing repository secret ROBLOX_API_KEY"; exit 1; }
+          test -n "${UNIVERSE_ID}" || { echo "::error::Set repository variable ROUBE_ANIMAL_UNIVERSE_ID"; exit 1; }
+          test -n "${PLACE_ID}" || { echo "::error::Set repository variable ROUBE_ANIMAL_PLACE_ID"; exit 1; }
+          [[ "${UNIVERSE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::Universe ID must be numeric"; exit 1; }
+          [[ "${PLACE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::Place ID must be numeric"; exit 1; }
+          if [[ "${UNIVERSE_ID}" == "5290480963" || "${PLACE_ID}" == "15338267657" ]]; then
+            echo "::error::Refusing to overwrite the retired Collision Battlestar experience."
+            exit 1
+          fi
           endpoint="https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published"
           code="$(curl --silent --show-error --location --request POST --url "${endpoint}" --header "x-api-key: ${ROBLOX_API_KEY}" --header "Content-Type: application/octet-stream" --data-binary "@build/RoubeUmAnimal.rbxl" --output build/publish-response.json --write-out "%{http_code}")"
           cat build/publish-response.json
-          [[ "${code}" =~ ^2[0-9][0-9]$ ]]
+          [[ "${code}" =~ ^2[0-9][0-9]$ ]] || { echo "::error::Roblox rejected the publish request (HTTP ${code})."; exit 1; }
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          response = json.loads(Path("build/publish-response.json").read_text(encoding="utf-8"))
+          version = response.get("versionNumber")
+          if not isinstance(version, int) or version < 1:
+              raise SystemExit("Roblox returned HTTP success without a valid published version number.")
+          print(f"Published Roblox place version {version}.")
+          PY

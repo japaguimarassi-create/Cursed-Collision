@@ -414,7 +414,7 @@ local function sell(player, base, sellPart)
 
     local amount = salePrice(player, entry)
 
-    if amount <= 0 then
+    if not amount or amount <= 0 then
         entry.Busy = false
         notify(player, "O valor deste animal é inválido.", "Error")
         return

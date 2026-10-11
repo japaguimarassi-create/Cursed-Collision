@@ -223,7 +223,9 @@ function ProfileService.Save(player, releaseLock)
     profile.Saving = true
     local key = "Player_" .. tostring(player.UserId)
 
-    local success, result = pcall(function()
+    local success, result
+    for attempt = 1, 3 do
+        success, result = pcall(function()
         return Store:UpdateAsync(key, function(current)
             if type(current) ~= "table" then
                 return nil
@@ -252,7 +254,16 @@ function ProfileService.Save(player, releaseLock)
 
             return current
         end)
-    end)
+        end)
+
+        if success then
+            break
+        end
+
+        if attempt < 3 then
+            task.wait(attempt)
+        end
+    end
 
     profile.Saving = false
 
