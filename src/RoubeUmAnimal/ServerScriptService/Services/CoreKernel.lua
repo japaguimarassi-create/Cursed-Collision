@@ -146,6 +146,7 @@ function CoreKernel.Start()
         return false
     end
     setAttribute(core, "WorldState", "Ready")
+    setAttribute(core, "FallbackPresent", false)
 
     local modules = { WorldBuilder = WorldBuilder, MapProbe = mapProbe }
     local serviceNames = {
