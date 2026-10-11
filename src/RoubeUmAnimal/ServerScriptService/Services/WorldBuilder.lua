@@ -460,12 +460,12 @@ local function createBase(index, position, angle)
 
     createBarn(base, position + Vector3.new(0, 1.1, -3.8), index)
 
-    local deposit = part(base, "BarnDepositPad", Vector3.new(7, 0.35, 4), CFrame.new(position + Vector3.new(-7, 1.28, 8)), Color3.fromRGB(72, 211, 113), Enum.Material.Neon, nil, false, 0.12)
+    local deposit = part(base, "BarnDepositPad", Vector3.new(7, 0.35, 4), CFrame.new(position + Vector3.new(-13, 1.28, 12.5)), Color3.fromRGB(72, 211, 113), Enum.Material.Neon, nil, false, 0.12)
     deposit:SetAttribute("BaseIndex", index)
     addSurfaceLabel(deposit, "STORE ANIMAL", "Bring your animal here", Color3.fromRGB(132, 255, 157))
     addLight(deposit, Color3.fromRGB(95, 255, 135), 0.55, 9)
 
-    local collect = part(base, "IncomeCollectPad", Vector3.new(7, 0.35, 4), CFrame.new(position + Vector3.new(7, 1.28, 8)), Color3.fromRGB(255, 198, 71), Enum.Material.Neon, nil, false, 0.12)
+    local collect = part(base, "IncomeCollectPad", Vector3.new(7, 0.35, 4), CFrame.new(position + Vector3.new(13, 1.28, 12.5)), Color3.fromRGB(255, 198, 71), Enum.Material.Neon, nil, false, 0.12)
     collect:SetAttribute("BaseIndex", index)
     addSurfaceLabel(collect, "COLLECT COINS", "Your animals are earning!", COLORS.Gold)
     addLight(collect, COLORS.Gold, 0.55, 9)
@@ -480,10 +480,20 @@ local function createBase(index, position, angle)
 
     local display = folder(base, "StoredAnimals")
     local slots = {}
-    for slotIndex = 1, Config.Barn.BaseSlots + Config.Barn.ExtraPassSlots do
-        local column = (slotIndex - 1) % 3
-        local row = math.floor((slotIndex - 1) / 3)
-        local slotPosition = position + Vector3.new(-10 + column * 10, 1.3, -2 + row * 9)
+    local slotOffsets = {
+        Vector3.new(-6, 1.3, 6),
+        Vector3.new(0, 1.3, 6),
+        Vector3.new(6, 1.3, 6),
+        Vector3.new(-6, 1.3, 14),
+        Vector3.new(0, 1.3, 14),
+        Vector3.new(6, 1.3, 14),
+        Vector3.new(-13, 1.3, -7),
+        Vector3.new(13, 1.3, -7),
+        Vector3.new(-13, 1.3, 0),
+        Vector3.new(13, 1.3, 0),
+    }
+    for slotIndex, offset in ipairs(slotOffsets) do
+        local slotPosition = position + offset
         local pad = part(display, "AnimalSlot_" .. slotIndex, Vector3.new(5.5, 0.28, 5.5), CFrame.new(slotPosition), Color3.fromRGB(223, 213, 177), Enum.Material.Sand, nil, false, 0.08)
         pad:SetAttribute("SlotIndex", slotIndex)
         local plate = part(display, "SlotLabel_" .. slotIndex, Vector3.new(4.7, 0.22, 0.3), CFrame.new(slotPosition + Vector3.new(0, 0.5, 2.35)), Color3.fromRGB(69, 63, 53), Enum.Material.SmoothPlastic, nil, false)
