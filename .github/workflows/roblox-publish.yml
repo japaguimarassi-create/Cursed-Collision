@@ -68,8 +68,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build
-          rojo build default.project.json --output build/StealAnAnimal.rbxl
-          test -s build/StealAnAnimal.rbxl
+          rojo build default.project.json --output build/RoubeUmAnimal.rbxl
+          test -s build/RoubeUmAnimal.rbxl
       - name: Publish only to the confirmed existing experience
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
@@ -83,9 +83,15 @@ jobs:
           [[ "${UNIVERSE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::Universe ID must be numeric"; exit 1; }
           [[ "${PLACE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::Place ID must be numeric"; exit 1; }
           endpoint="https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published"
-          code="$(curl --silent --show-error --location --request POST --url "${endpoint}" --header "x-api-key: ${ROBLOX_API_KEY}" --header "Content-Type: application/octet-stream" --data-binary "@build/StealAnAnimal.rbxl" --output build/publish-response.json --write-out "%{http_code}")"
+          # Upload the built RBXL as the publish payload and save response
+          http_code=$(curl --silent --show-error --location --write-out "%{http_code}" --output build/publish-response.json \
+            --request POST --url "${endpoint}" \
+            --header "x-api-key: ${ROBLOX_API_KEY}" \
+            --header "Content-Type: application/octet-stream" \
+            --data-binary @build/RoubeUmAnimal.rbxl)
+          echo "HTTP code: $http_code"
           cat build/publish-response.json
-          [[ "${code}" =~ ^2[0-9][0-9]$ ]] || { echo "::error::Roblox rejected the publish request (HTTP ${code})."; exit 1; }
+          [[ "${http_code}" =~ ^2[0-9][0-9]$ ]] || { echo "::error::Roblox rejected the publish request (HTTP ${http_code})."; exit 1; }
           python3 - <<'PY'
           import json
           from pathlib import Path
