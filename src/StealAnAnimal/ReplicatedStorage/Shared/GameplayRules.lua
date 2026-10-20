@@ -131,4 +131,38 @@ function Rules.UpgradeCost(level, config)
     return math.floor(cost)
 end
 
+function Rules.RebirthCost(rebirths, config)
+    local current = numberOr(rebirths, -1)
+    local maximum = numberOr(config and config.MaxRebirths, -1)
+    local base = numberOr(config and config.RebirthBaseCost, -1)
+    local growth = numberOr(config and config.RebirthCostGrowth, -1)
+    local coinsLimit = numberOr(config and config.CoinsLimit, 2000000000)
+    if current < 0 or maximum < 0 or base <= 0 or growth < 1 or coinsLimit < 1 then
+        return nil
+    end
+    current = math.floor(current)
+    if current >= maximum then
+        return nil
+    end
+    local cost = base * growth ^ current
+    if not finite(cost) or cost <= 0 then
+        return nil
+    end
+    return math.clamp(math.floor(cost), 1, math.floor(coinsLimit))
+end
+
+function Rules.RebirthIncomeMultiplier(rebirths, config)
+    local maximum = math.max(0, math.floor(numberOr(config and config.MaxRebirths, 0)))
+    local count = math.clamp(math.floor(numberOr(rebirths, 0)), 0, maximum)
+    local bonus = numberOr(config and config.RebirthIncomeBonus, 0)
+    if bonus < 0 then
+        return 1
+    end
+    local multiplier = 1 + count * bonus
+    if not finite(multiplier) then
+        return 1
+    end
+    return multiplier
+end
+
 return table.freeze(Rules)
