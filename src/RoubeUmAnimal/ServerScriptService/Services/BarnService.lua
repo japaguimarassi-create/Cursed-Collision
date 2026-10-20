@@ -55,7 +55,6 @@ function BarnService.InitializePlayer(player)
     end
     local success, earned, elapsed, rate = profiles.ClaimOfflineIncome(
         player,
-        1,
         Config.Barn.OfflineIncomeCapSeconds
     )
     if not success then
