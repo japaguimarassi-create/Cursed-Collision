@@ -24,7 +24,7 @@ function InteractionPrompt.mount(services)
     round(promptCard, 12)
     outline(promptCard, COLORS.Mint, 1, 0.25)
     local promptConstraint = Instance.new("UISizeConstraint")
-    promptConstraint.MaxSize = Vector2.new(320, 48)
+    promptConstraint.MaxSize = Vector2.new(280, 48)
     promptConstraint.MinSize = Vector2.new(220, 48)
     promptConstraint.Parent = promptCard
     
