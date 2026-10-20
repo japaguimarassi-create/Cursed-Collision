@@ -72,6 +72,15 @@ jobs:
           test -s build/StealAnAnimal.rbxl
           python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
           python3 tools/simulate_studio_run.py --report artifacts/studio-run-simulation.json --markdown artifacts/studio-run-simulation.md --place build/StealAnAnimal.rbxl
+      - name: Verify runtime QA approval is tied to the exact source revision
+        env:
+          STUDIO_QA_SHA: ${{ vars.STEAL_ANIMAL_STUDIO_QA_SHA }}
+        run: |
+          set -euo pipefail
+          test -n "${STUDIO_QA_SHA:-}" || { echo "::error::Set STEAL_ANIMAL_STUDIO_QA_SHA only after real Studio multi-client and mobile QA passes."; exit 1; }
+          test "${STUDIO_QA_SHA}" = "${GITHUB_SHA}" || { echo "::error::Runtime QA approval SHA must exactly match this commit (${GITHUB_SHA}). Re-test this revision in Studio."; exit 1; }
+          echo "Runtime QA attestation matches commit ${GITHUB_SHA}."
+
       - name: Publish only to explicitly configured place
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
