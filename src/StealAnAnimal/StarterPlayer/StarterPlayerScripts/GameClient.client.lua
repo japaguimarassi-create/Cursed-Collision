@@ -320,7 +320,7 @@ local function updateQuickActionsPosition()
     local camera = workspace.CurrentCamera
     if not camera then return end
     local viewport = camera.ViewportSize
-    local y = touchDevice and 110 or 56
+    local y = 110
     dock.Position = UDim2.new(0, 8, 0, y)
 end
 
