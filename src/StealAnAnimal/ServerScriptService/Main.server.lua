@@ -1447,6 +1447,216 @@ rebirthRemote.OnServerEvent:Connect(function(player)
     end
 end)
 
+
+local function copyProgressionSnapshot(profile)
+    local data = snapshot(profile)
+    data.Persistent = profile.Persistent
+    return data
+end
+
+local function restoreProgressionSnapshot(profile, data)
+    profile.Coins = data.Coins
+    profile.Speed = data.Speed
+    profile.TreadmillLevel = data.TreadmillLevel
+    profile.Rebirths = data.Rebirths
+    profile.BarnBank = data.BarnBank
+    profile.LastIncomeAt = data.LastIncomeAt
+    profile.TotalCaptured = data.TotalCaptured or 0
+    profile.TotalDeposited = data.TotalDeposited or 0
+    profile.LastDailyClaimDay = data.LastDailyClaimDay or 0
+    profile.DailyStreak = data.DailyStreak or 0
+    profile.RedeemedCodes = table.clone(data.RedeemedCodes or {})
+    profile.QuestClaims = table.clone(data.QuestClaims or {})
+    profile.BarnAnimals = {}
+    for _, animal in ipairs(data.BarnAnimals or {}) do
+        table.insert(profile.BarnAnimals, { Uid = animal.Uid, Id = animal.Id, BornAt = animal.BornAt })
+    end
+    if profile.Persistent ~= false then
+        profile.Persistent = data.Persistent
+    end
+end
+
+local function runProgressionWrite(player, mutate)
+    local profile = profiles[player]
+    if not profile or leaving[player] or profile.Persistent == false or not sessionTokens[player] then
+        return false, "profile-not-loaded"
+    end
+    if progressionWriteInProgress[player] or rebirthInProgress[player] or saveInProgress[player] then
+        return false, "profile-busy"
+    end
+    progressionWriteInProgress[player] = true
+    player:SetAttribute("ProgressionWriteInProgress", true)
+    local previous = copyProgressionSnapshot(profile)
+    local ok, accepted, value, extra = pcall(mutate, profile)
+    if not ok or not accepted then
+        restoreProgressionSnapshot(profile, previous)
+        progressionWriteInProgress[player] = nil
+        player:SetAttribute("ProgressionWriteInProgress", false)
+        updatePlayerAttributes(player)
+        if not ok then
+            warn("[StealAnAnimal] Progression write failed: " .. tostring(accepted))
+            return false, "datastore-error"
+        end
+        return false, value or "rejected"
+    end
+    updatePlayerAttributes(player)
+    local saved = saveProfile(player)
+    if not saved then
+        restoreProgressionSnapshot(profile, previous)
+        progressionWriteInProgress[player] = nil
+        player:SetAttribute("ProgressionWriteInProgress", false)
+        updatePlayerAttributes(player)
+        renderBarn(player)
+        return false, "datastore-error"
+    end
+    progressionWriteInProgress[player] = nil
+    player:SetAttribute("ProgressionWriteInProgress", false)
+    updatePlayerAttributes(player)
+    renderBarn(player)
+    return true, value, extra
+end
+
+dailyRemote.OnServerEvent:Connect(function(player)
+    if not profiles[player] or leaving[player] or not allowAction(player, "daily", 1.5) then return end
+    local today = math.floor(os.time() / 86400)
+    local ok, value, streak = runProgressionWrite(player, function(profile)
+        if (profile.LastDailyClaimDay or 0) >= today then return false, "already-claimed" end
+        local nextStreak = (profile.LastDailyClaimDay or 0) == today - 1 and math.min((profile.DailyStreak or 0) + 1, 7) or 1
+        local reward = 500 + (nextStreak - 1) * 250
+        profile.Coins = math.clamp(profile.Coins + reward, 0, Config.CoinsLimit)
+        profile.LastDailyClaimDay = today
+        profile.DailyStreak = nextStreak
+        return true, reward, nextStreak
+    end)
+    if ok then
+        notify(player, "Recompensa diária: +" .. tostring(value) .. " moedas. Sequência " .. tostring(streak) .. "/7.", "Success")
+    else
+        local messages = {
+            ["already-claimed"] = "Você já coletou a recompensa de hoje.",
+            ["profile-busy"] = "Seu progresso está sendo salvo. Tente novamente.",
+            ["datastore-error"] = "A recompensa não foi salva; nada foi consumido.",
+        }
+        notify(player, messages[value] or "Recompensa diária indisponível.", "Warning")
+    end
+end)
+
+codeRemote.OnServerEvent:Connect(function(player, rawCode)
+    if not profiles[player] or leaving[player] or not allowAction(player, "code", 1.5) then return end
+    if type(rawCode) ~= "string" or #rawCode > 48 then
+        notify(player, "Digite um código válido.", "Warning")
+        return
+    end
+    local code = string.upper(string.gsub(rawCode, "%s+", ""))
+    local reward = DAILY_CODES[code]
+    if not reward then
+        notify(player, "Código inválido ou expirado.", "Warning")
+        return
+    end
+    local ok, value = runProgressionWrite(player, function(profile)
+        if profile.RedeemedCodes[code] then return false, "already-redeemed" end
+        profile.RedeemedCodes[code] = os.time()
+        profile.Coins = math.clamp(profile.Coins + reward, 0, Config.CoinsLimit)
+        return true, reward
+    end)
+    if ok then
+        notify(player, "Código " .. code .. " resgatado: +" .. tostring(value) .. " moedas.", "Success")
+    else
+        local messages = {
+            ["already-redeemed"] = "Esse código já foi usado nesta conta.",
+            ["profile-busy"] = "Seu progresso está sendo salvo. Tente novamente.",
+            ["datastore-error"] = "Não foi possível salvar o código; ele continua disponível.",
+        }
+        notify(player, messages[value] or "Não foi possível resgatar o código.", "Warning")
+    end
+end)
+
+questRemote.OnServerEvent:Connect(function(player, questId)
+    if not profiles[player] or leaving[player] or type(questId) ~= "string" or not allowAction(player, "quest", 1.5) then return end
+    local quest = QUESTS[questId]
+    if not quest then return end
+    local ok, value = runProgressionWrite(player, function(profile)
+        if profile.QuestClaims[questId] then return false, "already-claimed" end
+        if not quest.Requirement(profile) then return false, "requirements" end
+        profile.QuestClaims[questId] = os.time()
+        profile.Coins = math.clamp(profile.Coins + quest.Reward, 0, Config.CoinsLimit)
+        return true, quest.Reward
+    end)
+    if ok then
+        notify(player, "Missão concluída: +" .. tostring(value) .. " moedas.", "Success")
+    else
+        local messages = {
+            ["already-claimed"] = "Essa missão já foi resgatada.",
+            ["requirements"] = "Complete o objetivo antes de resgatar a recompensa.",
+            ["profile-busy"] = "Seu progresso está sendo salvo. Tente novamente.",
+            ["datastore-error"] = "A recompensa não foi salva; tente novamente.",
+        }
+        notify(player, messages[value] or "Missão indisponível.", "Warning")
+    end
+end)
+
+local function mapSummary()
+    local partCount = 0
+    for _, item in ipairs(world:GetDescendants()) do
+        if item:IsA("BasePart") then partCount += 1 end
+    end
+    local occupiedFarms = 0
+    for _, base in ipairs(basesFolder:GetChildren()) do
+        if base:GetAttribute("OwnerUserId") ~= 0 then occupiedFarms += 1 end
+    end
+    local biomes = 0
+    for _, biome in ipairs(Config.Biomes) do
+        if world:FindFirstChild(biome.Id .. "Ground", true) then biomes += 1 end
+    end
+    return {
+        Parts = partCount,
+        Farms = #basesFolder:GetChildren(),
+        OccupiedFarms = occupiedFarms,
+        Biomes = biomes,
+        WildAnimals = #wildlifeFolder:GetChildren(),
+        Guardians = #guardiansFolder:GetChildren(),
+    }
+end
+
+mapBotRemote.OnServerEvent:Connect(function(player)
+    if not profiles[player] or leaving[player] then return end
+    local now = os.clock()
+    if now - (mapBotCooldowns[player] or 0) < 20 then
+        notify(player, "O MapBot pode testar novamente em 20 segundos.", "Warning")
+        return
+    end
+    mapBotCooldowns[player] = now
+    local base = playerBases[player]
+    local pad = base and base:FindFirstChild("CollectPad")
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local summary = mapSummary()
+    local pathStatus = "SEM PERSONAGEM"
+    local waypointCount = 0
+    if root and pad then
+        local path = PathfindingService:CreatePath({ AgentRadius = 2, AgentHeight = 5, AgentCanJump = true })
+        local success, err = pcall(function()
+            path:ComputeAsync(root.Position, pad.Position + Vector3.new(0, 3, 0))
+        end)
+        if success then
+            pathStatus = tostring(path.Status)
+            waypointCount = #path:GetWaypoints()
+        else
+            pathStatus = "ERRO: " .. tostring(err)
+        end
+    end
+    local report = table.concat({
+        "MAPBOT • DIAGNÓSTICO",
+        "Mapa: " .. ((summary.Parts > 300 and summary.Farms == 8 and summary.Biomes == 8) and "PASSOU" or "INCOMPLETO"),
+        "Peças: " .. tostring(summary.Parts),
+        "Fazendas: " .. tostring(summary.Farms) .. " (ocupadas " .. tostring(summary.OccupiedFarms) .. ")",
+        "Biomas: " .. tostring(summary.Biomes) .. "/8",
+        "Animais selvagens: " .. tostring(summary.WildAnimals),
+        "Guardiões: " .. tostring(summary.Guardians) .. "/8",
+        "Rota até o pad da fazenda: " .. pathStatus,
+        "Pontos de caminho: " .. tostring(waypointCount),
+    }, "\n")
+    mapBotReportRemote:FireClient(player, report, pathStatus == "Success" and "Success" or "Warning")
+end)
+
 buildScenery()
 for index = 1, 8 do
     createBase(index)
