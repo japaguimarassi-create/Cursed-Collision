@@ -305,7 +305,7 @@ local function sanitizeProfile(raw)
     data.Coins = safeInteger(raw.Coins, 0, Config.CoinsLimit, 0)
     data.Speed = safeInteger(raw.Speed, 0, Config.MaxSpeedLevel, 0)
     data.BarnBank = safeInteger(raw.BarnBank, 0, Config.CoinsLimit, 0)
-    data.LastIncomeAt = safeInteger(raw.LastIncomeAt, 0, 2147483647, os.time()))
+    data.LastIncomeAt = safeInteger(raw.LastIncomeAt, 0, 2147483647, os.time())
     if type(raw.BarnAnimals) == "table" then
         for index, entry in ipairs(raw.BarnAnimals) do
             if index > Config.BaseSlots then
@@ -743,7 +743,7 @@ local function spawnWild(spec)
         if entry.Id == spec.Biome then biome = entry break end
     end
     if not biome then return end
-    local position = Vector3.new(biome.CenterX + rng:NextNumber(-35, 35), 0.15, rng:NextNumber(-42, 42))
+    local position = Vector3.new(biome.CenterX + rng:NextNumber(-35, 35), -0.12, rng:NextNumber(-42, 42))
     local model = createAnimalModel(spec, "Baby", position, false)
     model.Parent = wildlifeFolder
     local root = model.PrimaryPart
