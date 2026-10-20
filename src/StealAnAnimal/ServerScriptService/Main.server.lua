@@ -175,7 +175,7 @@ local function createAnimalModel(spec, stageName, position, giant)
             stageIndex = index
         end
     end
-    local scale = giant and 4 or Config.EvolutionStages[stageIndex].Scale
+    local scale = giant and 5 or Config.EvolutionStages[stageIndex].Scale
     local base = position
     local function point(x, y, z)
         return base + Vector3.new(x * scale, y * scale, z * scale)
@@ -208,13 +208,24 @@ local function createAnimalModel(spec, stageName, position, giant)
         ball("Head", 1.12, 1.08, 1.05, 0, 2.18, -1.05)
         ball("Muzzle", 0.68, 0.48, 0.52, 0, 1.96, -1.62, spec.Accent)
     end
+    local eyeX, eyeY, eyeZ = 0.29, 2.34, -1.57
+    if spec.Shape == "Whale" or spec.Shape == "Dolphin" then
+        eyeX, eyeY, eyeZ = 0.38, 1.78, -2.12
+    elseif spec.Shape == "Ray" then
+        eyeX, eyeY, eyeZ = 0.3, 1.28, -1.48
+    elseif spec.Id == "Swan" then
+        eyeX, eyeY, eyeZ = 0.1, 3.48, -1.0
+    elseif spec.Shape == "Frog" then
+        eyeX, eyeY, eyeZ = 0.35, 2.67, -1.44
+    end
+    local eyeWidth = (spec.Shape == "Ray" or spec.Id == "Swan") and 0.2 or 0.27
     for _, side in ipairs({ -1, 1 }) do
-        ball("EyeWhite", 0.27, 0.31, 0.13, side * 0.29, 2.34, -1.57, Color3.fromRGB(255, 250, 231))
-        ball("EyeIris", 0.16, 0.2, 0.08, side * 0.29, 2.33, -1.66, spec.Accent)
-        ball("EyePupil", 0.085, 0.13, 0.045, side * 0.29, 2.33, -1.713, Color3.fromRGB(24, 27, 33))
-        ball("EyeGlint", 0.045, 0.055, 0.025, side * 0.29 - 0.03, 2.39, -1.735, Color3.fromRGB(255, 255, 255))
-        ball("Eyebrow", 0.36, 0.11, 0.11, side * 0.3, 2.58, -1.52, spec.Accent)
-        ball("CheekBlush", 0.25, 0.15, 0.06, side * 0.53, 1.92, -1.56, Color3.fromRGB(255, 162, 174))
+        ball("EyeWhite", eyeWidth, 0.31, 0.13, side * eyeX, eyeY, eyeZ, Color3.fromRGB(255, 250, 231))
+        ball("EyeIris", eyeWidth * 0.6, 0.2, 0.08, side * eyeX, eyeY - 0.01, eyeZ - 0.09, spec.Accent)
+        ball("EyePupil", eyeWidth * 0.32, 0.13, 0.045, side * eyeX, eyeY - 0.01, eyeZ - 0.143, Color3.fromRGB(24, 27, 33))
+        ball("EyeGlint", 0.045, 0.055, 0.025, side * eyeX - 0.03, eyeY + 0.05, eyeZ - 0.165, Color3.fromRGB(255, 255, 255))
+        ball("Eyebrow", eyeWidth * 1.34, 0.11, 0.11, side * eyeX, eyeY + 0.24, eyeZ + 0.05, spec.Accent)
+        ball("CheekBlush", 0.25, 0.15, 0.06, side * math.max(eyeX + 0.24, 0.48), eyeY - 0.42, eyeZ + 0.01, Color3.fromRGB(255, 162, 174))
     end
     ball("Nose", 0.19, 0.15, 0.13, 0, 2.02, -1.9, spec.Shape == "Bird" and Color3.fromRGB(255, 145, 47) or Color3.fromRGB(57, 45, 43))
     ball("Mouth", 0.2, 0.07, 0.06, 0, 1.85, -1.74, Color3.fromRGB(83, 45, 48))
@@ -1235,13 +1246,13 @@ local function makeGuardian(spec, biome)
     highlight.Parent = model
     for shard = 1, 12 do
         local angle = math.rad(shard * 30)
-        local auraPosition = position + Vector3.new(math.cos(angle) * 8.6, 0.45, math.sin(angle) * 8.6)
+        local auraPosition = position + Vector3.new(math.cos(angle) * 10.5, 0.45, math.sin(angle) * 10.5)
         local aura = addBall(model, "GuardianAuraShard", Vector3.new(1.1, 0.2, 0.2), auraPosition, biome.Accent, Enum.Material.Neon)
         aura.CFrame = CFrame.new(auraPosition) * CFrame.Angles(0, -angle, math.rad(25))
         aura.CanTouch = false
         aura.CanQuery = false
     end
-    addBall(model, "GuardianCrownGem", Vector3.new(1.9, 1.9, 1.9), position + Vector3.new(0, 13.3, 0), biome.Accent, Enum.Material.Neon)
+    addBall(model, "GuardianCrownGem", Vector3.new(1.9, 1.9, 1.9), position + Vector3.new(0, 16.4, 0), biome.Accent, Enum.Material.Neon)
     table.insert(guardians, { Model = model, Home = CFrame.new(position), Biome = biome, Spec = spec, Speed = math.min(Config.GuardianSpeed, 12 + biome.Phase * 1.1) })
 end
 
