@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
@@ -197,7 +198,7 @@ local objective = Instance.new("Frame")
 objective.Name = "ContextObjective"
 objective.AnchorPoint = Vector2.new(0.5, 0)
 objective.Position = UDim2.new(0.5, 0, 0, 72)
-objective.Size = UDim2.new(0.82, 0, 0, 27)
+objective.Size = UDim2.new(0.68, 0, 0, 26)
 objective.BackgroundColor3 = Color3.fromRGB(28, 57, 34)
 objective.BackgroundTransparency = 0.16
 objective.BorderSizePixel = 0
@@ -205,8 +206,8 @@ objective.Parent = gui
 round(objective, 9)
 outline(objective, COLORS.Mint, 1, 0.68)
 local objectiveConstraint = Instance.new("UISizeConstraint")
-objectiveConstraint.MaxSize = Vector2.new(360, 27)
-objectiveConstraint.MinSize = Vector2.new(220, 27)
+objectiveConstraint.MaxSize = Vector2.new(300, 26)
+objectiveConstraint.MinSize = Vector2.new(210, 26)
 objectiveConstraint.Parent = objective
 local objectiveMarker = Instance.new("Frame")
 objectiveMarker.Name = "StatusMarker"
@@ -351,6 +352,86 @@ end
 local upgradeButton = makeDockButton("OpenShop", "SHOP", 1, Color3.fromRGB(255, 255, 255), "Cart", Color3.fromRGB(51, 198, 77))
 local indexButton = makeDockButton("OpenIndex", "INDEX", 2, Color3.fromRGB(255, 255, 255), "Book", Color3.fromRGB(38, 143, 236))
 local moreButton = makeDockButton("OpenMore", "MORE", 3, COLORS.Gold, "More", Color3.fromRGB(67, 88, 94))
+
+local promptCard = Instance.new("Frame")
+promptCard.Name = "CompactInteractionPrompt"
+promptCard.AnchorPoint = Vector2.new(0.5, 1)
+promptCard.Position = UDim2.new(0.5, 0, 1, -88)
+promptCard.Size = UDim2.new(0.84, 0, 0, 48)
+promptCard.BackgroundColor3 = COLORS.Panel
+promptCard.BackgroundTransparency = 0.08
+promptCard.BorderSizePixel = 0
+promptCard.Visible = false
+promptCard.ZIndex = 45
+promptCard.Parent = gui
+round(promptCard, 12)
+outline(promptCard, COLORS.Mint, 1, 0.25)
+local promptConstraint = Instance.new("UISizeConstraint")
+promptConstraint.MaxSize = Vector2.new(340, 48)
+promptConstraint.MinSize = Vector2.new(240, 48)
+promptConstraint.Parent = promptCard
+
+local promptObjectLabel = makeLabel(promptCard, "Object", "INTERAÇÃO", UDim2.new(1, -92, 0, 13), UDim2.new(0, 12, 0, 4), 9, COLORS.Muted, Enum.Font.GothamBold)
+promptObjectLabel.ZIndex = 46
+promptObjectLabel.TextTruncate = Enum.TextTruncate.AtEnd
+local promptActionLabel = makeLabel(promptCard, "Action", "", UDim2.new(1, -92, 0, 22), UDim2.new(0, 12, 0, 19), 13, COLORS.Cream, Enum.Font.GothamBlack)
+promptActionLabel.ZIndex = 46
+promptActionLabel.TextTruncate = Enum.TextTruncate.AtEnd
+local promptButton = makeButton(promptCard, "Interact", "TOQUE", COLORS.Mint, COLORS.Background)
+promptButton.AnchorPoint = Vector2.new(1, 0.5)
+promptButton.Position = UDim2.new(1, -7, 0.5, 0)
+promptButton.Size = UDim2.fromOffset(72, 34)
+promptButton.TextSize = 10
+promptButton.ZIndex = 46
+round(promptButton, 9)
+
+local activePrompt = nil
+local promptHolding = false
+local function endPromptHold()
+    if promptHolding and activePrompt and activePrompt.Parent then
+        activePrompt:InputHoldEnd()
+    end
+    promptHolding = false
+end
+
+promptButton.InputBegan:Connect(function(input)
+    if input.UserInputType ~= Enum.UserInputType.Touch and input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+        return
+    end
+    if not activePrompt or not activePrompt.Parent then
+        return
+    end
+    promptHolding = true
+    activePrompt:InputHoldBegin()
+end)
+
+promptButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        endPromptHold()
+    end
+end)
+
+ProximityPromptService.PromptShown:Connect(function(prompt, inputType)
+    activePrompt = prompt
+    promptHolding = false
+    promptObjectLabel.Text = prompt.ObjectText ~= "" and prompt.ObjectText or "INTERAÇÃO"
+    promptActionLabel.Text = string.upper(prompt.ActionText)
+    if inputType == Enum.ProximityPromptInputType.Touch then
+        promptButton.Text = prompt.HoldDuration > 0 and "SEGURE" or "TOQUE"
+    else
+        promptButton.Text = "[" .. prompt.KeyboardKeyCode.Name .. "]"
+    end
+    promptCard.Visible = true
+end)
+
+ProximityPromptService.PromptHidden:Connect(function(prompt)
+    if activePrompt ~= prompt then
+        return
+    end
+    endPromptHold()
+    activePrompt = nil
+    promptCard.Visible = false
+end)
 
 local function updateCurrencyPosition()
     local camera = workspace.CurrentCamera
