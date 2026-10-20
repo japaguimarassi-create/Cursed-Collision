@@ -1243,6 +1243,14 @@ end)
 
 upgradeRemote.OnServerEvent:Connect(function(player)
     if not profiles[player] or leaving[player] or not allowAction(player, "upgradeRemote", 0.8) then return end
+    local base = playerBases[player]
+    local treadmill = base and base:FindFirstChild("Treadmill")
+    local console = treadmill and treadmill:FindFirstChild("TreadmillConsole")
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not console or not root or (root.Position - console.Position).Magnitude > 15 then
+        notify(player, "Vá até a esteira da sua própria fazenda para comprar a melhoria.", "Warning")
+        return
+    end
     upgradeTreadmill(player, nil)
 end)
 
