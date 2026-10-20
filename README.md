@@ -14,9 +14,11 @@ A mobile-first Roblox experience about stealing baby animals, escaping their adu
 
 ## Core gameplay
 
-- Full gameplay HUD redesigned for mobile and desktop: compact resource cards, barn bank/income status, responsive action dock, animal list, treadmill details, guide, readable notifications, and a separate confirmation step for destructive actions.
-- Persistent rebirth progression: the next renascimento costs 25,000 coins and triples in price per level; each rebirth grants +50% permanent animal income, up to 10 rebirths. Rebirth resets coins, barn bank, stored animals, speed points, and treadmill level; the rebirth count and its income bonus persist.
-- Rebirth runs server-side, checks the saved profile/session and wallet, refuses to discard a carried animal, and immediately saves the reset. If the save fails, the previous progression is restored in memory.
+- Mobile-first HUD with resource cards, barn and treadmill panels, rebirth button, contextual objective, action dock, scrolling "More" menu, mission list, daily rewards, code redemption, statistics, settings and MapBot diagnostics. No gamepass or paid-product UI is active.
+- Rebirth follows the earlier progression design: requires 100,000 coins and enough speed points to reach maximum movement speed; grants +10% permanent animal income for each rebirth, up to 25 (x3.5 total income at the cap).
+- Rebirth resets coins and speed points while preserving stored animals, barn bank and treadmill level. The server validates the requirements, saves the profile, and rolls back if the write fails.
+- Daily reward: starts at 500 coins and increases by 250 per consecutive day, up to 2,000 at a seven-day streak. Codes FARMFAMILY (+1,000), WILDSTART (+1,500) and BARNBOOST (+2,500) are one-use per account. Four quests have persisted claim state.
+- Leaderstats, total captures/deposits, lower-effects and compact-HUD settings are restored. MapBot reports active map pieces, farms, biomes, guardians and a pathfinding route to the player's farm pad.
 - Character respawn is explicitly enabled with a three-second delay, and respawned characters return to their assigned farm.
 
 - Animals begin as babies, then evolve into children, adolescents, and adults.
