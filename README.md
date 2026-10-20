@@ -25,7 +25,7 @@ Commands:
 - python3 tools/tests/test_core_reliability.py
 - rojo build default.project.json --output build/StealAnAnimal.rbxl
 
-The GitHub Actions workflow checks Luau syntax and creates a .rbxl artifact. This does not publish to Roblox. Production publishing remains a separate manual workflow and is not run by this branch.
+The GitHub Actions workflow checks Luau syntax before gameplay tests and creates a .rbxl artifact. The reviewed r3 build fixes the profile-sanitization syntax error and places wild animals on the biome ground plane. This does not publish to Roblox. Production publishing remains a separate manual workflow and is not run by this branch.
 
 ## Data and safety
 
