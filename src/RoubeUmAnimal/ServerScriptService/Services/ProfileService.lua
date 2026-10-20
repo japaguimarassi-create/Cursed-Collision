@@ -466,9 +466,8 @@ local function transact(player, mutator)
     return true, callbackState
 end
 
-function ProfileService.ClaimOfflineIncome(player, passMultiplier, capSeconds)
-    if not finiteNumber(passMultiplier) or passMultiplier < 1 or passMultiplier > 10
-        or not finiteNumber(capSeconds) or capSeconds < 0 or capSeconds > 86400 then
+function ProfileService.ClaimOfflineIncome(player, capSeconds)
+    if not finiteNumber(capSeconds) or capSeconds < 0 or capSeconds > 86400 then
         return false, 0, "invalid-parameters"
     end
     local now = os.time()
@@ -485,7 +484,7 @@ function ProfileService.ClaimOfflineIncome(player, passMultiplier, capSeconds)
             end
         end
         local rebirths = integer(current.Rebirths, 0, Config.MaxRebirths, 0)
-        local multiplier = passMultiplier * (1 + rebirths * Config.RebirthIncomeBonusPerRebirth)
+        local multiplier = 1 + rebirths * Config.RebirthIncomeBonusPerRebirth
         local earned = math.clamp(math.floor(rate * multiplier * elapsed), 0, Config.CoinsLimit)
         current.BarnBank = math.clamp(integer(current.BarnBank, 0, Config.CoinsLimit, 0) + earned, 0, Config.CoinsLimit)
         current.LastIncomeAt = now
