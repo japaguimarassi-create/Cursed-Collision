@@ -231,8 +231,18 @@ local function createAnimalModel(spec, stageName, position, giant)
             ball("CheekBlush", 0.25, 0.15, 0.06, side * math.max(eyeX + 0.24, 0.48), eyeY - 0.42, eyeZ + 0.01, Color3.fromRGB(255, 162, 174))
         end
     end
-    ball("Nose", 0.19, 0.15, 0.13, 0, 2.02, -1.9, spec.Shape == "Bird" and Color3.fromRGB(255, 145, 47) or Color3.fromRGB(57, 45, 43))
-    ball("Mouth", 0.2, 0.07, 0.06, 0, 1.85, -1.74, Color3.fromRGB(83, 45, 48))
+    local noseY, noseZ, mouthY, mouthZ = 2.02, -1.9, 1.85, -1.74
+    if spec.Shape == "Whale" or spec.Shape == "Dolphin" then
+        noseY, noseZ, mouthY, mouthZ = 1.42, -2.14, 1.16, -2.08
+    elseif spec.Shape == "Ray" then
+        noseY, noseZ, mouthY, mouthZ = 1.08, -1.46, 0.98, -1.43
+    end
+    if spec.Id ~= "Hen" and spec.Id ~= "Swan" and spec.Id ~= "Duckling" then
+        ball("Nose", 0.19, 0.15, 0.13, 0, noseY, noseZ, spec.Shape == "Bird" and Color3.fromRGB(255, 145, 47) or Color3.fromRGB(57, 45, 43))
+    end
+    if spec.Shape ~= "Bird" then
+        ball("Mouth", 0.2, 0.07, 0.06, 0, mouthY, mouthZ, Color3.fromRGB(83, 45, 48))
+    end
     if giant then
         ball("ChestBadge", 0.34, 0.34, 0.16, 0, 1.24, -1.12, spec.Accent)
         ball("ChestBadgeCore", 0.14, 0.14, 0.08, 0, 1.25, -1.22, Color3.fromRGB(255, 241, 180))
