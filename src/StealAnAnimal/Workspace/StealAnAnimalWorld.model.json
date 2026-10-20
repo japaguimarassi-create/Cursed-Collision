@@ -3648,6 +3648,1782 @@
             "Material": "Rock",
             "Shape": "Ball"
           }
+        },
+        {
+          "Name": "MeadowEggNestBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              16,
+              0.5,
+              12
+            ],
+            "Position": [
+              210,
+              0.08,
+              49
+            ],
+            "Color": [
+              0.4392156862745098,
+              0.29411764705882354,
+              0.19215686274509805
+            ],
+            "Material": "WoodPlanks",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              205.8,
+              1.9,
+              49
+            ],
+            "Color": [
+              0.9803921568627451,
+              0.9607843137254902,
+              0.8705882352941177
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              205.8,
+              1.65,
+              49
+            ],
+            "Color": [
+              1,
+              0.8549019607843137,
+              0.4117647058823529
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              210,
+              1.9,
+              49
+            ],
+            "Color": [
+              1,
+              0.8549019607843137,
+              0.4117647058823529
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              210,
+              1.65,
+              49
+            ],
+            "Color": [
+              1,
+              0.8549019607843137,
+              0.4117647058823529
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              214.2,
+              1.9,
+              49
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.3254901960784314
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              214.2,
+              1.65,
+              49
+            ],
+            "Color": [
+              1,
+              0.8549019607843137,
+              0.4117647058823529
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowNestSign",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.4,
+              0.45
+            ],
+            "Position": [
+              210,
+              4.4,
+              42.5
+            ],
+            "Color": [
+              0.17647058823529413,
+              0.20392156862745098,
+              0.1843137254901961
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeEggNestBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              16,
+              0.5,
+              12
+            ],
+            "Position": [
+              390,
+              0.08,
+              -49
+            ],
+            "Color": [
+              0.4392156862745098,
+              0.29411764705882354,
+              0.19215686274509805
+            ],
+            "Material": "WoodPlanks",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              385.8,
+              1.9,
+              -49
+            ],
+            "Color": [
+              0.9803921568627451,
+              0.9607843137254902,
+              0.8705882352941177
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              385.8,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.4549019607843137,
+              0.8862745098039215,
+              0.9411764705882353
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              390,
+              1.9,
+              -49
+            ],
+            "Color": [
+              0.4549019607843137,
+              0.8862745098039215,
+              0.9411764705882353
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              390,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.4549019607843137,
+              0.8862745098039215,
+              0.9411764705882353
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              394.2,
+              1.9,
+              -49
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.3254901960784314
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              394.2,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.4549019607843137,
+              0.8862745098039215,
+              0.9411764705882353
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeNestSign",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.4,
+              0.45
+            ],
+            "Position": [
+              390,
+              4.4,
+              -55.5
+            ],
+            "Color": [
+              0.17647058823529413,
+              0.20392156862745098,
+              0.1843137254901961
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestEggNestBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              16,
+              0.5,
+              12
+            ],
+            "Position": [
+              570,
+              0.08,
+              49
+            ],
+            "Color": [
+              0.4392156862745098,
+              0.29411764705882354,
+              0.19215686274509805
+            ],
+            "Material": "WoodPlanks",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              565.8,
+              1.9,
+              49
+            ],
+            "Color": [
+              0.9803921568627451,
+              0.9607843137254902,
+              0.8705882352941177
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              565.8,
+              1.65,
+              49
+            ],
+            "Color": [
+              0.6470588235294118,
+              0.8549019607843137,
+              0.4588235294117647
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              570,
+              1.9,
+              49
+            ],
+            "Color": [
+              0.6470588235294118,
+              0.8549019607843137,
+              0.4588235294117647
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              570,
+              1.65,
+              49
+            ],
+            "Color": [
+              0.6470588235294118,
+              0.8549019607843137,
+              0.4588235294117647
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              574.2,
+              1.9,
+              49
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.3254901960784314
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              574.2,
+              1.65,
+              49
+            ],
+            "Color": [
+              0.6470588235294118,
+              0.8549019607843137,
+              0.4588235294117647
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestNestSign",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.4,
+              0.45
+            ],
+            "Position": [
+              570,
+              4.4,
+              42.5
+            ],
+            "Color": [
+              0.17647058823529413,
+              0.20392156862745098,
+              0.1843137254901961
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsEggNestBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              16,
+              0.5,
+              12
+            ],
+            "Position": [
+              750,
+              0.08,
+              -49
+            ],
+            "Color": [
+              0.4392156862745098,
+              0.29411764705882354,
+              0.19215686274509805
+            ],
+            "Material": "WoodPlanks",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              745.8,
+              1.9,
+              -49
+            ],
+            "Color": [
+              0.9803921568627451,
+              0.9607843137254902,
+              0.8705882352941177
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              745.8,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.4588235294117647,
+              0.8901960784313725,
+              0.803921568627451
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              750,
+              1.9,
+              -49
+            ],
+            "Color": [
+              0.4588235294117647,
+              0.8901960784313725,
+              0.803921568627451
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              750,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.4588235294117647,
+              0.8901960784313725,
+              0.803921568627451
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              754.2,
+              1.9,
+              -49
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.3254901960784314
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              754.2,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.4588235294117647,
+              0.8901960784313725,
+              0.803921568627451
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsNestSign",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.4,
+              0.45
+            ],
+            "Position": [
+              750,
+              4.4,
+              -55.5
+            ],
+            "Color": [
+              0.17647058823529413,
+              0.20392156862745098,
+              0.1843137254901961
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostEggNestBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              16,
+              0.5,
+              12
+            ],
+            "Position": [
+              930,
+              0.08,
+              49
+            ],
+            "Color": [
+              0.4392156862745098,
+              0.29411764705882354,
+              0.19215686274509805
+            ],
+            "Material": "WoodPlanks",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              925.8,
+              1.9,
+              49
+            ],
+            "Color": [
+              0.9803921568627451,
+              0.9607843137254902,
+              0.8705882352941177
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              925.8,
+              1.65,
+              49
+            ],
+            "Color": [
+              0.43137254901960786,
+              0.792156862745098,
+              1
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              930,
+              1.9,
+              49
+            ],
+            "Color": [
+              0.43137254901960786,
+              0.792156862745098,
+              1
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              930,
+              1.65,
+              49
+            ],
+            "Color": [
+              0.43137254901960786,
+              0.792156862745098,
+              1
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              934.2,
+              1.9,
+              49
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.3254901960784314
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              934.2,
+              1.65,
+              49
+            ],
+            "Color": [
+              0.43137254901960786,
+              0.792156862745098,
+              1
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostNestSign",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.4,
+              0.45
+            ],
+            "Position": [
+              930,
+              4.4,
+              42.5
+            ],
+            "Color": [
+              0.17647058823529413,
+              0.20392156862745098,
+              0.1843137254901961
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaEggNestBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              16,
+              0.5,
+              12
+            ],
+            "Position": [
+              1110,
+              0.08,
+              -49
+            ],
+            "Color": [
+              0.4392156862745098,
+              0.29411764705882354,
+              0.19215686274509805
+            ],
+            "Material": "WoodPlanks",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1105.8,
+              1.9,
+              -49
+            ],
+            "Color": [
+              0.9803921568627451,
+              0.9607843137254902,
+              0.8705882352941177
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1105.8,
+              1.65,
+              -49
+            ],
+            "Color": [
+              1,
+              0.8901960784313725,
+              0.5019607843137255
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1110,
+              1.9,
+              -49
+            ],
+            "Color": [
+              1,
+              0.8901960784313725,
+              0.5019607843137255
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1110,
+              1.65,
+              -49
+            ],
+            "Color": [
+              1,
+              0.8901960784313725,
+              0.5019607843137255
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1114.2,
+              1.9,
+              -49
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.3254901960784314
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1114.2,
+              1.65,
+              -49
+            ],
+            "Color": [
+              1,
+              0.8901960784313725,
+              0.5019607843137255
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaNestSign",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.4,
+              0.45
+            ],
+            "Position": [
+              1110,
+              4.4,
+              -55.5
+            ],
+            "Color": [
+              0.17647058823529413,
+              0.20392156862745098,
+              0.1843137254901961
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoEggNestBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              16,
+              0.5,
+              12
+            ],
+            "Position": [
+              1290,
+              0.08,
+              49
+            ],
+            "Color": [
+              0.4392156862745098,
+              0.29411764705882354,
+              0.19215686274509805
+            ],
+            "Material": "WoodPlanks",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1285.8,
+              1.9,
+              49
+            ],
+            "Color": [
+              0.9803921568627451,
+              0.9607843137254902,
+              0.8705882352941177
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1285.8,
+              1.65,
+              49
+            ],
+            "Color": [
+              1,
+              0.396078431372549,
+              0.21568627450980393
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1290,
+              1.9,
+              49
+            ],
+            "Color": [
+              1,
+              0.396078431372549,
+              0.21568627450980393
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1290,
+              1.65,
+              49
+            ],
+            "Color": [
+              1,
+              0.396078431372549,
+              0.21568627450980393
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1294.2,
+              1.9,
+              49
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.3254901960784314
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1294.2,
+              1.65,
+              49
+            ],
+            "Color": [
+              1,
+              0.396078431372549,
+              0.21568627450980393
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoNestSign",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.4,
+              0.45
+            ],
+            "Position": [
+              1290,
+              4.4,
+              42.5
+            ],
+            "Color": [
+              0.17647058823529413,
+              0.20392156862745098,
+              0.1843137254901961
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanEggNestBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              16,
+              0.5,
+              12
+            ],
+            "Position": [
+              1470,
+              0.08,
+              -49
+            ],
+            "Color": [
+              0.4392156862745098,
+              0.29411764705882354,
+              0.19215686274509805
+            ],
+            "Material": "WoodPlanks",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1465.8,
+              1.9,
+              -49
+            ],
+            "Color": [
+              0.9803921568627451,
+              0.9607843137254902,
+              0.8705882352941177
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1465.8,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.3254901960784314,
+              0.8627450980392157,
+              0.9803921568627451
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1470,
+              1.9,
+              -49
+            ],
+            "Color": [
+              0.3254901960784314,
+              0.8627450980392157,
+              0.9803921568627451
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1470,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.3254901960784314,
+              0.8627450980392157,
+              0.9803921568627451
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanWildEgg",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.6,
+              3.6,
+              2.6
+            ],
+            "Position": [
+              1474.2,
+              1.9,
+              -49
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.3254901960784314
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanEggBand",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.7,
+              0.48,
+              2.7
+            ],
+            "Position": [
+              1474.2,
+              1.65,
+              -49
+            ],
+            "Color": [
+              0.3254901960784314,
+              0.8627450980392157,
+              0.9803921568627451
+            ],
+            "Material": "Neon",
+            "Shape": "Ball",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanNestSign",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.4,
+              0.45
+            ],
+            "Position": [
+              1470,
+              4.4,
+              -55.5
+            ],
+            "Color": [
+              0.17647058823529413,
+              0.20392156862745098,
+              0.1843137254901961
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
         }
       ]
     },
@@ -15679,6 +17455,114 @@
           ]
         }
       ]
+    },
+    {
+      "Name": "CorridorBoundaryWall",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": true,
+        "Size": [
+          1500,
+          18,
+          2
+        ],
+        "Position": [
+          850,
+          8.5,
+          -86
+        ],
+        "Color": [
+          0.7607843137254902,
+          0.49411764705882355,
+          0.3254901960784314
+        ],
+        "Material": "Brick",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
+      }
+    },
+    {
+      "Name": "CorridorWallCap",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": true,
+        "Size": [
+          1500,
+          0.65,
+          2.4
+        ],
+        "Position": [
+          850,
+          17.8,
+          -86
+        ],
+        "Color": [
+          0.9215686274509803,
+          0.6941176470588235,
+          0.403921568627451
+        ],
+        "Material": "WoodPlanks",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
+      }
+    },
+    {
+      "Name": "CorridorBoundaryWall",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": true,
+        "Size": [
+          1500,
+          18,
+          2
+        ],
+        "Position": [
+          850,
+          8.5,
+          86
+        ],
+        "Color": [
+          0.7607843137254902,
+          0.49411764705882355,
+          0.3254901960784314
+        ],
+        "Material": "Brick",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
+      }
+    },
+    {
+      "Name": "CorridorWallCap",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": true,
+        "Size": [
+          1500,
+          0.65,
+          2.4
+        ],
+        "Position": [
+          850,
+          17.8,
+          86
+        ],
+        "Color": [
+          0.9215686274509803,
+          0.6941176470588235,
+          0.403921568627451
+        ],
+        "Material": "WoodPlanks",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
+      }
     }
   ]
 }
