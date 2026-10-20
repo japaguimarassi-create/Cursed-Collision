@@ -13,6 +13,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("AnimalCatalog"))
 local Rules = require(Shared:WaitForChild("GameplayRules"))
+local PassService = require(script.Parent:WaitForChild("Services"):WaitForChild("PassService"))
 local Store = DataStoreService:GetDataStore(Config.DataStoreName)
 
 local remotes = ReplicatedStorage:FindFirstChild("StealAnimalRemotes") or Instance.new("Folder")
@@ -38,6 +39,8 @@ local codeRemote = remote("RequestRedeemCode")
 local questRemote = remote("RequestQuest")
 local mapBotRemote = remote("RequestMapBot")
 local mapBotReportRemote = remote("MapBotReport")
+local passRequestRemote = remote("RequestGamepass")
+local promptGamepassRemote = remote("PromptGamepass")
 
 local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")
 local previousRuntimeWorld = Workspace:FindFirstChild("StealAnAnimalRuntimeWorld")
@@ -390,26 +393,31 @@ local function stageFor(animal, now)
     return stage, index
 end
 
-local function incomeFor(animal, now, rebirths)
+local function incomeFor(animal, now, rebirths, player)
     local spec = Catalog.Get(animal.Id)
     if not spec then
         return 0
     end
     local _, stageIndex = stageFor(animal, now)
     local baseIncome = Rules.AnimalIncome(spec.Income, stageIndex, Config)
-    return math.floor(baseIncome * Rules.RebirthIncomeMultiplier(rebirths or 0, Config))
+    local multiplier = Rules.RebirthIncomeMultiplier(rebirths or 0, Config)
+    if player and PassService.Has(player, "DoubleIncome") then
+        multiplier *= Config.DoubleIncomeMultiplier
+    end
+    return math.floor(baseIncome * multiplier)
 end
 
-local function profileIncome(profile, now)
+local function profileIncome(profile, now, player)
     local total = 0
     for _, animal in ipairs(profile.BarnAnimals) do
-        total += incomeFor(animal, now, profile.Rebirths)
+        total += incomeFor(animal, now, profile.Rebirths, player)
     end
     return total
 end
 
-local function offlineIncome(profile, fromTime, toTime)
+local function offlineIncome(profile, fromTime, toTime, player)
     local total = 0
+    local passMultiplier = player and PassService.Has(player, "DoubleIncome") and Config.DoubleIncomeMultiplier or 1
     for _, animal in ipairs(profile.BarnAnimals) do
         local spec = Catalog.Get(animal.Id)
         if spec then
@@ -421,7 +429,7 @@ local function offlineIncome(profile, fromTime, toTime)
                 local segmentStart = math.max(startAge, stage.AgeSeconds)
                 local segmentEnd = math.min(endAge, nextStage and nextStage.AgeSeconds or endAge)
                 if segmentEnd > segmentStart then
-                    total += Rules.AnimalIncome(spec.Income, index, Config) * Rules.RebirthIncomeMultiplier(profile.Rebirths, Config) * (segmentEnd - segmentStart)
+                    total += Rules.AnimalIncome(spec.Income, index, Config) * Rules.RebirthIncomeMultiplier(profile.Rebirths, Config) * passMultiplier * (segmentEnd - segmentStart)
                 end
             end
         end
@@ -485,7 +493,7 @@ local function sanitizeProfile(raw)
     end
     if type(raw.BarnAnimals) == "table" then
         for index, entry in ipairs(raw.BarnAnimals) do
-            if index > Config.BaseSlots then
+            if index > Config.BaseSlots + Config.ExtraBarnSlots then
                 break
             end
             if type(entry) == "table" and Catalog.Get(entry.Id) then
@@ -664,7 +672,7 @@ local function createTreadmill(base, center, frontSign)
     local treadmill = Instance.new("Model")
     treadmill.Name = "Treadmill"
     treadmill.Parent = base
-    local origin = center + Vector3.new(-11, 0, -frontSign * 9.5)
+    local origin = center + Vector3.new(-18.8, 0, -frontSign * 9.5)
 
     createPart(treadmill, "TreadmillHousing", Vector3.new(7.4, 0.62, 9.2), CFrame.new(origin + Vector3.new(0, 0.38, 0)), Color3.fromRGB(38, 52, 60), Enum.Material.Metal, nil, true)
     createPart(treadmill, "TreadmillBelt", Vector3.new(5.9, 0.14, 7.8), CFrame.new(origin + Vector3.new(0, 0.76, 0)), Color3.fromRGB(32, 43, 49), Enum.Material.DiamondPlate, nil, true)
@@ -723,8 +731,8 @@ local function createBase(index)
     base:SetAttribute("OwnerUserId", 0)
     base.Parent = basesFolder
 
-    createPart(base, "Floor", Vector3.new(39, 0.65, 34), CFrame.new(center + Vector3.new(0, -0.3, 0)), Color3.fromRGB(105, 211, 77), Enum.Material.SmoothPlastic, nil, true)
-    createPart(base, "PlotBorder", Vector3.new(40, 0.15, 35), CFrame.new(center + Vector3.new(0, -0.57, 0)), Color3.fromRGB(71, 145, 58), Enum.Material.SmoothPlastic, nil, true)
+    createPart(base, "Floor", Vector3.new(45, 0.65, 34), CFrame.new(center + Vector3.new(0, -0.3, 0)), Color3.fromRGB(105, 211, 77), Enum.Material.SmoothPlastic, nil, true)
+    createPart(base, "PlotBorder", Vector3.new(46, 0.15, 35), CFrame.new(center + Vector3.new(0, -0.57, 0)), Color3.fromRGB(71, 145, 58), Enum.Material.SmoothPlastic, nil, true)
 
     local fenceColor = Color3.fromRGB(139, 88, 51)
     local darkFence = Color3.fromRGB(92, 57, 36)
@@ -742,7 +750,7 @@ local function createBase(index)
         end
     end
 
-    for _, x in ipairs({ -19.1, 19.1 }) do
+    for _, x in ipairs({ -22.1, 22.1 }) do
         for offset = -16, 16, 8 do
             fencePost(x, offset)
         end
@@ -750,15 +758,15 @@ local function createBase(index)
     end
 
     local backZ = -frontSign * 16.4
-    fenceX(0, backZ, 38.2, "BackFenceRail")
-    for x = -19, 19, 6 do
+    fenceX(0, backZ, 44.2, "BackFenceRail")
+    for x = -22, 22, 6 do
         fencePost(x, backZ, "BackFencePost")
     end
 
     local frontZ = frontSign * 16.4
-    fenceX(-12.5, frontZ, 13.2, "FrontFenceLeftRail")
-    fenceX(12.5, frontZ, 13.2, "FrontFenceRightRail")
-    for _, x in ipairs({ -19, -6, 6, 19 }) do
+    fenceX(-14.5, frontZ, 15.2, "FrontFenceLeftRail")
+    fenceX(14.5, frontZ, 15.2, "FrontFenceRightRail")
+    for _, x in ipairs({ -22, -7, 7, 22 }) do
         fencePost(x, frontZ, "GatePost")
     end
 
@@ -770,7 +778,7 @@ local function createBase(index)
     display.Parent = base
     local slotIndex = 0
     for _, zOffset in ipairs({ -frontSign * 4.5, frontSign * 4.5 }) do
-        for _, xOffset in ipairs({ 0, 7, 14 }) do
+        for _, xOffset in ipairs({ -9.5, -2.5, 4.5, 11.5, 18.5 }) do
             slotIndex += 1
             local pad = createPart(display, "Slot_" .. tostring(slotIndex), Vector3.new(5.1, 0.25, 5.1), CFrame.new(center + Vector3.new(xOffset, 0.35, zOffset)), Color3.fromRGB(239, 226, 184), Enum.Material.Sand, nil, false)
             pad:SetAttribute("SlotIndex", slotIndex)
@@ -951,10 +959,11 @@ local function updatePlayerAttributes(player)
     player:SetAttribute("TreadmillGain", Rules.TrainingGain(profile.TreadmillLevel, Config))
     player:SetAttribute("BarnBank", profile.BarnBank)
     player:SetAttribute("BarnAnimalCount", #profile.BarnAnimals)
-    player:SetAttribute("BarnCapacity", Config.BaseSlots)
-    player:SetAttribute("BarnIncomeRate", profileIncome(profile, now))
+    local extraSlots = PassService.Has(player, "ExtraBarnSlots") and Config.ExtraBarnSlots or 0
+    player:SetAttribute("BarnCapacity", Config.BaseSlots + extraSlots)
+    player:SetAttribute("BarnIncomeRate", profileIncome(profile, now, player))
     player:SetAttribute("Rebirths", profile.Rebirths or 0)
-    player:SetAttribute("RebirthMultiplier", Rules.RebirthIncomeMultiplier(profile.Rebirths, Config))
+    player:SetAttribute("RebirthMultiplier", Rules.RebirthIncomeMultiplier(profile.Rebirths, Config) * (PassService.Has(player, "DoubleIncome") and Config.DoubleIncomeMultiplier or 1))
     player:SetAttribute("RebirthCost", Rules.RebirthCost(profile.Rebirths, Config) or 0)
     player:SetAttribute("RebirthRequiredCoins", Config.RebirthCoinsRequired)
     player:SetAttribute("RebirthRequiredSpeed", Rules.RebirthSpeedRequirement(Config) or Config.MaxSpeedPoints)
@@ -985,7 +994,7 @@ local function updatePlayerAttributes(player)
     setLeaderstat("Rebirths", profile.Rebirths or 0)
     setLeaderstat("Barn Animals", #profile.BarnAnimals)
     local summary = {}
-    local multiplier = Rules.RebirthIncomeMultiplier(profile.Rebirths, Config)
+    local multiplier = Rules.RebirthIncomeMultiplier(profile.Rebirths, Config) * (PassService.Has(player, "DoubleIncome") and Config.DoubleIncomeMultiplier or 1)
     for index, animal in ipairs(profile.BarnAnimals) do
         local spec = Catalog.Get(animal.Id)
         local stage, stageIndex = stageFor(animal, now)
@@ -997,6 +1006,15 @@ local function updatePlayerAttributes(player)
     player:SetAttribute("BarnSummary", #summary > 0 and table.concat(summary, "\n") or "Seu celeiro está vazio. Roube um filhote e leve-o ao celeiro.")
     player:SetAttribute("CarryingAnimal", carried[player] ~= nil)
     local baseSpeed = Rules.MoveSpeed(profile.Speed, Config)
+    if PassService.Has(player, "DoubleSpeed") then
+        baseSpeed = math.min(baseSpeed * Config.DoubleSpeedMultiplier, Config.MaxWalkSpeed * Config.DoubleSpeedMultiplier)
+    end
+    local farm = playerBases[player]
+    local border = farm and farm:FindFirstChild("PlotBorder")
+    if border then
+        border.Color = PassService.Has(player, "VIPFarm") and Color3.fromRGB(255, 198, 69) or Color3.fromRGB(71, 145, 58)
+        border.Material = PassService.Has(player, "VIPFarm") and Enum.Material.Neon or Enum.Material.SmoothPlastic
+    end
     local carry = carried[player]
     if carry then
         local speed = Rules.CarrySpeed(baseSpeed, carry.Spec.Weight, Config)
@@ -1009,6 +1027,13 @@ local function updatePlayerAttributes(player)
         humanoid.WalkSpeed = baseSpeed
     end
 end
+
+PassService.Start(passRequestRemote, promptGamepassRemote, notify, function(player)
+    if profiles[player] then
+        updatePlayerAttributes(player)
+        renderBarn(player)
+    end
+end)
 
 local function clearCarry(player)
     local carry = carried[player]
@@ -1044,6 +1069,8 @@ local function renderBarn(player)
         return (a:GetAttribute("SlotIndex") or 0) < (b:GetAttribute("SlotIndex") or 0)
     end)
     local now = os.time()
+    local capacity = Config.BaseSlots + (PassService.Has(player, "ExtraBarnSlots") and Config.ExtraBarnSlots or 0)
+    local multiplier = Rules.RebirthIncomeMultiplier(profile.Rebirths, Config) * (PassService.Has(player, "DoubleIncome") and Config.DoubleIncomeMultiplier or 1)
     for index, slot in ipairs(slots) do
         local animal = profile.BarnAnimals[index]
         local gui = slot:FindFirstChild("AnimalLabel")
@@ -1056,13 +1083,18 @@ local function renderBarn(player)
                 local model = createAnimalModel(spec, stage.Name, slot.Position + Vector3.new(0, 0.05, 0), false)
                 model.Name = "StoredAnimal_" .. tostring(index)
                 model.Parent = display
-                local income = math.floor(Rules.AnimalIncome(spec.Income, stageIndex, Config) * Rules.RebirthIncomeMultiplier(profile.Rebirths, Config))
+                local income = math.floor(Rules.AnimalIncome(spec.Income, stageIndex, Config) * multiplier)
                 addLabel(model.PrimaryPart, spec.Name, stage.DisplayName .. " • +" .. tostring(income) .. "/s", spec.Accent)
                 slot.Color = spec.Color
                 slot.Transparency = 0.25
                 if title then title.Text = spec.Name end
                 if subtitle then subtitle.Text = stage.DisplayName .. " • +" .. tostring(income) .. "/s" end
             end
+        elseif index > capacity then
+            slot.Color = Color3.fromRGB(81, 88, 79)
+            slot.Transparency = 0.15
+            if title then title.Text = "ESPAÇO VIP +" .. tostring(index - Config.BaseSlots) end
+            if subtitle then subtitle.Text = "PASSE DE +4 ESPAÇOS" end
         else
             slot.Color = Color3.fromRGB(235, 222, 183)
             slot.Transparency = 0
@@ -1161,7 +1193,7 @@ local function loadProfile(player)
     profile.Persistent = true
     local now = os.time()
     local elapsed = math.clamp(now - profile.LastIncomeAt, 0, Config.OfflineIncomeCapSeconds)
-    local earnedOffline = offlineIncome(profile, now - elapsed, now)
+    local earnedOffline = offlineIncome(profile, now - elapsed, now, player)
     profile.BarnBank = math.clamp(profile.BarnBank + earnedOffline, 0, Config.CoinsLimit)
     profile.LastIncomeAt = now
     if player.Parent ~= Players then
@@ -1230,7 +1262,8 @@ local function depositAnimal(player, prompt)
         return
     end
     local profile = profiles[player]
-    if #profile.BarnAnimals >= Config.BaseSlots then
+    local capacity = Config.BaseSlots + (PassService.Has(player, "ExtraBarnSlots") and Config.ExtraBarnSlots or 0)
+    if #profile.BarnAnimals >= capacity then
         notify(player, "Seu celeiro está cheio.", "Warning")
         return
     end
@@ -1741,6 +1774,7 @@ local function playerAdded(player)
     task.spawn(function()
         local loaded = loadProfile(player)
         if not loaded or player.Parent ~= Players or not profiles[player] then return end
+        PassService.Load(player)
         player:SetAttribute("ProfileLoaded", true)
         renderBarn(player)
         notify(player, "Bem-vindo! Roube animais bebês, fuja dos guardiões e leve-os ao celeiro. Eles crescem até adultos e rendem cada vez mais.", "Success")
@@ -1761,6 +1795,7 @@ Players.PlayerRemoving:Connect(function(player)
     progressionWriteInProgress[player] = nil
     mapBotCooldowns[player] = nil
     trainingNoticeAt[player] = nil
+    PassService.RemovePlayer(player)
     releaseBase(player)
     leaving[player] = nil
 end)
@@ -1885,7 +1920,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
                     end
                 end
             end
-            local rate = profileIncome(profile, now)
+            local rate = profileIncome(profile, now, player)
             profile.BarnBank = math.clamp(profile.BarnBank + rate, 0, Config.CoinsLimit)
             profile.LastIncomeAt = now
             if changed then
