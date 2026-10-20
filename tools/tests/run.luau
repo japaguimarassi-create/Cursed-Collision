@@ -36,10 +36,9 @@ local config = {
     SpeedPerPointFactor = 0.35,
     UpgradeBaseCost = 80,
     UpgradeCostGrowth = 1.65,
-    RebirthBaseCost = 25000,
-    RebirthCostGrowth = 3,
-    RebirthIncomeBonus = 0.5,
-    MaxRebirths = 10,
+    RebirthCoinsRequired = 100000,
+    RebirthIncomeBonus = 0.1,
+    MaxRebirths = 25,
     CoinsLimit = 2000000000,
 }
 
@@ -67,15 +66,15 @@ equal(Rules.UpgradeCost(2, config), 132, "second treadmill upgrade cost")
 equal(Rules.UpgradeCost(10, config), nil, "maximum treadmill cannot be upgraded")
 equal(Rules.UpgradeCost(0, config), nil, "invalid treadmill level cannot be upgraded")
 equal(Rules.UpgradeCost(0 / 0, config), nil, "NaN treadmill levels cannot be upgraded")
-equal(Rules.RebirthCost(0, config), 25000, "first rebirth cost")
-equal(Rules.RebirthCost(1, config), 75000, "rebirth cost triples")
-equal(Rules.RebirthCost(9, config), 492075000, "last supported rebirth cost")
-equal(Rules.RebirthCost(10, config), nil, "rebirth maximum is enforced")
+equal(Rules.RebirthCost(0, config), 100000, "rebirth requires 100000 coins")
+equal(Rules.RebirthCost(24, config), 100000, "rebirth uses the configured fixed coin requirement")
+equal(Rules.RebirthCost(25, config), nil, "rebirth maximum is enforced")
 equal(Rules.RebirthCost(-1, config), nil, "negative rebirth count is rejected")
+equal(Rules.RebirthSpeedRequirement(config), 4703, "rebirth requires the speed points needed for maximum movement speed")
 near(Rules.RebirthIncomeMultiplier(0, config), 1, 0.0001, "no rebirth starts at 1x income")
-near(Rules.RebirthIncomeMultiplier(1, config), 1.5, 0.0001, "first rebirth adds 50 percent income")
-near(Rules.RebirthIncomeMultiplier(10, config), 6, 0.0001, "maximum rebirth bonus is capped")
-near(Rules.RebirthIncomeMultiplier(999, config), 6, 0.0001, "invalid rebirth counts clamp to the configured maximum")
+near(Rules.RebirthIncomeMultiplier(1, config), 1.1, 0.0001, "first rebirth adds 10 percent income")
+near(Rules.RebirthIncomeMultiplier(25, config), 3.5, 0.0001, "maximum rebirth bonus is capped at 3.5x")
+near(Rules.RebirthIncomeMultiplier(999, config), 3.5, 0.0001, "invalid rebirth counts clamp to the configured maximum")
 equal(Rules.TrainingGain(1, config), 2, "basic treadmill adds two speed points each second")
 equal(Rules.TrainingGain(2, config), 3, "level two increases training gain")
 equal(Rules.TrainingGain(10, config), 76, "maximum treadmill gain is bounded and deterministic")
