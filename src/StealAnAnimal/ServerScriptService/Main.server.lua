@@ -723,6 +723,35 @@ local function createBase(index)
     base.Parent = basesFolder
 
     createPart(base, "Floor", Vector3.new(34, 1, 31), CFrame.new(center + Vector3.new(0, -0.3, 0)), Color3.fromRGB(111, 171, 83), Enum.Material.Grass, nil, true)
+    local frontSign = center.Z < 0 and 1 or -1
+    local fenceColor = Color3.fromRGB(151, 91, 52)
+    local function fence(name, size, offset, color)
+        local rail = createPart(base, name, size, CFrame.new(center + offset), color or fenceColor, Enum.Material.WoodPlanks, nil, false)
+        rail.CastShadow = true
+        return rail
+    end
+    for _, zSide in ipairs({ -1, 1 }) do
+        local z = zSide * 14.8
+        if zSide == -frontSign then
+            fence("PenFenceBackLower", Vector3.new(34, 0.35, 0.45), Vector3.new(0, 0.95, z))
+            fence("PenFenceBackUpper", Vector3.new(34, 0.35, 0.45), Vector3.new(0, 2.05, z), Color3.fromRGB(183, 119, 65))
+        else
+            fence("PenFenceGateLeftLower", Vector3.new(12, 0.35, 0.45), Vector3.new(-11, 0.95, z))
+            fence("PenFenceGateRightLower", Vector3.new(12, 0.35, 0.45), Vector3.new(11, 0.95, z))
+            fence("PenFenceGateLeftUpper", Vector3.new(12, 0.35, 0.45), Vector3.new(-11, 2.05, z), Color3.fromRGB(183, 119, 65))
+            fence("PenFenceGateRightUpper", Vector3.new(12, 0.35, 0.45), Vector3.new(11, 2.05, z), Color3.fromRGB(183, 119, 65))
+        end
+    end
+    for _, xSide in ipairs({ -1, 1 }) do
+        local x = xSide * 16.5
+        fence("PenFenceSideLower", Vector3.new(0.45, 0.35, 31), Vector3.new(x, 0.95, 0))
+        fence("PenFenceSideUpper", Vector3.new(0.45, 0.35, 31), Vector3.new(x, 2.05, 0), Color3.fromRGB(183, 119, 65))
+    end
+    for _, xSide in ipairs({ -1, 1 }) do
+        for _, zSide in ipairs({ -1, 1 }) do
+            createPart(base, "PenFencePost", Vector3.new(0.8, 3.2, 0.8), CFrame.new(center + Vector3.new(xSide * 16.4, 1.35, zSide * 14.8)), Color3.fromRGB(124, 73, 42), Enum.Material.Wood, nil, false)
+        end
+    end
     createPart(base, "BarnBack", Vector3.new(20, 10, 1), CFrame.new(center + Vector3.new(0, 5, 9)), Color3.fromRGB(174, 107, 65), Enum.Material.WoodPlanks, nil, true)
     createPart(base, "BarnLeft", Vector3.new(1, 10, 15), CFrame.new(center + Vector3.new(-9.5, 5, 1.5)), Color3.fromRGB(196, 132, 81), Enum.Material.WoodPlanks, nil, true)
     createPart(base, "BarnRight", Vector3.new(1, 10, 15), CFrame.new(center + Vector3.new(9.5, 5, 1.5)), Color3.fromRGB(196, 132, 81), Enum.Material.WoodPlanks, nil, true)
@@ -819,6 +848,10 @@ local function buildScenery()
     for _, side in ipairs({ -1, 1 }) do
         createPart(world, "CorridorEdge", Vector3.new(1500, 0.2, 0.8), CFrame.new(850, 0.04, side * 28), Color3.fromRGB(255, 218, 105), Enum.Material.Neon, nil, false)
     end
+    for _, side in ipairs({ -1, 1 }) do
+        createPart(world, "CorridorBoundaryWall", Vector3.new(1500, 18, 2), CFrame.new(850, 8.5, side * 86), Color3.fromRGB(194, 126, 83), Enum.Material.Brick, nil, true)
+        createPart(world, "CorridorWallCap", Vector3.new(1500, 0.65, 2.4), CFrame.new(850, 17.8, side * 86), Color3.fromRGB(235, 177, 103), Enum.Material.WoodPlanks, nil, false)
+    end
     createPart(world, "HubFountainBase", Vector3.new(18, 1, 18), CFrame.new(0, 0, 0), Color3.fromRGB(225, 221, 190), Enum.Material.Marble, nil, true)
     addCylinder(world, "HubFountain", Vector3.new(9, 2.2, 9), CFrame.new(0, 1.4, 0), Color3.fromRGB(90, 194, 221), Enum.Material.Glass, false)
     addBall(world, "FountainGem", Vector3.new(3.5, 3.5, 3.5), Vector3.new(0, 4.2, 0), Color3.fromRGB(115, 234, 255), Enum.Material.Neon)
@@ -832,6 +865,17 @@ local function buildScenery()
         end
         local sign = createPart(world, biome.Id .. "Sign", Vector3.new(18, 3, 0.5), CFrame.new(biome.CenterX - 76, 10, -0.1), Color3.fromRGB(45, 52, 47), Enum.Material.Wood, nil, false)
         addLabel(sign, "FASE " .. tostring(biomeIndex) .. " • " .. biome.Name, "CORREDOR DOS ANIMAIS", biome.Accent)
+        local nestZ = biomeIndex % 2 == 0 and -49 or 49
+        local nestX = biome.CenterX + 40
+        createPart(decorationFolder, biome.Id .. "EggNestBase", Vector3.new(16, 0.5, 12), CFrame.new(nestX, 0.08, nestZ), Color3.fromRGB(112, 75, 49), Enum.Material.WoodPlanks, nil, false)
+        for eggIndex = 1, 3 do
+            local eggX = nestX + (eggIndex - 2) * 4.2
+            local eggColor = eggIndex == 1 and Color3.fromRGB(250, 245, 222) or eggIndex == 2 and biome.Accent or Color3.fromRGB(255, 190, 83)
+            addBall(decorationFolder, biome.Id .. "WildEgg", Vector3.new(2.6, 3.6, 2.6), Vector3.new(eggX, 1.9, nestZ), eggColor, Enum.Material.SmoothPlastic)
+            addBall(decorationFolder, biome.Id .. "EggBand", Vector3.new(2.7, 0.48, 2.7), Vector3.new(eggX, 1.65, nestZ), biome.Accent, Enum.Material.Neon)
+        end
+        local nestSign = createPart(decorationFolder, biome.Id .. "NestSign", Vector3.new(13, 2.4, 0.45), CFrame.new(nestX, 4.4, nestZ - 6.5), Color3.fromRGB(45, 52, 47), Enum.Material.Wood, nil, false)
+        addLabel(nestSign, "NINHO " .. tostring(biomeIndex), "OVOS SELVAGENS", biome.Accent)
 
         if biome.Id == "Meadow" then
             for flower = 1, 9 do
