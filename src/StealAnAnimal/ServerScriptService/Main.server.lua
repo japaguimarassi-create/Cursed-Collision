@@ -1028,13 +1028,6 @@ local function updatePlayerAttributes(player)
     end
 end
 
-PassService.Start(passRequestRemote, promptGamepassRemote, notify, function(player)
-    if profiles[player] then
-        updatePlayerAttributes(player)
-        renderBarn(player)
-    end
-end)
-
 local function clearCarry(player)
     local carry = carried[player]
     if not carry then
@@ -1104,6 +1097,13 @@ local function renderBarn(player)
     end
     updatePlayerAttributes(player)
 end
+
+PassService.Start(passRequestRemote, promptGamepassRemote, notify, function(player)
+    if profiles[player] then
+        updatePlayerAttributes(player)
+        renderBarn(player)
+    end
+end)
 
 local function assignBase(player)
     for _, base in ipairs(basesFolder:GetChildren()) do
