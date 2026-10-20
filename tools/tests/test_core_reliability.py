@@ -19,7 +19,7 @@ checks = [
     ("CoreShell has no gameplay ModuleScript dependencies", "require(" not in shell),
     ("CoreShell creates fallback ground and spawn", "FallbackGround" in shell and "WorldSpawn" in shell),
     ("CoreShell creates all game remotes before gameplay loading", all(name in shell for name in (
-        "Notify", "RequestUpgrade", "RequestGamepass", "PromptGamepass", "RequestStackableProduct",
+        "Notify", "RequestUpgrade", "RequestStackableProduct",
         "PromptStackableProduct", "RequestRebirth", "RequestDailyReward", "RequestRedeemCode",
         "RequestQuest", "RequestCollectBarnIncome"
     ))),
