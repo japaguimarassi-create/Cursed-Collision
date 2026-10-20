@@ -1252,7 +1252,7 @@ local function makeGuardian(spec, biome)
     model:SetAttribute("ThreatLevel", biome.Phase)
     model.Parent = guardiansFolder
     local head = model:FindFirstChild("Head")
-    addLabel(head or model.PrimaryPart, "GUARDIÃO " .. string.upper(spec.Name), "FASE " .. tostring(biome.Phase) .. " • PROTEGE OS OVOS", biome.Accent)
+    addLabel(head or model.PrimaryPart, "PAI PROTETOR: " .. string.upper(spec.Name), "GUARDIÃO • FASE " .. tostring(biome.Phase) .. " • PROTEGE OS OVOS", biome.Accent)
     local highlight = Instance.new("Highlight")
     highlight.Name = "GuardianRim"
     highlight.Adornee = model
