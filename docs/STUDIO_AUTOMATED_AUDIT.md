@@ -30,6 +30,25 @@ Both runtime audit scripts exit unless `RunService:IsStudio()` is true and the W
 
 The plugin may report a setup warning if the Studio session does not start both clients, or if local player profiles cannot load. Persistent-profile checks require **Enable Studio Access to API Services** in Studio. The game config routes all Studio profile requests to the distinct `StealAnAnimal_StudioSandbox_v1` DataStore name, not the published `StealAnAnimal_FreshProfile_v1` store. This avoids changing live player saves during Studio testing. Keep the sandbox separate and do not switch the Studio config back to the live store.
 
+## CI simulated run (does not require Studio)
+
+Every GitHub Actions validation run also executes `tools/simulate_studio_run.py`. This deterministic simulator checks the source wiring and serialized map, computes a SHA-256 fingerprint for audited sources, verifies the compiled RBXL, and models the HUD rectangles at six viewport sizes: small portrait phone, Android portrait, large phone, phone landscape, tablet landscape, and desktop.
+
+The simulator writes:
+
+- `artifacts/studio-run-simulation.json`: full machine-readable results, evidence paths, source hashes, map counts, geometry, profile checks, and limitations.
+- `artifacts/studio-run-simulation.md`: readable table of every check and viewport.
+- `artifacts/studio-run-simulation.log`: raw run log.
+
+Download the **StealAnAnimal-simulated-studio-report** artifact from the latest GitHub Actions run. A red simulated check fails the validation job and remains in the artifact so the source can be corrected. The report deliberately says `studioRuntimeExecuted: false`: the simulator does not create Roblox Instances, run physics, or exercise actual RemoteEvents. It is a fast regression layer, not a substitute for the StudioTestService multi-client run described above.
+
+Run locally after building the place:
+
+```bash
+rojo build default.project.json --output build/StealAnAnimal.rbxl
+python3 tools/simulate_studio_run.py --report artifacts/studio-run-simulation.json --markdown artifacts/studio-run-simulation.md --place build/StealAnAnimal.rbxl
+```
+
 ## What it checks
 
 - Shared Config, animal catalog, and gameplay rules load successfully.
