@@ -67,9 +67,32 @@ jobs:
           stat -c "%s bytes" build/StealAnAnimal.rbxl
       - name: Parse the generated RBXL and verify embedded Workspace map
         run: python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
+      - name: Simulate Studio run and write complete diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          set +e
+          python3 tools/simulate_studio_run.py --report artifacts/studio-run-simulation.json --markdown artifacts/studio-run-simulation.md --place build/StealAnAnimal.rbxl 2>&1 | tee artifacts/studio-run-simulation.log
+          result=${PIPESTATUS[0]}
+          set -e
+          if [[ -f artifacts/studio-run-simulation.md ]]; then
+            cat artifacts/studio-run-simulation.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$result"
       - name: Upload place artifact
         uses: actions/upload-artifact@v4
         with:
           name: StealAnAnimal-studio-audit-r7
           path: build/StealAnAnimal.rbxl
           if-no-files-found: error
+      - name: Upload simulated Studio report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: StealAnAnimal-simulated-studio-report
+          path: |
+            artifacts/studio-run-simulation.json
+            artifacts/studio-run-simulation.md
+            artifacts/studio-run-simulation.log
+          if-no-files-found: warn
