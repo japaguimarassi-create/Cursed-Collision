@@ -21,6 +21,7 @@ assert phase_numbers == [str(n) for n in range(1, 9)], "Phases must be numbered 
 assert all(biome in CATALOG for biome in biomes), "Every biome must have animals"
 assert "basePositions = {" in MAIN, "Eight farms must use an explicit rectangular layout"
 assert all(token in MAIN for token in ("CorridorFloor", "CorridorEdge", "MainPath", "GuardianParent_", "PAI PROTETOR")), "Central animal corridor or guardian parents missing"
+assert all(token in MAIN for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower")), "Egg-inspired map landmarks or fenced farms missing"
 assert all(token in MAIN for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower")), "Egg-stealing map landmarks, walls, or fenced farms missing"
 assert all(token in MAIN for token in ("createTreadmill", "TrainingZone", "MovingBeltStripe", "UpgradeTreadmill", "TreadmillLevel")), "Functional treadmill and upgrade prompt missing"
 assert "treadmillStrips" in MAIN and "TreadmillBeltSpeed" in CONFIG, "Treadmill belt animation missing"
@@ -44,6 +45,7 @@ static_json = PREVIEW_PATH.read_text(encoding="utf-8")
 static_parts = len(re.findall(r'"ClassName": "Part"', static_json))
 assert static_parts >= 300, f"Expected at least 300 embedded map Parts, found {static_parts}"
 assert all(token in static_json for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale")), "Static map missing core landmarks"
+assert all(token in static_json for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFencePost")), "Static preview missing egg nests, boundary walls, or fenced farms"
 assert all(token in static_json for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFencePost")), "Static preview missing egg nests, boundary walls, or fenced farm pens"
 assert 'local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")' in MAIN, "Runtime must preserve preview while booting"
 assert "previewWorld:Destroy()" in MAIN, "Runtime must remove preview only after successfully creating its world"
