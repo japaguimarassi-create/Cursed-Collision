@@ -7,6 +7,7 @@ local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
+local PathfindingService = game:GetService("PathfindingService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
@@ -32,6 +33,11 @@ local notifyRemote = remote("Notify")
 local upgradeRemote = remote("RequestUpgrade")
 local collectRemote = remote("RequestCollect")
 local rebirthRemote = remote("RequestRebirth")
+local dailyRemote = remote("RequestDailyReward")
+local codeRemote = remote("RequestRedeemCode")
+local questRemote = remote("RequestQuest")
+local mapBotRemote = remote("RequestMapBot")
+local mapBotReportRemote = remote("MapBotReport")
 
 local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")
 local previousRuntimeWorld = Workspace:FindFirstChild("StealAnAnimalRuntimeWorld")
@@ -64,6 +70,8 @@ local sessionTokens = {}
 local saveInProgress = {}
 local leaving = {}
 local rebirthInProgress = {}
+local progressionWriteInProgress = {}
+local mapBotCooldowns = {}
 local actionCooldowns = {}
 local trainingNoticeAt = {}
 local treadmillStrips = {}
@@ -74,6 +82,17 @@ local guardians = {}
 local wildRecords = {}
 local rng = Random.new(20261020)
 local SESSION_LEASE_SECONDS = 180
+local DAILY_CODES = table.freeze({
+    FARMFAMILY = 1000,
+    WILDSTART = 1500,
+    BARNBOOST = 2500,
+})
+local QUESTS = table.freeze({
+    FirstCapture = { Reward = 250, Label = "Roube seu primeiro animal", Requirement = function(profile) return profile.TotalCaptured >= 1 end },
+    FirstBarn = { Reward = 750, Label = "Deposite seu primeiro animal", Requirement = function(profile) return profile.TotalDeposited >= 1 end },
+    Collector = { Reward = 1500, Label = "Roube 5 animais", Requirement = function(profile) return profile.TotalCaptured >= 5 end },
+    FullBarn = { Reward = 5000, Label = "Encha os 6 espaços do celeiro", Requirement = function(profile) return #profile.BarnAnimals >= Config.BaseSlots end },
+})
 
 local function notify(player, message, kind)
     if player and player.Parent == Players then
@@ -419,6 +438,12 @@ local function defaultProfile()
         BarnBank = 0,
         BarnAnimals = {},
         LastIncomeAt = os.time(),
+        TotalCaptured = 0,
+        TotalDeposited = 0,
+        LastDailyClaimDay = 0,
+        DailyStreak = 0,
+        RedeemedCodes = {},
+        QuestClaims = {},
     }
 end
 
@@ -440,6 +465,24 @@ local function sanitizeProfile(raw)
     data.Rebirths = safeInteger(raw.Rebirths, 0, Config.MaxRebirths, 0)
     data.BarnBank = safeInteger(raw.BarnBank, 0, Config.CoinsLimit, 0)
     data.LastIncomeAt = safeInteger(raw.LastIncomeAt, 0, 2147483647, os.time())
+    data.TotalCaptured = safeInteger(raw.TotalCaptured, 0, 2147483647, 0)
+    data.TotalDeposited = safeInteger(raw.TotalDeposited, 0, 2147483647, 0)
+    data.LastDailyClaimDay = safeInteger(raw.LastDailyClaimDay, 0, 2147483647, 0)
+    data.DailyStreak = safeInteger(raw.DailyStreak, 0, 7, 0)
+    for field, source in pairs({ RedeemedCodes = raw.RedeemedCodes, QuestClaims = raw.QuestClaims }) do
+        if type(source) == "table" then
+            local count = 0
+            for key, timestamp in pairs(source) do
+                if type(key) == "string" and #key > 0 and #key <= 64
+                    and type(timestamp) == "number" and timestamp == timestamp
+                    and timestamp >= 0 and timestamp < math.huge then
+                    data[field][key] = math.floor(timestamp)
+                    count += 1
+                    if count >= 100 then break end
+                end
+            end
+        end
+    end
     if type(raw.BarnAnimals) == "table" then
         for index, entry in ipairs(raw.BarnAnimals) do
             if index > Config.BaseSlots then
@@ -468,6 +511,12 @@ local function snapshot(profile)
         Rebirths = profile.Rebirths,
         BarnBank = profile.BarnBank,
         LastIncomeAt = profile.LastIncomeAt,
+        TotalCaptured = profile.TotalCaptured or 0,
+        TotalDeposited = profile.TotalDeposited or 0,
+        LastDailyClaimDay = profile.LastDailyClaimDay or 0,
+        DailyStreak = profile.DailyStreak or 0,
+        RedeemedCodes = table.clone(profile.RedeemedCodes or {}),
+        QuestClaims = table.clone(profile.QuestClaims or {}),
         BarnAnimals = {},
     }
     for _, animal in ipairs(profile.BarnAnimals) do
@@ -879,7 +928,34 @@ local function updatePlayerAttributes(player)
     player:SetAttribute("Rebirths", profile.Rebirths or 0)
     player:SetAttribute("RebirthMultiplier", Rules.RebirthIncomeMultiplier(profile.Rebirths, Config))
     player:SetAttribute("RebirthCost", Rules.RebirthCost(profile.Rebirths, Config) or 0)
+    player:SetAttribute("RebirthRequiredCoins", Config.RebirthCoinsRequired)
+    player:SetAttribute("RebirthRequiredSpeed", Rules.RebirthSpeedRequirement(Config) or Config.MaxSpeedPoints)
+    player:SetAttribute("DailyStreak", profile.DailyStreak or 0)
+    player:SetAttribute("DailyClaimAvailable", (profile.LastDailyClaimDay or 0) < math.floor(os.time() / 86400))
+    player:SetAttribute("TotalCaptured", profile.TotalCaptured or 0)
+    player:SetAttribute("TotalDeposited", profile.TotalDeposited or 0)
+    player:SetAttribute("QuestClaimsJson", HttpService:JSONEncode(profile.QuestClaims or {}))
     player:SetAttribute("TreadmillUpgradeCost", Rules.UpgradeCost(profile.TreadmillLevel, Config) or 0)
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if not leaderstats then
+        leaderstats = Instance.new("Folder")
+        leaderstats.Name = "leaderstats"
+        leaderstats.Parent = player
+    end
+    local function setLeaderstat(name, value)
+        local item = leaderstats:FindFirstChild(name)
+        if not item or not item:IsA("IntValue") then
+            if item then item:Destroy() end
+            item = Instance.new("IntValue")
+            item.Name = name
+            item.Parent = leaderstats
+        end
+        item.Value = math.floor(math.clamp(value, 0, 2147483647))
+    end
+    setLeaderstat("Coins", profile.Coins)
+    setLeaderstat("Speed", profile.Speed)
+    setLeaderstat("Rebirths", profile.Rebirths or 0)
+    setLeaderstat("Barn Animals", #profile.BarnAnimals)
     local summary = {}
     local multiplier = Rules.RebirthIncomeMultiplier(profile.Rebirths, Config)
     for index, animal in ipairs(profile.BarnAnimals) do
@@ -1094,6 +1170,10 @@ local function captureAnimal(player, prompt)
     end
     wildRecords[model] = nil
     carried[player] = { Spec = spec, Model = model }
+    local profile = profiles[player]
+    if profile then
+        profile.TotalCaptured = math.min(2147483647, (profile.TotalCaptured or 0) + 1)
+    end
     prompt.Enabled = false
     model.Parent = world
     task.delay(Config.AnimalRespawnSeconds, function()
@@ -1133,11 +1213,13 @@ local function depositAnimal(player, prompt)
         Stage = "Baby",
     }
     table.insert(profile.BarnAnimals, animal)
+    profile.TotalDeposited = math.min(2147483647, (profile.TotalDeposited or 0) + 1)
     carried[player] = nil
     if carry.Model and carry.Model.Parent then
         carry.Model:Destroy()
     end
     player:SetAttribute("CarryingAnimal", false)
+    updatePlayerAttributes(player)
     renderBarn(player)
     notify(player, carry.Spec.Name .. " chegou em casa como bebê! Cada evolução aumenta sua renda em 50%.", "Success")
 end
@@ -1211,7 +1293,7 @@ local function upgradeTreadmill(player, prompt)
 end
 
 local function onPrompt(prompt, player)
-    if not profiles[player] or leaving[player] or rebirthInProgress[player] then
+    if not profiles[player] or leaving[player] or rebirthInProgress[player] or progressionWriteInProgress[player] then
         return
     end
     local interaction = prompt:GetAttribute("InteractionType")
@@ -1242,7 +1324,7 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, player)
 end)
 
 upgradeRemote.OnServerEvent:Connect(function(player)
-    if not profiles[player] or leaving[player] or rebirthInProgress[player] or not allowAction(player, "upgradeRemote", 0.8) then return end
+    if not profiles[player] or leaving[player] or rebirthInProgress[player] or progressionWriteInProgress[player] or not allowAction(player, "upgradeRemote", 0.8) then return end
     local base = playerBases[player]
     local treadmill = base and base:FindFirstChild("Treadmill")
     local console = treadmill and treadmill:FindFirstChild("TreadmillConsole")
@@ -1255,7 +1337,7 @@ upgradeRemote.OnServerEvent:Connect(function(player)
 end)
 
 collectRemote.OnServerEvent:Connect(function(player)
-    if not profiles[player] or leaving[player] or rebirthInProgress[player] or not allowAction(player, "collectRemote", 0.6) then return end
+    if not profiles[player] or leaving[player] or rebirthInProgress[player] or progressionWriteInProgress[player] or not allowAction(player, "collectRemote", 0.6) then return end
     local base = playerBases[player]
     local pad = base and base:FindFirstChild("CollectPad")
     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -1280,12 +1362,17 @@ local function requestRebirth(player)
         return
     end
     local cost = Rules.RebirthCost(profile.Rebirths, Config)
+    local requiredSpeed = Rules.RebirthSpeedRequirement(Config) or Config.MaxSpeedPoints
     if not cost then
         notify(player, "Você já alcançou o máximo de renascimentos.", "Info")
         return
     end
-    if profile.Coins < cost then
-        notify(player, "Você precisa de " .. tostring(cost) .. " moedas para renascer. Saldo atual: " .. tostring(profile.Coins) .. ".", "Warning")
+    if profile.Speed < requiredSpeed or profile.Coins < cost then
+        notify(player, "Renascimento exige velocidade máxima (" .. tostring(requiredSpeed) .. " pontos) e " .. tostring(cost) .. " moedas.", "Warning")
+        return
+    end
+    if progressionWriteInProgress[player] then
+        notify(player, "Seu progresso está sendo salvo. Tente novamente.", "Warning")
         return
     end
     if not allowAction(player, "rebirth", 2) then
@@ -1307,11 +1394,7 @@ local function requestRebirth(player)
 
     profile.Coins = 0
     profile.Speed = 0
-    profile.TreadmillLevel = 1
     profile.Rebirths += 1
-    profile.BarnBank = 0
-    profile.BarnAnimals = {}
-    profile.LastIncomeAt = os.time()
     updatePlayerAttributes(player)
     renderBarn(player)
 
@@ -1348,7 +1431,7 @@ local function requestRebirth(player)
     if floor and character and character.Parent then
         character:PivotTo(CFrame.new(floor.Position + Vector3.new(0, 4, 0)))
     end
-    notify(player, "RENASCIMENTO " .. tostring(profile.Rebirths) .. " concluído! Sua renda permanente agora é x" .. string.format("%.1f", Rules.RebirthIncomeMultiplier(profile.Rebirths, Config)) .. ". Animais, moedas, banco e treino foram reiniciados.", "Success")
+    notify(player, "RENASCIMENTO " .. tostring(profile.Rebirths) .. " concluído! Bônus permanente de +10% de renda por renascimento. Moedas e velocidade foram reiniciadas; animais, banco e esteira foram preservados.", "Success")
 end
 
 rebirthRemote.OnServerEvent:Connect(function(player)
@@ -1408,6 +1491,7 @@ local function playerAdded(player)
     player:SetAttribute("ProfileLoaded", false)
     player:SetAttribute("CarryingAnimal", false)
     player:SetAttribute("RebirthInProgress", false)
+    player:SetAttribute("ProgressionWriteInProgress", false)
     local base = assignBase(player)
     if not base then
         player:Kick("Todas as fazendas estão ocupadas. Entre em outro servidor.")
@@ -1436,6 +1520,8 @@ Players.PlayerRemoving:Connect(function(player)
     playerBases[player] = nil
     actionCooldowns[player] = nil
     rebirthInProgress[player] = nil
+    progressionWriteInProgress[player] = nil
+    mapBotCooldowns[player] = nil
     trainingNoticeAt[player] = nil
     releaseBase(player)
     leaving[player] = nil
@@ -1530,7 +1616,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
             local character = player.Character
             local root = character and character:FindFirstChild("HumanoidRootPart")
             local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-            if zone and root and humanoid and humanoid.Health > 0 and not carried[player] then
+            if zone and root and humanoid and humanoid.Health > 0 and not carried[player] and not progressionWriteInProgress[player] and not rebirthInProgress[player] then
                 local localPosition = zone.CFrame:PointToObjectSpace(root.Position)
                 local inside = math.abs(localPosition.X) <= zone.Size.X / 2
                     and math.abs(localPosition.Y) <= zone.Size.Y / 2
@@ -1549,6 +1635,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
                     end
                 end
             end
+            if not progressionWriteInProgress[player] and not rebirthInProgress[player] then
             for _, animal in ipairs(profile.BarnAnimals) do
                 local stage = stageFor(animal, now)
                 if animal.Stage ~= stage.Name then
@@ -1563,11 +1650,12 @@ RunService.Heartbeat:Connect(function(deltaTime)
             local rate = profileIncome(profile, now)
             profile.BarnBank = math.clamp(profile.BarnBank + rate, 0, Config.CoinsLimit)
             profile.LastIncomeAt = now
-            updatePlayerAttributes(player)
             if changed then
                 renderBarn(player)
                 task.spawn(saveProfile, player)
             end
+            end
+            updatePlayerAttributes(player)
         end
     end
 end)
