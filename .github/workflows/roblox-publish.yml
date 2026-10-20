@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      confirm_studio_runtime_qa:
+        description: "Confirm a real Roblox Studio multi-client and mobile-device playtest completed for this exact build"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -18,7 +23,7 @@ concurrency:
 
 jobs:
   publish:
-    if: ${{ inputs.confirm == true }}
+    if: ${{ inputs.confirm == true && inputs.confirm_studio_runtime_qa == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -56,12 +61,17 @@ jobs:
           python3 tools/tests/test_map_layout.py
           python3 tools/tests/test_monetization.py
           python3 tools/tests/test_core_reliability.py
+          python3 tools/tests/test_studio_audit.py
+          python3 tools/tests/test_botx_npc.py
+          python3 tools/tests/test_release_safety.py
       - name: Build reviewed place
         run: |
           set -euo pipefail
           mkdir -p build
           rojo build default.project.json --output build/StealAnAnimal.rbxl
           test -s build/StealAnAnimal.rbxl
+          python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
+          python3 tools/simulate_studio_run.py --report artifacts/studio-run-simulation.json --markdown artifacts/studio-run-simulation.md --place build/StealAnAnimal.rbxl
       - name: Publish only to explicitly configured place
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
