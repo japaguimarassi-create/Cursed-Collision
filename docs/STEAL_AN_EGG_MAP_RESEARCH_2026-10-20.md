@@ -5,14 +5,17 @@ Data: 2026-10-20
 A pesquisa informa a linguagem visual e a organização espacial do mapa do projeto. As imagens abaixo são referências externas para análise, não assets copiados para o jogo. O mapa implementado usa peças Roblox originais.
 
 ## Referências analisadas
-1. Página oficial da experiência e descrição do loop: https://www.roblox.com/games/107778070777162/Steal-An-Egg
+1. Steal a Brainrot map screenshot with green field, straight red carpet, and bases along both sides: https://staticg.sportskeeda.com/editor/2025/09/13a10-17582665019760-1920.jpg
+2. Steal a Brainrot map/routes description of the carpet as the central route and bases as income locations: https://stealabrainrotwiki.wiki/wiki/map-routes/
+3. Official Steal An Egg experience and description: https://www.roblox.com/games/107778070777162/Steal-An-Egg
+4. Página oficial da experiência e descrição do loop: https://www.roblox.com/games/107778070777162/Steal-An-Egg
 2. Captura do campo verde e do bioma Forest: https://games.gg/cdn-cgi/image/width%3D1920%2Cquality%3D75%2Cformat%3Dauto%2Cfit%3Dscale-down%2Cmetadata%3Dnone%2Conerror%3Dredirect/https%3A/assets.games.gg/image_69e8820769.png
 3. Captura de cercados, áreas de jogadores e interface Shop/Index: https://www.phucanh.vn/media/news/1509_steal-an-egg-roblox-5.jpg
 4. Captura ampla de cercados, zona segura, banca SELL e guardião gigante: https://resource.supercheats.com/library/supercheats/740w/2026/steal-an-egg-screenshot-01.webp
-5. Captura de ovos no chão e guardião grande: https://cdn-media.sforum.vn/storage/app/media/phuonganh/phuonganh/cach-choi-steal-egg-roblox-2.jpg
-6. Corredor de corrida longo com paredes laterais, luzes e portal: https://assets.games.gg/5bdcd10f_4443_43be_8ce5_e751994655ce_1_c052b4731b.png
-7. Guia de mapa/biomas e requisitos (fonte comunitária, números sujeitos a mudanças): https://steal-an-egg.robloxgameswiki.com/guide/biomes-map
-8. Guia para iniciantes e ciclo roubar → escapar → chocar → ganhar → melhorar: https://steal-an-egg.robloxgamewiki.com/guide/beginner-guide/
+7. Captura de ovos no chão e guardião grande: https://cdn-media.sforum.vn/storage/app/media/phuonganh/phuonganh/cach-choi-steal-egg-roblox-2.jpg
+8. Corredor de corrida longo com paredes laterais, luzes e portal: https://assets.games.gg/5bdcd10f_4443_43be_8ce5_e751994655ce_1_c052b4731b.png
+9. Guia de mapa/biomas e requisitos (fonte comunitária, números sujeitos a mudanças): https://steal-an-egg.robloxgameswiki.com/guide/biomes-map
+10. Guia para iniciantes e ciclo roubar → escapar → chocar → ganhar → melhorar: https://steal-an-egg.robloxgamewiki.com/guide/beginner-guide/
 
 ## Observações visuais
 - O chão é predominantemente verde vivo com textura quadriculada; a leitura do percurso vem da cor do terreno, dos caminhos e das paredes, não de uma decoração densa.
