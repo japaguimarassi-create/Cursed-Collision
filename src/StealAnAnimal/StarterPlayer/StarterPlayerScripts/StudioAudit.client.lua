@@ -231,8 +231,12 @@ if gui then
 end
 
 local profileLoaded = player:GetAttribute("ProfileLoaded") == true
-record("Perfil chegou ao cliente", profileLoaded,
-    profileLoaded and "Atributos de gameplay podem ser lidos" or "Perfil ainda não está disponível; verificar configuração de API Services no Studio", true)
+if profileLoaded then
+    record("Perfil chegou ao cliente", true, "Atributos de gameplay podem ser lidos")
+else
+    record("Perfil chegou ao cliente", false,
+        "Perfil ainda não está disponível; verificar configuração de API Services no Studio", true)
+end
 
 local report = {
     client = player.Name,
