@@ -2,11 +2,11 @@
   "name": "StealAnAnimal",
   "tree": {
     "$className": "DataModel",
-    "ReplicatedStorage": { "$path": "src/RoubeUmAnimal/ReplicatedStorage" },
-    "ServerScriptService": { "$path": "src/RoubeUmAnimal/ServerScriptService" },
+    "ReplicatedStorage": { "$path": "src/StealAnAnimal/ReplicatedStorage" },
+    "ServerScriptService": { "$path": "src/StealAnAnimal/ServerScriptService" },
     "StarterPlayer": {
       "$className": "StarterPlayer",
-      "StarterPlayerScripts": { "$path": "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts" }
+      "StarterPlayerScripts": { "$path": "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts" }
     }
   }
 }

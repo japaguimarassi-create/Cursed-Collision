@@ -54,7 +54,7 @@ jobs:
           set -euo pipefail
           while IFS= read -r -d '' source_file; do
             "$LUAU_COMPILER" --only-parse "$source_file" >/dev/null
-          done < <(find src/RoubeUmAnimal -type f -name '*.lua' -print0)
+          done < <(find src/StealAnAnimal -type f -name '*.lua' -print0)
       - name: Build Roblox place
         run: |
           set -euo pipefail

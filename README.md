@@ -1,55 +1,32 @@
-# ROUBE UM ANIMAL
+# STEAL AN ANIMAL
 
-Simulador de exploração, captura de animais, fuga dos guardiões e progressão por treino no Roblox.
+A fresh Roblox experience built in Luau with Rojo. The live game loop is: steal a baby animal from a biome, escape its giant guardian, return to your own farm, store the animal, and earn passive coins as it grows.
 
-Este repositório mantém o nome histórico Cursed-Collision, mas o projeto ativo de gameplay agora é **ROUBE UM ANIMAL**. Os códigos da experiência Collision Battlestar foram removidos da versão atual; arquivos de ferramentas de engenharia e documentação histórica que não faziam parte do runtime foram preservados.
+## Core gameplay
 
-## Ciclo do jogador
+- Six procedural biomes: Sunny Meadow, Whispering Forest, Misty Wetlands, Frost Peak, Golden Savanna, and Amber Volcano.
+- Twenty-one original animal species, each with a distinct color palette and procedural silhouette.
+- Animals begin as **babies**, then evolve into **children**, **adolescents**, and **adults**.
+- Each evolution adds **50%** to that animal's income. The cumulative income multipliers are 1×, 1.5×, 2.25×, and 3.375×.
+- Giant animal guardians pursue players who are carrying stolen animals. If caught, the animal escapes and returns to the wild after a delay.
+- Six animal slots per farm, persistent inventory, passive barn income, manual collection, speed upgrades, and bounded offline income.
+- Native Roblox parts and procedural scenery; no Toolbox scripts, gamepasses, VIP purchases, or paid barn expansions.
+- Mobile-first HUD with currency, income rate, barn occupancy, carrying state, and farm actions.
 
-Entrar no servidor → receber um curral → treinar Velocidade na esteira e Força no supino → explorar a Fazenda, a Selva Mística e o Vulcão → roubar um animal → correr de volta ao próprio curral → vender o animal por Moedas.
+## Build and validate
 
-Se um guardião alcançar o jogador durante o transporte, o animal é perdido e reaparece depois de um intervalo. Captura, requisitos de força, penalidade por peso, venda, preços, upgrades e gamepasses são validados no servidor.
+The active Rojo project is default.project.json, which maps only src/StealAnAnimal/ into the Roblox DataModel. The previous implementation remains in the repository for historical comparison but is not included in the built place.
 
-## Sistemas incluídos
+Commands:
+- python3 tools/validate_roube_animal.py
+- luau tools/tests/run.luau
+- python3 tools/tests/test_map_layout.py
+- python3 tools/tests/test_monetization.py
+- python3 tools/tests/test_core_reliability.py
+- rojo build default.project.json --output build/StealAnAnimal.rbxl
 
-- Leaderstats em português: Moedas, Velocidade e Força.
-- DataStore com UpdateAsync, token de sessão, autosave de cinco minutos e salvamento ao sair.
-- Catálogo de animais com peso, raridade, requisitos de força e valor-base.
-- Tool lógica com representação visual presa às costas durante o transporte.
-- Penalidade progressiva de velocidade conforme o peso carregado.
-- Venda restrita ao curral proprietário.
-- Treino na esteira e no supino.
-- Loja de upgrades de Força e Velocidade, com verificação de saldo no servidor.
-- Gamepasses configuráveis: Moedas em Dobro e VIP com +50 de velocidade-base.
-- Guardiões com detecção visual, patrulha e perseguição por PathfindingService.
-- Mapa procedural estilizado e HUD adaptada para celular.
-- Workflow para validar e gerar o arquivo Roblox place.
+The GitHub Actions workflow checks Luau syntax and creates a .rbxl artifact. This does not publish to Roblox. Production publishing remains a separate manual workflow and is not run by this branch.
 
-## Estrutura do projeto
+## Data and safety
 
-A implementação Luau está em src/RoubeUmAnimal/. A configuração Rojo está em default.project.json. O guia do mapa, das regras e do procedimento de teste fica em docs/ROUBE_UM_ANIMAL.md.
-
-## Build e validação
-
-Com Rokit instalado:
-
-    python3 tools/validate_roube_animal.py
-    luau tools/tests/run.luau
-    python3 tools/tests/test_map_layout.py
-    rojo build default.project.json --output build/RoubeUmAnimal.rbxl
-
-O GitHub Actions testa regras de captura, venda, peso e upgrades; verifica a cobertura do mapa, analisa toda a sintaxe Luau e compila um arquivo de experiência para inspeção. Isso não substitui um teste dentro do Roblox Studio.
-
-## Configuração necessária antes da produção
-
-1. Publique uma experiência de teste separada e habilite DataStore para validar o salvamento.
-2. Crie os gamepasses e substitua os IDs 0 em Config.lua pelos IDs reais.
-3. Teste o comportamento dos guardiões, vendas, respawns, salvamento concorrente e HUD em dispositivos reais.
-4. Defina ROUBE_ANIMAL_UNIVERSE_ID e ROUBE_ANIMAL_PLACE_ID como Repository Variables e ROBLOX_API_KEY como Repository Secret somente quando decidir publicar explicitamente.
-5. Use manualmente o workflow de publicação e confirme o alvo antes de enviar uma versão.
-
-A publicação automática da antiga experiência Collision Battlestar foi desativada para impedir que o novo jogo seja enviado para um ID antigo por engano.
-
-## Ferramentas de engenharia preservadas
-
-O repositório também conserva utilitários LuaSmith, scripts de teste e documentação de engenharia anteriores. Eles não fazem parte do runtime de ROUBE UM ANIMAL; o workflow ativo valida este projeto pelo script tools/validate_roube_animal.py.
+Player profiles use DataStore UpdateAsync, autosave, and a six-hour offline-income cap. If a profile cannot be loaded, the game avoids overwriting the unknown saved record. Capture, storage, collection, movement, and upgrade costs are checked on the server.

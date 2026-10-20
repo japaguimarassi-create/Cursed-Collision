@@ -32,7 +32,7 @@ local healthReportRemote = ensureInstance(diagnostics, "RequestHealthReport", "R
 
 local remotes = ensureInstance(ReplicatedStorage, "RoubeAnimalRemotes", "Folder")
 local remoteNames = {
-    "Notify", "RequestUpgrade", "RequestGamepass", "PromptGamepass",
+    "Notify", "RequestUpgrade",
     "RequestStackableProduct", "PromptStackableProduct", "RequestRebirth",
     "RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestCollectBarnIncome",
 }
