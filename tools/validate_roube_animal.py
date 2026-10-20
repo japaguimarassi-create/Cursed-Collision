@@ -92,8 +92,12 @@ def main():
     publisher = read(".github/workflows/roblox-publish.yml")
     if "workflow_dispatch:" not in publisher or "ROBLOX_API_KEY" not in publisher:
         fail("publishing workflow must remain manual and key-protected")
-    if "contains(github.event.head_commit.message, '[publish-roube-um-animal]')" not in publisher:
-        fail("production publishing must require explicit release confirmation")
+    if "inputs.confirm == true" not in publisher:
+        fail("production publishing must require an explicit manual confirmation")
+    if "STEAL_ANIMAL_UNIVERSE_ID" not in publisher or "STEAL_ANIMAL_PLACE_ID" not in publisher:
+        fail("production publishing must use explicitly configured destination IDs")
+    if "5290480963" in publisher or "15338267657" in publisher:
+        fail("production publishing must not guess Roblox destination IDs")
 
     print(f"Steal An Animal validation passed: {len(animal_ids)} species and {len(checks)} architecture checks.")
 
