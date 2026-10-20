@@ -1204,6 +1204,18 @@ game:BindToClose(function()
     for player in pairs(profiles) do
         leaving[player] = true
         pending += 1
-fix shutdown save failure lock release.1)
+        task.spawn(function()
+            local saved = saveProfile(player)
+            if saved then
+                releaseSession(player)
+            else
+                abandonSession(player)
+            end
+            pending -= 1
+        end)
+    end
+    local deadline = os.clock() + 20
+    while pending > 0 and os.clock() < deadline do
+        task.wait(0.1)
     end
 end)
