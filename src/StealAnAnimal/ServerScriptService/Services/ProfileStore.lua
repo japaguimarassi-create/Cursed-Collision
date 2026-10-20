@@ -230,6 +230,14 @@ function ProfileStore.new(services)
         sessionTokens[player] = nil
     end
 
+    local function abandonSession(player)
+        while saveInProgress[player] do
+            task.wait(0.05)
+        end
+        sessionTokens[player] = nil
+        saveInProgress[player] = nil
+    end
+
     return {
         DefaultProfile = defaultProfile,
         SanitizeProfile = sanitizeProfile,
@@ -237,6 +245,7 @@ function ProfileStore.new(services)
         AcquireSession = acquireSession,
         SaveProfile = saveProfile,
         ReleaseSession = releaseSession,
+        AbandonSession = abandonSession,
     }
 end
 
