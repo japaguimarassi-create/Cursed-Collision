@@ -22,6 +22,7 @@ checks = {
     "treadmill upgrade validates coins and level": all(token in MAIN for token in ("Rules.UpgradeCost(profile.TreadmillLevel, Config)", "profile.Coins -= cost", "profile.TreadmillLevel += 1")),
     "treadmill belt uses a single shared animation loop": "treadmillAnimationAccumulator >= 0.1" in MAIN and "for _, entry in ipairs(treadmillStrips)" in MAIN,
     "mobile HUD includes original progression and diagnostic panels": all(token in CLIENT for token in ("TouchEnabled", "StealAnAnimalHUD", "TopDashboard", "ActionDock", "Modal", "ResponsiveScale", "MenuList", "OpenMore", "Daily", "Quests", "Codes", "Stats", "Settings", "Diagnostics", "mapBotReportRemote.OnClientEvent")),
+    "HUD restores the animal index and in-game upgrade shop": all(token in CLIENT for token in ("AnimalIndex", "ÍNDICE ANIMAL", "Catalog.ForBiome(biome.Id)", "LOJA DE MELHORIAS", "OpenShop", 'activePanel == "Shop"'))),
     "daily rewards, quests and codes are saved on the server": all(token in MAIN for token in ("RequestDailyReward", "RequestRedeemCode", "RequestQuest", "dailyRemote.OnServerEvent", "codeRemote.OnServerEvent", "questRemote.OnServerEvent", "LastDailyClaimDay", "DailyStreak", "RedeemedCodes", "QuestClaims")),
     "player stats and MapBot diagnostics are connected": all(token in MAIN for token in ('setLeaderstat("Coins"', 'setLeaderstat("Rebirths"', "TotalCaptured", "TotalDeposited", "PathfindingService:CreatePath", "mapBotReportRemote:FireClient")),
     "HUD has no gamepass navigation": "PASSES" not in CLIENT and "renderPasses" not in CLIENT,
