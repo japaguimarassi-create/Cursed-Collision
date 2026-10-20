@@ -49,6 +49,12 @@ Referências consultadas antes e depois da implementação:
 As referências orientaram apenas a função da esteira, a faixa escura com detalhes luminosos, o mostrador de treino e a relação entre velocidade e fuga. O equipamento e o mapa foram montados em Parts nativas com posicionamento, formas, cores e geometria próprios.
 
 
+## HUD, renascimento e progressão — r7
+
+A interface r7 volta a incluir o menu MAIS, missões, recompensa diária, códigos, estatísticas, configurações e diagnóstico MapBot, além do painel de renascimento. O renascimento exige 100.000 moedas e velocidade suficiente para alcançar o limite de movimento, concede +10% de renda permanente por nível (até 25) e reinicia apenas moedas e pontos de velocidade. Animais guardados, banco do celeiro e nível da esteira são preservados. A progressão diária, códigos resgatados, missões concluídas e estatísticas de captura/depósito são salvos com o perfil.
+
+Os códigos ativos nesta revisão são FARMFAMILY (+1.000), WILDSTART (+1.500) e BARNBOOST (+2.500), cada um uma vez por conta. A recompensa diária começa em 500 moedas e cresce 250 por dia consecutivo, até 2.000 no sétimo dia. MapBot verifica contagens do mapa e tenta calcular uma rota até o pad da fazenda; isso é um diagnóstico por código, não um teste com personagem real nem uma execução no Roblox Studio.
+
 ## Revisão de carregamento do mapa — r6
 
 O arquivo anterior era bem-formado como binário, mas continha somente scripts, módulos e serviços, sem peças serializadas em Workspace. A cena surgia apenas quando o Script de servidor executava em Play; abrir o arquivo no modo de edição podia mostrar Workspace vazio.
