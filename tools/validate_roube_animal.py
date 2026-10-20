@@ -75,6 +75,7 @@ def main():
         ("guardian pursuit and escape", all(token in main_source for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),
         ("original procedural models and scenery", all(token in main_source for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "FountainGem"))),
         ("server-side treadmill training and capped movement", all(token in main_source for token in ("createTreadmill", "TrainingZone", "Rules.TrainingGain", "Rules.MoveSpeed", "Config.MaxSpeedPoints", "MaxTreadmillLevel"))),
+        ("standing training does not require forced movement", "zone.CFrame:PointToObjectSpace(root.Position)" in main_source and "humanoid.MoveDirection.Magnitude > 0.12" not in main_source),
         ("animated belts and farm-owned treadmill upgrades", all(token in main_source for token in ("treadmillStrips", "TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId'))),
         ("treadmill UI reports speed and upgrade levels", all(token in client for token in ("TreadmillStatus", "TreadmillLevel", "TreadmillGain", "EffectiveWalkSpeed", "MELHORAR ESTEIRA"))),
         ("responsive HUD and gameplay actions", all(token in client for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "EvolutionHint"))),

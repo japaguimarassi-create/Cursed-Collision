@@ -19,7 +19,7 @@ A mobile-first Roblox experience about stealing baby animals, escaping their adu
 - Giant adult guardians pursue players carrying stolen animals. If caught, the animal escapes and returns to the wild after a delay.
 - Six animal slots per farm, persistent inventory, passive barn income, manual collection, speed upgrades, and bounded offline income.
 - Mobile-first HUD shows speed points, current movement speed, treadmill level, and training gain.
-- Treadmill level 1 adds 2 speed points per second while the player is moving inside the belt zone; each paid in-game upgrade increases training yield by 1.5× (rounded down). Movement speed is calculated from earned points and capped at 40 studs/s; carrying an animal applies a separate weight penalty.
+- Treadmill level 1 adds 2 speed points per second while the player stands inside the belt zone; each paid in-game upgrade increases training yield by 1.5× (rounded down). Movement speed is calculated from earned points and capped at 40 studs/s; carrying an animal applies a separate weight penalty.
 - Speed points, treadmill level, coins, and barn data are saved; no gamepasses, VIP purchases, or paid barn expansions.
 
 ## Build and validate

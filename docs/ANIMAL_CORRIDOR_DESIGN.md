@@ -16,7 +16,7 @@ No source mesh, screenshot, map coordinates, branded treadmill, or packaged mode
 
 - Eight personal farms in a rectangular 4 x 2 block.
 - One animated treadmill on each farm, with a server-side TrainingZone.
-- Speed points are awarded only while the server sees the character moving inside the belt zone.
+- Speed points are awarded while the server verifies that the character is standing inside the belt zone. Standing still is enough, so players do not slide off the fixed training platform to earn Speed.
 - The treadmill can be upgraded with in-game coins up to level 10.
 - Training gain scales by a 1.5× level multiplier, rounded down to whole points per second.
 - Movement speed follows a square-root curve and is clamped to 40 studs/s. Carrying an animal applies the existing weight penalty.

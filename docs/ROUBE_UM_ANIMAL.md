@@ -33,7 +33,7 @@ As imagens servem apenas como referência de composição, hierarquia visual e e
 
 ## Esteiras e velocidade — revisão r5
 
-Cada uma das oito fazendas tem uma esteira com faixa animada e um painel de melhoria. Correr sobre a faixa gera pontos de velocidade no servidor, sem confiar em valores enviados pelo cliente. As melhorias são compradas com moedas do jogo; não existem gamepasses.
+Cada uma das oito fazendas tem uma esteira com faixa animada e um painel de melhoria. Permanecer sobre a faixa gera pontos de velocidade no servidor, sem confiar em valores enviados pelo cliente; não é preciso andar para fora da esteira para treinar. As melhorias são compradas com moedas do jogo; não existem gamepasses.
 
 - Esteira inicial: +2 pontos de velocidade por segundo correndo na área da faixa.
 - Cada nível de esteira aumenta o rendimento em 1,5×; máximo de 10 níveis.

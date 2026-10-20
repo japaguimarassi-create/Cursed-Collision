@@ -16,7 +16,7 @@ checks = {
     "guardian catches carriers": "GuardianCatchDistance" in MAIN and "clearCarry(targetPlayer" in MAIN,
     "carrying speed is server-applied": "Rules.CarrySpeed" in MAIN and "humanoid.WalkSpeed = baseSpeed" in MAIN,
     "treadmills are built for every base": "createTreadmill(base, center)" in MAIN and '"TrainingZone"' in MAIN,
-    "speed is earned on the server while moving on the treadmill": all(token in MAIN for token in ("humanoid.MoveDirection.Magnitude > 0.12", "Rules.TrainingGain(profile.TreadmillLevel, Config)", "profile.Speed = nextSpeed")),
+    "speed is earned server-side while standing on the treadmill": all(token in MAIN for token in ("zone.CFrame:PointToObjectSpace(root.Position)", "Rules.TrainingGain(profile.TreadmillLevel, Config)", "profile.Speed = nextSpeed")) and "humanoid.MoveDirection.Magnitude > 0.12" not in MAIN,
     "speed points change actual movement with a cap": "Rules.MoveSpeed(profile.Speed, Config)" in MAIN and "MaxWalkSpeed = 40" in CONFIG,
     "treadmill upgrade validates coins and level": all(token in MAIN for token in ("Rules.UpgradeCost(profile.TreadmillLevel, Config)", "profile.Coins -= cost", "profile.TreadmillLevel += 1")),
     "treadmill belt uses a single shared animation loop": "treadmillAnimationAccumulator >= 0.1" in MAIN and "for _, entry in ipairs(treadmillStrips)" in MAIN,

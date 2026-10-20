@@ -1394,7 +1394,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
             local character = player.Character
             local root = character and character:FindFirstChild("HumanoidRootPart")
             local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-            if zone and root and humanoid and humanoid.Health > 0 and not carried[player] and humanoid.MoveDirection.Magnitude > 0.12 then
+            if zone and root and humanoid and humanoid.Health > 0 and not carried[player] then
                 local localPosition = zone.CFrame:PointToObjectSpace(root.Position)
                 local inside = math.abs(localPosition.X) <= zone.Size.X / 2
                     and math.abs(localPosition.Y) <= zone.Size.Y / 2
