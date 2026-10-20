@@ -5,6 +5,7 @@ BASE = ROOT / "src/StealAnAnimal"
 MAIN = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
 CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
 CONFIG = (BASE / "ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
+RULES = (BASE / "ReplicatedStorage/Shared/GameplayRules.lua").read_text(encoding="utf-8")
 
 checks = {
     "profiles acquire an atomic session lease": all(token in MAIN for token in ("local function acquireSession", "SESSION_LEASE_SECONDS = 180", "ExpiresAt", "sessionTokens[player] = token")),
@@ -20,7 +21,10 @@ checks = {
     "speed points change actual movement with a cap": "Rules.MoveSpeed(profile.Speed, Config)" in MAIN and "MaxWalkSpeed = 40" in CONFIG,
     "treadmill upgrade validates coins and level": all(token in MAIN for token in ("Rules.UpgradeCost(profile.TreadmillLevel, Config)", "profile.Coins -= cost", "profile.TreadmillLevel += 1")),
     "treadmill belt uses a single shared animation loop": "treadmillAnimationAccumulator >= 0.1" in MAIN and "for _, entry in ipairs(treadmillStrips)" in MAIN,
-    "client HUD is responsive": "TouchEnabled" in CLIENT and "StealAnAnimalHUD" in CLIENT,
+    "client HUD is responsive and organized into gameplay panels": all(token in CLIENT for token in ("TouchEnabled", "StealAnAnimalHUD", "TopDashboard", "ActionDock", "Modal", "ResponsiveScale")),
+    "rebirth is persistent, capped, and server validated": all(token in MAIN for token in ("RequestRebirth", "requestRebirth", "Rules.RebirthCost", "profile.Rebirths += 1", "saveProfile(player)", "rebirthInProgress[player]")) and all(token in MAIN for token in ("data.Rebirths = safeInteger", "Rebirths = profile.Rebirths")),
+    "rebirth provides a persistent income multiplier": all(token in RULES for token in ("RebirthCost", "RebirthIncomeMultiplier")) and all(token in MAIN for token in ("Rules.RebirthIncomeMultiplier(profile.Rebirths, Config)", "offlineIncome(profile, now - elapsed, now)")),
+    "rebirth confirmation and requirements are displayed": all(token in CLIENT for token in ("confirmingRebirth", "PREPARAR RENASCIMENTO", "CONFIRMAR E REINICIAR", "RebirthCost", "RebirthMultiplier")),
     "HUD has no gamepass navigation": "PASSES" not in CLIENT and "renderPasses" not in CLIENT,
 }
 failed = [name for name, ok in checks.items() if not ok]
