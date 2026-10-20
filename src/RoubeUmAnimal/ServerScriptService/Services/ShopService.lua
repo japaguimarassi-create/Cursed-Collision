@@ -6,20 +6,18 @@ local Rules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Gam
 local ShopService = {}
 local profiles
 local animalService
-local passService
 local notify
 local requestRemote
 local cooldowns = {}
 local started = false
 
-function ShopService.Start(profileService, animals, passes, remote, notifyFunction)
+function ShopService.Start(profileService, animals, remote, notifyFunction)
     if started then
         return
     end
     started = true
     profiles = profileService
     animalService = animals
-    passService = passes
     requestRemote = remote
     notify = notifyFunction
 
@@ -48,8 +46,7 @@ function ShopService.Start(profileService, animals, passes, remote, notifyFuncti
             notify(player, "The upgrade was cancelled because your balance changed.", "Warning")
             return
         end
-        local amount = passService.Has(player, "DoubleSpeed") and Config.Training.DoubleSpeedMultiplier or 1
-        local upgraded = profiles.AddStat(player, "Speed", amount)
+        local upgraded = profiles.AddStat(player, "Speed", 1)
         if not upgraded then
             profiles.AddCoins(player, cost)
             notify(player, "Upgrade failed safely. Your coins were refunded.", "Error")
