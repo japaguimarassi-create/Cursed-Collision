@@ -9,7 +9,6 @@ local Rules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Gam
 local AnimalService = {}
 local profiles
 local worldBuilder
-local passService
 local notify
 local carried = {}
 local lastCapture = {}
@@ -121,10 +120,8 @@ function AnimalService.ApplyMovement(player)
     if not data then
         return
     end
-    local speedMultiplier = passService.Has(player, "DoubleSpeed") and Config.Training.DoubleSpeedMultiplier or 1
-    local vipBonus = passService.Has(player, "VIPFarm") and Config.VipSpeedBonus or 0
     local baseSpeed = math.clamp(
-        (Config.BaseWalkSpeed + data.Speed * Config.SpeedPerLevel) * speedMultiplier + vipBonus,
+        Config.BaseWalkSpeed + data.Speed * Config.SpeedPerLevel,
         Config.BaseWalkSpeed,
         Config.MaximumWalkSpeed
     )
@@ -273,14 +270,13 @@ local function capture(player, prompt)
     notify(player, spec.DisplayName .. " captured! Return to your barn pad to store it and earn coins every second.", "Success")
 end
 
-function AnimalService.Start(profileService, builder, passes, notifyFunction)
+function AnimalService.Start(profileService, builder, notifyFunction)
     if started then
         return
     end
     started = true
     profiles = profileService
     worldBuilder = builder
-    passService = passes
     notify = notifyFunction
 
     ProximityPromptService.PromptTriggered:Connect(function(prompt, player)
