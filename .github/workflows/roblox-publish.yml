@@ -1,18 +1,10 @@
-name: Roube Um Animal - Manual Publisher
+name: Steal An Animal - Explicit Manual Publisher
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/roblox-publish.yml"
-      - "default.project.json"
-      - "src/RoubeUmAnimal/**"
-      - "tools/**"
-      - "rokit.toml"
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Confirm publishing STEAL AN ANIMAL to the existing confirmed Roblox experience"
+        description: "Confirm publishing the reviewed Steal An Animal build to the configured Roblox place"
         required: true
         type: boolean
         default: false
@@ -21,14 +13,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: roube-animal-manual-publish
+  group: steal-animal-manual-publish
   cancel-in-progress: false
 
 jobs:
   publish:
-    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.confirm == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-roube-um-animal]')) }}
+    if: ${{ inputs.confirm == true }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -36,14 +28,6 @@ jobs:
         uses: paradoxum-games/setup-rokit@v3
         with:
           cache: true
-      - name: Validate project
-        run: python3 tools/validate_roube_animal.py
-      - name: Run gameplay rule tests
-        run: luau tools/tests/run.luau
-      - name: Validate map and animal spawns
-        run: python3 tools/tests/test_map_layout.py
-      - name: Validate monetization IDs and product separation
-        run: python3 tools/tests/test_monetization.py
       - name: Install pinned Luau syntax checker
         shell: bash
         run: |
@@ -57,45 +41,51 @@ jobs:
           test -n "$compiler"
           chmod +x "$compiler"
           echo "LUAU_COMPILER=$compiler" >> "$GITHUB_ENV"
-      - name: Parse every Luau source file
+      - name: Parse active Luau source
         shell: bash
         run: |
           set -euo pipefail
           while IFS= read -r -d '' source_file; do
             "$LUAU_COMPILER" --only-parse "$source_file" >/dev/null
-          done < <(find src/RoubeUmAnimal -type f -name '*.lua' -print0)
-      - name: Build Roblox place
+          done < <(find src/StealAnAnimal -type f -name '*.lua' -print0)
+      - name: Run automated checks
+        run: |
+          set -euo pipefail
+          python3 tools/validate_roube_animal.py
+          luau tools/tests/run.luau
+          python3 tools/tests/test_map_layout.py
+          python3 tools/tests/test_monetization.py
+          python3 tools/tests/test_core_reliability.py
+      - name: Build reviewed place
         run: |
           set -euo pipefail
           mkdir -p build
-          rojo build default.project.json --output build/RoubeUmAnimal.rbxl
-          test -s build/RoubeUmAnimal.rbxl
-      - name: Publish only to the confirmed existing experience
+          rojo build default.project.json --output build/StealAnAnimal.rbxl
+          test -s build/StealAnAnimal.rbxl
+      - name: Publish only to explicitly configured place
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          UNIVERSE_ID: ${{ vars.ROUBE_ANIMAL_UNIVERSE_ID || '5290480963' }}
-          PLACE_ID: ${{ vars.ROUBE_ANIMAL_PLACE_ID || '15338267657' }}
+          UNIVERSE_ID: ${{ vars.STEAL_ANIMAL_UNIVERSE_ID }}
+          PLACE_ID: ${{ vars.STEAL_ANIMAL_PLACE_ID }}
         run: |
           set -euo pipefail
           test -n "${ROBLOX_API_KEY}" || { echo "::error::Missing repository secret ROBLOX_API_KEY"; exit 1; }
-          test -n "${UNIVERSE_ID}" || { echo "::error::Universe ID is empty"; exit 1; }
-          test -n "${PLACE_ID}" || { echo "::error::Place ID is empty"; exit 1; }
+          test -n "${UNIVERSE_ID}" || { echo "::error::Set repository variable STEAL_ANIMAL_UNIVERSE_ID to the confirmed universe ID"; exit 1; }
+          test -n "${PLACE_ID}" || { echo "::error::Set repository variable STEAL_ANIMAL_PLACE_ID to the confirmed place ID"; exit 1; }
           [[ "${UNIVERSE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::Universe ID must be numeric"; exit 1; }
           [[ "${PLACE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::Place ID must be numeric"; exit 1; }
           endpoint="https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published"
-          # Upload the built RBXL as the publish payload and save response
           http_code=$(curl --silent --show-error --location --write-out "%{http_code}" --output build/publish-response.json \
             --request POST --url "${endpoint}" \
             --header "x-api-key: ${ROBLOX_API_KEY}" \
             --header "Content-Type: application/octet-stream" \
-            --data-binary @build/RoubeUmAnimal.rbxl)
+            --data-binary @build/StealAnAnimal.rbxl)
           echo "HTTP code: $http_code"
           cat build/publish-response.json
           [[ "${http_code}" =~ ^2[0-9][0-9]$ ]] || { echo "::error::Roblox rejected the publish request (HTTP ${http_code})."; exit 1; }
           python3 - <<'PY'
           import json
           from pathlib import Path
-
           response = json.loads(Path("build/publish-response.json").read_text(encoding="utf-8"))
           version = response.get("versionNumber")
           if not isinstance(version, int) or version < 1:

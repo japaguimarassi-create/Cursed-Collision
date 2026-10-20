@@ -11,8 +11,6 @@ local player = Players.LocalPlayer
 local remotes = ReplicatedStorage:WaitForChild("RoubeAnimalRemotes")
 local notifyRemote = remotes:WaitForChild("Notify")
 local upgradeRemote = remotes:WaitForChild("RequestUpgrade")
-local passRequestRemote = remotes:WaitForChild("RequestGamepass")
-local passPromptRemote = remotes:WaitForChild("PromptGamepass")
 local productRequestRemote = remotes:WaitForChild("RequestStackableProduct")
 local productPromptRemote = remotes:WaitForChild("PromptStackableProduct")
 local rebirthRequestRemote = remotes:WaitForChild("RequestRebirth")
@@ -646,40 +644,7 @@ local function renderShop()
         "Next level costs $" .. number(nextCost) .. ". More speed helps you bring rare animals home before the guardian catches you.", "UPGRADE", COLORS.Blue, function()
             upgradeRemote:FireServer("Speed")
         end, level >= Config.MaxSpeedLevel, 96)
-    addAction(3, "2X", "DOUBLE SPEED", "Permanent pass. Increases speed upgrade and treadmill gains. Status: " .. (player:GetAttribute("HasDoubleSpeed") and "OWNED" or "NOT OWNED"), "PASSES", COLORS.Aqua, function()
-        openScreen("Passes")
-    end, false, 80)
-    addInfo(4, "TIP: the treadmill beside your barn gives speed over time while you run on it. No strength or bench-press system exists in this game.", COLORS.Gold, 68)
-end
-
-local function passEntries()
-    return {
-        { key = "DoubleIncome", title = "PROFIT FARM • 2X INCOME", description = "Doubles the passive coin income of every animal stored in your barn.", marker = "2X $", color = COLORS.Gold, attr = "HasDoubleIncome" },
-        { key = "DoubleSpeed", title = "QUICK ESCAPE • 2X SPEED", description = "Doubles speed training gains and improves movement while carrying animals.", marker = "2X", color = COLORS.Blue, attr = "HasDoubleSpeed" },
-        { key = "VIPFarm", title = "VIP FARM", description = "Adds a permanent movement bonus and a 25% boost to barn income.", marker = "VIP", color = COLORS.Purple, attr = "HasVIPFarm" },
-        { key = "ExtraBarnSlots", title = "EXPANDED BARN", description = "Unlocks four additional animal storage slots (6 → 10).", marker = "+4", color = COLORS.Green, attr = "HasExtraBarnSlots" },
-    }
-end
-
-local function renderPasses()
-    clearContent()
-    addInfo(1, "PERMANENT GAMEPASSES  •  EACH PASS HAS A DIFFERENT EFFECT. THEY ARE NOT REPEATABLE PRODUCTS.", COLORS.Gold, 62)
-    for index, item in ipairs(passEntries()) do
-        local owns = player:GetAttribute(item.attr) == true
-        local id = MonetizationIds.Passes[item.key]
-        local configured = type(id) == "number" and id > 0
-        local description = item.description .. (configured and "" or " Purchase ID not configured yet.")
-        addAction(index + 1, item.marker, item.title, description, owns and "OWNED" or (configured and "BUY" or "SETUP"), item.color, function()
-            if owns then
-                toast("You already own this pass.", "Info")
-            elseif not configured then
-                toast("Create this pass in Creator Dashboard and configure its ID before purchase can be enabled.", "Warning")
-            else
-                passRequestRemote:FireServer(item.key)
-            end
-        end, owns, 88)
-    end
-    addInfo(6, "REPEATABLE DEVELOPER PRODUCTS  •  EACH SUCCESSFUL RECEIPT IS SAVED BY THE SERVER.", COLORS.Aqua, 54)
+    addInfo(3, "OPTIONAL DEVELOPER PRODUCTS  •  REPEATABLE PURCHASES; GAMEPASSES HAVE BEEN REMOVED.", COLORS.Aqua, 54)
     local products = {
         { key = "SpeedBoost", title = "+10 SPEED", description = "A repeatable speed bundle, useful for long guardian escapes.", marker = "+10", color = COLORS.Blue },
         { key = "CoinBundle", title = "+5,000 COINS", description = "Adds 5,000 coins to your wallet. Can be purchased more than once.", marker = "$5K", color = COLORS.Gold },
@@ -687,7 +652,7 @@ local function renderPasses()
     for index, item in ipairs(products) do
         local id = MonetizationIds.Products[item.key]
         local configured = type(id) == "number" and id > 0
-        addAction(6 + index, item.marker, item.title, item.description .. (configured and "" or " Product ID not configured yet."),
+        addAction(3 + index, item.marker, item.title, item.description .. (configured and "" or " Product ID not configured yet."),
             configured and "BUY" or "SETUP", item.color, function()
                 if configured then
                     productRequestRemote:FireServer(item.key)
@@ -696,6 +661,7 @@ local function renderPasses()
                 end
             end, false, 86)
     end
+    addInfo(6, "TIP: the treadmill beside your barn gives speed over time while you run on it. No strength or bench-press system exists in this game.", COLORS.Gold, 68)
 end
 
 local function renderQuests()
@@ -897,7 +863,6 @@ local renderers = {
     Barn = renderBarn,
     Animals = renderAnimals,
     Shop = renderShop,
-    Passes = renderPasses,
     Quests = renderQuests,
     Daily = renderDaily,
     Stats = renderStats,
@@ -917,7 +882,6 @@ openScreen = function(name)
         Barn = "YOUR BARN",
         Animals = "ANIMAL INDEX",
         Shop = "FARM UPGRADES",
-        Passes = "PASSES & PRODUCTS",
         Quests = "QUEST BOARD",
         Daily = "DAILY HARVEST",
         Stats = "FARM STATISTICS",
@@ -938,24 +902,10 @@ openScreen = function(name)
     end)
 end
 
-button(navPanel, "OpenBarn", "BARN", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Green, function() openScreen("Barn") end, 1)
-button(navPanel, "OpenAnimals", "ANIMALS", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Pink, function() openScreen("Animals") end, 2)
-button(navPanel, "OpenShop", "SHOP", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Gold, function() openScreen("Shop") end, 3)
-button(navPanel, "OpenPasses", "PASSES", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Blue, function() openScreen("Passes") end, 4)
-button(navPanel, "OpenMore", "MORE", UDim2.new(0.2, -4, 1, 0), UDim2.new(), COLORS.Purple, function() openScreen("More") end, 5)
-
-local function promptPass(passId)
-    if type(passId) ~= "number" or passId <= 0 then
-        toast("This gamepass has not been configured yet.", "Warning")
-        return
-    end
-    local success, err = pcall(function()
-        MarketplaceService:PromptGamePassPurchase(player, passId)
-    end)
-    if not success then
-        toast("Could not open the pass purchase: " .. tostring(err), "Error")
-    end
-end
+button(navPanel, "OpenBarn", "BARN", UDim2.new(0.25, -4, 1, 0), UDim2.new(), COLORS.Green, function() openScreen("Barn") end, 1)
+button(navPanel, "OpenAnimals", "ANIMALS", UDim2.new(0.25, -4, 1, 0), UDim2.new(), COLORS.Pink, function() openScreen("Animals") end, 2)
+button(navPanel, "OpenShop", "SHOP", UDim2.new(0.25, -4, 1, 0), UDim2.new(), COLORS.Gold, function() openScreen("Shop") end, 3)
+button(navPanel, "OpenMore", "MORE", UDim2.new(0.25, -4, 1, 0), UDim2.new(), COLORS.Purple, function() openScreen("More") end, 4)
 
 local function promptProduct(productId)
     if type(productId) ~= "number" or productId <= 0 then
@@ -971,13 +921,12 @@ local function promptProduct(productId)
 end
 
 notifyRemote.OnClientEvent:Connect(toast)
-passPromptRemote.OnClientEvent:Connect(promptPass)
 productPromptRemote.OnClientEvent:Connect(promptProduct)
 
 local attributes = {
     "Coins", "SpeedLevel", "Rebirths", "BarnAnimalCount", "BarnCapacity", "BarnIncomeRate", "BarnBank",
     "TotalCaptured", "TotalDeposited", "BarnAnimalsJson", "CarryingAnimal", "CarriedAnimalName",
-    "CarriedAnimalWeight", "CarriedAnimalIncome", "EffectiveWalkSpeed", "HasDoubleIncome", "HasDoubleSpeed", "HasVIPFarm", "HasExtraBarnSlots", "DailyStreak",
+    "CarriedAnimalWeight", "CarriedAnimalIncome", "EffectiveWalkSpeed", "DailyStreak",
 }
 for _, attribute in ipairs(attributes) do
     player:GetAttributeChangedSignal(attribute):Connect(function()
