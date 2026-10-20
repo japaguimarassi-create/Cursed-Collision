@@ -1211,7 +1211,7 @@ local function upgradeTreadmill(player, prompt)
 end
 
 local function onPrompt(prompt, player)
-    if not profiles[player] or leaving[player] then
+    if not profiles[player] or leaving[player] or rebirthInProgress[player] then
         return
     end
     local interaction = prompt:GetAttribute("InteractionType")
@@ -1242,7 +1242,7 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, player)
 end)
 
 upgradeRemote.OnServerEvent:Connect(function(player)
-    if not profiles[player] or leaving[player] or not allowAction(player, "upgradeRemote", 0.8) then return end
+    if not profiles[player] or leaving[player] or rebirthInProgress[player] or not allowAction(player, "upgradeRemote", 0.8) then return end
     local base = playerBases[player]
     local treadmill = base and base:FindFirstChild("Treadmill")
     local console = treadmill and treadmill:FindFirstChild("TreadmillConsole")
@@ -1255,7 +1255,7 @@ upgradeRemote.OnServerEvent:Connect(function(player)
 end)
 
 collectRemote.OnServerEvent:Connect(function(player)
-    if not profiles[player] or leaving[player] or not allowAction(player, "collectRemote", 0.6) then return end
+    if not profiles[player] or leaving[player] or rebirthInProgress[player] or not allowAction(player, "collectRemote", 0.6) then return end
     local base = playerBases[player]
     local pad = base and base:FindFirstChild("CollectPad")
     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -1293,6 +1293,7 @@ local function requestRebirth(player)
     end
 
     rebirthInProgress[player] = true
+    player:SetAttribute("RebirthInProgress", true)
     local previous = {
         Coins = profile.Coins,
         Speed = profile.Speed,
@@ -1326,6 +1327,7 @@ local function requestRebirth(player)
         profile.LastIncomeAt = previous.LastIncomeAt
         profile.Persistent = persistenceState == false and false or previous.Persistent
         rebirthInProgress[player] = nil
+        player:SetAttribute("RebirthInProgress", false)
         updatePlayerAttributes(player)
         renderBarn(player)
         if player.Parent == Players and profile.Persistent ~= false then
@@ -1335,6 +1337,7 @@ local function requestRebirth(player)
     end
 
     rebirthInProgress[player] = nil
+    player:SetAttribute("RebirthInProgress", false)
     local base = playerBases[player]
     local floor = base and base:FindFirstChild("Floor")
     local character = player.Character
@@ -1351,6 +1354,7 @@ rebirthRemote.OnServerEvent:Connect(function(player)
     local ok, err = pcall(requestRebirth, player)
     if not ok then
         rebirthInProgress[player] = nil
+        player:SetAttribute("RebirthInProgress", false)
         warn("[StealAnAnimal] Rebirth failed: " .. tostring(err))
         notify(player, "O renascimento falhou com segurança. Seu progresso não deve ser perdido; tente novamente.", "Error")
     end
@@ -1399,6 +1403,7 @@ end
 local function playerAdded(player)
     player:SetAttribute("ProfileLoaded", false)
     player:SetAttribute("CarryingAnimal", false)
+    player:SetAttribute("RebirthInProgress", false)
     local base = assignBase(player)
     if not base then
         player:Kick("Todas as fazendas estão ocupadas. Entre em outro servidor.")
