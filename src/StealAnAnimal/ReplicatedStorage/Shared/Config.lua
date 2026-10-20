@@ -1,6 +1,6 @@
 local Config = {
     GameName = "STEAL AN ANIMAL",
-    ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r2",
+    ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r3",
     DataStoreName = "StealAnAnimal_FreshProfile_v1",
     AutosaveSeconds = 60,
     OfflineIncomeCapSeconds = 21600,
