@@ -25,7 +25,7 @@ checks = {
     "AnimalFactory and WorldBuilder are isolated modules": all(token in MAIN_FILE for token in ('require(Shared:WaitForChild("WorldBuilder"))', 'require(Shared:WaitForChild("AnimalFactory"))'))
         and all(token in WORLD for token in ("function WorldBuilder.new(services)", "function createBase(index)", "function buildScenery()"))
         and all(token in ANIMAL for token in ("function AnimalFactory.new(services)", "local function createAnimalModel", "local function stageFor")),
-    "interaction card preserves mobile thumb-zone clearance": all(token in PROMPT for token in ("AnchorPoint = Vector2.new(0.5, 0)", "UDim2.new(0.5, 0, 0, 300)", "UDim2.new(0.68, 0, 0, 48)", "UDim2.fromOffset(280, 48)", "UserInputService.InputEnded:Connect(function(input)")),
+    "interaction card preserves mobile thumb-zone clearance": all(token in PROMPT for token in ("AnchorPoint = Vector2.new(0.5, 0)", "UDim2.new(0.5, 0, 0, 300)", "UDim2.new(0.68, 0, 0, 48)", "Vector2.new(280, 48)", "UserInputService.InputEnded:Connect(function(input)")),
 
     "profiles save and release leases atomically": all(token in MAIN for token in ("Store:UpdateAsync", "local function releaseSession", "lease.Token ~= token")),
     "offline income is capped and stage-aware": all(token in MAIN for token in ("OfflineIncomeCapSeconds", "offlineIncome", "Rules.AnimalIncome")) and "OfflineIncomeCapSeconds = 21600" in CONFIG,
