@@ -135,10 +135,10 @@ def simulate_hud(audit, client, screen_profiles):
         "BotX chip has a request/reply path and displays the current session", "GameClient.client.lua")
 
     prompt_anchor = "promptCard.AnchorPoint = Vector2.new(0.5, 0)" in client
-    prompt_position = re.search(r'promptCard\\.Position\\s*=\\s*UDim2\\.new\\(0\\.5,\\s*0,\\s*0,\\s*(\\d+)\\)', client)
-    prompt_size = re.search(r'promptCard\\.Size\\s*=\\s*UDim2\\.new\\((0\\.\\d+),\\s*0,\\s*0,\\s*(\\d+)\\)', client)
-    prompt_min = re.search(r'promptConstraint\\.MinSize\\s*=\\s*Vector2\\.new\\((\\d+),\\s*(\\d+)\\)', client)
-    prompt_max = re.search(r'promptConstraint\\.MaxSize\\s*=\\s*Vector2\\.new\\((\\d+),\\s*(\\d+)\\)', client)
+    prompt_position = re.search(r'promptCard\.Position\s*=\s*UDim2\.new\(0\.5,\s*0,\s*0,\s*(\d+)\)', client)
+    prompt_size = re.search(r'promptCard\.Size\s*=\s*UDim2\.new\((0\.\d+),\s*0,\s*0,\s*(\d+)\)', client)
+    prompt_min = re.search(r'promptConstraint\.MinSize\s*=\s*Vector2\.new\((\d+),\s*(\d+)\)', client)
+    prompt_max = re.search(r'promptConstraint\.MaxSize\s*=\s*Vector2\.new\((\d+),\s*(\d+)\)', client)
     prompt_input_release = "UserInputService.InputEnded:Connect(function(input)" in client
     prompt_parsed = prompt_anchor and all(value is not None for value in (
         prompt_position, prompt_size, prompt_min, prompt_max
