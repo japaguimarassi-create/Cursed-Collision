@@ -12,8 +12,8 @@ function InteractionPrompt.mount(services)
 
     local promptCard = Instance.new("Frame")
     promptCard.Name = "CompactInteractionPrompt"
-    promptCard.AnchorPoint = Vector2.new(0.5, 1)
-    promptCard.Position = UDim2.new(0.5, 0, 1, -154)
+    promptCard.AnchorPoint = Vector2.new(0.5, 0)
+    promptCard.Position = UDim2.new(0.5, 0, 0, 300)
     promptCard.Size = UDim2.new(0.68, 0, 0, 48)
     promptCard.BackgroundColor3 = COLORS.Panel
     promptCard.BackgroundTransparency = 0.08
