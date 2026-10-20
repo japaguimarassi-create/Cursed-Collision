@@ -73,6 +73,7 @@ def main():
         ("eight sequential biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Lake"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"', 'Id = "Ocean"', 'Phase = 1, CenterX = 170', 'Phase = 8, CenterX = 1430'))),
         ("preview is retained until runtime map is built", all(token in main_source for token in ('local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")', 'world.Name = "StealAnAnimalRuntimeWorld"', 'previewWorld:Destroy()'))),
         ("rectangular farms and clear corridor", all(token in main_source for token in ("basePositions = {", "CorridorFloor", "CorridorEdge", "PAI PROTETOR"))),
+        ("egg-stealing map landmarks and fenced farms", all(token in main_source for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower"))),
         ("original chicken, swan, and whale models", all(token in main_source for token in ("HenComb", "SwanNeck", "WhaleTailFluke"))),
         ("session-locked profiles and stage-aware offline income", all(token in main_source for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in main_source for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
@@ -125,7 +126,7 @@ def main():
     if part_count < 300:
         fail(f"static map preview contains only {part_count} Parts")
     preview_text = json.dumps(preview)
-    if not all(token in preview_text for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale")):
+    if not all(token in preview_text for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale", "CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower")):
         fail("static map preview is missing core map landmarks")
     print(f"Steal An Animal validation passed: {len(animal_ids)} species, {len(checks)} architecture checks, and {part_count} embedded Workspace Parts.")
 
