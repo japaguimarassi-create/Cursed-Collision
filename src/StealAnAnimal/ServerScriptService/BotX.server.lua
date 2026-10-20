@@ -6,6 +6,11 @@ local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local remoteFolder = ReplicatedStorage:WaitForChild("StealAnimalRemotes", 30)
+local statusRemote = remoteFolder and remoteFolder:WaitForChild("BotXStatus", 30)
+local AQUA = Color3.fromRGB(91, 234, 255)
+local GOLD = Color3.fromRGB(255, 213, 95)
+local DARK = Color3.fromRGB(27, 42, 50)
 
 local BOT_COUNT = 3
 local SNAPSHOT_SECONDS = 10
@@ -47,6 +52,7 @@ local botModels = {}
 local botStates = {}
 local playerConnections = {}
 local remoteRate = {}
+local statusRequestAt = {}
 local latestSummaryAt = 0
 local lastSnapshotAt = 0
 local runtimeWorld = nil
@@ -106,7 +112,7 @@ local function summary(reason, includeRecentEvents)
         table.insert(botList, {
             name = state.Name,
             mode = state.Mode,
-            alive = state.Model ~= nil and state.Model.Parent ~= nil,
+            alive = state.Model ~= nil and state.Model.Parent ~= nil and state.Humanoid ~= nil and state.Humanoid.Health > 0,
             position = root and root.Parent and {
                 x = roundNumber(root.Position.X),
                 y = roundNumber(root.Position.Y),
@@ -164,6 +170,99 @@ local function printSummary(reason)
         return
     end
     print("[BOTX_SESSION_REPORT]" .. encode(summary(reason or "periodic", reason == "final")))
+end
+
+local function pushStatus(targetPlayer, reason)
+    if not statusRemote then
+        return
+    end
+    local payload = summary(reason or "status", false)
+    if targetPlayer and targetPlayer.Parent == Players then
+        statusRemote:FireClient(targetPlayer, payload)
+        return
+    end
+    for _, player in ipairs(Players:GetPlayers()) do
+        statusRemote:FireClient(player, payload)
+    end
+end
+
+local function makeDetail(parentModel, anchor, name, size, offset, color, shape, material)
+    local detail = Instance.new("Part")
+    detail.Name = name
+    detail.Size = size
+    detail.Shape = shape or Enum.PartType.Block
+    detail.CFrame = anchor.CFrame * CFrame.new(offset)
+    detail.Color = color
+    detail.Material = material or Enum.Material.SmoothPlastic
+    detail.TopSurface = Enum.SurfaceType.Smooth
+    detail.BottomSurface = Enum.SurfaceType.Smooth
+    detail.Anchored = false
+    detail.CanCollide = false
+    detail.CanTouch = false
+    detail.CanQuery = false
+    detail.Massless = true
+    detail.Parent = parentModel
+    local weld = Instance.new("WeldConstraint")
+    weld.Name = name .. "Weld"
+    weld.Part0 = anchor
+    weld.Part1 = detail
+    weld.Parent = detail
+    return detail
+end
+
+local function makeFaceAndBadge(model, head, torso)
+    for _, side in ipairs({ -1, 1 }) do
+        makeDetail(model, head, "BotXEyeWhite", Vector3.new(0.29, 0.29, 0.1), Vector3.new(side * 0.31, 0.02, -0.53), Color3.fromRGB(255, 255, 245), Enum.PartType.Ball)
+        makeDetail(model, head, "BotXEyePupil", Vector3.new(0.13, 0.16, 0.06), Vector3.new(side * 0.31, 0.01, -0.595), Color3.fromRGB(28, 31, 39), Enum.PartType.Ball)
+        makeDetail(model, head, "BotXEyeGlint", Vector3.new(0.055, 0.055, 0.025), Vector3.new(side * 0.34, 0.065, -0.632), Color3.fromRGB(255, 255, 255), Enum.PartType.Ball)
+        makeDetail(model, head, "BotXEyebrow", Vector3.new(0.36, 0.075, 0.09), Vector3.new(side * 0.31, 0.24, -0.51), Color3.fromRGB(100, 60, 37), Enum.PartType.Block)
+    end
+    makeDetail(model, head, "BotXMouth", Vector3.new(0.25, 0.055, 0.06), Vector3.new(0, -0.2, -0.545), Color3.fromRGB(105, 44, 49), Enum.PartType.Block)
+    makeDetail(model, torso, "BotXAnalyzerBadge", Vector3.new(0.68, 0.62, 0.12), Vector3.new(0, 0.24, -0.57), AQUA, Enum.PartType.Block, Enum.Material.Neon)
+    makeDetail(model, torso, "BotXBadgeCore", Vector3.new(0.32, 0.32, 0.14), Vector3.new(0, 0.24, -0.66), GOLD, Enum.PartType.Ball, Enum.Material.Neon)
+    local plate = Instance.new("BillboardGui")
+    plate.Name = "BotXNameplate"
+    plate.Size = UDim2.fromOffset(160, 44)
+    plate.StudsOffset = Vector3.new(0, 2.45, 0)
+    plate.AlwaysOnTop = true
+    plate.MaxDistance = 260
+    plate.Adornee = head
+    plate.Parent = head
+    local title = Instance.new("TextLabel")
+    title.Name = "Name"
+    title.Size = UDim2.new(1, 0, 0, 24)
+    title.BackgroundColor3 = DARK
+    title.BackgroundTransparency = 0.08
+    title.BorderSizePixel = 0
+    title.Font = Enum.Font.GothamBlack
+    title.Text = model.Name .. "  •  BOTX"
+    title.TextColor3 = AQUA
+    title.TextStrokeTransparency = 0.55
+    title.TextScaled = true
+    title.Parent = plate
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = UDim.new(0, 7)
+    titleCorner.Parent = title
+    local detail = Instance.new("TextLabel")
+    detail.Name = "Status"
+    detail.Position = UDim2.new(0, 0, 0, 25)
+    detail.Size = UDim2.new(1, 0, 0, 17)
+    detail.BackgroundTransparency = 1
+    detail.Font = Enum.Font.GothamBold
+    detail.Text = "ANALISANDO • NPC"
+    detail.TextColor3 = GOLD
+    detail.TextStrokeTransparency = 0.45
+    detail.TextScaled = true
+    detail.Parent = plate
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "BotXRim"
+    highlight.Adornee = model
+    highlight.FillColor = AQUA
+    highlight.FillTransparency = 0.94
+    highlight.OutlineColor = AQUA
+    highlight.OutlineTransparency = 0.1
+    highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+    highlight.Parent = model
 end
 
 local function makePart(model, name, size, cframe, color, material)
@@ -236,12 +335,17 @@ local function groundPosition(index)
 end
 
 local function spawnPosition(index)
+    local offsets = {
+        Vector3.new(-10, 0, -8),
+        Vector3.new(0, 0, 12),
+        Vector3.new(10, 0, -8),
+    }
     for _, player in ipairs(Players:GetPlayers()) do
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
         if root then
             local ground = root.Position - Vector3.new(0, 3, 0)
-            return ground + Vector3.new(4 + index * 2, 0, 7)
+            return ground + offsets[index]
         end
     end
     return groundPosition(index)
@@ -275,6 +379,7 @@ local function createBot(index)
     connectJoint(torso, "Left Hip", torso, leftLeg)
     connectJoint(torso, "Right Hip", torso, rightLeg)
     makeBaconHair(model, head)
+    makeFaceAndBadge(model, head, torso)
 
     local humanoid = Instance.new("Humanoid")
     humanoid.Name = "Humanoid"
@@ -431,6 +536,7 @@ local function startSession()
     for _, player in ipairs(Players:GetPlayers()) do
         record("player_present_at_start", safeName(player), { userId = player.UserId })
     end
+    pushStatus(nil, "session_started")
 end
 
 local function stopSession(reason)
@@ -448,12 +554,28 @@ local function stopSession(reason)
     if botFolder and botFolder.Parent then
         botFolder:Destroy()
     end
+    if statusRemote then
+        local stopped = {
+            system = "StealAnAnimal-BotX",
+            version = 1,
+            reason = reason or "stopped",
+            activeRealPlayers = realPlayerCount(),
+            activeNpcBots = 0,
+            bots = {},
+            elapsedSeconds = roundNumber(os.clock() - sessionStartedAt, 2),
+            eventCounts = eventCounts,
+        }
+        for _, player in ipairs(Players:GetPlayers()) do
+            statusRemote:FireClient(player, stopped)
+        end
+    end
     botFolder = nil
     runtimeWorld = nil
     botModels = {}
     botStates = {}
     playerConnections = {}
     remoteRate = {}
+    statusRequestAt = {}
 end
 
 local function bindCharacter(player, character)
@@ -601,6 +723,20 @@ end)
 Players.PlayerAdded:Connect(onPlayerAdded)
 Players.PlayerRemoving:Connect(onPlayerRemoving)
 
+if statusRemote then
+    statusRemote.OnServerEvent:Connect(function(player, action)
+        if not player or player.Parent ~= Players or action ~= "request" then
+            return
+        end
+        local now = os.clock()
+        if now - (statusRequestAt[player] or 0) < 2 then
+            return
+        end
+        statusRequestAt[player] = now
+        pushStatus(player, active and "status_request" or "waiting_for_session")
+    end)
+end
+
 task.spawn(function()
     connectGameplayRemotes()
 end)
@@ -625,6 +761,7 @@ task.spawn(function()
                     players = snapshot.players,
                     bots = snapshot.bots,
                 })
+                pushStatus(nil, "state_snapshot")
             end
             if now - latestSummaryAt >= SUMMARY_SECONDS then
                 latestSummaryAt = now
