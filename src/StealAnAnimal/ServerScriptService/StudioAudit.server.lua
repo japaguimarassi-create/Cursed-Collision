@@ -10,6 +10,7 @@ local HttpService = game:GetService("HttpService")
 local StudioTestService = game:GetService("StudioTestService")
 
 local suiteStartedAt = os.clock()
+local suiteStartedAtIso = os.date("!%Y-%m-%dT%H:%M:%SZ")
 local suiteTimeout = 80
 local results = {}
 local clientReports = {}
@@ -102,16 +103,15 @@ local function createSummary()
             touchEnabled = payload.touchEnabled,
             tests = payload.tests,
         })
-        if payload.failed > 0 then
-            failed += 1
-        end
+        passed += payload.passed or 0
+        failed += payload.failed or 0
         warnings += payload.warnings or 0
     end
     table.sort(clientList, function(a, b) return a.client < b.client end)
     return {
         suite = "StealAnAnimalStudioAudit",
         version = 1,
-        startedAt = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+        startedAt = suiteStartedAtIso,
         durationSeconds = math.floor(os.clock() - suiteStartedAt),
         status = failed > 0 and "FAIL" or "PASS",
         passed = passed,
@@ -340,10 +340,6 @@ local function runAudit()
     record("Bots clientes enviaram relatórios", reportsReady,
         "Relatórios recebidos: " .. tostring(reported) .. "/2")
 
-    for player, payload in pairs(clientReports) do
-        record("Testes de interface de " .. player.Name, payload.failed == 0,
-            "PASS=" .. tostring(payload.passed) .. ", FAIL=" .. tostring(payload.failed) .. ", WARN=" .. tostring(payload.warnings or 0))
-    end
 end
 
 local ok, err = xpcall(runAudit, debug.traceback)
