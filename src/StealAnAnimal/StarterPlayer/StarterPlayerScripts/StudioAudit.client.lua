@@ -126,11 +126,29 @@ if gui then
             not overlaps(dock, top) and not overlaps(dock, objective),
             "Verificação geométrica de retângulos")
 
+        local mobileTargetsOkay = true
+        local mobileTargetDetails = {}
         for _, name in ipairs({ "OpenShop", "OpenIndex", "OpenMore" }) do
             local button = dock:FindFirstChild(name)
-            record("Atalho " .. name .. " está visível e dentro da tela",
-                button ~= nil and isVisibleOnScreen(button, viewport),
+            local visible = button ~= nil and isVisibleOnScreen(button, viewport)
+            record("Atalho " .. name .. " está visível e dentro da tela", visible,
                 button and (tostring(math.floor(button.AbsoluteSize.X)) .. "x" .. tostring(math.floor(button.AbsoluteSize.Y))) or "ausente")
+            if button then
+                local size = button.AbsoluteSize
+                table.insert(mobileTargetDetails, name .. "=" .. tostring(math.floor(size.X)) .. "x" .. tostring(math.floor(size.Y)))
+                if UserInputService.TouchEnabled and (size.X < 44 or size.Y < 44) then
+                    mobileTargetsOkay = false
+                end
+            else
+                mobileTargetsOkay = false
+            end
+        end
+        if UserInputService.TouchEnabled then
+            record("Atalhos respeitam alvo tátil mínimo de 44px", mobileTargetsOkay,
+                table.concat(mobileTargetDetails, ", "))
+        else
+            record("Entrada tátil está emulada", false,
+                "TouchEnabled=false nesta sessão. Para validar alvos táteis reais, ative um perfil Phone no Device Simulator.", true)
         end
 
         local rebirth = top:FindFirstChild("RebirthBadge")
