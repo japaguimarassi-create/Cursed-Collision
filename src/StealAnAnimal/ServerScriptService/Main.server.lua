@@ -186,6 +186,7 @@ local snapshot = profileStore.Snapshot
 local acquireSession = profileStore.AcquireSession
 local saveProfile = profileStore.SaveProfile
 local releaseSession = profileStore.ReleaseSession
+local abandonSession = profileStore.AbandonSession
 
 local function allowAction(player, action, cooldown)local function allowAction(player, action, cooldown)
     local now = os.clock()
@@ -1037,6 +1038,15 @@ end
 Players.PlayerAdded:Connect(playerAdded)
 Players.PlayerRemoving:Connect(function(player)
     leaving[player] = true
+    local saved = saveProfile(player)
+    if saved then
+        releaseSession(player)
+    else
+        abandonSession(player)
+    end
+    clearCarry(player)
+    profiles[player] = nilt(function(player)
+    leaving[player] = true
     saveProfile(player)
     releaseSession(player)
     clearCarry(player)
@@ -1200,14 +1210,6 @@ game:BindToClose(function()
     for player in pairs(profiles) do
         leaving[player] = true
         pending += 1
-        task.spawn(function()
-            saveProfile(player)
-            releaseSession(player)
-            pending -= 1
-        end)
-    end
-    local deadline = os.clock() + 20
-    while pending > 0 and os.clock() < deadline do
-        task.wait(0.1)
+fix shutdown save failure lock release.1)
     end
 end)
