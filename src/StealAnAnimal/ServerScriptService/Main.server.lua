@@ -78,6 +78,7 @@ local trainingNoticeAt = {}
 local treadmillStrips = {}
 local treadmillAnimationAccumulator = 0
 local playerBases = {}
+local playerSetupDone = {}
 local carried = {}
 local guardians = {}
 local wildRecords = {}
@@ -1013,6 +1014,8 @@ local function characterAdded(player, character)
 end
 
 local function playerAdded(player)
+    if player.Parent ~= Players or playerSetupDone[player] then return end
+    playerSetupDone[player] = true
     player:SetAttribute("ProfileLoaded", false)
     player:SetAttribute("CarryingAnimal", false)
     player:SetAttribute("RebirthInProgress", false)
@@ -1052,6 +1055,7 @@ Players.PlayerRemoving:Connect(function(player)
     mapBotCooldowns[player] = nil
     trainingNoticeAt[player] = nil
     releaseBase(player)
+    playerSetupDone[player] = nil
     leaving[player] = nil
 end)
 
