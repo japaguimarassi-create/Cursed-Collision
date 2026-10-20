@@ -51,8 +51,8 @@ local touchDevice = UserInputService.TouchEnabled
 local function updateScale()
     local camera = workspace.CurrentCamera
     if camera then
-        local baseScale = camera.ViewportSize.X / 430
-        uiScale.Scale = math.clamp(baseScale * (touchDevice and 1 or 1.04), 0.78, 1.1)
+        local baseScale = touchDevice and 1 or camera.ViewportSize.X / 1100
+        uiScale.Scale = math.clamp(baseScale, 0.92, 1.12)
     end
 end
 
