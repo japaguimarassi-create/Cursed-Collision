@@ -20,7 +20,7 @@ REQUIRED_FILES = [
     "tools/tests/test_monetization.py",
     "tools/tests/test_core_reliability.py",
     "README.md",
-    "docs/ROUBE_UM_ANIMAL.md",
+    "docs/STEAL_AN_EGG_MAP_RESEARCH_2026-10-20.md",
 ]
 
 def fail(message):
