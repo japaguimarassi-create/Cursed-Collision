@@ -471,7 +471,7 @@ local function applyLowEffects()
         Sparkles = true,
     }
     for _, object in ipairs(workspace:GetDescendants()) do
-        if effectTypes[object.ClassName] and object:IsA("Instance") then
+        if effectTypes[object.ClassName] then
             if savedEffectStates[object] == nil then
                 savedEffectStates[object] = object.Enabled
             end
