@@ -196,7 +196,7 @@ local rebirthBadgeText = rebirthBadge
 local objective = Instance.new("Frame")
 objective.Name = "ContextObjective"
 objective.AnchorPoint = Vector2.new(0.5, 0)
-objective.Position = UDim2.new(0.5, 0, 0, 3)
+objective.Position = UDim2.new(0.5, 0, 0, 72)
 objective.Size = UDim2.new(0.82, 0, 0, 27)
 objective.BackgroundColor3 = Color3.fromRGB(28, 57, 34)
 objective.BackgroundTransparency = 0.16
@@ -231,7 +231,7 @@ outline(botXChip, COLORS.Aqua, 1, 0.52)
 
 local dock = Instance.new("Frame")
 dock.Name = "QuickActions"
-dock.Position = UDim2.new(0, 8, 0, 88)
+dock.Position = UDim2.new(0, 8, 0, 108)
 dock.Size = UDim2.new(0, 86, 0, 174)
 dock.BackgroundTransparency = 1
 dock.BorderSizePixel = 0
