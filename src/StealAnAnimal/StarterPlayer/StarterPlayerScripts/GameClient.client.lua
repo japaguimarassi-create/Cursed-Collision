@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -10,6 +11,11 @@ local notifyRemote = remotes:WaitForChild("Notify")
 local upgradeRemote = remotes:WaitForChild("RequestUpgrade")
 local collectRemote = remotes:WaitForChild("RequestCollect")
 local rebirthRemote = remotes:WaitForChild("RequestRebirth")
+local dailyRemote = remotes:WaitForChild("RequestDailyReward")
+local codeRemote = remotes:WaitForChild("RequestRedeemCode")
+local questRemote = remotes:WaitForChild("RequestQuest")
+local mapBotRemote = remotes:WaitForChild("RequestMapBot")
+local mapBotReportRemote = remotes:WaitForChild("MapBotReport")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("AnimalCatalog"))
@@ -47,12 +53,16 @@ uiScale.Scale = 1
 uiScale.Parent = gui
 
 local touchDevice = UserInputService.TouchEnabled
+local compactHud = false
+local lowEffects = false
+local savedEffectStates = {}
+local lastMapBotReport = "Toque em EXECUTAR MAPBOT para verificar as oito fazendas, os biomas, os guardiões e o caminho até o pad."
 
 local function updateScale()
     local camera = workspace.CurrentCamera
     if camera then
         local baseScale = touchDevice and 1 or camera.ViewportSize.X / 1100
-        uiScale.Scale = math.clamp(baseScale, 0.92, 1.12)
+        uiScale.Scale = math.clamp(baseScale * (compactHud and 0.9 or 1), 0.82, 1.12)
     end
 end
 
@@ -241,7 +251,7 @@ dockLayout.Parent = dock
 local function makeDockButton(name, text, order, accent)
     local button = makeButton(dock, name, text, COLORS.PanelRaised, COLORS.Cream)
     button.LayoutOrder = order
-    button.Size = UDim2.new(0.25, -8, 1, 0)
+    button.Size = UDim2.new(0.2, -6, 1, 0)
     button.TextSize = 11
     outline(button, accent, 1.2, 0.2)
     return button
@@ -251,6 +261,7 @@ local barnButton = makeDockButton("OpenBarn", "CELEIRO", 1, COLORS.Mint)
 local collectButton = makeDockButton("Collect", "COLETAR", 2, COLORS.Gold)
 local upgradeButton = makeDockButton("OpenTreadmill", "ESTEIRA", 3, COLORS.Aqua)
 local rebirthButton = makeDockButton("OpenRebirth", "RENASCER", 4, COLORS.Purple)
+local moreButton = makeDockButton("OpenMore", "MAIS", 5, COLORS.Gold)
 
 local shade = Instance.new("Frame")
 shade.Name = "ModalShade"
@@ -294,6 +305,48 @@ modalRule.Parent = modal
 local modalBody = makeLabel(modal, "Body", "", UDim2.new(1, -32, 0, 158), UDim2.new(0, 16, 0, 60), 13, COLORS.Cream, Enum.Font.GothamMedium)
 modalBody.TextYAlignment = Enum.TextYAlignment.Top
 modalBody.ZIndex = 72
+
+local menuList = Instance.new("ScrollingFrame")
+menuList.Name = "MenuList"
+menuList.Position = UDim2.new(0, 16, 0, 59)
+menuList.Size = UDim2.new(1, -32, 0, 158)
+menuList.BackgroundTransparency = 1
+menuList.BorderSizePixel = 0
+menuList.ScrollBarThickness = 4
+menuList.ScrollBarImageColor3 = COLORS.Mint
+menuList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+menuList.CanvasSize = UDim2.new()
+menuList.ScrollingDirection = Enum.ScrollingDirection.Y
+menuList.Visible = false
+menuList.ZIndex = 72
+menuList.Parent = modal
+local menuPadding = Instance.new("UIPadding")
+menuPadding.PaddingRight = UDim.new(0, 4)
+menuPadding.PaddingBottom = UDim.new(0, 4)
+menuPadding.Parent = menuList
+local menuLayout = Instance.new("UIListLayout")
+menuLayout.SortOrder = Enum.SortOrder.LayoutOrder
+menuLayout.Padding = UDim.new(0, 6)
+menuLayout.Parent = menuList
+
+local codeInput = Instance.new("TextBox")
+codeInput.Name = "RedeemCodeInput"
+codeInput.Position = UDim2.new(0, 16, 0, 222)
+codeInput.Size = UDim2.new(1, -32, 0, 34)
+codeInput.BackgroundColor3 = COLORS.Card
+codeInput.BorderSizePixel = 0
+codeInput.ClearTextOnFocus = false
+codeInput.PlaceholderText = "Digite o código"
+codeInput.PlaceholderColor3 = COLORS.Muted
+codeInput.Text = ""
+codeInput.TextColor3 = COLORS.Cream
+codeInput.Font = Enum.Font.GothamBold
+codeInput.TextSize = 14
+codeInput.Visible = false
+codeInput.ZIndex = 72
+codeInput.Parent = modal
+round(codeInput, 10)
+outline(codeInput, COLORS.CardEdge, 1)
 
 local primaryButton = makeButton(modal, "PrimaryAction", "", COLORS.Mint, COLORS.Background)
 primaryButton.Position = UDim2.new(0, 16, 1, -58)
