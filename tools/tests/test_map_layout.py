@@ -10,18 +10,21 @@ CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").rea
 
 animal_ids = set(re.findall(r'Id = "([A-Za-z0-9]+)"', CATALOG))
 biomes = set(re.findall(r'Id = "([A-Za-z]+)", Name = "', CONFIG))
-assert len(animal_ids) >= 20, "Expected at least twenty original animal species"
-assert len(biomes) == 6, "Expected six distinct biomes"
+phase_numbers = re.findall(r'Phase = ([1-8]), CenterX = ', CONFIG)
+assert len(animal_ids) >= 28, "Expected at least twenty-eight original animal species"
+assert len(biomes) == 8, "Expected eight sequential animal phases"
+assert phase_numbers == [str(n) for n in range(1, 9)], "Phases must be numbered sequentially from 1 to 8"
 assert all(biome in CATALOG for biome in biomes), "Every biome must have animals"
+assert "basePositions = {" in MAIN, "Eight farms must use an explicit rectangular layout"
+assert all(token in MAIN for token in ("CorridorFloor", "CorridorEdge", "MainPath", "GuardianParent_", "PAI PROTETOR")), "Central animal corridor or guardian parents missing"
 assert "createAnimalModel" in MAIN and "EvolutionStages" in MAIN, "Stage-aware animal model builder missing"
-assert "buildScenery" in MAIN and "TreeCanopy" in MAIN and "Crystal" in MAIN, "Procedural scenery systems missing"
-assert all(token in MAIN for token in ("BunnyEarInner", "WoolCurl", "PenguinBelly", "PhoenixTailFeather", "CrocodileScute")), "Species-specific animal details are missing"
-assert all(token in MAIN for token in ("GiantMushroom", "WetlandPool", "IcePillar", "SavannaBoulder", "LavaRift")), "Biome landmarks are missing"
+assert all(token in MAIN for token in ("HenComb", "SwanNeck", "BearPaw", "WhaleTailFluke", "DolphinTailFluke", "MantaWing")), "Distinctive animal silhouettes are missing"
+assert all(token in MAIN for token in ("GiantMushroom", "WetlandPool", "IcePillar", "SavannaBoulder", "LavaRift", "LakeReed", "OceanBubble")), "Biome landmarks are missing"
 assert 'CFrame.new(biome.CenterX, -0.5, 0)' in MAIN, "Biome ground must meet the world baseline"
-assert 'Vector3.new(biome.CenterX + rng:NextNumber(-35, 35), -0.12, rng:NextNumber(-42, 42))' in MAIN, "Wild animal spawn must align with biome ground"
+assert 'Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), -0.12, rng:NextNumber(-20, 20))' in MAIN, "Wild animals must spawn inside the corridor"
 assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must be placed close to the slot surface"
 assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
 assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
-print(f"PASS FreshWorld: {len(animal_ids)} species, {len(biomes)} biomes, procedural animal models, guardians and barn evolution.")
+print(f"PASS AnimalCorridor: {len(animal_ids)} species, {len(biomes)} phases, rectangular farms, original marine models, and guardian parents.")

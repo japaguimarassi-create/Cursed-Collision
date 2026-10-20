@@ -64,10 +64,12 @@ def main():
     client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
 
     checks = [
-        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r3"' in config),
+        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r4"' in config),
         ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
         ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier" in rules and "StageMultiplier" in rules and "growth ^" in rules),
-        ("six biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"'))),
+        ("eight sequential biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Lake"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"', 'Id = "Ocean"', 'Phase = 1, CenterX = 170', 'Phase = 8, CenterX = 1430'))),
+        ("rectangular farms and clear corridor", all(token in main_source for token in ("basePositions = {", "CorridorFloor", "CorridorEdge", "PAI PROTETOR"))),
+        ("original chicken, swan, and whale models", all(token in main_source for token in ("HenComb", "SwanNeck", "WhaleTailFluke"))),
         ("session-locked profiles and stage-aware offline income", all(token in main_source for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in main_source for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
         ("guardian pursuit and escape", all(token in main_source for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),

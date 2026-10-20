@@ -1,6 +1,6 @@
 local Config = {
     GameName = "STEAL AN ANIMAL",
-    ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r3",
+    ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r4",
     DataStoreName = "StealAnAnimal_FreshProfile_v1",
     AutosaveSeconds = 60,
     OfflineIncomeCapSeconds = 21600,
@@ -30,12 +30,14 @@ local Config = {
         { Name = "Adult", DisplayName = "ADULTO", Scale = 1.12, AgeSeconds = 540 },
     },
     Biomes = {
-        { Id = "Meadow", Name = "Prado Solar", CenterX = 160, Ground = Color3.fromRGB(125, 196, 91), Accent = Color3.fromRGB(255, 218, 105), Material = Enum.Material.Grass },
-        { Id = "Forest", Name = "Floresta Sussurrante", CenterX = 330, Ground = Color3.fromRGB(66, 139, 82), Accent = Color3.fromRGB(165, 218, 117), Material = Enum.Material.Grass },
-        { Id = "Wetlands", Name = "Pântano Nebuloso", CenterX = 500, Ground = Color3.fromRGB(66, 133, 125), Accent = Color3.fromRGB(117, 227, 205), Material = Enum.Material.Ground },
-        { Id = "Frost", Name = "Pico Congelado", CenterX = 670, Ground = Color3.fromRGB(190, 221, 239), Accent = Color3.fromRGB(110, 202, 255), Material = Enum.Material.Snow },
-        { Id = "Savanna", Name = "Savana Dourada", CenterX = 840, Ground = Color3.fromRGB(218, 181, 91), Accent = Color3.fromRGB(255, 227, 128), Material = Enum.Material.Sand },
-        { Id = "Volcano", Name = "Vulcão de Âmbar", CenterX = 1010, Ground = Color3.fromRGB(65, 58, 66), Accent = Color3.fromRGB(255, 101, 55), Material = Enum.Material.Slate },
+        { Id = "Meadow", Name = "Prado Solar", Phase = 1, CenterX = 170, Ground = Color3.fromRGB(125, 196, 91), Accent = Color3.fromRGB(255, 218, 105), Material = Enum.Material.Grass },
+        { Id = "Lake", Name = "Lago das Asas", Phase = 2, CenterX = 350, Ground = Color3.fromRGB(100, 177, 174), Accent = Color3.fromRGB(116, 226, 240), Material = Enum.Material.Grass },
+        { Id = "Forest", Name = "Floresta Sussurrante", Phase = 3, CenterX = 530, Ground = Color3.fromRGB(66, 139, 82), Accent = Color3.fromRGB(165, 218, 117), Material = Enum.Material.Grass },
+        { Id = "Wetlands", Name = "Pântano Nebuloso", Phase = 4, CenterX = 710, Ground = Color3.fromRGB(66, 133, 125), Accent = Color3.fromRGB(117, 227, 205), Material = Enum.Material.Ground },
+        { Id = "Frost", Name = "Pico Congelado", Phase = 5, CenterX = 890, Ground = Color3.fromRGB(190, 221, 239), Accent = Color3.fromRGB(110, 202, 255), Material = Enum.Material.Snow },
+        { Id = "Savanna", Name = "Savana Dourada", Phase = 6, CenterX = 1070, Ground = Color3.fromRGB(218, 181, 91), Accent = Color3.fromRGB(255, 227, 128), Material = Enum.Material.Sand },
+        { Id = "Volcano", Name = "Vulcão de Âmbar", Phase = 7, CenterX = 1250, Ground = Color3.fromRGB(65, 58, 66), Accent = Color3.fromRGB(255, 101, 55), Material = Enum.Material.Slate },
+        { Id = "Ocean", Name = "Abismo Azul", Phase = 8, CenterX = 1430, Ground = Color3.fromRGB(43, 91, 126), Accent = Color3.fromRGB(83, 220, 250), Material = Enum.Material.Slate },
     },
 }
 

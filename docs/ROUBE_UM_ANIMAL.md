@@ -1,42 +1,31 @@
-# STEAL AN ANIMAL — Fresh Build
+# STEAL AN ANIMAL — Mapa de oito fases
 
-## Game loop
+## Planta
 
-Spawn at a personal farm, enter one of six biomes, hold the ROUBAR prompt on a wild baby animal, and bring it home. Carrying heavier animals slows movement. A giant guardian can pursue anyone carrying prey; if it catches the player, the carried animal escapes. At the player's own farm, the GUARDAR prompt stores the animal and starts its passive income.
+O mapa usa oito fazendas retangulares em duas fileiras de quatro, ao redor do ponto de entrada. À frente delas começa um corredor largo e contínuo. A faixa central é de pedra clara, as bordas são luminosas e os elementos de cenário ficam fora da área de corrida para não bloquear o caminho.
 
-## Animal evolution
+## Fases e guardiões adultos
 
-All stored animals start at **BEBÊ**. Their stage is derived from their saved birth timestamp, so evolution continues while the player is offline.
+1. Prado Solar — Galinha.
+2. Lago das Asas — Cisne.
+3. Floresta Sussurrante — Lobo.
+4. Pântano Nebuloso — Crocodilo.
+5. Pico Congelado — Urso Polar.
+6. Savana Dourada — Leão.
+7. Vulcão de Âmbar — Dragão.
+8. Abismo Azul — Baleia.
 
-| Stage | Age | Income multiplier |
-| --- | ---: | ---: |
-| Baby | 0–119 seconds | 1× |
-| Child | 120–299 seconds | 1.5× |
-| Teen | 300–539 seconds | 2.25× |
-| Adult | 540 seconds onward | 3.375× |
+Cada zona tem cores próprias, portal com número da fase, animais bebês capturáveis e um guardião adulto ampliado. O guardião da fase final é uma baleia. Os animais armazenados continuam passando por bebê, criança, adolescente e adulto, com aumento de 50% de renda em cada evolução.
 
-Every transition increases the animal's income by 50% over the previous stage. A species with a base income of 10 coins/second therefore earns 10, 15, 22.5, and 33.75 coins/second across the four stages; the runtime floors fractional coin grants when crediting whole coins.
+## Linguagem dos modelos
 
-## World and models
+Os modelos são montados com Parts nativas e formas esféricas alongadas, não com malhas retiradas de outro jogo. A galinha tem crista e barbela; o cisne tem pescoço alto, bico e penas de asa; o urso tem focinho, orelhas e patas; os animais marinhos usam corpo alongado, nadadeiras, cauda e barriga contrastante. Cada espécie recebe uma silhueta complementar à sua paleta.
 
-The map is assembled from native Roblox parts during server startup. The hub contains eight personal farm plots, a fountain, and a wide return route. Six biome areas use distinct ground materials, accent colors, entry arches, signs, crystals, trees, flowers, and rock formations. The visual system is built from original part compositions rather than copied meshes or unreviewed Toolbox scripts.
+## Referências visuais consultadas
 
-Animal models use procedural body, head, muzzle, eyes, ears, legs, tails, wings, horns, shells, tusks, and species accents. Model scale follows the animal's current life stage. The guardian variants use the same species palette at a much larger scale.
+- Página oficial de Steal An Egg no Roblox: https://www.roblox.com/games/107778070777162/Steal-An-Egg
+- Captura de gameplay com guardião grande, ovos e piso verde: https://cdn-media.sforum.vn/storage/app/media/phuonganh/phuonganh/cach-choi-steal-egg-roblox-2.jpg
+- Captura de gameplay com áreas cercadas e animais: https://www.phucanh.vn/media/news/1509_steal-an-egg-roblox-5.jpg
+- Imagem de referência do guardião de galinha: https://kinglabbok.com/assets/guardian.jpg
 
-## Persistence and server validation
-
-Profiles contain coins, speed level, barn bank, stored animal IDs, birth timestamps, and the last income timestamp. UpdateAsync persists the profile. Offline income is capped at six hours and calculated across stage transitions rather than applying an adult rate to the entire offline period. If a DataStore load fails, the temporary profile is not written back over the unknown saved data.
-
-The reviewed r3 build corrects the profile-sanitization syntax and wild-animal ground alignment. The server validates capture targets, one-animal carry limits, farm ownership, barn capacity, collection distance, upgrade cost, and guardian catches. The client only presents the HUD and sends action requests.
-
-## Build
-
-Run the following commands from the repository root:
-- python3 tools/validate_roube_animal.py
-- luau tools/tests/run.luau
-- python3 tools/tests/test_map_layout.py
-- python3 tools/tests/test_monetization.py
-- python3 tools/tests/test_core_reliability.py
-- rojo build default.project.json --output build/StealAnAnimal.rbxl
-
-The build workflow creates an artifact for inspection. It does not publish the place.
+As imagens servem apenas como referência de composição, hierarquia visual e escala. O novo mapa não reproduz o mapa original; suas fazendas, oito biomas, distribuição, cores, sinalização e modelos procedurais foram desenhados para este projeto.
