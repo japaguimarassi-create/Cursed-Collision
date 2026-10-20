@@ -13,8 +13,8 @@ function InteractionPrompt.mount(services)
     local promptCard = Instance.new("Frame")
     promptCard.Name = "CompactInteractionPrompt"
     promptCard.AnchorPoint = Vector2.new(0.5, 1)
-    promptCard.Position = UDim2.new(0.5, 0, 1, -88)
-    promptCard.Size = UDim2.new(0.84, 0, 0, 48)
+    promptCard.Position = UDim2.new(0.5, 0, 1, -154)
+    promptCard.Size = UDim2.new(0.68, 0, 0, 48)
     promptCard.BackgroundColor3 = COLORS.Panel
     promptCard.BackgroundTransparency = 0.08
     promptCard.BorderSizePixel = 0
@@ -24,8 +24,8 @@ function InteractionPrompt.mount(services)
     round(promptCard, 12)
     outline(promptCard, COLORS.Mint, 1, 0.25)
     local promptConstraint = Instance.new("UISizeConstraint")
-    promptConstraint.MaxSize = Vector2.new(340, 48)
-    promptConstraint.MinSize = Vector2.new(240, 48)
+    promptConstraint.MaxSize = Vector2.new(320, 48)
+    promptConstraint.MinSize = Vector2.new(220, 48)
     promptConstraint.Parent = promptCard
     
     local promptObjectLabel = makeLabel(promptCard, "Object", "INTERAÇÃO", UDim2.new(1, -92, 0, 13), UDim2.new(0, 12, 0, 4), 9, COLORS.Muted, Enum.Font.GothamBold)
@@ -44,11 +44,13 @@ function InteractionPrompt.mount(services)
     
     local activePrompt = nil
     local promptHolding = false
+    local holdInput = nil
     local function endPromptHold()
         if promptHolding and activePrompt and activePrompt.Parent then
             activePrompt:InputHoldEnd()
         end
         promptHolding = false
+        holdInput = nil
     end
     
     promptButton.InputBegan:Connect(function(input)
@@ -59,11 +61,12 @@ function InteractionPrompt.mount(services)
             return
         end
         promptHolding = true
+        holdInput = input
         activePrompt:InputHoldBegin()
     end)
-    
-    promptButton.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+    UserInputService.InputEnded:Connect(function(input)
+        if holdInput and input == holdInput then
             endPromptHold()
         end
     end)
