@@ -26,7 +26,6 @@ local Config = {
     AnimalRespawnSeconds = 24,
     Barn = {
         BaseSlots = 6,
-        ExtraBarnSlots = 4,
         OfflineIncomeCapSeconds = 21600,
         DepositCooldown = 1.25,
         CollectionCooldown = 1.5,
