@@ -5,8 +5,14 @@ ROOT = Path(__file__).resolve().parents[2]
 BASE = ROOT / "src/StealAnAnimal"
 CONFIG = (BASE / "ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
 CATALOG = (BASE / "ReplicatedStorage/Shared/AnimalCatalog.lua").read_text(encoding="utf-8")
-MAIN = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
-CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+MAIN_FILE = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
+WORLD = (BASE / "ReplicatedStorage/Shared/WorldBuilder.lua").read_text(encoding="utf-8")
+ANIMAL = (BASE / "ReplicatedStorage/Shared/AnimalFactory.lua").read_text(encoding="utf-8")
+PROFILE = (BASE / "ServerScriptService/Services/ProfileStore.lua").read_text(encoding="utf-8")
+MAIN = MAIN_FILE + WORLD + ANIMAL + PROFILE
+CLIENT_FILE = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+PROMPT = (BASE / "StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua").read_text(encoding="utf-8")
+CLIENT = CLIENT_FILE + PROMPT
 import json
 PROJECT = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"))
 PREVIEW_PATH = BASE / "Workspace/StealAnAnimalWorld.model.json"
@@ -27,7 +33,7 @@ assert all(token in MAIN for token in ("createTreadmill", "TrainingZone", "Movin
 assert "treadmillStrips" in MAIN and "TreadmillBeltSpeed" in CONFIG, "Treadmill belt animation missing"
 assert "Rules.TrainingGain" in MAIN and "Rules.MoveSpeed" in MAIN and "Config.MaxSpeedPoints" in MAIN, "Training and speed cap must be server-authoritative"
 assert "createAnimalModel" in MAIN and "EvolutionStages" in MAIN, "Stage-aware animal model builder missing"
-assert "gui.AlwaysOnTop = false" in MAIN and "gui.MaxDistance = maxDistance or (compactLabel and 18 or 32)" in MAIN, "World labels must be occluded and distance-limited"
+assert "gui.AlwaysOnTop = false" in WORLD and "gui.MaxDistance = maxDistance or (compactLabel and 18 or 32)" in WORLD, "World labels must be occluded and distance-limited"
 assert 'addLabel(pad, "ESPAÇO " .. tostring(slotIndex), "VAZIO"' not in MAIN, "Empty farm slots must not each create a large floating label"
 assert "Enum.ProximityPromptStyle.Custom" in MAIN and "ProximityPromptService.PromptShown" in CLIENT and "ProximityPromptService.PromptHidden" in CLIENT, "Interaction prompts must use the compact responsive HUD rather than the oversized default card"
 assert "objective.Size = UDim2.new(0.68, 0, 0, 26)" in CLIENT, "Context objective should not span most of the mobile screen"
@@ -36,6 +42,8 @@ assert all(token in MAIN for token in ("GiantMushroom", "WetlandPool", "IcePilla
 assert 'CFrame.new(biome.CenterX, -0.5, 0)' in MAIN, "Biome ground must meet the world baseline"
 assert 'Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), -0.12, rng:NextNumber(-20, 20))' in MAIN, "Wild animals must spawn inside the corridor"
 assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must be placed close to the slot surface"
+assert "SwanFoot" in ANIMAL and 'spec.Id ~= "Swan"' in ANIMAL and 'chestColor = spec.Id == "Swan" and spec.Color' in ANIMAL, "Swan guardian must use its dedicated silhouette without generic duplicated bird parts"
+assert "local function releaseBase(player)" in MAIN_FILE and "releaseBase(player)" in MAIN_FILE[MAIN_FILE.find("Players.PlayerRemoving:Connect"):MAIN_FILE.find("for _, player in ipairs(Players:GetPlayers()) do")], "PlayerRemoving must release the assigned farm"
 assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
