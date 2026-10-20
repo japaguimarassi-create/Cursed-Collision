@@ -99,7 +99,7 @@ local function record(eventName, actor, details)
     print("[BOTX_EVENT]" .. encode(entry))
 end
 
-local function summary(reason)
+local function summary(reason, includeRecentEvents)
     local botList = {}
     for _, state in ipairs(botStates) do
         local root = state.Root
@@ -147,7 +147,7 @@ local function summary(reason)
         retainedEventCount = #retainedEvents,
         droppedOldEvents = droppedEvents,
         eventCounts = eventCounts,
-        recentEvents = retainedEvents,
+        recentEvents = includeRecentEvents and retainedEvents or nil,
     }
 end
 
@@ -155,7 +155,7 @@ local function printSummary(reason)
     if not active then
         return
     end
-    print("[BOTX_SESSION_REPORT]" .. encode(summary(reason or "periodic")))
+    print("[BOTX_SESSION_REPORT]" .. encode(summary(reason or "periodic", reason == "final")))
 end
 
 local function makePart(model, name, size, cframe, color, material)
