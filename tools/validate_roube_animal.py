@@ -64,11 +64,11 @@ def main():
     client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
 
     checks = [
-        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r1"' in config),
+        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r2"' in config),
         ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
         ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier ^ (index - 1)" in rules),
         ("six biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"'))),
-        ("persistent profile and offline income", all(token in main_source for token in ("Store:GetAsync", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
+        ("session-locked profiles and stage-aware offline income", all(token in main_source for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in main_source for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
         ("guardian pursuit and escape", all(token in main_source for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),
         ("original procedural models and scenery", all(token in main_source for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "FountainGem"))),
