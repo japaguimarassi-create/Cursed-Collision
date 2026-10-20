@@ -36,6 +36,7 @@ luau tools/tests/run.luau
 python3 tools/tests/test_map_layout.py
 python3 tools/tests/test_monetization.py
 python3 tools/tests/test_core_reliability.py
+python3 tools/tests/test_studio_audit.py
 rojo build default.project.json --output build/StealAnAnimal.rbxl
 python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
 ```
