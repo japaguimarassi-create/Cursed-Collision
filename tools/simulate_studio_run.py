@@ -67,37 +67,39 @@ class Audit:
 
 
 def simulate_hud(audit, client, screen_profiles):
-    top_y = number_from(r'top\.Position\s*=\s*UDim2\.new\(0\.5,\s*0,\s*0,\s*(\d+)\)', client)
-    top_h = number_from(r'top\.Size\s*=\s*UDim2\.new\(0\.66,\s*0,\s*0,\s*(\d+)\)', client)
-    top_min_w = number_from(r'topConstraint\.MinSize\s*=\s*Vector2\.new\((\d+),\s*68\)', client)
-    top_max_w = number_from(r'topConstraint\.MaxSize\s*=\s*Vector2\.new\((\d+),\s*68\)', client)
+    top_size = re.search(r'top\.Size\s*=\s*UDim2\.fromOffset\((\d+),\s*(\d+)\)', client)
+    top_anchor = "top.AnchorPoint = Vector2.new(0, 1)" in client
+    offset_rule = re.search(r'math\.max\((\d+),\s*camera\.ViewportSize\.Y\s*\*\s*(0\.\d+)\)', client)
     objective_y = number_from(r'objective\.Position\s*=\s*UDim2\.new\(0\.5,\s*0,\s*0,\s*(\d+)\)', client)
-    objective_h = number_from(r'objective\.Size\s*=\s*UDim2\.new\(0\.68,\s*0,\s*0,\s*(\d+)\)', client)
-    objective_min_w = number_from(r'objectiveConstraint\.MinSize\s*=\s*Vector2\.new\((\d+),\s*24\)', client)
-    objective_max_w = number_from(r'objectiveConstraint\.MaxSize\s*=\s*Vector2\.new\((\d+),\s*24\)', client)
-    dock_w = number_from(r'dock\.Size\s*=\s*UDim2\.new\(0,\s*(\d+),\s*0,\s*140\)', client)
-    dock_h = number_from(r'dock\.Size\s*=\s*UDim2\.new\(0,\s*52,\s*0,\s*(\d+)\)', client)
-    dock_x = number_from(r'dock\.Position\s*=\s*UDim2\.new\(0,\s*(\d+),\s*0,\s*y\)', client)
-    position_rule = re.search(r'local y\s*=\s*(?:touchDevice and\s*(\d+)\s+or\s*(\d+)|(\d+))', client)
-    touch_y = int(position_rule.group(1) or position_rule.group(3)) if position_rule else None
-    non_touch_y = int(position_rule.group(2) or position_rule.group(3)) if position_rule else None
+    objective_size = re.search(r'objective\.Size\s*=\s*UDim2\.new\((0\.\d+),\s*0,\s*0,\s*(\d+)\)', client)
+    objective_constraint_min = re.search(r'objectiveConstraint\.MinSize\s*=\s*Vector2\.new\((\d+),\s*(\d+)\)', client)
+    objective_constraint_max = re.search(r'objectiveConstraint\.MaxSize\s*=\s*Vector2\.new\((\d+),\s*(\d+)\)', client)
+    dock_size = re.search(r'dock\.Size\s*=\s*UDim2\.new\(0,\s*(\d+),\s*0,\s*(\d+)\)', client)
+    dock_position = re.search(r'dock\.Position\s*=\s*UDim2\.new\(0,\s*(\d+),\s*0,\s*(\d+)\)', client)
     target = re.search(r'button\.Size\s*=\s*UDim2\.new\(0,\s*(\d+),\s*0,\s*(\d+)\)', client)
-    target_w = int(target.group(1)) if target else None
-    target_h = int(target.group(2)) if target else None
-
+    currency_scale = re.search(r'local baseScale\s*=\s*touchDevice and 1 or camera\.ViewportSize\.X / (\d+)', client)
+    objective_x = number_from(r'objective\.Position\s*=\s*UDim2\.new\((0\.\d+),', client, cast=float)
     parsed = all(value is not None for value in (
-        top_y, top_h, top_min_w, top_max_w, objective_y, objective_h,
-        objective_min_w, objective_max_w, dock_w, dock_h, dock_x,
-        touch_y, non_touch_y, target_w, target_h,
-    ))
+        top_size, offset_rule, objective_y, objective_size, objective_constraint_min,
+        objective_constraint_max, dock_size, dock_position, target, currency_scale, objective_x
+    )) and top_anchor
     audit.check(
         "HUD geometry constants can be read from source",
         parsed,
-        "All layout constants required by the source-level model were parsed" if parsed else "A required HUD layout expression changed; update the simulator instead of silently guessing",
+        "New Egg-inspired layout constants and adaptive cash placement were parsed" if parsed else "A required HUD geometry expression changed; update the simulator rather than guessing",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
     )
     if not parsed:
         return
+
+    top_w, top_h = int(top_size.group(1)), int(top_size.group(2))
+    offset_floor, offset_fraction = int(offset_rule.group(1)), float(offset_rule.group(2))
+    obj_fraction, obj_h = float(objective_size.group(1)), int(objective_size.group(2))
+    obj_min_w, obj_min_h = int(objective_constraint_min.group(1)), int(objective_constraint_min.group(2))
+    obj_max_w, obj_max_h = int(objective_constraint_max.group(1)), int(objective_constraint_max.group(2))
+    dock_w, dock_h = int(dock_size.group(1)), int(dock_size.group(2))
+    dock_x, dock_y = int(dock_position.group(1)), int(dock_position.group(2))
+    target_w, target_h = int(target.group(1)), int(target.group(2))
 
     audit.check("HUD uses Roblox safe insets",
         "Enum.ScreenInsets.CoreUISafeInsets" in client,
@@ -115,44 +117,61 @@ def simulate_hud(audit, client, screen_profiles):
             'indexButton.Activated:Connect(function() openPanel("AnimalIndex") end)',
             'moreButton.Activated:Connect(function() openPanel("More") end)',
         )),
-        "Each visible quick action has a handler", "GameClient.client.lua")
+        "Shop, Index, and More each have an active button", "GameClient.client.lua")
     audit.check("Rebirth badge opens the requirements panel",
-        'rebirthBadge.Activated:Connect(function() openPanel("Rebirth") end)' in client,
-        "Rebirth badge is wired to the panel without executing rebirth", "GameClient.client.lua")
+        'rebirthBadge.Activated:Connect(function() openPanel("Rebirth") end)' in client
+        and "local rebirthBadgeText = rebirthBadge" in client,
+        "Rebirth chip is wired and its refresh text reference exists", "GameClient.client.lua")
     audit.check("Escape state has an explicit contextual objective",
         '"FUGA • LEVE O ANIMAL AO PAD VERDE DA SUA FAZENDA"' in client
         and "objectiveMarker.BackgroundColor3 = COLORS.Orange" in client,
         "Carrying an animal selects the escape message and orange marker", "GameClient.client.lua")
+    audit.check("BotX status is visible and the diagnostics panel requests server data",
+        all(token in client for token in (
+            'makeButton(gui, "BotXStatus"', 'botXChip.Activated:Connect(function()',
+            'botXStatusRemote:FireServer("request")', 'botXStatusRemote.OnClientEvent:Connect(function(status)',
+            "formatDiagnosticReport()", 'openPanel("Diagnostics")'
+        )),
+        "BotX chip has a request/reply path and displays the current session", "GameClient.client.lua")
 
     for profile in screen_profiles:
         width, height, touch = profile["width"], profile["height"], profile["touch"]
-        scale = 1.0 if touch else clamp(width / 1100.0, 0.82, 1.12)
-        rendered_top_w = clamp(width * 0.66, top_min_w, top_max_w) * scale
+        scale = 1.0 if touch else clamp(width / float(currency_scale.group(1)), 0.82, 1.12)
+        offset = max(offset_floor, height * offset_fraction)
+        rendered_top_w = top_w * scale
         rendered_top_h = top_h * scale
-        rendered_top_x = (width - rendered_top_w) / 2
-        rendered_top_y = top_y * scale
-        rendered_obj_w = clamp(width * 0.68, objective_min_w, objective_max_w) * scale
-        rendered_obj_h = objective_h * scale
+        rendered_top_x = 10 * scale
+        rendered_top_bottom = height - offset * scale
+        rendered_top_y = rendered_top_bottom - rendered_top_h
+        rendered_obj_w = clamp(width * obj_fraction, obj_min_w, obj_max_w) * scale
+        rendered_obj_h = obj_h * scale
         rendered_obj_x = (width - rendered_obj_w) / 2
         rendered_obj_y = objective_y * scale
         rendered_dock_w = dock_w * scale
         rendered_dock_h = dock_h * scale
         rendered_dock_x = dock_x * scale
-        rendered_dock_y = (touch_y if touch else non_touch_y) * scale
+        rendered_dock_y = dock_y * scale
+        rebirth_chip_right = width - 8 * scale
+        rebirth_chip_left = rebirth_chip_right - 104 * scale
+        bot_chip_right = width - 8 * scale
+        bot_chip_left = bot_chip_right - 104 * scale
         top_right = rendered_top_x + rendered_top_w
-        top_bottom = rendered_top_y + rendered_top_h
         obj_right = rendered_obj_x + rendered_obj_w
         obj_bottom = rendered_obj_y + rendered_obj_h
         dock_right = rendered_dock_x + rendered_dock_w
         dock_bottom = rendered_dock_y + rendered_dock_h
         checks = {
-            "headerInsideViewport": rendered_top_x >= -0.5 and top_right <= width + 0.5,
-            "objectiveInsideViewport": rendered_obj_x >= -0.5 and obj_right <= width + 0.5,
+            "currencyPanelInsideViewport": rendered_top_x >= 0 and top_right <= width,
+            "currencyPanelUsesLowerLeftPlacement": rendered_top_y > height * 0.45 and rendered_top_bottom < height,
+            "objectiveInsideViewport": rendered_obj_x >= 0 and obj_right <= width,
             "quickActionsInsideViewport": rendered_dock_x >= 0 and dock_right <= width,
-            "headerDoesNotOverlapObjectiveVertically": rendered_obj_y >= top_bottom,
-            "objectiveDoesNotOverlapQuickActionsVertically": rendered_dock_y >= obj_bottom,
+            "rebirthChipInsideViewport": rebirth_chip_left >= 0 and rebirth_chip_right <= width,
+            "botXChipInsideViewport": bot_chip_left >= 0 and bot_chip_right <= width,
+            "objectiveDoesNotOverlapCurrencyPanel": obj_bottom < rendered_top_y,
+            "objectiveDoesNotOverlapQuickActions": obj_bottom < rendered_dock_y,
             "quickActionsClearBottomTouchZone": dock_bottom < height * 0.78,
             "touchTargetAtLeast44x44": target_w * scale >= 44 and target_h * scale >= 44,
+            "noOversizedCurrencyPanel": rendered_top_w <= width * 0.6,
         }
         passed = all(checks.values())
         item = {
@@ -163,14 +182,16 @@ def simulate_hud(audit, client, screen_profiles):
             "modeledScale": round(scale, 3),
             "status": "PASS" if passed else "FAIL",
             "geometry": {
-                "header": {"x": round(rendered_top_x, 2), "y": round(rendered_top_y, 2),
-                           "width": round(rendered_top_w, 2), "height": round(rendered_top_h, 2)},
+                "currencyPanel": {"x": round(rendered_top_x, 2), "y": round(rendered_top_y, 2),
+                                  "width": round(rendered_top_w, 2), "height": round(rendered_top_h, 2)},
                 "objective": {"x": round(rendered_obj_x, 2), "y": round(rendered_obj_y, 2),
                               "width": round(rendered_obj_w, 2), "height": round(rendered_obj_h, 2)},
                 "quickActions": {"x": round(rendered_dock_x, 2), "y": round(rendered_dock_y, 2),
                                  "width": round(rendered_dock_w, 2), "height": round(rendered_dock_h, 2),
-                                 "bottomClearanceLimit": round(height * 0.78, 2),
+                                 "bottomTouchLimit": round(height * 0.78, 2),
                                  "actualBottom": round(dock_bottom, 2)},
+                "rebirthChip": {"left": round(rebirth_chip_left, 2), "right": round(rebirth_chip_right, 2)},
+                "botXChip": {"left": round(bot_chip_left, 2), "right": round(bot_chip_right, 2)},
                 "touchTarget": {"width": round(target_w * scale, 2), "height": round(target_h * scale, 2)},
             },
             "checks": checks,
@@ -180,6 +201,8 @@ def simulate_hud(audit, client, screen_profiles):
                     f"{width}x{height} touch={touch}: " + ", ".join(
                         f"{name}={'PASS' if ok else 'FAIL'}" for name, ok in checks.items()),
                     "GameClient.client.lua (deterministic source-level geometry model)")
+
+
 
 
 def main():
