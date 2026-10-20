@@ -267,9 +267,22 @@ local function runAudit()
         end
         record("Cada fazenda contém depósito, coleta, esteira e seis espaços", completeFarms,
             #farmIssues == 0 and "8 fazendas completas" or table.concat(farmIssues, "; "))
-        record("Prompts usam os tipos de interação corretos",
-            countDescendantsNamed(farms, "DepositPrompt") == 0 or countDescendantsNamed(farms, "CollectPrompt") == 0,
-            "Os prompts esperados ficam nomeados DepositPrompt e CollectPrompt", true)
+        local depositPromptCount = countDescendantsNamed(farms, "DepositPrompt")
+        local collectPromptCount = countDescendantsNamed(farms, "CollectPrompt")
+        local promptTypesValid = depositPromptCount == 8 and collectPromptCount == 8
+        if farms then
+            for _, item in ipairs(farms:GetDescendants()) do
+                if item:IsA("ProximityPrompt") and item.Name == "DepositPrompt"
+                    and item:GetAttribute("InteractionType") ~= "DepositAnimal" then
+                    promptTypesValid = false
+                elseif item:IsA("ProximityPrompt") and item.Name == "CollectPrompt"
+                    and item:GetAttribute("InteractionType") ~= "CollectIncome" then
+                    promptTypesValid = false
+                end
+            end
+        end
+        record("Prompts usam os tipos de interação corretos", promptTypesValid,
+            "Depósito=" .. tostring(depositPromptCount) .. "/8, coleta=" .. tostring(collectPromptCount) .. "/8")
     end
 
     local playersReady = waitUntil(function() return #Players:GetPlayers() >= 2 end, 20, 0.25)
