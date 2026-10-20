@@ -225,6 +225,60 @@ local function createAnimalModel(spec, stageName, position, giant)
         end
     end
 
+    if spec.Id == "Bunny" then
+        for _, side in ipairs({ -1, 1 }) do
+            ball("BunnyEar", 0.24, 1.02, 0.2, side * 0.28, 3.12, -0.88, spec.Color)
+            ball("BunnyEarInner", 0.11, 0.72, 0.08, side * 0.28, 3.14, -0.995, spec.Accent)
+        end
+        ball("BunnyCheek", 0.28, 0.22, 0.18, -0.22, 1.92, -1.7, Color3.fromRGB(255, 190, 195))
+        ball("BunnyCheek", 0.28, 0.22, 0.18, 0.22, 1.92, -1.7, Color3.fromRGB(255, 190, 195))
+    elseif spec.Id == "Lamb" then
+        for row = 1, 3 do
+            for column = -1, 1 do
+                ball("WoolCurl", 0.48, 0.45, 0.48, column * 0.42, 2.0 + (row % 2) * 0.16, 0.25 + row * 0.34, Color3.fromRGB(255, 250, 235))
+            end
+        end
+        ball("WoolForelock", 0.56, 0.4, 0.38, 0, 2.85, -0.9, Color3.fromRGB(255, 250, 235))
+    elseif spec.Id == "Meerkat" then
+        ball("MeerkatChest", 0.78, 1.25, 0.4, 0, 1.35, -0.82, spec.Accent)
+        for _, side in ipairs({ -1, 1 }) do
+            ball("MeerkatEyePatch", 0.25, 0.28, 0.12, side * 0.29, 2.33, -1.58, Color3.fromRGB(83, 58, 42))
+            ball("MeerkatStripe", 0.12, 0.65, 0.14, side * 0.3, 1.65, 0.55, Color3.fromRGB(117, 77, 46))
+        end
+    elseif spec.Id == "Otter" then
+        ball("OtterTail", 0.42, 0.42, 1.7, 0, 1.0, 1.42, Color3.fromRGB(103, 70, 52))
+        for _, side in ipairs({ -1, 1 }) do
+            ball("OtterWhisker", 0.42, 0.045, 0.045, side * 0.42, 1.97, -1.83, spec.Accent)
+            ball("OtterPaw", 0.38, 0.22, 0.38, side * 0.55, 0.36, -0.8, spec.Accent)
+        end
+    elseif spec.Id == "Penguin" then
+        ball("PenguinBelly", 1.0, 1.15, 0.3, 0, 1.42, -0.88, Color3.fromRGB(250, 247, 233))
+        for _, side in ipairs({ -1, 1 }) do
+            ball("PenguinFlipper", 0.28, 0.78, 0.85, side * 0.95, 1.45, 0.02, spec.Color)
+        end
+    elseif spec.Id == "Owl" then
+        for _, side in ipairs({ -1, 1 }) do
+            ball("OwlBrow", 0.46, 0.16, 0.18, side * 0.3, 2.5, -1.48, spec.Accent)
+            ball("OwlFaceDisk", 0.42, 0.46, 0.12, side * 0.28, 2.25, -1.48, Color3.fromRGB(239, 220, 184))
+        end
+    elseif spec.Id == "Fawn" then
+        for row = 1, 2 do
+            for column = -1, 1 do
+                ball("FawnSpot", 0.14, 0.14, 0.08, column * 0.35, 1.78, 0.25 + row * 0.38, Color3.fromRGB(255, 237, 196))
+            end
+        end
+    elseif spec.Id == "Phoenix" then
+        for feather = 1, 5 do
+            ball("PhoenixTailFeather", 0.22, 0.26, 1.15, (feather - 3) * 0.2, 1.55, 1.45 + math.abs(feather - 3) * 0.12, feather % 2 == 0 and Color3.fromRGB(255, 209, 72) or Color3.fromRGB(255, 91, 42))
+        end
+        ball("PhoenixCrest", 0.2, 0.58, 0.22, 0, 3.05, -0.78, Color3.fromRGB(255, 219, 84))
+    elseif spec.Id == "Crocodile" then
+        for spine = 1, 5 do
+            ball("CrocodileScute", 0.24, 0.3, 0.24, 0, 2.0, -0.25 + spine * 0.35, spec.Accent)
+        end
+        ball("CrocodileJaw", 0.78, 0.24, 0.64, 0, 1.78, -1.55, Color3.fromRGB(174, 193, 111))
+    end
+
     model.Parent = Workspace
     model:PivotTo(CFrame.new(base))
     for _, descendant in ipairs(model:GetDescendants()) do
