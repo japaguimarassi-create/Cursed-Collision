@@ -147,7 +147,7 @@ local function createAnimalModel(spec, stageName, position, giant)
             stageIndex = index
         end
     end
-    local scale = giant and 3.25 or Config.EvolutionStages[stageIndex].Scale
+    local scale = giant and 4 or Config.EvolutionStages[stageIndex].Scale
     local base = position
     local function point(x, y, z)
         return base + Vector3.new(x * scale, y * scale, z * scale)
@@ -164,18 +164,32 @@ local function createAnimalModel(spec, stageName, position, giant)
     core.CastShadow = false
     model.PrimaryPart = core
 
-    ball("Body", 1.65, 1.25, 2.0, 0, 1.25, 0)
-    ball("Chest", 1.18, 1.15, 1.05, 0, 1.35, -0.62, spec.Accent)
-    ball("Head", 1.12, 1.08, 1.05, 0, 2.18, -1.05)
-    ball("Muzzle", 0.68, 0.48, 0.52, 0, 1.96, -1.62, spec.Accent)
+    if spec.Shape == "Whale" or spec.Shape == "Dolphin" then
+        ball("Body", 2.05, 1.28, 4.1, 0, 1.35, 0)
+        ball("Chest", 1.62, 1.05, 1.5, 0, 1.25, -0.78, spec.Accent)
+        ball("Head", 1.42, 1.12, 1.45, 0, 1.7, -1.45)
+        ball("Muzzle", 1.02, 0.48, 1.18, 0, 1.38, -2.12, spec.Accent)
+    elseif spec.Shape == "Ray" then
+        ball("Body", 1.55, 0.48, 2.5, 0, 1.08, 0)
+        ball("Chest", 0.9, 0.32, 1.0, 0, 1.0, -0.72, spec.Accent)
+        ball("Head", 0.95, 0.62, 0.9, 0, 1.25, -1.0)
+        ball("Muzzle", 0.48, 0.22, 0.5, 0, 1.08, -1.46, spec.Accent)
+    else
+        ball("Body", 1.65, 1.25, 2.0, 0, 1.25, 0)
+        ball("Chest", 1.18, 1.15, 1.05, 0, 1.35, -0.62, spec.Accent)
+        ball("Head", 1.12, 1.08, 1.05, 0, 2.18, -1.05)
+        ball("Muzzle", 0.68, 0.48, 0.52, 0, 1.96, -1.62, spec.Accent)
+    end
     ball("EyeLeft", 0.15, 0.18, 0.12, -0.27, 2.32, -1.53, Color3.fromRGB(36, 36, 43))
     ball("EyeRight", 0.15, 0.18, 0.12, 0.27, 2.32, -1.53, Color3.fromRGB(36, 36, 43))
     ball("Nose", 0.19, 0.15, 0.13, 0, 2.02, -1.9, spec.Shape == "Bird" and Color3.fromRGB(255, 145, 47) or Color3.fromRGB(57, 45, 43))
 
     for _, side in ipairs({ -1, 1 }) do
-        ball("Ear", 0.32, (spec.Shape == "Fox" or spec.Shape == "Wolf") and 0.75 or 0.55, 0.24, side * 0.38, 2.8, -0.88, spec.Color)
-        ball("LegFront", 0.35, 0.72, 0.38, side * 0.48, 0.48, -0.55, spec.Color)
-        ball("LegBack", 0.38, 0.68, 0.4, side * 0.48, 0.45, 0.62, spec.Color)
+        if spec.Shape ~= "Whale" and spec.Shape ~= "Dolphin" and spec.Shape ~= "Ray" then
+            ball("Ear", 0.32, (spec.Shape == "Fox" or spec.Shape == "Wolf") and 0.75 or 0.55, 0.24, side * 0.38, 2.8, -0.88, spec.Color)
+            ball("LegFront", 0.35, 0.72, 0.38, side * 0.48, 0.48, -0.55, spec.Color)
+            ball("LegBack", 0.38, 0.68, 0.4, side * 0.48, 0.45, 0.62, spec.Color)
+        end
     end
 
     if spec.Shape == "Bird" then
@@ -183,6 +197,27 @@ local function createAnimalModel(spec, stageName, position, giant)
             ball("Wing", 0.42, 0.78, 1.0, side * 0.82, 1.52, 0.05, spec.Accent)
         end
         ball("Crest", 0.18, 0.42, 0.18, 0, 2.9, -0.8, spec.Accent)
+        if spec.Id == "Hen" then
+            ball("HenComb", 0.3, 0.42, 0.23, 0, 2.96, -0.79, Color3.fromRGB(205, 54, 58))
+            ball("HenCombPoint", 0.2, 0.29, 0.2, -0.18, 2.91, -0.79, Color3.fromRGB(205, 54, 58))
+            ball("HenCombPoint", 0.2, 0.29, 0.2, 0.18, 2.91, -0.79, Color3.fromRGB(205, 54, 58))
+            ball("HenWattle", 0.2, 0.32, 0.18, 0, 1.74, -1.55, Color3.fromRGB(205, 54, 58))
+            ball("HenBeak", 0.35, 0.21, 0.4, 0, 2.03, -1.77, Color3.fromRGB(255, 157, 45))
+        elseif spec.Id == "Swan" then
+            ball("SwanNeck", 0.34, 1.15, 0.38, 0, 2.65, -0.98, Color3.fromRGB(250, 248, 238))
+            ball("SwanNeckUpper", 0.29, 0.76, 0.3, 0, 3.15, -0.76, Color3.fromRGB(250, 248, 238))
+            ball("SwanHead", 0.48, 0.42, 0.48, 0, 3.48, -0.75, Color3.fromRGB(250, 248, 238))
+            ball("SwanBeak", 0.44, 0.18, 0.42, 0, 3.42, -1.1, Color3.fromRGB(255, 141, 42))
+            ball("SwanMask", 0.16, 0.18, 0.1, 0, 3.48, -1.02, Color3.fromRGB(44, 49, 55))
+            for _, side in ipairs({ -1, 1 }) do
+                ball("SwanWingFeather", 0.3, 0.65, 0.72, side * 1.0, 1.78, 0.22, Color3.fromRGB(255, 255, 250))
+                ball("SwanWingFeather", 0.28, 0.58, 0.68, side * 0.82, 1.6, 0.68, Color3.fromRGB(241, 239, 228))
+            end
+        elseif spec.Id == "Duckling" then
+            ball("DucklingBill", 0.55, 0.24, 0.46, 0, 2.0, -1.72, Color3.fromRGB(255, 151, 36))
+            ball("DucklingFoot", 0.38, 0.14, 0.45, -0.26, 0.15, -0.62, Color3.fromRGB(255, 151, 36))
+            ball("DucklingFoot", 0.38, 0.14, 0.45, 0.26, 0.15, -0.62, Color3.fromRGB(255, 151, 36))
+        end
     elseif spec.Shape == "Fox" or spec.Shape == "Wolf" or spec.Shape == "Lion" then
         ball("Tail", 0.48, 0.48, 1.2, 0, 1.65, 1.2, spec.Accent)
         if spec.Shape == "Lion" then
@@ -209,6 +244,33 @@ local function createAnimalModel(spec, stageName, position, giant)
         for _, side in ipairs({ -1, 1 }) do
             ball("ElephantEar", 0.62, 0.8, 0.18, side * 0.67, 2.15, -0.92, spec.Accent)
         end
+    elseif spec.Shape == "Bear" then
+        for _, side in ipairs({ -1, 1 }) do
+            ball("BearEarRound", 0.38, 0.38, 0.28, side * 0.42, 2.7, -0.84, spec.Color)
+            ball("BearEarInner", 0.2, 0.2, 0.1, side * 0.42, 2.72, -0.99, spec.Accent)
+            ball("BearPaw", 0.43, 0.3, 0.48, side * 0.52, 0.22, -0.58, spec.Accent)
+        end
+        ball("BearMuzzle", 0.65, 0.42, 0.52, 0, 1.99, -1.67, Color3.fromRGB(235, 223, 202))
+        ball("BearNose", 0.22, 0.16, 0.16, 0, 2.05, -1.98, Color3.fromRGB(35, 35, 38))
+    elseif spec.Shape == "Whale" then
+        ball("WhaleDorsalFin", 0.18, 0.65, 0.75, 0, 2.05, 0.12, spec.Accent)
+        ball("WhaleTailStock", 0.44, 0.42, 1.12, 0, 1.2, 2.18, spec.Accent)
+        ball("WhaleTailFluke", 1.7, 0.2, 1.05, 0, 1.28, 2.93, spec.Accent)
+        ball("WhaleFlipper", 0.32, 0.23, 1.4, -1.13, 0.91, -0.22, spec.Accent)
+        ball("WhaleFlipper", 0.32, 0.23, 1.4, 1.13, 0.91, -0.22, spec.Accent)
+        ball("WhaleBlowhole", 0.2, 0.08, 0.22, 0, 2.26, -1.05, Color3.fromRGB(61, 79, 93))
+        ball("WhaleBelly", 1.45, 0.24, 2.15, 0, 0.82, -0.3, Color3.fromRGB(235, 238, 225))
+    elseif spec.Shape == "Dolphin" then
+        ball("DolphinDorsalFin", 0.16, 0.52, 0.72, 0, 2.04, 0.12, spec.Accent)
+        ball("DolphinTailStock", 0.35, 0.3, 0.95, 0, 1.18, 2.22, spec.Accent)
+        ball("DolphinTailFluke", 1.0, 0.18, 0.8, 0, 1.25, 2.88, spec.Accent)
+        ball("DolphinFlipper", 0.23, 0.18, 1.05, -0.95, 0.9, -0.15, spec.Accent)
+        ball("DolphinFlipper", 0.23, 0.18, 1.05, 0.95, 0.9, -0.15, spec.Accent)
+    elseif spec.Shape == "Ray" then
+        ball("MantaWing", 1.6, 0.18, 1.85, -1.6, 0.98, 0.18, spec.Accent)
+        ball("MantaWing", 1.6, 0.18, 1.85, 1.6, 0.98, 0.18, spec.Accent)
+        ball("MantaCephalicLobe", 0.42, 0.18, 0.62, -0.34, 1.08, -1.35, spec.Accent)
+        ball("MantaCephalicLobe", 0.42, 0.18, 0.62, 0.34, 1.08, -1.35, spec.Accent)
     elseif spec.Shape == "Frog" then
         for _, side in ipairs({ -1, 1 }) do
             ball("EyeBulge", 0.32, 0.35, 0.32, side * 0.35, 2.65, -1.22, spec.Accent)
@@ -277,6 +339,11 @@ local function createAnimalModel(spec, stageName, position, giant)
             ball("CrocodileScute", 0.24, 0.3, 0.24, 0, 2.0, -0.25 + spine * 0.35, spec.Accent)
         end
         ball("CrocodileJaw", 0.78, 0.24, 0.64, 0, 1.78, -1.55, Color3.fromRGB(174, 193, 111))
+    elseif spec.Id == "MantaRay" then
+        for gill = 1, 3 do
+            ball("MantaGill", 0.1, 0.16, 0.12, -0.28 + gill * 0.14, 0.98, -0.86, Color3.fromRGB(49, 70, 80))
+            ball("MantaGill", 0.1, 0.16, 0.12, 0.28 - gill * 0.14, 0.98, -0.86, Color3.fromRGB(49, 70, 80))
+        end
     end
 
     model.Parent = Workspace
@@ -530,8 +597,11 @@ local function allowAction(player, action, cooldown)
 end
 
 local function createBase(index)
-    local angle = (index - 1) * math.pi * 2 / 8
-    local center = Vector3.new(math.cos(angle) * 63, 0, math.sin(angle) * 63)
+    local basePositions = {
+        Vector3.new(-69, 0, -53), Vector3.new(-23, 0, -53), Vector3.new(23, 0, -53), Vector3.new(69, 0, -53),
+        Vector3.new(-69, 0, 53), Vector3.new(-23, 0, 53), Vector3.new(23, 0, 53), Vector3.new(69, 0, 53),
+    }
+    local center = basePositions[index]
     local base = Instance.new("Model")
     base.Name = "Farm_" .. tostring(index)
     base:SetAttribute("BaseIndex", index)
@@ -628,54 +698,75 @@ local function buildScenery()
     Lighting.FogEnd = 1550
 
     createPart(world, "HubGround", Vector3.new(210, 1, 210), CFrame.new(0, -1, 0), Color3.fromRGB(112, 185, 88), Enum.Material.Grass, nil, true)
-    createPart(world, "MainPath", Vector3.new(1120, 0.35, 12), CFrame.new(560, -0.2, 0), Color3.fromRGB(207, 185, 139), Enum.Material.Cobblestone, nil, true)
+    createPart(world, "CorridorFloor", Vector3.new(1500, 0.28, 56), CFrame.new(850, -0.38, 0), Color3.fromRGB(105, 153, 136), Enum.Material.SmoothPlastic, nil, true)
+    createPart(world, "MainPath", Vector3.new(1500, 0.35, 12), CFrame.new(850, -0.15, 0), Color3.fromRGB(207, 185, 139), Enum.Material.Cobblestone, nil, true)
+    for _, side in ipairs({ -1, 1 }) do
+        createPart(world, "CorridorEdge", Vector3.new(1500, 0.2, 0.8), CFrame.new(850, 0.04, side * 28), Color3.fromRGB(255, 218, 105), Enum.Material.Neon, nil, false)
+    end
     createPart(world, "HubFountainBase", Vector3.new(18, 1, 18), CFrame.new(0, 0, 0), Color3.fromRGB(225, 221, 190), Enum.Material.Marble, nil, true)
     addCylinder(world, "HubFountain", Vector3.new(9, 2.2, 9), CFrame.new(0, 1.4, 0), Color3.fromRGB(90, 194, 221), Enum.Material.Glass, false)
     addBall(world, "FountainGem", Vector3.new(3.5, 3.5, 3.5), Vector3.new(0, 4.2, 0), Color3.fromRGB(115, 234, 255), Enum.Material.Neon)
 
-    for _, biome in ipairs(Config.Biomes) do
-        createPart(world, biome.Id .. "Ground", Vector3.new(150, 1, 180), CFrame.new(biome.CenterX, -0.5, 0), biome.Ground, biome.Material, nil, true)
-        createPart(world, biome.Id .. "Path", Vector3.new(150, 0.32, 12), CFrame.new(biome.CenterX, -0.15, 0), Color3.fromRGB(218, 199, 157), Enum.Material.Cobblestone, nil, true)
-        createPart(world, biome.Id .. "ArchTop", Vector3.new(25, 2, 2), CFrame.new(biome.CenterX - 63, 13, 0), biome.Accent, Enum.Material.Neon, nil, false)
+    for biomeIndex, biome in ipairs(Config.Biomes) do
+        createPart(world, biome.Id .. "Ground", Vector3.new(180, 1, 170), CFrame.new(biome.CenterX, -0.5, 0), biome.Ground, biome.Material, nil, true)
+        createPart(world, biome.Id .. "Path", Vector3.new(180, 0.32, 56), CFrame.new(biome.CenterX, -0.15, 0), Color3.fromRGB(218, 199, 157), Enum.Material.Cobblestone, nil, true)
+        createPart(world, biome.Id .. "ArchTop", Vector3.new(2, 2, 26), CFrame.new(biome.CenterX - 76, 13, 0), biome.Accent, Enum.Material.Neon, nil, false)
         for _, side in ipairs({ -1, 1 }) do
-            createPart(world, biome.Id .. "ArchPost", Vector3.new(2, 14, 2), CFrame.new(biome.CenterX - 63, 6, side * 11.5), biome.Accent, Enum.Material.SmoothPlastic, nil, false)
+            createPart(world, biome.Id .. "ArchPost", Vector3.new(2, 14, 2), CFrame.new(biome.CenterX - 76, 6, side * 11.5), biome.Accent, Enum.Material.SmoothPlastic, nil, false)
         end
-        local sign = createPart(world, biome.Id .. "Sign", Vector3.new(18, 3, 0.5), CFrame.new(biome.CenterX - 63, 10, -0.1), Color3.fromRGB(45, 52, 47), Enum.Material.Wood, nil, false)
-        addLabel(sign, biome.Name, "EXPLORE • ROUBE • FUJA", biome.Accent)
+        local sign = createPart(world, biome.Id .. "Sign", Vector3.new(18, 3, 0.5), CFrame.new(biome.CenterX - 76, 10, -0.1), Color3.fromRGB(45, 52, 47), Enum.Material.Wood, nil, false)
+        addLabel(sign, "FASE " .. tostring(biomeIndex) .. " • " .. biome.Name, "CORREDOR DOS ANIMAIS", biome.Accent)
 
         if biome.Id == "Meadow" then
             for flower = 1, 9 do
                 local x = biome.CenterX + rng:NextNumber(-28, 28)
-                local z = rng:NextNumber(-48, 48)
+                local z = (flower % 2 == 0 and 1 or -1) * rng:NextNumber(34, 52)
                 addBall(decorationFolder, "MeadowBloom", Vector3.new(1.8, 0.45, 1.8), Vector3.new(x, 0.18, z), flower % 2 == 0 and Color3.fromRGB(255, 194, 92) or Color3.fromRGB(255, 155, 199), Enum.Material.Neon)
+            end
+        elseif biome.Id == "Lake" then
+            for reed = 1, 6 do
+                local x = biome.CenterX + rng:NextNumber(-64, 64)
+                local z = (reed % 2 == 0 and 1 or -1) * rng:NextNumber(38, 66)
+                addCylinder(decorationFolder, "LakeReed", Vector3.new(0.28, 3.2, 0.28), CFrame.new(x, 1.6, z), Color3.fromRGB(89, 152, 82), Enum.Material.Grass, false)
+                addBall(decorationFolder, "LakeWater", Vector3.new(8, 0.16, 6), Vector3.new(x + 3, 0.04, z), Color3.fromRGB(85, 187, 215), Enum.Material.Glass)
             end
         elseif biome.Id == "Forest" then
             for mushroom = 1, 5 do
                 local x = biome.CenterX + rng:NextNumber(-42, 42)
-                local z = rng:NextNumber(-58, 58)
+                local z = (mushroom % 2 == 0 and 1 or -1) * rng:NextNumber(34, 58)
                 addCylinder(decorationFolder, "MushroomStem", Vector3.new(0.7, 2.2, 0.7), CFrame.new(x, 1.1, z), Color3.fromRGB(235, 222, 194), Enum.Material.SmoothPlastic, false)
                 addBall(decorationFolder, "GiantMushroom", Vector3.new(3.2, 1.1, 3.2), Vector3.new(x, 2.3, z), mushroom % 2 == 0 and Color3.fromRGB(231, 91, 94) or biome.Accent, Enum.Material.SmoothPlastic)
             end
         elseif biome.Id == "Wetlands" then
             for pool = 1, 4 do
-                addBall(decorationFolder, "WetlandPool", Vector3.new(20, 0.18, 14), Vector3.new(biome.CenterX + rng:NextNumber(-46, 46), 0.03, rng:NextNumber(-58, 58)), Color3.fromRGB(70, 180, 184), Enum.Material.Glass)
+                local side = pool % 2 == 0 and 1 or -1
+                addBall(decorationFolder, "WetlandPool", Vector3.new(20, 0.18, 14), Vector3.new(biome.CenterX + rng:NextNumber(-46, 46), 0.03, side * rng:NextNumber(38, 58)), Color3.fromRGB(70, 180, 184), Enum.Material.Glass)
             end
         elseif biome.Id == "Frost" then
             for pillar = 1, 4 do
                 local x = biome.CenterX + rng:NextNumber(-48, 48)
-                local z = rng:NextNumber(-60, 60)
+                local z = (pillar % 2 == 0 and 1 or -1) * rng:NextNumber(34, 60)
                 addCylinder(decorationFolder, "IcePillar", Vector3.new(2.2, rng:NextNumber(5, 10), 2.2), CFrame.new(x, 2.8, z), Color3.fromRGB(142, 220, 255), Enum.Material.Ice, false)
             end
         elseif biome.Id == "Savanna" then
             for stone = 1, 5 do
                 local x = biome.CenterX + rng:NextNumber(-48, 48)
-                local z = rng:NextNumber(-58, 58)
+                local z = (stone % 2 == 0 and 1 or -1) * rng:NextNumber(34, 58)
                 addBall(decorationFolder, "SavannaBoulder", Vector3.new(rng:NextNumber(4, 8), rng:NextNumber(3, 6), rng:NextNumber(4, 8)), Vector3.new(x, 1.2, z), Color3.fromRGB(174, 143, 78), Enum.Material.Sand)
+            end
+        elseif biome.Id == "Ocean" then
+            for bubble = 1, 9 do
+                local x = biome.CenterX + rng:NextNumber(-68, 68)
+                local z = (bubble % 2 == 0 and 1 or -1) * rng:NextNumber(36, 70)
+                addBall(decorationFolder, "OceanBubble", Vector3.new(1.2, 1.2, 1.2), Vector3.new(x, rng:NextNumber(0.7, 4.2), z), Color3.fromRGB(90, 218, 246), Enum.Material.Glass)
+                if bubble % 3 == 0 then
+                    addBall(decorationFolder, "OceanCoral", Vector3.new(3.5, 2.8, 3.5), Vector3.new(x + 3, 1.1, z), Color3.fromRGB(80, 149, 155), Enum.Material.Slate)
+                end
             end
         elseif biome.Id == "Volcano" then
             for rift = 1, 5 do
                 local x = biome.CenterX + rng:NextNumber(-48, 48)
-                local z = rng:NextNumber(-62, 62)
+                local z = (rift % 2 == 0 and 1 or -1) * rng:NextNumber(36, 62)
                 local lava = createPart(decorationFolder, "LavaRift", Vector3.new(rng:NextNumber(7, 16), 0.18, rng:NextNumber(1.2, 2.6)), CFrame.new(x, 0.06, z) * CFrame.Angles(0, math.rad(rng:NextInteger(-35, 35)), 0), Color3.fromRGB(255, 91, 40), Enum.Material.Neon, nil, false)
                 lava.Transparency = 0.08
             end
@@ -684,7 +775,7 @@ local function buildScenery()
         for index = 1, 12 do
             local x = biome.CenterX + rng:NextNumber(-62, 62)
             local z = rng:NextNumber(-76, 76)
-            if math.abs(z) > 13 and math.abs(x - biome.CenterX) > 15 then
+            if math.abs(z) > 32 and math.abs(x - biome.CenterX) > 15 then
                 if index % 3 == 0 then
                     local rockSize = rng:NextNumber(2.2, 5.2)
                     addBall(decorationFolder, biome.Id .. "Rock", Vector3.new(rockSize * 1.4, rockSize, rockSize), Vector3.new(x, rockSize * 0.35, z), biome.Id == "Frost" and Color3.fromRGB(185, 215, 236) or Color3.fromRGB(101, 111, 98), biome.Id == "Frost" and Enum.Material.Ice or Enum.Material.Rock)
@@ -698,7 +789,7 @@ local function buildScenery()
             end
         end
         for index = 1, 4 do
-            local crystal = addCylinder(decorationFolder, biome.Id .. "Crystal", Vector3.new(2, rng:NextNumber(4, 8), 2), CFrame.new(biome.CenterX + rng:NextNumber(-42, 42), 2.4, rng:NextNumber(-60, 60)) * CFrame.Angles(0, 0, math.rad(rng:NextInteger(-12, 12))), biome.Accent, Enum.Material.Neon, false)
+            local crystal = addCylinder(decorationFolder, biome.Id .. "Crystal", Vector3.new(2, rng:NextNumber(4, 8), 2), CFrame.new(biome.CenterX + rng:NextNumber(-42, 42), 2.4, (index % 2 == 0 and 1 or -1) * rng:NextNumber(34, 60)) * CFrame.Angles(0, 0, math.rad(rng:NextInteger(-12, 12))), biome.Accent, Enum.Material.Neon, false)
             crystal.Transparency = 0.12
         end
     end
@@ -835,7 +926,7 @@ local function spawnWild(spec)
         if entry.Id == spec.Biome then biome = entry break end
     end
     if not biome then return end
-    local position = Vector3.new(biome.CenterX + rng:NextNumber(-35, 35), -0.12, rng:NextNumber(-42, 42))
+    local position = Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), -0.12, rng:NextNumber(-20, 20))
     local model = createAnimalModel(spec, "Baby", position, false)
     model.Parent = wildlifeFolder
     local root = model.PrimaryPart
@@ -854,11 +945,11 @@ local function spawnWild(spec)
 end
 
 local function makeGuardian(spec, biome)
-    local position = Vector3.new(biome.CenterX - 48, -0.12, 0)
+    local position = Vector3.new(biome.CenterX - 50, -0.12, 0)
     local model = createAnimalModel(spec, "Adult", position, true)
-    model.Name = "Guardian_" .. biome.Id
+    model.Name = "GuardianParent_" .. biome.Id
     model.Parent = guardiansFolder
-    addLabel(model.PrimaryPart, "GUARDIÃO " .. string.upper(spec.Name), "ELE VAI PERSEGUIR QUEM CARREGA UM ANIMAL", biome.Accent)
+    addLabel(model.PrimaryPart, "PAI PROTETOR: " .. string.upper(spec.Name), "FASE " .. tostring(biome.Phase) .. " • PROTEGE A FAMÍLIA", biome.Accent)
     table.insert(guardians, { Model = model, Home = CFrame.new(position), Biome = biome, Spec = spec })
 end
 
