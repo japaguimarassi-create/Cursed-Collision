@@ -1,6 +1,6 @@
 local Config = {
     GameName = "STEAL AN ANIMAL",
-    ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r6",
+    ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r7",
     DataStoreName = "StealAnAnimal_FreshProfile_v1",
     AutosaveSeconds = 60,
     OfflineIncomeCapSeconds = 21600,
@@ -30,6 +30,10 @@ local Config = {
     GuardianNoticeDistance = 100,
     GuardianSpeed = 20,
     EvolutionIncomeMultiplier = 1.5,
+    RebirthBaseCost = 25000,
+    RebirthCostGrowth = 3,
+    RebirthIncomeBonus = 0.5,
+    MaxRebirths = 10,
     EvolutionStages = {
         { Name = "Baby", DisplayName = "BEBÊ", Scale = 0.52, AgeSeconds = 0 },
         { Name = "Child", DisplayName = "CRIANÇA", Scale = 0.72, AgeSeconds = 120 },
