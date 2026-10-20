@@ -23,9 +23,10 @@ Both runtime audit scripts exit unless `RunService:IsStudio()` is true and the W
 
 1. Open a local build of the latest `main` branch, with the two `StudioAudit` scripts included. Use the Rojo project in the repository or the latest build artifact from GitHub Actions.
 2. Install `tools/studio-tests/StealAnAnimalAudit.plugin.lua` as a local Studio plugin. On desktop Roblox Studio, put the file in the user's local Plugins folder or create a local plugin from the script, then restart Studio.
-3. Open the place in Studio and select **Steal An Animal QA → Run Studio Audit** from the toolbar.
-4. Wait until the plugin finishes. It launches two simulated clients. The report includes server tests and separate client UI results.
-5. Open the Studio **Output** panel and copy the complete line beginning with `[STEAL_ANIMAL_AUDIT_REPORT]`. Paste the JSON back into the development conversation so the reported failures can be corrected precisely.
+3. Before running, select a Phone profile in Studio's Device Simulator. Check each client's `touchEnabled` and `viewport` fields in the report; if `TouchEnabled=false`, the run did not emulate mobile input and the report will mark that part as a warning.
+4. Open the place in Studio and select **Steal An Animal QA → Run Studio Audit** from the toolbar.
+5. Wait until the plugin finishes. It launches two simulated clients. The report includes server tests and separate client UI results.
+6. Open the Studio **Output** panel and copy the complete line beginning with `[STEAL_ANIMAL_AUDIT_REPORT]`. Paste the JSON back into the development conversation so the reported failures can be corrected precisely.
 
 The plugin may report a setup warning if the Studio session does not start both clients, or if local player profiles cannot load. Persistent-profile checks require **Enable Studio Access to API Services** in Studio. The game config routes all Studio profile requests to the distinct `StealAnAnimal_StudioSandbox_v1` DataStore name, not the published `StealAnAnimal_FreshProfile_v1` store. This avoids changing live player saves during Studio testing. Keep the sandbox separate and do not switch the Studio config back to the live store.
 
