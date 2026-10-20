@@ -5,17 +5,16 @@ Data: 2026-10-20
 A pesquisa informa a linguagem visual e a organização espacial do mapa do projeto. As imagens abaixo são referências externas para análise, não assets copiados para o jogo. O mapa implementado usa peças Roblox originais.
 
 ## Referências analisadas
-1. Steal a Brainrot map screenshot with green field, straight red carpet, and bases along both sides: https://staticg.sportskeeda.com/editor/2025/09/13a10-17582665019760-1920.jpg
-2. Steal a Brainrot map/routes description of the carpet as the central route and bases as income locations: https://stealabrainrotwiki.wiki/wiki/map-routes/
-3. Official Steal An Egg experience and description: https://www.roblox.com/games/107778070777162/Steal-An-Egg
-4. Página oficial da experiência e descrição do loop: https://www.roblox.com/games/107778070777162/Steal-An-Egg
-2. Captura do campo verde e do bioma Forest: https://games.gg/cdn-cgi/image/width%3D1920%2Cquality%3D75%2Cformat%3Dauto%2Cfit%3Dscale-down%2Cmetadata%3Dnone%2Conerror%3Dredirect/https%3A/assets.games.gg/image_69e8820769.png
-3. Captura de cercados, áreas de jogadores e interface Shop/Index: https://www.phucanh.vn/media/news/1509_steal-an-egg-roblox-5.jpg
-4. Captura ampla de cercados, zona segura, banca SELL e guardião gigante: https://resource.supercheats.com/library/supercheats/740w/2026/steal-an-egg-screenshot-01.webp
-7. Captura de ovos no chão e guardião grande: https://cdn-media.sforum.vn/storage/app/media/phuonganh/phuonganh/cach-choi-steal-egg-roblox-2.jpg
-8. Corredor de corrida longo com paredes laterais, luzes e portal: https://assets.games.gg/5bdcd10f_4443_43be_8ce5_e751994655ce_1_c052b4731b.png
-9. Guia de mapa/biomas e requisitos (fonte comunitária, números sujeitos a mudanças): https://steal-an-egg.robloxgameswiki.com/guide/biomes-map
-10. Guia para iniciantes e ciclo roubar → escapar → chocar → ganhar → melhorar: https://steal-an-egg.robloxgamewiki.com/guide/beginner-guide/
+1. Página oficial de Steal An Egg e descrição do ciclo de jogo: https://www.roblox.com/games/107778070777162/Steal-An-Egg
+2. Steal An Egg: HUD Shop/Index e encontro com guardião de bioma: https://games.gg/cdn-cgi/image/width%3D1920%2Cquality%3D75%2Cformat%3Dauto%2Cfit%3Dscale-down%2Cmetadata%3Dnone%2Conerror%3Dredirect/https%3A/assets.games.gg/steal_an_egg_sakura_incubator_guide_deltias_gaming_fded6ba159.webp
+3. Steal An Egg: cercados abertos, pets grandes e indicadores de dinheiro/velocidade: https://www.phucanh.vn/media/news/1509_steal-an-egg-roblox-5.jpg
+4. Steal An Egg: captura ampla de cercados, zona segura e guardião: https://resource.supercheats.com/library/supercheats/740w/2026/steal-an-egg-screenshot-01.webp
+5. Steal An Egg: ovos e guardião em bioma: https://cdn-media.sforum.vn/storage/app/media/phuonganh/phuonganh/cach-choi-steal-egg-roblox-2.jpg
+6. Steal An Egg: corredor comprido, paredes laterais e marcos de progressão: https://assets.games.gg/5bdcd10f_4443_43be_8ce5_e751994655ce_1_c052b4731b.png
+7. Steal An Egg: guia comunitário de biomas e guardiões (valores podem conflitar ou mudar): https://steal-an-egg.robloxgameswiki.com/guide/biomes-map
+8. Steal a Brainrot: vista do terreno verde, tapete central vermelho e bases laterais: https://staticg.sportskeeda.com/editor/2025/09/13a10-17582665019760-1920.jpg
+9. Steal a Brainrot: descrição comunitária do mapa e do papel de tapete e bases: https://stealabrainrotwiki.wiki/wiki/map-routes/
+10. Steal An Egg: guia comunitário para iniciantes e ciclo roubar → escapar → chocar → ganhar → melhorar: https://steal-an-egg.robloxgamewiki.com/guide/beginner-guide/
 
 ## Observações visuais
 - O chão é predominantemente verde vivo com textura quadriculada; a leitura do percurso vem da cor do terreno, dos caminhos e das paredes, não de uma decoração densa.
