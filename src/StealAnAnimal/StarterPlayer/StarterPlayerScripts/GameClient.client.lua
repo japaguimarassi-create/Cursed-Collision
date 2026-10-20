@@ -403,24 +403,213 @@ local function closeModal()
     primaryButton.Visible = true
 end
 
+local function clearMenuRows()
+    for _, child in ipairs(menuList:GetChildren()) do
+        if child ~= menuLayout and child ~= menuPadding then
+            child:Destroy()
+        end
+    end
+end
+
+local function addMenuRow(order, name, detail, accent, callback, disabled)
+    local item = Instance.new("TextButton")
+    item.Name = "Row_" .. tostring(order)
+    item.LayoutOrder = order
+    item.Size = UDim2.new(1, -2, 0, 47)
+    item.BackgroundColor3 = disabled and COLORS.Panel or COLORS.Card
+    item.BorderSizePixel = 0
+    item.AutoButtonColor = not disabled
+    item.Text = ""
+    item.Active = not disabled
+    item.Selectable = not disabled
+    item.ZIndex = 73
+    item.Parent = menuList
+    round(item, 10)
+    outline(item, accent or COLORS.CardEdge, 1, 0.35)
+    local heading = makeLabel(item, "Heading", name, UDim2.new(1, -18, 0, 18), UDim2.new(0, 10, 0, 3), 11, disabled and COLORS.Muted or (accent or COLORS.Cream), Enum.Font.GothamBold)
+    heading.ZIndex = 74
+    heading.Active = false
+    local subtitle = makeLabel(item, "Detail", detail or "", UDim2.new(1, -18, 0, 20), UDim2.new(0, 10, 0, 22), 10, COLORS.Muted, Enum.Font.GothamMedium)
+    subtitle.ZIndex = 74
+    subtitle.Active = false
+    if callback and not disabled then
+        item.Activated:Connect(callback)
+    end
+    return item
+end
+
+local function showListPanel(kind, panelTitle, rows)
+    activePanel = kind
+    modalTitle.Text = panelTitle
+    modalBody.Visible = false
+    menuList.Visible = true
+    codeInput.Visible = false
+    primaryButton.Visible = false
+    primaryButton.Active = false
+    secondaryButton.Visible = true
+    secondaryButton.Text = kind == "More" and "FECHAR" or "VOLTAR"
+    clearMenuRows()
+    for index, row in ipairs(rows) do
+        addMenuRow(index, row.Title, row.Detail, row.Color, row.Action, row.Disabled)
+    end
+end
+
+local function decodeQuestClaims()
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(tostring(player:GetAttribute("QuestClaimsJson") or "{}"))
+    end)
+    return ok and type(data) == "table" and data or {}
+end
+
+local function applyLowEffects()
+    local effectTypes = {
+        ParticleEmitter = true,
+        Trail = true,
+        Beam = true,
+        Fire = true,
+        Smoke = true,
+        Sparkles = true,
+    }
+    for _, object in ipairs(workspace:GetDescendants()) do
+        if effectTypes[object.ClassName] and object:IsA("Instance") then
+            if savedEffectStates[object] == nil then
+                savedEffectStates[object] = object.Enabled
+            end
+            if lowEffects then
+                object.Enabled = false
+            else
+                object.Enabled = savedEffectStates[object]
+            end
+        end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(object)
+    if not lowEffects then return end
+    if object:IsA("ParticleEmitter") or object:IsA("Trail") or object:IsA("Beam")
+        or object:IsA("Fire") or object:IsA("Smoke") or object:IsA("Sparkles") then
+        task.defer(function()
+            if object.Parent then
+                if savedEffectStates[object] == nil then savedEffectStates[object] = object.Enabled end
+                object.Enabled = false
+            end
+        end)
+    end
+end)
+
 local function openPanel(kind, preserveConfirmation)
     activePanel = kind
     if preserveConfirmation ~= true then
         confirmingRebirth = false
     end
-    shade.Visible = true
-    secondaryButton.Visible = false
+    modalBody.Visible = true
+    menuList.Visible = false
+    codeInput.Visible = false
     primaryButton.Visible = true
-    if kind == "Barn" then
-        modalTitle.Text = "MEU CELEIRO"
-        local summary = tostring(player:GetAttribute("BarnSummary") or "Carregando seus animais...")
-        modalBody.Text = "ANIMAIS  " .. tostring(player:GetAttribute("BarnAnimalCount") or 0) .. "/" .. tostring(player:GetAttribute("BarnCapacity") or Config.BaseSlots)
-            .. "\nRENDA  " .. formatNumber(player:GetAttribute("BarnIncomeRate")) .. " moedas/s"
-            .. "\nBANCO  " .. formatNumber(player:GetAttribute("BarnBank"))
-            .. "\n\n" .. summary
-        primaryButton.Text = "COLETAR NO BANCO"
-        primaryButton.BackgroundColor3 = COLORS.Gold
-        secondaryButton.Visible = false
+    primaryButton.Active = true
+    primaryButton.AutoButtonColor = true
+    secondaryButton.Visible = false
+    primaryButton.BackgroundColor3 = COLORS.Mint
+    secondaryButton.Text = "FECHAR"
+
+    if kind == "More" then
+        showListPanel("More", "PROGRESSO E SISTEMA", {
+            { Title = "RECOMPENSA DIÁRIA", Detail = "Bônus diário e sequência de 7 dias", Color = COLORS.Gold, Action = function() openPanel("Daily") end },
+            { Title = "MISSÕES", Detail = "Quatro objetivos com recompensas permanentes", Color = COLORS.Mint, Action = function() openPanel("Quests") end },
+            { Title = "CÓDIGOS", Detail = "Resgate FARMFAMILY, WILDSTART e BARNBOOST", Color = COLORS.Aqua, Action = function() openPanel("Codes") end },
+            { Title = "ESTATÍSTICAS", Detail = "Capturas, depósitos, treino e progresso", Color = COLORS.Purple, Action = function() openPanel("Stats") end },
+            { Title = "CONFIGURAÇÕES", Detail = "Reduzir efeitos e compactar a interface", Color = COLORS.Orange, Action = function() openPanel("Settings") end },
+            { Title = "MAPBOT / DIAGNÓSTICO", Detail = "Verifica fazendas, biomas, guardiões e caminho", Color = COLORS.Aqua, Action = function() openPanel("Diagnostics") end },
+        })
+        return
+    elseif kind == "Barn" then
+        local bank = tonumber(player:GetAttribute("BarnBank")) or 0
+        local count = tonumber(player:GetAttribute("BarnAnimalCount")) or 0
+        local income = tonumber(player:GetAttribute("BarnIncomeRate")) or 0
+        local summary = tostring(player:GetAttribute("BarnSummary") or "")
+        local rows = {
+            { Title = "BANCO: " .. formatNumber(bank) .. " MOEDAS", Detail = "Renda do celeiro: " .. formatNumber(income) .. " moedas por segundo", Color = COLORS.Gold, Action = function() collectRemote:FireServer() end },
+        }
+        if summary == "" or string.find(summary, "está vazio", 1, true) then
+            table.insert(rows, { Title = "CELEIRO VAZIO", Detail = "Vá ao corredor e roube um filhote.", Color = COLORS.Muted, Disabled = true })
+        else
+            for line in string.gmatch(summary, "[^\n]+") do
+                table.insert(rows, { Title = line, Detail = "Animal guardado • evolução e renda automáticas", Color = COLORS.Mint, Disabled = true })
+            end
+        end
+        table.insert(rows, { Title = "ESPAÇOS", Detail = tostring(count) .. "/" .. tostring(player:GetAttribute("BarnCapacity") or Config.BaseSlots) .. " ocupados", Color = COLORS.Aqua, Disabled = true })
+        showListPanel("Barn", "MEU CELEIRO", rows)
+        return
+    elseif kind == "Daily" then
+        local available = player:GetAttribute("DailyClaimAvailable") == true
+        local streak = tonumber(player:GetAttribute("DailyStreak")) or 0
+        local nextStreak = available and math.min(streak + 1, 7) or streak
+        local reward = available and (500 + math.max(0, nextStreak - 1) * 250) or 0
+        showListPanel("Daily", "RECOMPENSA DIÁRIA", {
+            { Title = available and ("COLETAR +" .. formatNumber(reward) .. " MOEDAS") or "RECOMPENSA JÁ COLETADA", Detail = available and ("Sequência de " .. tostring(nextStreak) .. "/7 dias") or ("Sua sequência atual: " .. tostring(streak) .. "/7 dias"), Color = COLORS.Gold, Disabled = not available, Action = function() dailyRemote:FireServer() end },
+            { Title = "BÔNUS DE SEQUÊNCIA", Detail = "500 moedas no dia 1; +250 por dia consecutivo, até 2.000.", Color = COLORS.Mint, Disabled = true },
+        })
+        return
+    elseif kind == "Quests" then
+        local claims = decodeQuestClaims()
+        local captured = tonumber(player:GetAttribute("TotalCaptured")) or 0
+        local deposited = tonumber(player:GetAttribute("TotalDeposited")) or 0
+        local animals = tonumber(player:GetAttribute("BarnAnimalCount")) or 0
+        local capacity = tonumber(player:GetAttribute("BarnCapacity")) or Config.BaseSlots
+        local questRows = {
+            { Id = "FirstCapture", Title = "PRIMEIRO ROUBO", Detail = "Capture um animal • +" .. formatNumber(250), Done = captured >= 1 },
+            { Id = "FirstBarn", Title = "PRIMEIRO DEPÓSITO", Detail = "Leve um animal ao celeiro • +" .. formatNumber(750), Done = deposited >= 1 },
+            { Id = "Collector", Title = "COLECIONADOR", Detail = "Capture 5 animais • +" .. formatNumber(1500), Done = captured >= 5 },
+            { Id = "FullBarn", Title = "CELEIRO CHEIO", Detail = "Guarde " .. tostring(capacity) .. " animais • +" .. formatNumber(5000), Done = animals >= capacity },
+        }
+        local rows = {}
+        for _, quest in ipairs(questRows) do
+            local claimed = claims[quest.Id] ~= nil
+            local status = claimed and "RECOMPENSA RESGATADA" or quest.Done and "OBJETIVO COMPLETO • TOQUE PARA RESGATAR" or "EM ANDAMENTO"
+            table.insert(rows, {
+                Title = quest.Title .. (claimed and " ✓" or ""),
+                Detail = quest.Detail .. " • " .. status,
+                Color = claimed and COLORS.Muted or quest.Done and COLORS.Mint or COLORS.Gold,
+                Disabled = claimed,
+                Action = function() questRemote:FireServer(quest.Id) end,
+            })
+        end
+        showListPanel("Quests", "MISSÕES", rows)
+        return
+    elseif kind == "Settings" then
+        showListPanel("Settings", "CONFIGURAÇÕES", {
+            { Title = "EFEITOS REDUZIDOS: " .. (lowEffects and "LIGADO" or "DESLIGADO"), Detail = "Desativa partículas e efeitos visuais locais.", Color = COLORS.Aqua, Action = function() lowEffects = not lowEffects; applyLowEffects(); openPanel("Settings") end },
+            { Title = "HUD COMPACTO: " .. (compactHud and "LIGADO" or "DESLIGADO"), Detail = "Reduz toda a interface para liberar espaço na tela.", Color = COLORS.Gold, Action = function() compactHud = not compactHud; updateScale(); openPanel("Settings") end },
+            { Title = "DADOS E COMPRAS", Detail = "Não há compras pagas ativadas nesta versão.", Color = COLORS.Muted, Disabled = true },
+        })
+        return
+    elseif kind == "Stats" then
+        modalTitle.Text = "ESTATÍSTICAS"
+        modalBody.Text = "CAPTURAS  " .. formatNumber(player:GetAttribute("TotalCaptured"))
+            .. "\nDEPÓSITOS  " .. formatNumber(player:GetAttribute("TotalDeposited"))
+            .. "\nMOEDAS  " .. formatNumber(player:GetAttribute("Coins"))
+            .. "\nBANCO DO CELEIRO  " .. formatNumber(player:GetAttribute("BarnBank"))
+            .. "\nANIMAIS GUARDADOS  " .. tostring(player:GetAttribute("BarnAnimalCount") or 0) .. "/" .. tostring(player:GetAttribute("BarnCapacity") or Config.BaseSlots)
+            .. "\nPONTOS DE VELOCIDADE  " .. formatNumber(player:GetAttribute("SpeedLevel"))
+            .. "\nVELOCIDADE ATUAL  " .. string.format("%.1f", tonumber(player:GetAttribute("EffectiveWalkSpeed")) or Config.BaseWalkSpeed)
+            .. "\nNÍVEL DA ESTEIRA  " .. tostring(player:GetAttribute("TreadmillLevel") or 1)
+            .. "\nRENASCIMENTOS  " .. tostring(player:GetAttribute("Rebirths") or 0)
+            .. "\nMULTIPLICADOR DE RENDA  x" .. string.format("%.1f", tonumber(player:GetAttribute("RebirthMultiplier")) or 1)
+        primaryButton.Text = "VOLTAR AO MENU"
+        return
+    elseif kind == "Codes" then
+        modalTitle.Text = "CÓDIGOS DE RECOMPENSA"
+        modalBody.Text = "Códigos ativos, cada um resgatável uma vez por conta:\nFARMFAMILY  •  +1.000 moedas\nWILDSTART  •  +1.500 moedas\nBARNBOOST  •  +2.500 moedas"
+        codeInput.Visible = true
+        primaryButton.Text = "RESGATAR CÓDIGO"
+        primaryButton.BackgroundColor3 = COLORS.Aqua
+        return
+    elseif kind == "Diagnostics" then
+        modalTitle.Text = "MAPBOT • DIAGNÓSTICO"
+        modalBody.Text = lastMapBotReport
+        primaryButton.Text = "EXECUTAR MAPBOT"
+        primaryButton.BackgroundColor3 = COLORS.Aqua
+        return
     elseif kind == "Treadmill" then
         modalTitle.Text = "ESTEIRA DE VELOCIDADE"
         local level = tonumber(player:GetAttribute("TreadmillLevel")) or 1
@@ -434,48 +623,57 @@ local function openPanel(kind, preserveConfirmation)
         primaryButton.BackgroundColor3 = COLORS.Aqua
         primaryButton.Active = cost > 0
         primaryButton.AutoButtonColor = cost > 0
-        secondaryButton.Visible = false
     elseif kind == "Rebirth" then
         modalTitle.Text = "RENASCIMENTO"
         local count = tonumber(player:GetAttribute("Rebirths")) or 0
         local cost = tonumber(player:GetAttribute("RebirthCost")) or 0
         local multiplier = tonumber(player:GetAttribute("RebirthMultiplier")) or 1
-        local nextMultiplier = 1 + (count + 1) * (tonumber(Config.RebirthIncomeBonus) or 0.5)
+        local bonus = tonumber(Config.RebirthIncomeBonus) or 0.1
+        local nextMultiplier = multiplier + bonus
         local coins = tonumber(player:GetAttribute("Coins")) or 0
+        local speed = tonumber(player:GetAttribute("SpeedLevel")) or 0
+        local requiredSpeed = tonumber(player:GetAttribute("RebirthRequiredSpeed")) or Config.MaxSpeedPoints
         local carrying = player:GetAttribute("CarryingAnimal") == true
+        local eligible = cost > 0 and coins >= cost and speed >= requiredSpeed and not carrying
         if confirmingRebirth then
-            modalBody.Text = "CONFIRMAR RENASCIMENTO " .. tostring(count + 1) .. "?\n\nVocê perderá moedas, banco do celeiro, todos os animais, pontos de velocidade e nível da esteira.\n\nO bônus permanente será x" .. string.format("%.1f", nextMultiplier) .. " de renda dos animais. Esta ação não pode ser desfeita."
-            primaryButton.Text = "CONFIRMAR E REINICIAR"
+            modalBody.Text = "CONFIRMAR RENASCIMENTO " .. tostring(count + 1) .. "?\n\nVocê reiniciará suas moedas e pontos de velocidade. Animais guardados, banco do celeiro e nível da esteira serão preservados.\n\nBônus permanente: +10% de renda por renascimento, acumulável até 25 vezes."
+            primaryButton.Text = "CONFIRMAR RENASCIMENTO"
             primaryButton.BackgroundColor3 = COLORS.Red
             primaryButton.Active = true
             primaryButton.AutoButtonColor = true
             secondaryButton.Text = "CANCELAR"
             secondaryButton.Visible = true
         else
-            modalBody.Text = "RENASCIMENTO ATUAL  " .. tostring(count) .. "\nBÔNUS ATUAL  x" .. string.format("%.1f", multiplier) .. " de renda"
+            modalBody.Text = "RENASCIMENTOS  " .. tostring(count) .. "/" .. tostring(Config.MaxRebirths)
+                .. "\nBÔNUS ATUAL  x" .. string.format("%.1f", multiplier)
                 .. "\nPRÓXIMO BÔNUS  x" .. string.format("%.1f", nextMultiplier)
-                .. "\nCUSTO  " .. (cost > 0 and (formatNumber(cost) .. " moedas") or "LIMITE MÁXIMO")
-                .. "\n\nAo renascer, você recomeça a fazenda e recebe +50% de renda permanente. O custo aumenta a cada renascimento."
-            primaryButton.Text = cost <= 0 and "LIMITE ATINGIDO" or carrying and "ENTREGUE O ANIMAL PRIMEIRO" or coins < cost and ("FALTAM " .. formatNumber(cost - coins) .. " MOEDAS") or "PREPARAR RENASCIMENTO"
+                .. "\nREQUISITOS: " .. formatNumber(cost) .. " moedas e " .. formatNumber(requiredSpeed) .. " pontos de velocidade."
+                .. "\nSEU PROGRESSO: " .. formatNumber(coins) .. "/" .. formatNumber(cost) .. " moedas; " .. formatNumber(speed) .. "/" .. formatNumber(requiredSpeed) .. " velocidade."
+                .. "\n\nRenascer reinicia moedas e velocidade, mantendo os animais do celeiro, o banco e a esteira. Cada renascimento dá +10% de renda permanente."
+            primaryButton.Text = cost <= 0 and "LIMITE ATINGIDO" or carrying and "ENTREGUE O ANIMAL PRIMEIRO" or not eligible and "CUMPRA OS REQUISITOS" or "PREPARAR RENASCIMENTO"
             primaryButton.BackgroundColor3 = COLORS.Purple
+            primaryButton.Active = eligible
+            primaryButton.AutoButtonColor = eligible
             secondaryButton.Text = "FECHAR"
             secondaryButton.Visible = false
-            primaryButton.Active = cost > 0 and coins >= cost and not carrying
-            primaryButton.AutoButtonColor = primaryButton.Active
         end
     elseif kind == "Guide" then
         modalTitle.Text = "COMO JOGAR"
-        modalBody.Text = "1. Encontre um filhote no corredor e segure ROUBAR.\n2. Fuja do guardião e leve o animal ao pad verde da sua fazenda.\n3. Colete moedas no pad dourado; animais evoluem e produzem mais.\n4. Treine na esteira e compre melhorias com moedas.\n5. Renascimento reinicia sua fazenda e concede bônus permanente de renda.\n\nSão 8 biomas e " .. tostring(#Catalog.All()) .. " espécies."
+        modalBody.Text = "1. Encontre um filhote no corredor e segure ROUBAR.\n2. Fuja do guardião e leve o animal ao pad verde da sua fazenda.\n3. Colete moedas no pad dourado; animais evoluem e produzem mais.\n4. Treine na esteira e compre melhorias com moedas.\n5. Resgate recompensas diárias, missões e códigos no menu MAIS.\n6. Renascimento exige velocidade máxima e 100.000 moedas; concede +10% de renda permanente e preserva seus animais.\n\nSão 8 biomas e " .. tostring(#Catalog.All()) .. " espécies."
         primaryButton.Text = "ENTENDI"
         primaryButton.BackgroundColor3 = COLORS.Mint
-        secondaryButton.Visible = false
     end
+
     if kind ~= "Rebirth" then
         primaryButton.Active = true
         primaryButton.AutoButtonColor = true
         secondaryButton.Text = "FECHAR"
     end
-    if secondaryButton.Visible then
+    primaryButton.Visible = true
+    if codeInput.Visible then
+        primaryButton.Position = UDim2.new(0, 16, 1, -58)
+        primaryButton.Size = UDim2.new(1, -32, 0, 43)
+    elseif secondaryButton.Visible then
         primaryButton.Position = UDim2.new(0, 16, 1, -104)
         primaryButton.Size = UDim2.new(1, -32, 0, 42)
         secondaryButton.Position = UDim2.new(0, 16, 1, -55)
@@ -503,6 +701,8 @@ local function refresh()
         objectiveText.Text = "CARREGANDO SEU PROGRESSO..."
     elseif player:GetAttribute("CarryingAnimal") == true then
         objectiveText.Text = "FUGA! LEVE O FILHOTE AO PAD VERDE DA SUA FAZENDA"
+    elseif tonumber(player:GetAttribute("TotalCaptured")) == 0 then
+        objectiveText.Text = "PRIMEIRO OBJETIVO: ROUBE UM FILHOTE NO CORREDOR"
     else
         objectiveText.Text = "ROUBE UM FILHOTE • LEVE-O À SUA FAZENDA • COLETE MOEDAS"
     end
@@ -511,26 +711,12 @@ local function refresh()
     end
 end
 
-barnButton.Activated:Connect(function()
-    openPanel("Barn")
-end)
-
-collectButton.Activated:Connect(function()
-    collectRemote:FireServer()
-end)
-
-upgradeButton.Activated:Connect(function()
-    openPanel("Treadmill")
-end)
-
-rebirthButton.Activated:Connect(function()
-    openPanel("Rebirth")
-end)
-
-helpButton.Activated:Connect(function()
-    openPanel("Guide")
-end)
-
+barnButton.Activated:Connect(function() openPanel("Barn") end)
+collectButton.Activated:Connect(function() collectRemote:FireServer() end)
+upgradeButton.Activated:Connect(function() openPanel("Treadmill") end)
+rebirthButton.Activated:Connect(function() openPanel("Rebirth") end)
+moreButton.Activated:Connect(function() openPanel("More") end)
+helpButton.Activated:Connect(function() openPanel("Guide") end)
 closeButton.Activated:Connect(closeModal)
 
 primaryButton.Activated:Connect(function()
@@ -548,12 +734,24 @@ primaryButton.Activated:Connect(function()
             closeModal()
         else
             local cost = tonumber(player:GetAttribute("RebirthCost")) or 0
+            local speed = tonumber(player:GetAttribute("SpeedLevel")) or 0
+            local requiredSpeed = tonumber(player:GetAttribute("RebirthRequiredSpeed")) or Config.MaxSpeedPoints
             local coins = tonumber(player:GetAttribute("Coins")) or 0
-            if cost > 0 and coins >= cost and player:GetAttribute("CarryingAnimal") ~= true then
+            if cost > 0 and coins >= cost and speed >= requiredSpeed and player:GetAttribute("CarryingAnimal") ~= true then
                 confirmingRebirth = true
                 openPanel("Rebirth", true)
             end
         end
+    elseif activePanel == "Codes" then
+        if #string.gsub(codeInput.Text, "%s+", "") > 0 then
+            codeRemote:FireServer(codeInput.Text)
+            codeInput.Text = ""
+        else
+            showToast("Digite um dos códigos ativos.", "Warning")
+        end
+    elseif activePanel == "Diagnostics" then
+        modalBody.Text = "Executando MapBot: conferindo cenário e calculando rota..."
+        mapBotRemote:FireServer()
     else
         closeModal()
     end
@@ -563,16 +761,27 @@ secondaryButton.Activated:Connect(function()
     if activePanel == "Rebirth" and confirmingRebirth then
         confirmingRebirth = false
         openPanel("Rebirth")
+    elseif activePanel and activePanel ~= "More" then
+        openPanel("More")
     else
         closeModal()
     end
+end)
+
+mapBotReportRemote.OnClientEvent:Connect(function(report, kind)
+    lastMapBotReport = tostring(report)
+    if activePanel == "Diagnostics" then
+        openPanel("Diagnostics")
+    end
+    showToast(kind == "Success" and "MapBot concluiu a verificação." or "MapBot concluiu a verificação com alertas.", kind or "Info")
 end)
 
 for _, attribute in ipairs({
     "Coins", "BarnBank", "BarnIncomeRate", "BarnAnimalCount", "BarnCapacity",
     "EffectiveWalkSpeed", "TreadmillLevel", "TreadmillGain", "TreadmillUpgradeCost",
     "CarryingAnimal", "ProfileLoaded", "BarnSummary", "Rebirths", "RebirthMultiplier",
-    "RebirthCost",
+    "RebirthCost", "RebirthRequiredCoins", "RebirthRequiredSpeed",
+    "DailyStreak", "DailyClaimAvailable", "TotalCaptured", "TotalDeposited", "QuestClaimsJson",
 }) do
     player:GetAttributeChangedSignal(attribute):Connect(refresh)
 end
