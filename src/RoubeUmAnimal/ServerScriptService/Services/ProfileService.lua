@@ -46,7 +46,7 @@ local function sanitizeBarnAnimals(raw)
     if type(raw) ~= "table" then
         return animals
     end
-    local maxStored = Config.Barn.BaseSlots + Config.Barn.ExtraBarnSlots
+    local maxStored = Config.Barn.BaseSlots
     for _, animalId in ipairs(raw) do
         if #animals >= maxStored then
             break
