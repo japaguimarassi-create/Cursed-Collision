@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataStoreService = game:GetService("DataStoreService")
+local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
@@ -55,11 +56,16 @@ decorationFolder.Name = "Scenery"
 decorationFolder.Parent = world
 
 local profiles = {}
+local sessionTokens = {}
+local saveInProgress = {}
+local leaving = {}
+local actionCooldowns = {}
 local playerBases = {}
 local carried = {}
 local guardians = {}
 local wildRecords = {}
 local rng = Random.new(20261020)
+local SESSION_LEASE_SECONDS = 180
 
 local function notify(player, message, kind)
     if player and player.Parent == Players then
@@ -327,21 +333,134 @@ local function snapshot(profile)
     return data
 end
 
+local function acquireSession(player)
+    local key = "u_" .. tostring(player.UserId)
+    local token = HttpService:GenerateGUID(false)
+    for attempt = 1, 5 do
+        local ok, record = pcall(function()
+            return Store:UpdateAsync(key, function(current)
+                local now = os.time()
+                if type(current) ~= "table" then
+                    current = snapshot(defaultProfile())
+                end
+                local lease = current._Session
+                if type(lease) == "table"
+                    and lease.Token ~= token
+                    and (tonumber(lease.ExpiresAt) or 0) > now then
+                    return nil
+                end
+                local nextRecord = {}
+                for field, value in pairs(current) do
+                    nextRecord[field] = value
+                end
+                nextRecord._Session = {
+                    Token = token,
+                    ExpiresAt = now + SESSION_LEASE_SECONDS,
+                    JobId = game.JobId,
+                }
+                return nextRecord
+            end)
+        end)
+        if ok and type(record) == "table"
+            and type(record._Session) == "table"
+            and record._Session.Token == token then
+            sessionTokens[player] = token
+            return record
+        end
+        if not ok then
+            warn("[StealAnAnimal] Profile lock failed: " .. tostring(record))
+            return nil, "unavailable"
+        end
+        if attempt < 5 then
+            task.wait(attempt * 2)
+        end
+    end
+    return nil, "locked"
+end
+
 local function saveProfile(player)
+    while saveInProgress[player] do
+        task.wait(0.05)
+    end
     local profile = profiles[player]
-    if not profile or profile.Persistent == false then
+    local token = sessionTokens[player]
+    if not profile or not token or profile.Persistent == false then
         return false
     end
+    saveInProgress[player] = true
     local data = snapshot(profile)
-    local ok, err = pcall(function()
-        Store:UpdateAsync("u_" .. tostring(player.UserId), function()
-            return data
+    local ok, result = pcall(function()
+        return Store:UpdateAsync("u_" .. tostring(player.UserId), function(current)
+            local lease = type(current) == "table" and current._Session
+            if type(lease) ~= "table" or lease.Token ~= token then
+                return nil
+            end
+            local nextRecord = {}
+            for field, value in pairs(data) do
+                nextRecord[field] = value
+            end
+            nextRecord._Session = {
+                Token = token,
+                ExpiresAt = os.time() + SESSION_LEASE_SECONDS,
+                JobId = game.JobId,
+            }
+            return nextRecord
         end)
     end)
+    saveInProgress[player] = nil
     if not ok then
-        warn("[StealAnAnimal] Profile save failed: " .. tostring(err))
+        warn("[StealAnAnimal] Profile save failed: " .. tostring(result))
         return false
     end
+    if type(result) ~= "table" or type(result._Session) ~= "table" or result._Session.Token ~= token then
+        profile.Persistent = false
+        sessionTokens[player] = nil
+        warn("[StealAnAnimal] Profile session lock was lost for " .. tostring(player.UserId))
+        return false
+    end
+    return true
+end
+
+local function releaseSession(player)
+    local token = sessionTokens[player]
+    if not token then
+        return
+    end
+    while saveInProgress[player] do
+        task.wait(0.05)
+    end
+    saveInProgress[player] = true
+    pcall(function()
+        Store:UpdateAsync("u_" .. tostring(player.UserId), function(current)
+            local lease = type(current) == "table" and current._Session
+            if type(lease) ~= "table" or lease.Token ~= token then
+                return nil
+            end
+            local nextRecord = {}
+            for field, value in pairs(current) do
+                if field ~= "_Session" then
+                    nextRecord[field] = value
+                end
+            end
+            return nextRecord
+        end)
+    end)
+    saveInProgress[player] = nil
+    sessionTokens[player] = nil
+end
+
+local function allowAction(player, action, cooldown)
+    local now = os.clock()
+    local actions = actionCooldowns[player]
+    if not actions then
+        actions = {}
+        actionCooldowns[player] = actions
+    end
+    local previous = actions[action] or 0
+    if now - previous < cooldown then
+        return false
+    end
+    actions[action] = now
     return true
 end
 
@@ -552,7 +671,7 @@ local function renderBarn(player)
             local spec = Catalog.Get(animal.Id)
             local stage, stageIndex = stageFor(animal, now)
             if spec then
-                local model = createAnimalModel(spec, stage.Name, slot.Position + Vector3.new(0, 0.2, 0), false)
+                local model = createAnimalModel(spec, stage.Name, slot.Position + Vector3.new(0, 0.05, 0), false)
                 model.Name = "StoredAnimal_" .. tostring(index)
                 model.Parent = display
                 local income = Rules.AnimalIncome(spec.Income, stageIndex, Config)
@@ -632,7 +751,7 @@ local function spawnWild(spec)
 end
 
 local function makeGuardian(spec, biome)
-    local position = Vector3.new(biome.CenterX - 48, 0.15, 0)
+    local position = Vector3.new(biome.CenterX - 48, -0.12, 0)
     local model = createAnimalModel(spec, "Adult", position, true)
     model.Name = "Guardian_" .. biome.Id
     model.Parent = guardiansFolder
@@ -641,42 +760,61 @@ local function makeGuardian(spec, biome)
 end
 
 local function loadProfile(player)
-    local key = "u_" .. tostring(player.UserId)
-    local ok, raw = pcall(function()
-        return Store:GetAsync(key)
-    end)
-    local profile = sanitizeProfile(ok and raw or nil)
-    profile.Persistent = ok
-    if not ok then
-        warn("[StealAnAnimal] Profile load failed; using a temporary profile: " .. tostring(raw))
-        notify(player, "Não foi possível carregar o salvamento. Seu progresso desta sessão pode não persistir.", "Warning")
+    local raw, reason = acquireSession(player)
+    if not raw then
+        if reason == "locked" then
+            notify(player, "Seu perfil ainda está ativo em outro servidor. Aguarde alguns segundos e tente novamente.", "Warning")
+            player:Kick("Seu perfil ainda está ativo em outro servidor. Entre novamente em instantes.")
+        else
+            notify(player, "Não foi possível carregar seu salvamento. Tente novamente.", "Error")
+            player:Kick("Não foi possível carregar seus dados com segurança. Tente entrar novamente.")
+        end
+        return false
     end
+    if player.Parent ~= Players then
+        releaseSession(player)
+        return false
+    end
+    local profile = sanitizeProfile(raw)
+    profile.Persistent = true
     local now = os.time()
     local elapsed = math.clamp(now - profile.LastIncomeAt, 0, Config.OfflineIncomeCapSeconds)
     local earnedOffline = offlineIncome(profile, now - elapsed, now)
     profile.BarnBank = math.clamp(profile.BarnBank + earnedOffline, 0, Config.CoinsLimit)
     profile.LastIncomeAt = now
     if player.Parent ~= Players then
-        return
+        profiles[player] = profile
+        saveProfile(player)
+        releaseSession(player)
+        profiles[player] = nil
+        return false
     end
     profiles[player] = profile
     updatePlayerAttributes(player)
     if earnedOffline > 0 then
         notify(player, "Seus animais renderam +" .. tostring(earnedOffline) .. " moedas enquanto você estava fora.", "Success")
     end
+    return true
 end
 
 local function captureAnimal(player, prompt)
-    if not profiles[player] or carried[player] or player:GetAttribute("RebirthInProgress") then
-        if carried[player] then notify(player, "Você só pode carregar um animal por vez.", "Warning") end
+    if not profiles[player] or leaving[player] or carried[player] or player:GetAttribute("RebirthInProgress") then
+        if carried[player] then
+            notify(player, "Você só pode carregar um animal por vez.", "Warning")
+        end
         return
     end
     local model = prompt.Parent and prompt.Parent:FindFirstAncestorOfClass("Model")
-    local spec = model and wildRecords[model]
-    if not spec or not model:IsDescendantOf(wildlifeFolder) then return end
-    wildRecords[model] = nil
     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    local animalRoot = model and model.PrimaryPart
+    if not root or not animalRoot or (root.Position - animalRoot.Position).Magnitude > 12 then
+        return
+    end
+    local spec = model and wildRecords[model]
+    if not spec or not model:IsDescendantOf(wildlifeFolder) then
+        return
+    end
+    wildRecords[model] = nil
     carried[player] = { Spec = spec, Model = model }
     prompt.Enabled = false
     model.Parent = world
@@ -689,8 +827,15 @@ local function captureAnimal(player, prompt)
 end
 
 local function depositAnimal(player, prompt)
-    local base = prompt.Parent and prompt.Parent:FindFirstAncestorOfClass("Model")
-    if not profiles[player] or not base or playerBases[player] ~= base or base:GetAttribute("OwnerUserId") ~= player.UserId then
+    local triggerPart = prompt.Parent
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not triggerPart or not triggerPart:IsA("BasePart") or not root
+        or (root.Position - triggerPart.Position).Magnitude > 15 then
+        return
+    end
+    local base = triggerPart:FindFirstAncestorOfClass("Model")
+    if not profiles[player] or leaving[player] or not base
+        or playerBases[player] ~= base or base:GetAttribute("OwnerUserId") ~= player.UserId then
         return
     end
     local carry = carried[player]
@@ -700,7 +845,7 @@ local function depositAnimal(player, prompt)
     end
     local profile = profiles[player]
     if #profile.BarnAnimals >= Config.BaseSlots then
-        notify(player, "Seu celeiro está cheio. Colete as moedas antes de continuar.", "Warning")
+        notify(player, "Seu celeiro está cheio.", "Warning")
         return
     end
     local animal = {
@@ -711,16 +856,24 @@ local function depositAnimal(player, prompt)
     }
     table.insert(profile.BarnAnimals, animal)
     carried[player] = nil
-    if carry.Model and carry.Model.Parent then carry.Model:Destroy() end
+    if carry.Model and carry.Model.Parent then
+        carry.Model:Destroy()
+    end
     player:SetAttribute("CarryingAnimal", false)
     renderBarn(player)
-    saveProfile(player)
     notify(player, carry.Spec.Name .. " chegou em casa como bebê! Cada evolução aumenta sua renda em 50%.", "Success")
 end
 
 local function collectIncome(player, prompt)
-    local base = prompt.Parent and prompt.Parent:FindFirstAncestorOfClass("Model")
-    if not profiles[player] or not base or playerBases[player] ~= base or base:GetAttribute("OwnerUserId") ~= player.UserId then
+    local triggerPart = prompt.Parent
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not triggerPart or not triggerPart:IsA("BasePart") or not root
+        or (root.Position - triggerPart.Position).Magnitude > 15 then
+        return
+    end
+    local base = triggerPart:FindFirstAncestorOfClass("Model")
+    if not profiles[player] or leaving[player] or not base
+        or playerBases[player] ~= base or base:GetAttribute("OwnerUserId") ~= player.UserId then
         return
     end
     local profile = profiles[player]
@@ -730,15 +883,27 @@ local function collectIncome(player, prompt)
         return
     end
     local credited = math.min(amount, Config.CoinsLimit - profile.Coins)
+    if credited <= 0 then
+        notify(player, "Sua carteira atingiu o limite de moedas.", "Warning")
+        return
+    end
     profile.Coins += credited
     profile.BarnBank -= credited
     updatePlayerAttributes(player)
-    saveProfile(player)
     notify(player, "Você coletou +" .. tostring(credited) .. " moedas!", "Success")
 end
 
 local function onPrompt(prompt, player)
+    if not profiles[player] or leaving[player] then
+        return
+    end
     local interaction = prompt:GetAttribute("InteractionType")
+    if interaction ~= "StealAnimal" and interaction ~= "DepositAnimal" and interaction ~= "CollectIncome" then
+        return
+    end
+    if not allowAction(player, interaction, 0.45) then
+        return
+    end
     if interaction == "StealAnimal" then
         captureAnimal(player, prompt)
     elseif interaction == "DepositAnimal" then
@@ -759,7 +924,7 @@ end)
 
 upgradeRemote.OnServerEvent:Connect(function(player)
     local profile = profiles[player]
-    if not profile then return end
+    if not profile or leaving[player] or not allowAction(player, "upgradeRemote", 0.8) then return end
     local cost = Rules.UpgradeCost(profile.Speed, Config)
     if not cost then
         notify(player, "Sua velocidade já chegou ao nível máximo.", "Info")
@@ -772,11 +937,11 @@ upgradeRemote.OnServerEvent:Connect(function(player)
     profile.Coins -= cost
     profile.Speed += 1
     updatePlayerAttributes(player)
-    saveProfile(player)
     notify(player, "Velocidade melhorada para o nível " .. tostring(profile.Speed) .. ".", "Success")
 end)
 
 collectRemote.OnServerEvent:Connect(function(player)
+    if not profiles[player] or leaving[player] or not allowAction(player, "collectRemote", 0.6) then return end
     local base = playerBases[player]
     local pad = base and base:FindFirstChild("CollectPad")
     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -814,6 +979,7 @@ local function characterAdded(player, character)
         end)
     end
     task.wait(0.25)
+    if player.Parent ~= Players then return end
     local base = playerBases[player]
     local floor = base and base:FindFirstChild("Floor")
     if floor and character.Parent then
@@ -834,8 +1000,8 @@ local function playerAdded(player)
         task.spawn(characterAdded, player, character)
     end)
     task.spawn(function()
-        loadProfile(player)
-        if player.Parent ~= Players then return end
+        local loaded = loadProfile(player)
+        if not loaded or player.Parent ~= Players or not profiles[player] then return end
         player:SetAttribute("ProfileLoaded", true)
         renderBarn(player)
         notify(player, "Bem-vindo! Roube animais bebês, fuja dos guardiões e leve-os ao celeiro. Eles crescem até adultos e rendem cada vez mais.", "Success")
@@ -845,10 +1011,15 @@ end
 
 Players.PlayerAdded:Connect(playerAdded)
 Players.PlayerRemoving:Connect(function(player)
+    leaving[player] = true
     saveProfile(player)
+    releaseSession(player)
     clearCarry(player)
     profiles[player] = nil
+    playerBases[player] = nil
+    actionCooldowns[player] = nil
     releaseBase(player)
+    leaving[player] = nil
 end)
 
 for _, player in ipairs(Players:GetPlayers()) do
@@ -949,7 +1120,9 @@ task.spawn(function()
     while true do
         task.wait(Config.AutosaveSeconds)
         for player in pairs(profiles) do
-            task.spawn(saveProfile, player)
+            if not leaving[player] then
+                task.spawn(saveProfile, player)
+            end
         end
     end
 end)
@@ -957,9 +1130,11 @@ end)
 game:BindToClose(function()
     local pending = 0
     for player in pairs(profiles) do
+        leaving[player] = true
         pending += 1
         task.spawn(function()
             saveProfile(player)
+            releaseSession(player)
             pending -= 1
         end)
     end
