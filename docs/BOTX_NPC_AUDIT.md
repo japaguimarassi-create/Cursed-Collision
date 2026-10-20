@@ -14,9 +14,9 @@ BotX adds three autonomous non-player characters: `bot1`, `bot2`, and `bot3`. Ea
 
 ## Event records
 
-Every event is printed to server Output as `[BOTX_EVENT]` followed by JSON. The stream covers real-player joins/leaves, character lifecycle/deaths, prompt interactions, selected gameplay RemoteEvents (names, argument count and argument types only), and 10-second snapshots of player health/position/profile-loaded state and NPC positions/modes. A periodic summary and a final summary are printed as `[BOTX_SESSION_REPORT]`.
+Every event is printed to server Output as `[BOTX_EVENT]` followed by JSON. The stream covers real-player joins/leaves, character lifecycle/deaths, prompt interactions, selected gameplay RemoteEvents (names, argument count and argument types only), changes to profile/economy/progression attributes (coins, barn bank, speed, treadmill level, rebirths, captures, deposits, carrying state), and 10-second snapshots of player health/position/profile-loaded state and NPC positions/modes. The NPCs' two leg parts collide with the floor so Humanoid movement is physically grounded. A periodic summary and a final summary are printed as `[BOTX_SESSION_REPORT]`.
 
-The session retains the newest 400 events in memory and keeps event counters, including how many old entries were dropped. Remote observation is capped at 30 events per player per RemoteEvent per second to avoid log flooding. These are server session diagnostics, not durable cloud storage; download/copy the Output report if you need an external archive.
+The session retains the newest 400 events in memory and keeps event counters, including how many old entries were dropped. Periodic reports summarize current state without re-embedding the entire event history; the final report includes the retained events. Remote observation is capped at 30 events per player per RemoteEvent per second to avoid log flooding. These are server session diagnostics, not durable cloud storage; download/copy the Output report if you need an external archive.
 
 ## GitHub validation
 
