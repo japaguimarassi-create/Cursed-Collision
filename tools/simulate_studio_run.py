@@ -212,8 +212,8 @@ def simulate_hud(audit, client, screen_profiles):
             corner_width = width * 0.32
             if touch and rendered_prompt_bottom >= height * 0.78:
                 prompt_clear_of_corner_controls = (
-                    rendered_prompt_right <= corner_width
-                    or rendered_prompt_x >= width - corner_width
+                    rendered_prompt_x >= corner_width
+                    and rendered_prompt_right <= width - corner_width
                 )
             prompt_geometry = {
                 "x": round(rendered_prompt_x, 2),
