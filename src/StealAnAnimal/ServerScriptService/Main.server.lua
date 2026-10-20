@@ -295,10 +295,17 @@ local function sanitizeProfile(raw)
     if type(raw) ~= "table" then
         return data
     end
-    data.Coins = math.clamp(math.floor(tonumber(raw.Coins) or 0), 0, Config.CoinsLimit)
-    data.Speed = math.clamp(math.floor(tonumber(raw.Speed) or 0), 0, Config.MaxSpeedLevel)
-    data.BarnBank = math.clamp(math.floor(tonumber(raw.BarnBank) or 0), 0, Config.CoinsLimit)
-    data.LastIncomeAt = math.max(0, math.floor(tonumber(raw.LastIncomeAt) or os.time()))
+    local function safeInteger(value, minimum, maximum, fallback)
+        local numberValue = tonumber(value)
+        if type(numberValue) ~= "number" or numberValue ~= numberValue or numberValue == math.huge or numberValue == -math.huge then
+            return fallback
+        end
+        return math.clamp(math.floor(numberValue), minimum, maximum)
+    end
+    data.Coins = safeInteger(raw.Coins, 0, Config.CoinsLimit, 0)
+    data.Speed = safeInteger(raw.Speed, 0, Config.MaxSpeedLevel, 0)
+    data.BarnBank = safeInteger(raw.BarnBank, 0, Config.CoinsLimit, 0)
+    data.LastIncomeAt = safeInteger(raw.LastIncomeAt, 0, 2147483647, os.time()))
     if type(raw.BarnAnimals) == "table" then
         for index, entry in ipairs(raw.BarnAnimals) do
             if index > Config.BaseSlots then
@@ -416,6 +423,10 @@ local function saveProfile(player)
         profile.Persistent = false
         sessionTokens[player] = nil
         warn("[StealAnAnimal] Profile session lock was lost for " .. tostring(player.UserId))
+        if player.Parent == Players and not leaving[player] then
+            notify(player, "Seu bloqueio de salvamento foi perdido. A sessão será encerrada para proteger seus dados.", "Error")
+            player:Kick("O bloqueio de salvamento foi perdido. Entre novamente para proteger seu progresso.")
+        end
         return false
     end
     return true
@@ -569,7 +580,7 @@ local function buildScenery()
     addBall(world, "FountainGem", Vector3.new(3.5, 3.5, 3.5), Vector3.new(0, 4.2, 0), Color3.fromRGB(115, 234, 255), Enum.Material.Neon)
 
     for _, biome in ipairs(Config.Biomes) do
-        createPart(world, biome.Id .. "Ground", Vector3.new(150, 1, 180), CFrame.new(biome.CenterX, -0.9, 0), biome.Ground, biome.Material, nil, true)
+        createPart(world, biome.Id .. "Ground", Vector3.new(150, 1, 180), CFrame.new(biome.CenterX, -0.5, 0), biome.Ground, biome.Material, nil, true)
         createPart(world, biome.Id .. "Path", Vector3.new(150, 0.32, 12), CFrame.new(biome.CenterX, -0.15, 0), Color3.fromRGB(218, 199, 157), Enum.Material.Cobblestone, nil, true)
         createPart(world, biome.Id .. "ArchTop", Vector3.new(25, 2, 2), CFrame.new(biome.CenterX - 63, 13, 0), biome.Accent, Enum.Material.Neon, nil, false)
         for _, side in ipairs({ -1, 1 }) do
