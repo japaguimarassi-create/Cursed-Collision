@@ -78,7 +78,9 @@ def simulate_hud(audit, client, screen_profiles):
     dock_w = number_from(r'dock\.Size\s*=\s*UDim2\.new\(0,\s*(\d+),\s*0,\s*140\)', client)
     dock_h = number_from(r'dock\.Size\s*=\s*UDim2\.new\(0,\s*52,\s*0,\s*(\d+)\)', client)
     dock_x = number_from(r'dock\.Position\s*=\s*UDim2\.new\(0,\s*(\d+),\s*0,\s*y\)', client)
-    touch_y = number_from(r'local y\s*=\s*touchDevice and\s*(\d+)\s+or\s*(\d+)', client)
+    position_rule = re.search(r'local y\s*=\s*(?:touchDevice and\s*(\d+)\s+or\s*(\d+)|(\d+))', client)
+    touch_y = int(position_rule.group(1) or position_rule.group(3)) if position_rule else None
+    non_touch_y = int(position_rule.group(2) or position_rule.group(3)) if position_rule else None
     target = re.search(r'button\.Size\s*=\s*UDim2\.new\(0,\s*(\d+),\s*0,\s*(\d+)\)', client)
     target_w = int(target.group(1)) if target else None
     target_h = int(target.group(2)) if target else None
@@ -86,7 +88,7 @@ def simulate_hud(audit, client, screen_profiles):
     parsed = all(value is not None for value in (
         top_y, top_h, top_min_w, top_max_w, objective_y, objective_h,
         objective_min_w, objective_max_w, dock_w, dock_h, dock_x,
-        touch_y, target_w, target_h,
+        touch_y, non_touch_y, target_w, target_h,
     ))
     audit.check(
         "HUD geometry constants can be read from source",
@@ -133,7 +135,6 @@ def simulate_hud(audit, client, screen_profiles):
         rendered_obj_h = objective_h * scale
         rendered_obj_x = (width - rendered_obj_w) / 2
         rendered_obj_y = objective_y * scale
-        non_touch_y = number_from(r'local y\s*=\s*touchDevice and\s*\d+\s+or\s*(\d+)', client, default=56)
         rendered_dock_w = dock_w * scale
         rendered_dock_h = dock_h * scale
         rendered_dock_x = dock_x * scale
