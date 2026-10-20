@@ -107,7 +107,7 @@ def main():
         ("DataStore session lock and atomic writes", "UpdateAsync" in profiles and "SessionLock" in profiles and "function transact" in profiles),
         ("legacy strength data is discarded safely", "current.Strength = nil" in profiles and "Config.SchemaVersion" in profiles),
         ("barn data persists", all(token in profiles for token in ("BarnAnimals", "BarnBank", "LastIncomeAt", "AddBarnAnimal", "CollectBarnIncome")) and "ExtraPassSlots" not in profiles and "ExtraBarnSlots" in profiles),
-        ("one barn capacity setting across runtime", "ExtraPassSlots" not in world and "ExtraPassSlots" not in barn and "ExtraBarnSlots" in world and "ExtraBarnSlots" in barn),
+        ("barn capacity is independent of purchases", "BaseSlots" in barn and "capacityFor" in barn and "ExtraBarnSlots" not in barn),
         ("offline income is bounded and atomically claimed", "ClaimOfflineIncome" in profiles and "OfflineIncomeCapSeconds" in config and "current.LastIncomeAt = now" in profiles),
         ("capture-to-barn gameplay", all(token in animals for token in ("Rules.CanCapture", "AnimalService.Deposit", "scheduleRespawn", "CarryingAnimal")) and "AddBarnAnimal" in barn),
         ("no immediate animal sale", "SellPart" not in world and "salePrice" not in animals and "function deposit" in barn),
