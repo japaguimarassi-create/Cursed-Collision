@@ -235,6 +235,9 @@ local function runAudit()
             "Fazendas: " .. tostring(farms and #farms:GetChildren() or 0))
         record("Oito guardiões foram criados", guardians ~= nil and #guardians:GetChildren() >= 8,
             "Guardiões: " .. tostring(guardians and #guardians:GetChildren() or 0))
+        local namedGuardians = countDescendantsNamed(guardians, "GuardianParent_")
+        record("Há um guardião nomeado para cada bioma", namedGuardians >= 8,
+            "Guardians encontrados: " .. tostring(namedGuardians))
         record("Animais aparecem no corredor", wildlife ~= nil and #wildlife:GetChildren() > 0,
             "Animais ativos: " .. tostring(wildlife and #wildlife:GetChildren() or 0))
         record("Cenário contém objetos", scenery ~= nil and #scenery:GetChildren() > 0,
