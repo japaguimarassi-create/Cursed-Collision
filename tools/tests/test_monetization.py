@@ -16,9 +16,9 @@ assert all(token not in CLIENT + SHELL + KERNEL for token in (
     "DoubleIncome", "DoubleSpeed", "VIPFarm", "HasExtraBarnSlots"
 )), "Runtime must not contain gamepass behavior"
 
-match = re.search(r"Products = table\\.freeze\\(\\{(.*?)\\}\\)", IDS, re.S)
+match = re.search(r"Products = table\.freeze\(\{(.*?)\}\)", IDS, re.S)
 assert match, "Developer product registry missing"
-products = dict((name, int(value)) for name, value in re.findall(r"(\\w+)\\s*=\\s*(\\d+)", match.group(1)))
+products = dict((name, int(value)) for name, value in re.findall(r"(\w+)\s*=\s*(\d+)", match.group(1)))
 assert set(products) == {"SpeedBoost", "CoinBundle"}
 configured = [value for value in products.values() if value > 0]
 assert len(configured) == len(set(configured)), "Nonzero developer product IDs must be unique"
