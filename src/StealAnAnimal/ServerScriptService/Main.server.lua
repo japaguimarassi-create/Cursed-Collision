@@ -129,37 +129,47 @@ local function addCylinder(parent, name, size, cf, color, material, canCollide)
     return createPart(parent, name, cylinderSize, cf * CFrame.Angles(0, 0, math.rad(90)), color, material, Enum.PartType.Cylinder, canCollide)
 end
 
-local function addLabel(part, title, subtitle, color)
+local function addLabel(part, title, subtitle, color, compact, maxDistance, heightOffset)
+    local compactLabel = compact == true
     local gui = Instance.new("BillboardGui")
     gui.Name = "AnimalLabel"
-    gui.Size = UDim2.fromOffset(190, 58)
-    gui.StudsOffset = Vector3.new(0, 3.2, 0)
-    gui.AlwaysOnTop = true
-    gui.MaxDistance = 95
+    gui.Size = compactLabel and UDim2.fromOffset(112, 36) or UDim2.fromOffset(152, 44)
+    gui.StudsOffset = Vector3.new(0, heightOffset or (compactLabel and 1.25 or 1.85), 0)
+    gui.AlwaysOnTop = false
+    gui.MaxDistance = maxDistance or (compactLabel and 18 or 32)
     gui.Adornee = part
     gui.Parent = part
 
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Name = "Title"
-    nameLabel.Size = UDim2.new(1, 0, 0.55, 0)
+    nameLabel.Position = UDim2.new(0, 4, 0, 0)
+    nameLabel.Size = UDim2.new(1, -8, 0.56, 0)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Font = Enum.Font.GothamBlack
     nameLabel.Text = title
     nameLabel.TextColor3 = Color3.fromRGB(255, 250, 229)
     nameLabel.TextStrokeTransparency = 0.25
-    nameLabel.TextScaled = true
+    nameLabel.TextSize = compactLabel and 9 or 11
+    nameLabel.TextScaled = false
+    nameLabel.TextWrapped = true
+    nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Center
     nameLabel.Parent = gui
 
     local detail = Instance.new("TextLabel")
     detail.Name = "Subtitle"
-    detail.Position = UDim2.new(0, 0, 0.55, 0)
-    detail.Size = UDim2.new(1, 0, 0.45, 0)
+    detail.Position = UDim2.new(0, 4, 0.56, 0)
+    detail.Size = UDim2.new(1, -8, 0.44, 0)
     detail.BackgroundTransparency = 1
     detail.Font = Enum.Font.GothamBold
     detail.Text = subtitle
     detail.TextColor3 = color or Color3.fromRGB(255, 218, 105)
     detail.TextStrokeTransparency = 0.35
-    detail.TextScaled = true
+    detail.TextSize = compactLabel and 8 or 9
+    detail.TextScaled = false
+    detail.TextWrapped = true
+    detail.TextTruncate = Enum.TextTruncate.AtEnd
+    detail.TextXAlignment = Enum.TextXAlignment.Center
     detail.Parent = gui
     return gui
 end
@@ -204,9 +214,12 @@ local function createAnimalModel(spec, stageName, position, giant)
         ball("Muzzle", 0.48, 0.22, 0.5, 0, 1.08, -1.46, spec.Accent)
     else
         ball("Body", 1.65, 1.25, 2.0, 0, 1.25, 0)
-        ball("Chest", 1.18, 1.15, 1.05, 0, 1.35, -0.62, spec.Accent)
-        ball("Head", 1.12, 1.08, 1.05, 0, 2.18, -1.05)
-        ball("Muzzle", 0.68, 0.48, 0.52, 0, 1.96, -1.62, spec.Accent)
+        local chestColor = spec.Id == "Swan" and spec.Color or spec.Accent
+        ball("Chest", 1.18, 1.15, 1.05, 0, 1.35, -0.62, chestColor)
+        if spec.Id ~= "Swan" then
+            ball("Head", 1.12, 1.08, 1.05, 0, 2.18, -1.05)
+            ball("Muzzle", 0.68, 0.48, 0.52, 0, 1.96, -1.62, spec.Accent)
+        end
     end
     local eyeX, eyeY, eyeZ = 0.29, 2.34, -1.57
     if spec.Shape == "Whale" or spec.Shape == "Dolphin" then
@@ -248,11 +261,17 @@ local function createAnimalModel(spec, stageName, position, giant)
         ball("ChestBadgeCore", 0.14, 0.14, 0.08, 0, 1.25, -1.22, Color3.fromRGB(255, 241, 180))
     end
 
-    for _, side in ipairs({ -1, 1 }) do
-        if spec.Shape ~= "Whale" and spec.Shape ~= "Dolphin" and spec.Shape ~= "Ray" then
-            ball("Ear", 0.32, (spec.Shape == "Fox" or spec.Shape == "Wolf") and 0.75 or 0.55, 0.24, side * 0.38, 2.8, -0.88, spec.Color)
-            ball("LegFront", 0.35, 0.72, 0.38, side * 0.48, 0.48, -0.55, spec.Color)
-            ball("LegBack", 0.38, 0.68, 0.4, side * 0.48, 0.45, 0.62, spec.Color)
+    if spec.Id == "Swan" then
+        for _, side in ipairs({ -1, 1 }) do
+            ball("SwanFoot", 0.4, 0.14, 0.55, side * 0.32, 0.16, -0.1, Color3.fromRGB(255, 141, 42))
+        end
+    else
+        for _, side in ipairs({ -1, 1 }) do
+            if spec.Shape ~= "Whale" and spec.Shape ~= "Dolphin" and spec.Shape ~= "Ray" then
+                ball("Ear", 0.32, (spec.Shape == "Fox" or spec.Shape == "Wolf") and 0.75 or 0.55, 0.24, side * 0.38, 2.8, -0.88, spec.Color)
+                ball("LegFront", 0.35, 0.72, 0.38, side * 0.48, 0.48, -0.55, spec.Color)
+                ball("LegBack", 0.38, 0.68, 0.4, side * 0.48, 0.45, 0.62, spec.Color)
+            end
         end
     end
 
@@ -728,9 +747,10 @@ local function createTreadmill(base, center)
 
     local console = createPart(treadmill, "TreadmillConsole", Vector3.new(2.6, 1.15, 0.38), CFrame.new(origin + Vector3.new(0, 2.05, -3.45)), Color3.fromRGB(35, 67, 72), Enum.Material.Metal, nil, true)
     createPart(treadmill, "ConsoleScreen", Vector3.new(1.95, 0.48, 0.06), CFrame.new(origin + Vector3.new(0, 2.22, -3.68)), Color3.fromRGB(62, 242, 204), Enum.Material.Neon, nil, false)
-    addLabel(console, "ESTEIRA DE VELOCIDADE", "CORRA SOBRE A FAIXA PARA TREINAR", Color3.fromRGB(95, 239, 226))
+    addLabel(console, "ESTEIRA DE VELOCIDADE", "CORRA SOBRE A FAIXA PARA TREINAR", Color3.fromRGB(95, 239, 226), false, 22, 1.4)
 
     local upgradePrompt = Instance.new("ProximityPrompt")
+    upgradePrompt.Style = Enum.ProximityPromptStyle.Custom
     upgradePrompt.Name = "UpgradeTreadmillPrompt"
     upgradePrompt.ActionText = "MELHORAR ESTEIRA"
     upgradePrompt.ObjectText = "Equipamento da sua fazenda"
@@ -810,7 +830,7 @@ local function createBase(index)
     barnLamp.Shape = Enum.PartType.Ball
     createPart(base, "BarnSign", Vector3.new(10, 2, 0.35), CFrame.new(center + Vector3.new(0, 8.35, -6.7)), Color3.fromRGB(75, 52, 42), Enum.Material.Wood, nil, false)
     local sign = base.BarnSign
-    addLabel(sign, "SUA FAZENDA", "Bebês crescem aqui", Color3.fromRGB(255, 218, 105))
+    addLabel(sign, "SUA FAZENDA", "Bebês crescem aqui", Color3.fromRGB(255, 218, 105), false, 28, 1.7)
 
     local display = Instance.new("Folder")
     display.Name = "StoredAnimals"
@@ -822,14 +842,14 @@ local function createBase(index)
     for slotIndex, offset in ipairs(offsets) do
         local pad = createPart(display, "Slot_" .. tostring(slotIndex), Vector3.new(5.1, 0.25, 5.1), CFrame.new(center + offset), Color3.fromRGB(235, 222, 183), Enum.Material.Sand, nil, false)
         pad:SetAttribute("SlotIndex", slotIndex)
-        addLabel(pad, "ESPAÇO " .. tostring(slotIndex), "VAZIO", Color3.fromRGB(255, 218, 105))
     end
 
     createTreadmill(base, center)
 
     local deposit = createPart(base, "DepositPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(-12, 0.35, -10)), Color3.fromRGB(78, 235, 128), Enum.Material.Neon, nil, false)
-    addLabel(deposit, "GUARDAR ANIMAL", "Leve o bebê para casa", Color3.fromRGB(255, 255, 230))
+    addLabel(deposit, "GUARDAR ANIMAL", "Leve o bebê para casa", Color3.fromRGB(255, 255, 230), false, 18, 1.2)
     local depositPrompt = Instance.new("ProximityPrompt")
+    depositPrompt.Style = Enum.ProximityPromptStyle.Custom
     depositPrompt.Name = "DepositPrompt"
     depositPrompt.ActionText = "GUARDAR"
     depositPrompt.ObjectText = "Sua fazenda"
@@ -840,8 +860,9 @@ local function createBase(index)
     depositPrompt.Parent = deposit
 
     local collect = createPart(base, "CollectPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(12, 0.35, -10)), Color3.fromRGB(255, 203, 65), Enum.Material.Neon, nil, false)
-    addLabel(collect, "COLETAR MOEDAS", "Renda dos animais", Color3.fromRGB(255, 255, 230))
+    addLabel(collect, "COLETAR MOEDAS", "Renda dos animais", Color3.fromRGB(255, 255, 230), false, 18, 1.2)
     local collectPrompt = Instance.new("ProximityPrompt")
+    collectPrompt.Style = Enum.ProximityPromptStyle.Custom
     collectPrompt.Name = "CollectPrompt"
     collectPrompt.ActionText = "COLETAR"
     collectPrompt.ObjectText = "Moedas da fazenda"
@@ -1168,7 +1189,7 @@ local function renderBarn(player)
                 model.Name = "StoredAnimal_" .. tostring(index)
                 model.Parent = display
                 local income = math.floor(Rules.AnimalIncome(spec.Income, stageIndex, Config) * Rules.RebirthIncomeMultiplier(profile.Rebirths, Config))
-                addLabel(model.PrimaryPart, spec.Name, stage.DisplayName .. " • +" .. tostring(income) .. "/s", spec.Accent)
+                addLabel(model.PrimaryPart, spec.Name, stage.DisplayName .. " • +" .. tostring(income) .. "/s", spec.Accent, true, 18, 1.2)
                 slot.Color = spec.Color
                 slot.Transparency = 0.25
                 if title then title.Text = spec.Name end
@@ -1192,7 +1213,7 @@ local function assignBase(player)
             if sign then
                 local oldGui = sign:FindFirstChild("AnimalLabel")
                 if oldGui then oldGui:Destroy() end
-                addLabel(sign, player.DisplayName .. "'S FARM", "SEUS ANIMAIS CRESCEM AQUI", Color3.fromRGB(255, 218, 105))
+                addLabel(sign, player.DisplayName .. "'S FARM", "SEUS ANIMAIS CRESCEM AQUI", Color3.fromRGB(255, 218, 105), false, 28, 1.7)
             end
             playerBases[player] = base
             local spawn = base:FindFirstChild("Floor")
@@ -1214,7 +1235,7 @@ local function releaseBase(player)
         if sign then
             local gui = sign:FindFirstChild("AnimalLabel")
             if gui then gui:Destroy() end
-            addLabel(sign, "SUA FAZENDA", "Bebês crescem aqui", Color3.fromRGB(255, 218, 105))
+            addLabel(sign, "SUA FAZENDA", "Bebês crescem aqui", Color3.fromRGB(255, 218, 105), false, 28, 1.7)
         end
     end
 end
@@ -1229,8 +1250,9 @@ local function spawnWild(spec)
     local model = createAnimalModel(spec, "Baby", position, false)
     model.Parent = wildlifeFolder
     local root = model.PrimaryPart
-    addLabel(root, spec.Name, spec.Rarity .. " • $" .. tostring(spec.Income) .. "/s base", spec.Accent)
+    addLabel(root, spec.Name, spec.Rarity .. " • $" .. tostring(spec.Income) .. "/s base", spec.Accent, true, 18, 1.2)
     local prompt = Instance.new("ProximityPrompt")
+    prompt.Style = Enum.ProximityPromptStyle.Custom
     prompt.Name = "StealPrompt"
     prompt.ActionText = "ROUBAR"
     prompt.ObjectText = spec.Name .. " • BEBÊ"
@@ -1251,8 +1273,8 @@ local function makeGuardian(spec, biome)
     model:SetAttribute("GuardianBiome", biome.Id)
     model:SetAttribute("ThreatLevel", biome.Phase)
     model.Parent = guardiansFolder
-    local head = model:FindFirstChild("Head")
-    addLabel(head or model.PrimaryPart, "PAI PROTETOR: " .. string.upper(spec.Name), "GUARDIÃO • FASE " .. tostring(biome.Phase) .. " • PROTEGE OS OVOS", biome.Accent)
+    local head = model:FindFirstChild("Head") or model:FindFirstChild("SwanHead")
+    addLabel(head or model.PrimaryPart, "PAI PROTETOR: " .. string.upper(spec.Name), "GUARDIÃO • FASE " .. tostring(biome.Phase) .. " • PROTEGE OS OVOS", biome.Accent, false, 58, 1.4)
     local highlight = Instance.new("Highlight")
     highlight.Name = "GuardianRim"
     highlight.Adornee = model

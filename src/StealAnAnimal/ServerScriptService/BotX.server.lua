@@ -223,10 +223,10 @@ local function makeFaceAndBadge(model, head, torso)
     makeDetail(model, torso, "BotXBadgeCore", Vector3.new(0.32, 0.32, 0.14), Vector3.new(0, 0.24, -0.66), GOLD, Enum.PartType.Ball, Enum.Material.Neon)
     local plate = Instance.new("BillboardGui")
     plate.Name = "BotXNameplate"
-    plate.Size = UDim2.fromOffset(160, 44)
-    plate.StudsOffset = Vector3.new(0, 2.45, 0)
-    plate.AlwaysOnTop = true
-    plate.MaxDistance = 260
+    plate.Size = UDim2.fromOffset(124, 36)
+    plate.StudsOffset = Vector3.new(0, 2.25, 0)
+    plate.AlwaysOnTop = false
+    plate.MaxDistance = 90
     plate.Adornee = head
     plate.Parent = head
     local title = Instance.new("TextLabel")
@@ -452,7 +452,50 @@ local function sessionIsCurrent(id)
     return active and sessionId == id and hasActivePlayer()
 end
 
+local function updateBotMode(state, mode)
+    state.Mode = mode
+    local head = state.Model and state.Model:FindFirstChild("Head")
+    local plate = head and head:FindFirstChild("BotXNameplate")
+    local status = plate and plate:FindFirstChild("Status", true)
+    if status then
+        status.Text = mode == "OBSERVING_PLAYER" and "OBSERVANDO JOGADOR" or mode == "OBSERVING" and "OBSERVANDO" or mode == "PATROL" and "PATRULHA" or "ANALISANDO"
+    end
+end
+
 local function patrol(state, id)
+    if state.Index == 1 then
+        while sessionIsCurrent(id) and state.Model and state.Model.Parent and state.Humanoid.Health > 0 do
+            local targetRoot = nil
+            local nearestDistance = math.huge
+            for _, player in ipairs(Players:GetPlayers()) do
+                local character = player.Character
+                local root = character and character:FindFirstChild("HumanoidRootPart")
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                if root and humanoid and humanoid.Health > 0 then
+                    local distance = (root.Position - state.Root.Position).Magnitude
+                    if distance < nearestDistance then
+                        nearestDistance = distance
+                        targetRoot = root
+                    end
+                end
+            end
+            if targetRoot then
+                local offset = targetRoot.CFrame.RightVector * 7 + targetRoot.CFrame.LookVector * 4
+                local destination = targetRoot.Position + offset
+                destination = Vector3.new(destination.X, targetRoot.Position.Y, destination.Z)
+                if (state.Root.Position - destination).Magnitude > 4 then
+                    updateBotMode(state, "OBSERVING_PLAYER")
+                    state.Humanoid:MoveTo(destination)
+                else
+                    updateBotMode(state, "OBSERVING")
+                end
+            else
+                updateBotMode(state, "OBSERVING")
+            end
+            task.wait(1.75)
+        end
+        return
+    end
     local route = {}
     for _, biome in ipairs(Config.Biomes) do
         local world = Workspace:FindFirstChild("StealAnAnimalRuntimeWorld")
@@ -469,7 +512,7 @@ local function patrol(state, id)
     while sessionIsCurrent(id) and state.Model and state.Model.Parent and state.Humanoid.Health > 0 do
         local targetIndex = ((state.NextWaypoint - 1) % #route) + 1
         local destination = route[targetIndex]
-        state.Mode = "PATROL"
+        updateBotMode(state, "PATROL")
         local path = PathfindingService:CreatePath({
             AgentRadius = 2,
             AgentHeight = 5,
@@ -483,7 +526,7 @@ local function patrol(state, id)
         if pathOk and path.Status == Enum.PathStatus.Success then
             waypoints = path:GetWaypoints()
         else
-            state.Mode = "DIRECT_FALLBACK"
+            updateBotMode(state, "DIRECT_FALLBACK")
             record("npc_path_fallback", state.Name, {
                 targetWaypoint = targetIndex,
                 pathStatus = pathOk and tostring(path.Status) or "compute_error",
