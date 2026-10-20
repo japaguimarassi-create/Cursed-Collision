@@ -155,10 +155,10 @@ def main():
 
     if "Passes" in ids or "PassService" in kernel or "RequestGamepass" in shell:
         fail("gamepass support must be absent from the runtime")
-    product_section = re.search(r"Products = table\\.freeze\\(\\{(.*?)\\}\\)", ids, re.S)
+    product_section = re.search(r"Products = table\.freeze\(\{(.*?)\}\)", ids, re.S)
     if not product_section:
         fail("developer product ID registry could not be parsed")
-    product_ids = dict((name, int(value)) for name, value in re.findall(r"(\\w+)\\s*=\\s*(\\d+)", product_section.group(1)))
+    product_ids = dict((name, int(value)) for name, value in re.findall(r"(\w+)\s*=\s*(\d+)", product_section.group(1)))
     if set(product_ids) != {"SpeedBoost", "CoinBundle"}:
         fail("developer product keys do not match the implemented receipt handlers")
     configured = [value for value in product_ids.values() if value > 0]
