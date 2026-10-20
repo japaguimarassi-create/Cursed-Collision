@@ -158,7 +158,7 @@ function CoreKernel.Start()
         end
     end
     local serviceNames = {
-        "ProfileService", "AnimalService", "TrainingService", "ShopService", "PassService",
+        "ProfileService", "AnimalService", "TrainingService", "ShopService",
         "GuardianService", "AnimalBrain", "StackableProductService", "RebirthService",
         "BarnService", "ProgressionService",
     }
@@ -170,7 +170,7 @@ function CoreKernel.Start()
     local AnimalService = modules.AnimalService or NullService
     local TrainingService = modules.TrainingService or NullService
     local ShopService = modules.ShopService or NullService
-    local PassService = modules.PassService or NullService
+    local PassService = NullService
     local GuardianService = modules.GuardianService or NullService
     local AnimalBrain = modules.AnimalBrain or NullService
     local StackableProductService = modules.StackableProductService or NullService
@@ -186,7 +186,7 @@ function CoreKernel.Start()
         return ok
     end
 
-    if modules.AnimalService and modules.PassService then
+    if modules.AnimalService then
         startService("AnimalService", function()
             AnimalService.Start(ProfileService, WorldBuilder, PassService, notify)
         end)
@@ -194,11 +194,6 @@ function CoreKernel.Start()
     if modules.ShopService then
         startService("ShopService", function()
             ShopService.Start(ProfileService, AnimalService, PassService, remotes:FindFirstChild("RequestUpgrade"), notify)
-        end)
-    end
-    if modules.PassService then
-        startService("PassService", function()
-            PassService.Start(remotes:FindFirstChild("RequestGamepass"), remotes:FindFirstChild("PromptGamepass"), notify, AnimalService.ApplyMovement)
         end)
     end
     if modules.TrainingService then
@@ -272,10 +267,6 @@ end
 local function playerAdded(player)
     player:SetAttribute("DataLoaded", false)
     player:SetAttribute("CarryingAnimal", false)
-    player:SetAttribute("HasDoubleIncome", false)
-    player:SetAttribute("HasDoubleSpeed", false)
-    player:SetAttribute("HasVIPFarm", false)
-    player:SetAttribute("HasExtraBarnSlots", false)
     player.CharacterAdded:Connect(function(character)
         task.spawn(characterAdded, player, character)
     end)
@@ -305,10 +296,6 @@ local function playerAdded(player)
         end
 
         task.spawn(function()
-            local passOk, passErr = pcall(PassService.Load, player)
-            if not passOk then
-                warn("StealAnAnimal: gamepass loading failed: " .. tostring(passErr))
-            end
             if player.Parent ~= Players or not ProfileService.IsLoaded(player) then
                 return
             end
@@ -329,7 +316,6 @@ Players.PlayerRemoving:Connect(function(player)
     AnimalService.RemovePlayer(player)
     TrainingService.RemovePlayer(player)
     ShopService.RemovePlayer(player)
-    PassService.RemovePlayer(player)
     StackableProductService.RemovePlayer(player)
     RebirthService.RemovePlayer(player)
     ProgressionService.RemovePlayer(player)
