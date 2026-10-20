@@ -47,3 +47,12 @@ Referências consultadas antes e depois da implementação:
 - Guia comunitário para o conceito de progresso e esteira: https://steal-an-egg.robloxgamewiki.com/progression/treadmill-guide
 
 As referências orientaram apenas a função da esteira, a faixa escura com detalhes luminosos, o mostrador de treino e a relação entre velocidade e fuga. O equipamento e o mapa foram montados em Parts nativas com posicionamento, formas, cores e geometria próprios.
+
+
+## Revisão de carregamento do mapa — r6
+
+O arquivo anterior era bem-formado como binário, mas continha somente scripts, módulos e serviços, sem peças serializadas em Workspace. A cena surgia apenas quando o Script de servidor executava em Play; abrir o arquivo no modo de edição podia mostrar Workspace vazio.
+
+A correção adiciona uma planta física em Workspace/StealAnAnimalWorld.model.json: corredor, oito portais, fazendas retangulares, oito esteiras, guardiões adultos e animais de amostra. O servidor constrói uma versão interativa separada em StealAnAnimalRuntimeWorld e remove o preview somente após concluir a criação do cenário, das fazendas, dos animais selvagens e dos guardiões. Se a inicialização falhar antes disso, a planta estática não é destruída.
+
+O CI analisa o arquivo binário recém-gerado: cabeçalho RBXL, descompressão LZ4 de cada bloco, limites, contagem de classes/instâncias, Workspace, centenas de Parts, bloco PRNT e terminador END. Essa validação estrutural é feita só por código; não substitui executar o jogo dentro do Roblox Studio.

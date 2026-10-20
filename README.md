@@ -24,7 +24,7 @@ A mobile-first Roblox experience about stealing baby animals, escaping their adu
 
 ## Build and validate
 
-The Rojo project maps src/StealAnAnimal into the Roblox DataModel. The workflow parses active Luau files before tests and creates an RBXL artifact.
+The Rojo project maps game scripts and a static map preview into Workspace. The RBXL opens with physical map geometry already serialized; on server startup, the interactive world is built separately and the preview is removed only after the runtime scene is created. CI decodes every RBXL chunk and verifies Workspace plus hundreds of embedded Parts.
 
 Validation commands:
 - python3 tools/validate_roube_animal.py
@@ -33,8 +33,9 @@ Validation commands:
 - python3 tools/tests/test_monetization.py
 - python3 tools/tests/test_core_reliability.py
 - rojo build default.project.json --output build/StealAnAnimal.rbxl
+- python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
 
-Passing automated checks does not replace a live Roblox Studio test. This branch does not publish to Roblox. Publishing remains a separate manual operation with explicit destination configuration and confirmation.
+Passing automated checks does not replace a live Roblox Studio test. This branch does not publish to Roblox. Publishing remains a separate manual operation with explicit destination configuration and confirmation. Binary validation is automated; it does not claim a live Roblox Studio launch because Studio is not present in this code-only runner.
 
 ## Visual research
 

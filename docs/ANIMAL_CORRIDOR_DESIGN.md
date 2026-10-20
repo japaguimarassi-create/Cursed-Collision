@@ -26,3 +26,10 @@ No source mesh, screenshot, map coordinates, branded treadmill, or packaged mode
 ## Visual test loop
 
 After each structural change, check Luau parsing, server-authoritative movement rules, map dimensions and spawn positions, current HUD attributes, the no-monetization audit, and RBXL generation. A passing cloud build confirms the source and artifact generation, not a live Roblox Studio playtest.
+
+
+## r6 — mapa incorporado ao arquivo
+
+O arquivo anterior estava íntegro como contêiner, mas o cenário não estava serializado em Workspace; apenas o script criava as peças ao iniciar. Agora o projeto inclui uma planta física dentro do arquivo. No servidor, a pasta runtime é construída separadamente e o preview só é retirado quando a cena interativa estiver criada.
+
+O CI decodifica todos os blocos do arquivo gerado e exige Workspace, scripts essenciais, estrutura de pais e pelo menos 300 peças na cena persistida.

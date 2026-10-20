@@ -30,13 +30,14 @@ local notifyRemote = remote("Notify")
 local upgradeRemote = remote("RequestUpgrade")
 local collectRemote = remote("RequestCollect")
 
-local oldWorld = Workspace:FindFirstChild("StealAnAnimalWorld")
-if oldWorld then
-    oldWorld:Destroy()
+local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")
+local previousRuntimeWorld = Workspace:FindFirstChild("StealAnAnimalRuntimeWorld")
+if previousRuntimeWorld then
+    previousRuntimeWorld:Destroy()
 end
 
 local world = Instance.new("Folder")
-world.Name = "StealAnAnimalWorld"
+world.Name = "StealAnAnimalRuntimeWorld"
 world.Parent = Workspace
 
 local basesFolder = Instance.new("Folder")
@@ -1246,6 +1247,10 @@ for _, biome in ipairs(Config.Biomes) do
     if #options > 0 then
         makeGuardian(options[#options], biome)
     end
+end
+
+if previewWorld and previewWorld.Parent then
+    previewWorld:Destroy()
 end
 
 local function characterAdded(player, character)

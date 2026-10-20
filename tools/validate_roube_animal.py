@@ -13,6 +13,8 @@ REQUIRED_FILES = [
     "src/StealAnAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
     "src/StealAnAnimal/ServerScriptService/Main.server.lua",
     "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
+    "src/StealAnAnimal/Workspace/StealAnAnimalWorld.model.json",
+    "tools/tests/test_rbxl_file.py",
     "tools/tests/run.luau",
     "tools/tests/test_map_layout.py",
     "tools/tests/test_monetization.py",
@@ -49,6 +51,7 @@ def main():
         "ReplicatedStorage": "src/StealAnAnimal/ReplicatedStorage",
         "ServerScriptService": "src/StealAnAnimal/ServerScriptService",
         "StarterPlayer.StarterPlayerScripts": "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts",
+        "Workspace": "src/StealAnAnimal/Workspace",
     }
     for route, path in expected.items():
         node = tree
@@ -64,10 +67,11 @@ def main():
     client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
 
     checks = [
-        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r5"' in config),
+        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r6"' in config),
         ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
         ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier" in rules and "StageMultiplier" in rules and "growth ^" in rules),
         ("eight sequential biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Lake"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"', 'Id = "Ocean"', 'Phase = 1, CenterX = 170', 'Phase = 8, CenterX = 1430'))),
+        ("preview is retained until runtime map is built", all(token in main_source for token in ('local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")', 'world.Name = "StealAnAnimalRuntimeWorld"', 'previewWorld:Destroy()'))),
         ("rectangular farms and clear corridor", all(token in main_source for token in ("basePositions = {", "CorridorFloor", "CorridorEdge", "PAI PROTETOR"))),
         ("original chicken, swan, and whale models", all(token in main_source for token in ("HenComb", "SwanNeck", "WhaleTailFluke"))),
         ("session-locked profiles and stage-aware offline income", all(token in main_source for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
@@ -105,7 +109,21 @@ def main():
     if "5290480963" in publisher or "15338267657" in publisher:
         fail("production publishing must not guess Roblox destination IDs")
 
-    print(f"Steal An Animal validation passed: {len(animal_ids)} species and {len(checks)} architecture checks, including treadmill training.")
+    preview = json.loads(read("src/StealAnAnimal/Workspace/StealAnAnimalWorld.model.json"))
+    part_count = 0
+    def count_parts(node):
+        nonlocal part_count
+        if node.get("ClassName") == "Part":
+            part_count += 1
+        for child in node.get("Children", []):
+            count_parts(child)
+    count_parts(preview)
+    if part_count < 300:
+        fail(f"static map preview contains only {part_count} Parts")
+    preview_text = json.dumps(preview)
+    if not all(token in preview_text for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale")):
+        fail("static map preview is missing core map landmarks")
+    print(f"Steal An Animal validation passed: {len(animal_ids)} species, {len(checks)} architecture checks, and {part_count} embedded Workspace Parts.")
 
 if __name__ == "__main__":
     main()

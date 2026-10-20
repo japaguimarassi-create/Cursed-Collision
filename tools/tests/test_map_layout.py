@@ -7,6 +7,10 @@ CONFIG = (BASE / "ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-
 CATALOG = (BASE / "ReplicatedStorage/Shared/AnimalCatalog.lua").read_text(encoding="utf-8")
 MAIN = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
 CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+import json
+PROJECT = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"))
+PREVIEW_PATH = BASE / "Workspace/StealAnAnimalWorld.model.json"
+PREVIEW = json.loads(PREVIEW_PATH.read_text(encoding="utf-8"))
 
 animal_ids = set(re.findall(r'Id = "([A-Za-z0-9]+)"', CATALOG))
 biomes = set(re.findall(r'Id = "([A-Za-z]+)", Name = "', CONFIG))
@@ -31,4 +35,12 @@ assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" i
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
 assert "TreadmillStatus" in CLIENT and "MELHORAR ESTEIRA" in CLIENT and "TouchEnabled" in CLIENT, "Mobile treadmill UI missing"
 assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
-print(f"PASS AnimalCorridor: {len(animal_ids)} species, {len(biomes)} phases, rectangular farms, original models, animated treadmills, and server-side speed training.")
+assert PROJECT["tree"]["Workspace"]["$className"] == "Workspace", "Workspace must be serialized into the place"
+assert PROJECT["tree"]["Workspace"]["$path"] == "src/StealAnAnimal/Workspace", "Workspace must include static map geometry"
+static_json = PREVIEW_PATH.read_text(encoding="utf-8")
+static_parts = len(re.findall(r'"ClassName": "Part"', static_json))
+assert static_parts >= 300, f"Expected at least 300 embedded map Parts, found {static_parts}"
+assert all(token in static_json for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale")), "Static map missing core landmarks"
+assert 'local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")' in MAIN, "Runtime must preserve preview while booting"
+assert "previewWorld:Destroy()" in MAIN, "Runtime must remove preview only after successfully creating its world"
+print(f"PASS AnimalCorridor: {len(animal_ids)} species, {len(biomes)} phases, {static_parts} embedded Parts, eight farms/treadmills, and final whale guardian.")

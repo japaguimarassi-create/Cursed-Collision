@@ -1,4 +1,4 @@
-name: Steal An Animal - Validate, Train, and Build
+name: Steal An Animal - Validate, Parse, and Build Map
 
 on:
   pull_request:
@@ -61,9 +61,11 @@ jobs:
           rojo build default.project.json --output build/StealAnAnimal.rbxl
           test -s build/StealAnAnimal.rbxl
           stat -c "%s bytes" build/StealAnAnimal.rbxl
+      - name: Parse the generated RBXL and verify embedded Workspace map
+        run: python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
       - name: Upload place artifact
         uses: actions/upload-artifact@v4
         with:
-          name: StealAnAnimal-corridor-treadmill-r5
+          name: StealAnAnimal-map-load-r6
           path: build/StealAnAnimal.rbxl
           if-no-files-found: error
