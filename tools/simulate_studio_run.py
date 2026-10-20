@@ -134,6 +134,33 @@ def simulate_hud(audit, client, screen_profiles):
         )),
         "BotX chip has a request/reply path and displays the current session", "GameClient.client.lua")
 
+    prompt_anchor = "promptCard.AnchorPoint = Vector2.new(0.5, 0)" in client
+    prompt_position = re.search(r'promptCard\\.Position\\s*=\\s*UDim2\\.new\\(0\\.5,\\s*0,\\s*0,\\s*(\\d+)\\)', client)
+    prompt_size = re.search(r'promptCard\\.Size\\s*=\\s*UDim2\\.new\\((0\\.\\d+),\\s*0,\\s*0,\\s*(\\d+)\\)', client)
+    prompt_min = re.search(r'promptConstraint\\.MinSize\\s*=\\s*Vector2\\.new\\((\\d+),\\s*(\\d+)\\)', client)
+    prompt_max = re.search(r'promptConstraint\\.MaxSize\\s*=\\s*Vector2\\.new\\((\\d+),\\s*(\\d+)\\)', client)
+    prompt_input_release = "UserInputService.InputEnded:Connect(function(input)" in client
+    prompt_parsed = prompt_anchor and all(value is not None for value in (
+        prompt_position, prompt_size, prompt_min, prompt_max
+    ))
+    audit.check(
+        "Compact interaction prompt geometry and hold-release wiring can be parsed",
+        prompt_parsed and prompt_input_release,
+        "Prompt size, placement, constraints, and global hold release found" if prompt_parsed and prompt_input_release else "Prompt geometry or release wiring is missing",
+        "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
+    )
+    if prompt_parsed:
+        prompt_x_y = int(prompt_position.group(1))
+        prompt_fraction, prompt_height = float(prompt_size.group(1)), int(prompt_size.group(2))
+        prompt_min_w, prompt_min_h = int(prompt_min.group(1)), int(prompt_min.group(2))
+        prompt_max_w, prompt_max_h = int(prompt_max.group(1)), int(prompt_max.group(2))
+        audit.check(
+            "Interaction prompt maximum width protects mobile corner controls",
+            prompt_max_w <= 280 and prompt_height >= 44 and prompt_min_h >= 44,
+            f"Maximum {prompt_max_w}px wide; minimum height {prompt_min_h}px",
+            "InteractionPrompt.lua",
+        )
+
     for profile in screen_profiles:
         width, height, touch = profile["width"], profile["height"], profile["touch"]
         scale = 1.0 if touch else clamp(width / float(currency_scale.group(1)), 0.82, 1.12)
@@ -160,6 +187,44 @@ def simulate_hud(audit, client, screen_profiles):
         obj_bottom = rendered_obj_y + rendered_obj_h
         dock_right = rendered_dock_x + rendered_dock_w
         dock_bottom = rendered_dock_y + rendered_dock_h
+        prompt_geometry = None
+        prompt_clear_of_panels = True
+        prompt_clear_of_corner_controls = True
+        if prompt_parsed:
+            rendered_prompt_w = clamp(width * prompt_fraction, prompt_min_w, prompt_max_w) * scale
+            rendered_prompt_h = prompt_height * scale
+            rendered_prompt_x = (width - rendered_prompt_w) / 2
+            rendered_prompt_y = prompt_x_y * scale
+            rendered_prompt_right = rendered_prompt_x + rendered_prompt_w
+            rendered_prompt_bottom = rendered_prompt_y + rendered_prompt_h
+            prompt_overlaps_stats = not (
+                rendered_prompt_bottom <= rendered_top_y
+                or rendered_prompt_y >= rendered_top_bottom
+            )
+            prompt_clear_of_panels = (
+                rendered_prompt_y >= obj_bottom
+                and rendered_prompt_y >= dock_bottom
+                and not prompt_overlaps_stats
+                and rendered_prompt_x >= 0
+                and rendered_prompt_right <= width
+                and rendered_prompt_bottom <= height
+            )
+            corner_width = width * 0.32
+            if touch and rendered_prompt_bottom >= height * 0.78:
+                prompt_clear_of_corner_controls = (
+                    rendered_prompt_right <= corner_width
+                    or rendered_prompt_x >= width - corner_width
+                )
+            prompt_geometry = {
+                "x": round(rendered_prompt_x, 2),
+                "y": round(rendered_prompt_y, 2),
+                "width": round(rendered_prompt_w, 2),
+                "height": round(rendered_prompt_h, 2),
+                "right": round(rendered_prompt_right, 2),
+                "bottom": round(rendered_prompt_bottom, 2),
+                "clearOfHUDPanels": prompt_clear_of_panels,
+                "clearOfMobileCornerControls": prompt_clear_of_corner_controls,
+            }
         checks = {
             "currencyPanelInsideViewport": rendered_top_x >= 0 and top_right <= width,
             "currencyPanelUsesLowerLeftPlacement": rendered_top_y > height * 0.45 and rendered_top_bottom < height,
@@ -172,6 +237,9 @@ def simulate_hud(audit, client, screen_profiles):
             "quickActionsClearBottomTouchZone": dock_bottom < height * 0.78,
             "touchTargetAtLeast44x44": target_w * scale >= 44 and target_h * scale >= 44,
             "noOversizedCurrencyPanel": rendered_top_w <= width * 0.6,
+            "compactPromptInsideViewport": prompt_geometry is not None and prompt_geometry["x"] >= 0 and prompt_geometry["right"] <= width and prompt_geometry["bottom"] <= height,
+            "promptDoesNotOverlapHUDPanels": prompt_geometry is not None and prompt_clear_of_panels,
+            "promptClearsMobileCornerControls": prompt_geometry is not None and prompt_clear_of_corner_controls,
         }
         passed = all(checks.values())
         item = {
@@ -193,6 +261,7 @@ def simulate_hud(audit, client, screen_profiles):
                 "rebirthChip": {"left": round(rebirth_chip_left, 2), "right": round(rebirth_chip_right, 2)},
                 "botXChip": {"left": round(bot_chip_left, 2), "right": round(bot_chip_right, 2)},
                 "touchTarget": {"width": round(target_w * scale, 2), "height": round(target_h * scale, 2)},
+                "interactionPrompt": prompt_geometry,
             },
             "checks": checks,
         }
