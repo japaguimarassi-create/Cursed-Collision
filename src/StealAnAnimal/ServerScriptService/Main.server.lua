@@ -1,4 +1,6 @@
 local Players = game:GetService("Players")
+Players.CharacterAutoLoads = true
+Players.RespawnTime = 3
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataStoreService = game:GetService("DataStoreService")
 local HttpService = game:GetService("HttpService")
@@ -29,6 +31,7 @@ end
 local notifyRemote = remote("Notify")
 local upgradeRemote = remote("RequestUpgrade")
 local collectRemote = remote("RequestCollect")
+local rebirthRemote = remote("RequestRebirth")
 
 local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")
 local previousRuntimeWorld = Workspace:FindFirstChild("StealAnAnimalRuntimeWorld")
@@ -60,6 +63,7 @@ local profiles = {}
 local sessionTokens = {}
 local saveInProgress = {}
 local leaving = {}
+local rebirthInProgress = {}
 local actionCooldowns = {}
 local trainingNoticeAt = {}
 local treadmillStrips = {}
@@ -367,19 +371,20 @@ local function stageFor(animal, now)
     return stage, index
 end
 
-local function incomeFor(animal, now)
+local function incomeFor(animal, now, rebirths)
     local spec = Catalog.Get(animal.Id)
     if not spec then
         return 0
     end
     local _, stageIndex = stageFor(animal, now)
-    return Rules.AnimalIncome(spec.Income, stageIndex, Config)
+    local baseIncome = Rules.AnimalIncome(spec.Income, stageIndex, Config)
+    return math.floor(baseIncome * Rules.RebirthIncomeMultiplier(rebirths or 0, Config))
 end
 
 local function profileIncome(profile, now)
     local total = 0
     for _, animal in ipairs(profile.BarnAnimals) do
-        total += incomeFor(animal, now)
+        total += incomeFor(animal, now, profile.Rebirths)
     end
     return total
 end
@@ -397,7 +402,7 @@ local function offlineIncome(profile, fromTime, toTime)
                 local segmentStart = math.max(startAge, stage.AgeSeconds)
                 local segmentEnd = math.min(endAge, nextStage and nextStage.AgeSeconds or endAge)
                 if segmentEnd > segmentStart then
-                    total += Rules.AnimalIncome(spec.Income, index, Config) * (segmentEnd - segmentStart)
+                    total += Rules.AnimalIncome(spec.Income, index, Config) * Rules.RebirthIncomeMultiplier(profile.Rebirths, Config) * (segmentEnd - segmentStart)
                 end
             end
         end
@@ -410,6 +415,7 @@ local function defaultProfile()
         Coins = 0,
         Speed = 0,
         TreadmillLevel = 1,
+        Rebirths = 0,
         BarnBank = 0,
         BarnAnimals = {},
         LastIncomeAt = os.time(),
@@ -431,6 +437,7 @@ local function sanitizeProfile(raw)
     data.Coins = safeInteger(raw.Coins, 0, Config.CoinsLimit, 0)
     data.Speed = safeInteger(raw.Speed, 0, Config.MaxSpeedPoints, 0)
     data.TreadmillLevel = safeInteger(raw.TreadmillLevel, 1, Config.MaxTreadmillLevel, 1)
+    data.Rebirths = safeInteger(raw.Rebirths, 0, Config.MaxRebirths, 0)
     data.BarnBank = safeInteger(raw.BarnBank, 0, Config.CoinsLimit, 0)
     data.LastIncomeAt = safeInteger(raw.LastIncomeAt, 0, 2147483647, os.time())
     if type(raw.BarnAnimals) == "table" then
@@ -458,6 +465,7 @@ local function snapshot(profile)
         Coins = profile.Coins,
         Speed = profile.Speed,
         TreadmillLevel = profile.TreadmillLevel,
+        Rebirths = profile.Rebirths,
         BarnBank = profile.BarnBank,
         LastIncomeAt = profile.LastIncomeAt,
         BarnAnimals = {},
@@ -868,6 +876,21 @@ local function updatePlayerAttributes(player)
     player:SetAttribute("BarnAnimalCount", #profile.BarnAnimals)
     player:SetAttribute("BarnCapacity", Config.BaseSlots)
     player:SetAttribute("BarnIncomeRate", profileIncome(profile, now))
+    player:SetAttribute("Rebirths", profile.Rebirths or 0)
+    player:SetAttribute("RebirthMultiplier", Rules.RebirthIncomeMultiplier(profile.Rebirths, Config))
+    player:SetAttribute("RebirthCost", Rules.RebirthCost(profile.Rebirths, Config) or 0)
+    player:SetAttribute("TreadmillUpgradeCost", Rules.UpgradeCost(profile.TreadmillLevel, Config) or 0)
+    local summary = {}
+    local multiplier = Rules.RebirthIncomeMultiplier(profile.Rebirths, Config)
+    for index, animal in ipairs(profile.BarnAnimals) do
+        local spec = Catalog.Get(animal.Id)
+        local stage, stageIndex = stageFor(animal, now)
+        if spec and stage then
+            local rate = math.floor(Rules.AnimalIncome(spec.Income, stageIndex, Config) * multiplier)
+            table.insert(summary, tostring(index) .. ". " .. spec.Name .. " • " .. stage.DisplayName .. " • +" .. tostring(rate) .. "/s")
+        end
+    end
+    player:SetAttribute("BarnSummary", #summary > 0 and table.concat(summary, "\n") or "Seu celeiro está vazio. Roube um filhote e leve-o ao celeiro.")
     player:SetAttribute("CarryingAnimal", carried[player] ~= nil)
     local baseSpeed = Rules.MoveSpeed(profile.Speed, Config)
     local carry = carried[player]
@@ -929,7 +952,7 @@ local function renderBarn(player)
                 local model = createAnimalModel(spec, stage.Name, slot.Position + Vector3.new(0, 0.05, 0), false)
                 model.Name = "StoredAnimal_" .. tostring(index)
                 model.Parent = display
-                local income = Rules.AnimalIncome(spec.Income, stageIndex, Config)
+                local income = math.floor(Rules.AnimalIncome(spec.Income, stageIndex, Config) * Rules.RebirthIncomeMultiplier(profile.Rebirths, Config))
                 addLabel(model.PrimaryPart, spec.Name, stage.DisplayName .. " • +" .. tostring(income) .. "/s", spec.Accent)
                 slot.Color = spec.Color
                 slot.Transparency = 0.25
@@ -1235,6 +1258,96 @@ collectRemote.OnServerEvent:Connect(function(player)
     collectIncome(player, { Parent = pad })
 end)
 
+local function requestRebirth(player)
+    local profile = profiles[player]
+    if not profile or leaving[player] or rebirthInProgress[player] then
+        return
+    end
+    if carried[player] then
+        notify(player, "Leve o animal roubado ao celeiro ou escape primeiro. O renascimento não pode descartar um animal carregado.", "Warning")
+        return
+    end
+    if profile.Persistent == false or not sessionTokens[player] then
+        notify(player, "O salvamento não está seguro neste momento. Entre novamente antes de renascer.", "Error")
+        return
+    end
+    local cost = Rules.RebirthCost(profile.Rebirths, Config)
+    if not cost then
+        notify(player, "Você já alcançou o máximo de renascimentos.", "Info")
+        return
+    end
+    if profile.Coins < cost then
+        notify(player, "Você precisa de " .. tostring(cost) .. " moedas para renascer. Saldo atual: " .. tostring(profile.Coins) .. ".", "Warning")
+        return
+    end
+    if not allowAction(player, "rebirth", 2) then
+        return
+    end
+
+    rebirthInProgress[player] = true
+    local previous = {
+        Coins = profile.Coins,
+        Speed = profile.Speed,
+        TreadmillLevel = profile.TreadmillLevel,
+        Rebirths = profile.Rebirths,
+        BarnBank = profile.BarnBank,
+        BarnAnimals = profile.BarnAnimals,
+        LastIncomeAt = profile.LastIncomeAt,
+        Persistent = profile.Persistent,
+    }
+
+    profile.Coins = 0
+    profile.Speed = 0
+    profile.TreadmillLevel = 1
+    profile.Rebirths += 1
+    profile.BarnBank = 0
+    profile.BarnAnimals = {}
+    profile.LastIncomeAt = os.time()
+    updatePlayerAttributes(player)
+    renderBarn(player)
+
+    local saved = saveProfile(player)
+    if not saved then
+        local persistenceState = profile.Persistent
+        profile.Coins = previous.Coins
+        profile.Speed = previous.Speed
+        profile.TreadmillLevel = previous.TreadmillLevel
+        profile.Rebirths = previous.Rebirths
+        profile.BarnBank = previous.BarnBank
+        profile.BarnAnimals = previous.BarnAnimals
+        profile.LastIncomeAt = previous.LastIncomeAt
+        profile.Persistent = persistenceState == false and false or previous.Persistent
+        rebirthInProgress[player] = nil
+        updatePlayerAttributes(player)
+        renderBarn(player)
+        if player.Parent == Players and profile.Persistent ~= false then
+            notify(player, "Não foi possível confirmar o salvamento. Seu progresso foi restaurado; tente novamente.", "Error")
+        end
+        return
+    end
+
+    rebirthInProgress[player] = nil
+    local base = playerBases[player]
+    local floor = base and base:FindFirstChild("Floor")
+    local character = player.Character
+    if floor and character and character.Parent then
+        character:PivotTo(CFrame.new(floor.Position + Vector3.new(0, 4, 0)))
+    end
+    notify(player, "RENASCIMENTO " .. tostring(profile.Rebirths) .. " concluído! Sua renda permanente agora é x" .. string.format("%.1f", Rules.RebirthIncomeMultiplier(profile.Rebirths, Config)) .. ". Animais, moedas, banco e treino foram reiniciados.", "Success")
+end
+
+rebirthRemote.OnServerEvent:Connect(function(player)
+    if not profiles[player] or leaving[player] or not allowAction(player, "rebirthRemote", 0.5) then
+        return
+    end
+    local ok, err = pcall(requestRebirth, player)
+    if not ok then
+        rebirthInProgress[player] = nil
+        warn("[StealAnAnimal] Rebirth failed: " .. tostring(err))
+        notify(player, "O renascimento falhou com segurança. Seu progresso não deve ser perdido; tente novamente.", "Error")
+    end
+end)
+
 buildScenery()
 for index = 1, 8 do
     createBase(index)
@@ -1305,6 +1418,7 @@ Players.PlayerRemoving:Connect(function(player)
     profiles[player] = nil
     playerBases[player] = nil
     actionCooldowns[player] = nil
+    rebirthInProgress[player] = nil
     trainingNoticeAt[player] = nil
     releaseBase(player)
     leaving[player] = nil
