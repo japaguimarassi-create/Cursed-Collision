@@ -66,3 +66,14 @@ python3 tools/simulate_studio_run.py --report artifacts/studio-run-simulation.js
 Roblox Studio is not available to execute inside GitHub Actions. CI can lint/parse the Luau scripts, run game-rule and structural checks, build the place, and validate the RBXL file; the Studio plugin is what performs the actual simulated-client runtime checks. This harness does not claim success until a real Studio run returns its report. Device-simulator sweeps, network-latency sweeps, and a real mobile-device playtest remain separate follow-up validations.
 
 The tests do not publish the experience, access public servers, create accounts, invoke purchases, change rebirths, or intentionally mutate a player's coins.
+
+
+## BotX in-game observer NPCs
+
+The separate `BotX.server.lua` service creates three server-owned humanoid NPCs named `bot1`, `bot2`, and `bot3`. They use a custom R6 body with procedural Bacon Hair-style locks. Their Models are parented to `Workspace.BotX_NPCs`, carry `IsBotX=true` and `CountsAsPlayer=false` attributes, and are never inserted into `Players`; they do not consume player slots, receive profiles, own farms, or earn/spend currency.
+
+BotX only starts a session when at least one real Roblox Player is present. Each NPC patrols the eight configured biome grounds with server-side PathfindingService. When the final real player leaves, the service writes a final JSON report and destroys the NPC folder. Rejoining starts a fresh session. The NPCs observe gameplay but do not trigger purchases, collect income, rebirth, or send gameplay remotes.
+
+The server records joins/leaves, character spawn/removal/death, proximity-prompt interactions, gameplay RemoteEvent names and argument types, and 10-second player/NPC state snapshots. Each event is emitted as `[BOTX_EVENT]` JSON; periodic and final summaries use `[BOTX_SESSION_REPORT]`. The in-memory report retains the latest 400 events and tracks counts/dropped history. To limit abuse-related output, remote observations are capped at 30 events per player per remote per second. No raw remote payloads are saved in the report.
+
+GitHub Actions parses the Luau source, runs `tools/tests/test_botx_npc.py` and the project validator, then builds the place file. This verifies that the source is wired and syntactically valid; it does **not** execute a Roblox server. To observe live NPC movement and the JSON stream, run the built place on Roblox/Studio with at least one real client connected. The existing Studio QA plugin remains a separate two-simulated-client test harness.
