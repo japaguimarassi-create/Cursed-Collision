@@ -124,6 +124,14 @@ local function summary(reason, includeRecentEvents)
             userId = player.UserId,
             profileLoaded = player:GetAttribute("ProfileLoaded") == true,
             carryingAnimal = player:GetAttribute("CarryingAnimal") == true,
+            coins = player:GetAttribute("Coins"),
+            barnBank = player:GetAttribute("BarnBank"),
+            speedLevel = player:GetAttribute("SpeedLevel"),
+            effectiveWalkSpeed = player:GetAttribute("EffectiveWalkSpeed"),
+            treadmillLevel = player:GetAttribute("TreadmillLevel"),
+            rebirths = player:GetAttribute("Rebirths"),
+            totalCaptured = player:GetAttribute("TotalCaptured"),
+            totalDeposited = player:GetAttribute("TotalDeposited"),
             health = humanoid and roundNumber(humanoid.Health) or nil,
             position = root and {
                 x = roundNumber(root.Position.X),
@@ -257,6 +265,8 @@ local function createBot(index)
     local rightArm = makePart(model, "Right Arm", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(1.5, -0.5, 0), SKIN)
     local leftLeg = makePart(model, "Left Leg", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(-0.5, -2, 0), PANTS)
     local rightLeg = makePart(model, "Right Leg", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(0.5, -2, 0), PANTS)
+    leftLeg.CanCollide = true
+    rightLeg.CanCollide = true
 
     connectJoint(root, "RootJoint", root, torso)
     connectJoint(torso, "Neck", torso, head)
@@ -473,6 +483,32 @@ local function bindPlayer(player)
     table.insert(connections, player.CharacterRemoving:Connect(function(character)
         record("character_removing", safeName(player), { userId = player.UserId, character = character.Name })
     end))
+    for _, attributeName in ipairs({
+        "ProfileLoaded",
+        "Coins",
+        "BarnBank",
+        "SpeedLevel",
+        "EffectiveWalkSpeed",
+        "TreadmillLevel",
+        "Rebirths",
+        "TotalCaptured",
+        "TotalDeposited",
+        "CarryingAnimal",
+    }) do
+        local previousValue = player:GetAttribute(attributeName)
+        table.insert(connections, player:GetAttributeChangedSignal(attributeName):Connect(function()
+            local currentValue = player:GetAttribute(attributeName)
+            if currentValue ~= previousValue then
+                record("player_state_changed", safeName(player), {
+                    userId = player.UserId,
+                    field = attributeName,
+                    previous = previousValue,
+                    current = currentValue,
+                })
+                previousValue = currentValue
+            end
+        end))
+    end
 end
 
 local function onPlayerAdded(player)
