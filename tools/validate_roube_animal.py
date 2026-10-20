@@ -16,10 +16,6 @@ REQUIRED_FILES = [
     "src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua",
     "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
     "tools/tests/test_release_safety.py",
-    "src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua",
-    "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua",
-    "src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua",
-    "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
     "src/StealAnAnimal/ServerScriptService/Main.server.lua",
     "src/StealAnAnimal/ServerScriptService/BotX.server.lua",
     "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
@@ -144,8 +140,10 @@ def main():
     publisher = read(".github/workflows/roblox-publish.yml")
     if "workflow_dispatch:" not in publisher or "ROBLOX_API_KEY" not in publisher:
         fail("publishing workflow must remain manual and key-protected")
-    if "inputs.confirm == true" not in publisher:
-        fail("production publishing must require an explicit manual confirmation")
+    if "inputs.confirm == true && inputs.confirm_studio_runtime_qa == true" not in publisher:
+        fail("production publishing must require manual confirmation plus real Studio/mobile QA")
+    if "confirm_studio_runtime_qa:" not in publisher or "default: false" not in publisher:
+        fail("real Studio/mobile QA confirmation must be required and default to false")
     if "STEAL_ANIMAL_UNIVERSE_ID" not in publisher or "STEAL_ANIMAL_PLACE_ID" not in publisher:
         fail("production publishing must use explicitly configured destination IDs")
     if "5290480963" in publisher or "15338267657" in publisher:
