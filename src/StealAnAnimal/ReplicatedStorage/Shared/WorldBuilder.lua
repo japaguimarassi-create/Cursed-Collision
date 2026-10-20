@@ -308,9 +308,6 @@ function WorldBuilder.new(services)
             createPart(world, "CorridorEdge", Vector3.new(1500, 0.2, 0.8), CFrame.new(850, 0.04, side * 28), Color3.fromRGB(255, 218, 105), Enum.Material.Neon, nil, false)
         end
         for _, side in ipairs({ -1, 1 }) do
-            createPart(world, "CorridorEdge", Vector3.new(1500, 0.2, 0.8), CFrame.new(850, 0.04, side * 28), Color3.fromRGB(255, 218, 105), Enum.Material.Neon, nil, false)
-        end
-        for _, side in ipairs({ -1, 1 }) do
             createPart(world, "CorridorBoundaryWall", Vector3.new(1500, 18, 2), CFrame.new(850, 8.5, side * 86), Color3.fromRGB(67, 107, 75), Enum.Material.Brick, nil, true)
             createPart(world, "CorridorWallCap", Vector3.new(1500, 0.65, 2.4), CFrame.new(850, 17.8, side * 86), Color3.fromRGB(255, 202, 90), Enum.Material.WoodPlanks, nil, false)
             for pillar = 1, 30 do
