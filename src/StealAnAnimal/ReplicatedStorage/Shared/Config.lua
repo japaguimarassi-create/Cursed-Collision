@@ -30,10 +30,9 @@ local Config = {
     GuardianNoticeDistance = 100,
     GuardianSpeed = 20,
     EvolutionIncomeMultiplier = 1.5,
-    RebirthBaseCost = 25000,
-    RebirthCostGrowth = 3,
-    RebirthIncomeBonus = 0.5,
-    MaxRebirths = 10,
+    RebirthCoinsRequired = 100000,
+    RebirthIncomeBonus = 0.1,
+    MaxRebirths = 25,
     EvolutionStages = {
         { Name = "Baby", DisplayName = "BEBÊ", Scale = 0.52, AgeSeconds = 0 },
         { Name = "Child", DisplayName = "CRIANÇA", Scale = 0.72, AgeSeconds = 120 },
