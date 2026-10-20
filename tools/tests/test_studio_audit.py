@@ -20,6 +20,7 @@ checks = {
     "audit avoids economy-changing button actions": all(token not in CLIENT for token in ("collectRemote:FireServer()", "rebirthRemote:FireServer()", "upgradeRemote:FireServer()")),
     "plugin does not call external endpoints": all(token not in PLUGIN for token in ("RequestAsync(", "GetAsync(", "PostAsync(", "HttpGet(")),
     "instructions document the supported Studio test flow": all(token in DOCS for token in ("StudioTestService", "VirtualInput", "StudioSandbox", "Output", "API Services")),
+    "compact interaction prompt is part of the HUD and remains client-driven": all(token in HUD for token in ("CompactInteractionPrompt", "PromptShown:Connect", "PromptHidden:Connect", "InputHoldBegin()", "InputHoldEnd()")),
     "CI simulator identifies itself as a simulation, not a real Studio run": '"studioRuntimeExecuted": False' in SIMULATOR and '"source_and_layout_simulation"' in SIMULATOR and "This is a deterministic source-level simulation" in SIMULATOR,
     "CI simulator creates full JSON and Markdown reports": all(token in SIMULATOR for token in ("studio-run-simulation.json", "studio-run-simulation.md", '"layoutProfiles"', '"sourceSha256"', '"compiledPlace"')),
     "CI simulator models phone, landscape, tablet, and desktop sizes": all(token in SIMULATOR for token in ("Phone small portrait", "Android portrait", "Large phone portrait", "Phone landscape", "Tablet landscape", "Desktop window")),
