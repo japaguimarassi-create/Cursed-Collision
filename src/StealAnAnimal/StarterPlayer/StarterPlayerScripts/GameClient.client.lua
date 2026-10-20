@@ -42,7 +42,7 @@ if old then old:Destroy() end
 local gui = Instance.new("ScreenGui")
 gui.Name = "StealAnAnimalHUD"
 gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
+gui.IgnoreGuiInset = false
 gui.DisplayOrder = 40
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
@@ -145,7 +145,7 @@ topConstraint.MaxSize = Vector2.new(760, 128)
 topConstraint.MinSize = Vector2.new(260, 128)
 topConstraint.Parent = top
 
-local title = makeLabel(top, "GameTitle", "STEAL AN ANIMAL", UDim2.new(1, -148, 0, 25), UDim2.new(0, 14, 0, 7), 16, COLORS.Gold, Enum.Font.GothamBlack)
+local title = makeLabel(top, "GameTitle", "STEAL AN ANIMAL", UDim2.new(1, -166, 0, 25), UDim2.new(0, 14, 0, 7), 16, COLORS.Gold, Enum.Font.GothamBlack)
 local rebirthBadge = Instance.new("Frame")
 rebirthBadge.Name = "RebirthBadge"
 rebirthBadge.AnchorPoint = Vector2.new(1, 0)
