@@ -46,10 +46,13 @@ uiScale.Name = "ResponsiveScale"
 uiScale.Scale = 1
 uiScale.Parent = gui
 
+local touchDevice = UserInputService.TouchEnabled
+
 local function updateScale()
     local camera = workspace.CurrentCamera
     if camera then
-        uiScale.Scale = math.clamp(camera.ViewportSize.X / 430, 0.78, 1.1)
+        local baseScale = camera.ViewportSize.X / 430
+        uiScale.Scale = math.clamp(baseScale * (touchDevice and 1 or 1.04), 0.78, 1.1)
     end
 end
 
@@ -238,7 +241,7 @@ dockLayout.Parent = dock
 local function makeDockButton(name, text, order, accent)
     local button = makeButton(dock, name, text, COLORS.PanelRaised, COLORS.Cream)
     button.LayoutOrder = order
-    button.Size = UDim2.new(0.25, -4, 1, 0)
+    button.Size = UDim2.new(0.25, -8, 1, 0)
     button.TextSize = 11
     outline(button, accent, 1.2, 0.2)
     return button
@@ -347,9 +350,11 @@ local function closeModal()
     primaryButton.Visible = true
 end
 
-local function openPanel(kind)
+local function openPanel(kind, preserveConfirmation)
     activePanel = kind
-    confirmingRebirth = false
+    if preserveConfirmation ~= true then
+        confirmingRebirth = false
+    end
     shade.Visible = true
     secondaryButton.Visible = false
     primaryButton.Visible = true
@@ -376,7 +381,7 @@ local function openPanel(kind)
         primaryButton.BackgroundColor3 = COLORS.Aqua
         primaryButton.Active = cost > 0
         primaryButton.AutoButtonColor = cost > 0
-        secondaryButton.Visible = true
+        secondaryButton.Visible = false
     elseif kind == "Rebirth" then
         modalTitle.Text = "RENASCIMENTO"
         local count = tonumber(player:GetAttribute("Rebirths")) or 0
@@ -389,6 +394,8 @@ local function openPanel(kind)
             modalBody.Text = "CONFIRMAR RENASCIMENTO " .. tostring(count + 1) .. "?\n\nVocê perderá moedas, banco do celeiro, todos os animais, pontos de velocidade e nível da esteira.\n\nO bônus permanente será x" .. string.format("%.1f", nextMultiplier) .. " de renda dos animais. Esta ação não pode ser desfeita."
             primaryButton.Text = "CONFIRMAR E REINICIAR"
             primaryButton.BackgroundColor3 = COLORS.Red
+            primaryButton.Active = true
+            primaryButton.AutoButtonColor = true
             secondaryButton.Text = "CANCELAR"
             secondaryButton.Visible = true
         else
@@ -399,7 +406,7 @@ local function openPanel(kind)
             primaryButton.Text = cost <= 0 and "LIMITE ATINGIDO" or carrying and "ENTREGUE O ANIMAL PRIMEIRO" or coins < cost and ("FALTAM " .. formatNumber(cost - coins) .. " MOEDAS") or "PREPARAR RENASCIMENTO"
             primaryButton.BackgroundColor3 = COLORS.Purple
             secondaryButton.Text = "FECHAR"
-            secondaryButton.Visible = true
+            secondaryButton.Visible = false
             primaryButton.Active = cost > 0 and coins >= cost and not carrying
             primaryButton.AutoButtonColor = primaryButton.Active
         end
@@ -414,6 +421,15 @@ local function openPanel(kind)
         primaryButton.Active = true
         primaryButton.AutoButtonColor = true
         secondaryButton.Text = "FECHAR"
+    end
+    if secondaryButton.Visible then
+        primaryButton.Position = UDim2.new(0, 16, 1, -104)
+        primaryButton.Size = UDim2.new(1, -32, 0, 42)
+        secondaryButton.Position = UDim2.new(0, 16, 1, -55)
+        secondaryButton.Size = UDim2.new(1, -32, 0, 38)
+    else
+        primaryButton.Position = UDim2.new(0, 16, 1, -58)
+        primaryButton.Size = UDim2.new(1, -32, 0, 43)
     end
 end
 
@@ -438,7 +454,7 @@ local function refresh()
         objectiveText.Text = "ROUBE UM FILHOTE • LEVE-O À SUA FAZENDA • COLETE MOEDAS"
     end
     if activePanel then
-        openPanel(activePanel)
+        openPanel(activePanel, confirmingRebirth)
     end
 end
 
@@ -482,7 +498,7 @@ primaryButton.Activated:Connect(function()
             local coins = tonumber(player:GetAttribute("Coins")) or 0
             if cost > 0 and coins >= cost and player:GetAttribute("CarryingAnimal") ~= true then
                 confirmingRebirth = true
-                openPanel("Rebirth")
+                openPanel("Rebirth", true)
             end
         end
     else
