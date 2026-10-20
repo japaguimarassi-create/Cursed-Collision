@@ -8,7 +8,6 @@ local TrainingService = {}
 local profiles
 local worldBuilder
 local animalService
-local passService
 local notify
 local cooldowns = {}
 local started = false
@@ -57,15 +56,14 @@ local function train(player)
         return
     end
     cooldowns[player] = now
-    local multiplier = passService.Has(player, "DoubleSpeed") and Config.Training.DoubleSpeedMultiplier or 1
-    local gain = math.floor(Config.Training.TreadmillGain * multiplier)
+    local gain = Config.Training.TreadmillGain
     if profiles.AddStat(player, "Speed", gain) then
         animalService.ApplyMovement(player)
         notify(player, "+" .. tostring(gain) .. " speed. Sprint to improve your chances of escaping guardians.", "Success")
     end
 end
 
-function TrainingService.Start(profileService, builder, animals, passes, notifyFunction)
+function TrainingService.Start(profileService, builder, animals, notifyFunction)
     if started then
         return
     end
@@ -73,7 +71,6 @@ function TrainingService.Start(profileService, builder, animals, passes, notifyF
     profiles = profileService
     worldBuilder = builder
     animalService = animals
-    passService = passes
     notify = notifyFunction
 
     for _, trainingPart in ipairs(worldBuilder.GetTrainingParts()) do
