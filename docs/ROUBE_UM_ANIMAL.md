@@ -47,7 +47,7 @@ The server catalogue is the source of truth for each creature's biome, weight, r
 
 Base speed is:
 
-    BaseSpeed = clamp((16 + SpeedLevel * 0.85) * SpeedMultiplier + VIPBonus, 16, 150)
+    BaseSpeed = clamp(16 + SpeedLevel * 0.85, 16, 150)
 
 The carry weight penalty is independent from Strength:
 
@@ -58,7 +58,7 @@ The server applies movement speed. WalkSpeed is not itself an anti-cheat boundar
 
 ### Barn income
 
-The base barn stores six animals. The Expanded Barn pass adds four slots. In-session income goes into a bank that the player collects manually. Offline income is capped at 21,600 seconds (six hours). The passes modify distinct systems: DoubleIncome multiplies passive barn income, DoubleSpeed modifies speed progression, VIPFarm adds movement and income bonuses, and ExtraBarnSlots expands barn capacity.
+The barn stores six animals and every player follows the same capacity and income rules. In-session income goes into a bank that the player collects manually. Offline income is capped at 21,600 seconds (six hours). There are no gamepasses, VIP modifiers, paid speed multipliers or paid barn-slot expansions.
 
 Rebirth requires the maximum speed level and a coin threshold. It resets Speed and wallet coins while keeping the barn collection and raises passive income by 10% per rebirth.
 
@@ -66,27 +66,16 @@ Rebirth requires the maximum speed level and a coin threshold. It resets Speed a
 
 The GameClient.client.lua interface uses:
 - A compact top HUD for coins, income per second, barn occupancy and speed.
-- Five large mobile navigation buttons for Barn, Animals, Shop, Passes and More, with the Barn screen's Collect button securely wired to the server and only valid inside the player's own farm.
-- Scrollable pages for the animal index, pass/product cards, quests, daily rewards, codes, stats, settings and rebirth.
+- Four large mobile navigation buttons for Barn, Animals, Shop and More, with the Barn screen's Collect button securely wired to the server and only valid inside the player's own farm.
+- Scrollable pages for the animal index, optional developer products in the shop, quests, daily rewards, codes, stats, settings and rebirth.
 - UIGradients, rounded cards, colored rarity markers, safe-area insets, viewport-based sizing and Activated handlers.
 - A map-readiness overlay if the server reports missing map sections.
 
 The UI pack's generic scripts are not loaded because they may assume unrelated folders, remotes, currencies and purchase IDs. The matching visual ideas are rebuilt as native elements tied to the actual server economy.
 
-## Gamepasses and developer products
+## Purchases
 
-Configure actual IDs in src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua.
-
-| Type | Key | Intended effect |
-| --- | --- | --- |
-| Pass | DoubleIncome | 2x barn income |
-| Pass | DoubleSpeed | 2x speed gains |
-| Pass | VIPFarm | movement and 25% income bonus |
-| Pass | ExtraBarnSlots | 4 additional barn slots |
-| Developer Product | SpeedBoost | repeatable +10 speed |
-| Developer Product | CoinBundle | repeatable +5,000 coins |
-
-IDs intentionally remain 0 until the items exist in the Roblox Creator Dashboard and their IDs are inserted. Purchase prompts are therefore not active yet. The receipt handler grants only recognized products and uses the persistent purchase ledger for idempotency.
+Gamepasses and permanent paid advantages are not part of this game. The shop only has optional repeatable Developer Products, `SpeedBoost` and `CoinBundle`, and both remain disabled until valid product IDs are configured in `src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua`. Server receipt processing uses a persistent purchase ledger to prevent duplicate grants.
 
 ## Build and publish
 
