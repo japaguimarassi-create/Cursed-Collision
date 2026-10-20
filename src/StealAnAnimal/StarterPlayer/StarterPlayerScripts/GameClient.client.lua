@@ -68,6 +68,8 @@ local function textLabel(parent, name, text, size, position, fontSize, color, fo
     return item
 end
 
+local showToast
+
 local function makeButton(parent, name, title, color, order, callback)
     local item = Instance.new("TextButton")
     item.Name = name
@@ -118,7 +120,7 @@ local actions = Instance.new("Frame")
 actions.Name = "ActionPanel"
 actions.AnchorPoint = Vector2.new(1, 1)
 actions.Position = UDim2.new(1, -12, 1, -12)
-actions.Size = compact and UDim2.new(0, 164, 0, 204) or UDim2.new(0, 205, 0, 204)
+actions.Size = compact and UDim2.new(0, 164, 0, 220) or UDim2.new(0, 205, 0, 220)
 actions.BackgroundColor3 = COLORS.Background
 actions.BackgroundTransparency = 0.06
 actions.BorderSizePixel = 0
@@ -177,7 +179,7 @@ toastText.TextXAlignment = Enum.TextXAlignment.Center
 toastText.ZIndex = 31
 local toastToken = 0
 
-function showToast(message, kind)
+showToast = function(message, kind)
     toastToken += 1
     local token = toastToken
     toastText.Text = tostring(message)
