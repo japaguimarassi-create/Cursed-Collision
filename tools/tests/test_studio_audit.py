@@ -23,7 +23,7 @@ checks = {
     "CI simulator identifies itself as a simulation, not a real Studio run": '"studioRuntimeExecuted": False' in SIMULATOR and '"source_and_layout_simulation"' in SIMULATOR and "This is a deterministic source-level simulation" in SIMULATOR,
     "CI simulator creates full JSON and Markdown reports": all(token in SIMULATOR for token in ("studio-run-simulation.json", "studio-run-simulation.md", '"layoutProfiles"', '"sourceSha256"', '"compiledPlace"')),
     "CI simulator models phone, landscape, tablet, and desktop sizes": all(token in SIMULATOR for token in ("Phone small portrait", "Android portrait", "Large phone portrait", "Phone landscape", "Tablet landscape", "Desktop window")),
-    "Desktop and mobile shortcuts share the objective-safe vertical offset": "local y = 88" in HUD and "objectiveDoesNotOverlapQuickActions" in SIMULATOR and "local y = touchDevice and 110 or 56" not in HUD,
+    "Desktop and mobile shortcuts share the objective-safe vertical offset": "dock.Position = UDim2.new(0, 8, 0, 88)" in HUD and "objectiveDoesNotOverlapQuickActions" in SIMULATOR and "local y = touchDevice and 110 or 56" not in HUD,
     "CI simulator fails the run if any modelled assertion fails": 'return 1 if failed else 0' in SIMULATOR and '"status": "FAIL" if failed else "PASS_SIMULATION_WITH_LIMITS"' in SIMULATOR,
 }
 
