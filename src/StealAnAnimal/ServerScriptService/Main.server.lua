@@ -189,7 +189,7 @@ local saveProfile = profileStore.SaveProfile
 local releaseSession = profileStore.ReleaseSession
 local abandonSession = profileStore.AbandonSession
 
-local function allowAction(player, action, cooldown)local function allowAction(player, action, cooldown)
+local function allowAction(player, action, cooldown)
     local now = os.clock()
     local actions = actionCooldowns[player]
     if not actions then
