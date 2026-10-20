@@ -67,7 +67,7 @@ def main():
     client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
 
     checks = [
-        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r6"' in config),
+        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r7"' in config),
         ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
         ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier" in rules and "StageMultiplier" in rules and "growth ^" in rules),
         ("eight sequential biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Lake"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"', 'Id = "Ocean"', 'Phase = 1, CenterX = 170', 'Phase = 8, CenterX = 1430'))),
@@ -82,7 +82,9 @@ def main():
         ("standing training does not require forced movement", "zone.CFrame:PointToObjectSpace(root.Position)" in main_source and "humanoid.MoveDirection.Magnitude > 0.12" not in main_source),
         ("animated belts and farm-owned treadmill upgrades", all(token in main_source for token in ("treadmillStrips", "TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId'))),
         ("treadmill UI reports speed and upgrade levels", all(token in client for token in ("TreadmillStatus", "TreadmillLevel", "TreadmillGain", "EffectiveWalkSpeed", "MELHORAR ESTEIRA"))),
-        ("responsive HUD and gameplay actions", all(token in client for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "EvolutionHint"))),
+        ("responsive HUD and gameplay actions", all(token in client for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "TopDashboard", "ActionDock", "Modal"))),
+        ("persistent server-validated rebirth progression", all(token in main_source for token in ("RequestRebirth", "requestRebirth", "Rules.RebirthCost", "profile.Rebirths += 1", "saveProfile(player)", "Rebirths = profile.Rebirths")) and all(token in rules for token in ("RebirthCost", "RebirthIncomeMultiplier"))),
+        ("rebirth confirmation, bonus, and reset explained", all(token in client for token in ("confirmingRebirth", "CONFIRMAR E REINICIAR", "RebirthMultiplier", "RebirthCost"))),
         ("no monetization in fresh runtime", not any(token in config + catalog + rules + main_source + client for token in ("MarketplaceService", "PromptGamePassPurchase", "UserOwnsGamePassAsync", "RequestGamepass", "VIPFarm", "DoubleIncome", "DoubleSpeed", "HasExtraBarnSlots"))),
     ]
     failed = [name for name, ok in checks if not ok]
