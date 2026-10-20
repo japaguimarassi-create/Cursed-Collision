@@ -613,7 +613,7 @@ local function spawnWild(spec)
         if entry.Id == spec.Biome then biome = entry break end
     end
     if not biome then return end
-    local position = Vector3.new(biome.CenterX + rng:NextNumber(-35, 35), 2, rng:NextNumber(-42, 42))
+    local position = Vector3.new(biome.CenterX + rng:NextNumber(-35, 35), 0.15, rng:NextNumber(-42, 42))
     local model = createAnimalModel(spec, "Baby", position, false)
     model.Parent = wildlifeFolder
     local root = model.PrimaryPart
@@ -632,7 +632,7 @@ local function spawnWild(spec)
 end
 
 local function makeGuardian(spec, biome)
-    local position = Vector3.new(biome.CenterX - 48, 3, 0)
+    local position = Vector3.new(biome.CenterX - 48, 0.15, 0)
     local model = createAnimalModel(spec, "Adult", position, true)
     model.Name = "Guardian_" .. biome.Id
     model.Parent = guardiansFolder
@@ -656,6 +656,9 @@ local function loadProfile(player)
     local earnedOffline = offlineIncome(profile, now - elapsed, now)
     profile.BarnBank = math.clamp(profile.BarnBank + earnedOffline, 0, Config.CoinsLimit)
     profile.LastIncomeAt = now
+    if player.Parent ~= Players then
+        return
+    end
     profiles[player] = profile
     updatePlayerAttributes(player)
     if earnedOffline > 0 then
