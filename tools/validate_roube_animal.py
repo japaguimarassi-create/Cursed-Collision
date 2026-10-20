@@ -25,7 +25,6 @@ REQUIRED_FILES = [
     "src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/TrainingService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/ShopService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/PassService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua",
     "src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua",
@@ -89,7 +88,6 @@ def main():
     animals = read("src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua")
     training = read("src/RoubeUmAnimal/ServerScriptService/Services/TrainingService.lua")
     shop = read("src/RoubeUmAnimal/ServerScriptService/Services/ShopService.lua")
-    passes = read("src/RoubeUmAnimal/ServerScriptService/Services/PassService.lua")
     products = read("src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua")
     rebirth = read("src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua")
     guardians = read("src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua")
@@ -121,13 +119,13 @@ def main():
         ("map errors are isolated", "xpcall(callback, debug.traceback)" in world and "MapReady" in world and "FallbackGround" in world),
         ("speed-only progression", "Rules.UpgradePrice" in shop and "Rules.CanCapture" in animals and "Treadmill" in training and "BenchPress" not in training and "Strength" not in config),
         ("catalog species support passive income", "IncomePerSecond" in catalog and "Catalog.All()" in catalog),
-        ("distinct server-owned gamepasses", all(token in passes for token in ("UserOwnsGamePassAsync", "PromptGamePassPurchaseFinished", "DoubleIncome", "DoubleSpeed", "VIPFarm", "ExtraBarnSlots"))),
+        ("gamepasses removed from runtime", not any(token in client + shell + kernel + ids for token in ("RequestGamepass", "PromptGamepass", "PromptGamePassPurchase", "UserOwnsGamePassAsync", "DoubleIncome", "DoubleSpeed", "VIPFarm")) and "Passes" not in ids),
         ("repeatable receipts are idempotent", all(token in products for token in ("ProcessReceipt", "PurchaseId", "PurchaseGranted", "NotProcessedYet", "SpeedBoost", "CoinBundle")) and "ProcessedPurchases" in profiles),
         ("rebirth persists an income bonus", "PerformRebirth" in profiles and "RebirthCoinsRequired" in config and "RebirthIncomeBonusPerRebirth" in config),
         ("daily rewards, quest claims and codes persist", all(token in progression for token in ("ClaimDailyReward", "ClaimQuest", "RedeemCode", "FARMFAMILY", "WILDSTART", "BARNBOOST"))),
-        ("adapted UI pack features", all(token in client for token in ("UIGradient", "renderBarn", "renderAnimals", "renderPasses", "renderQuests", "renderDaily", "renderSettings", "renderStats", "StealAnAnimalHUD"))),
+        ("adapted UI pack features", all(token in client for token in ("UIGradient", "renderBarn", "renderAnimals", "renderShop", "renderQuests", "renderDaily", "renderSettings", "renderStats", "StealAnAnimalHUD"))),
         ("mobile input and safe area", all(token in client for token in ("CoreUISafeInsets", ".Activated:Connect", "ViewportSize", "ScrollingFrame"))),
-        ("client-server remote wiring", all(token in shell for token in ("RequestUpgrade", "RequestGamepass", "RequestStackableProduct", "RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestCollectBarnIncome")) and "RoubeAnimalRemotes" in kernel),
+        ("client-server remote wiring", all(token in shell for token in ("RequestUpgrade", "RequestStackableProduct", "RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestCollectBarnIncome")) and "RoubeAnimalRemotes" in kernel),
         ("independent core shell", "require(" not in shell and all(token in shell for token in ("CoreShellReady", "FallbackGround", "WorldSpawn", "ClientProbeReport", "RequestHealthReport"))),
         ("core shell runtime watchdog", "task.wait(5)" in shell and "Active map root disappeared" in shell),
         ("diagnostic reports omit personal identity", "playerName = string.sub(player.Name" not in shell and "userId = player.UserId" not in shell),
@@ -155,19 +153,17 @@ def main():
     if missing_spawns:
         fail("catalog species without world spawns: " + ", ".join(missing_spawns))
 
-    pass_section = re.search(r"Passes = table\.freeze\(\{(.*?)\}\)", ids, re.S)
-    product_section = re.search(r"Products = table\.freeze\(\{(.*?)\}\)", ids, re.S)
-    if not pass_section or not product_section:
-        fail("monetization ID registry could not be parsed")
-    pass_ids = dict((name, int(value)) for name, value in re.findall(r"(\w+)\s*=\s*(\d+)", pass_section.group(1)))
-    product_ids = dict((name, int(value)) for name, value in re.findall(r"(\w+)\s*=\s*(\d+)", product_section.group(1)))
-    if set(pass_ids) != {"DoubleIncome", "DoubleSpeed", "VIPFarm", "ExtraBarnSlots"}:
-        fail("gamepass keys do not match the implemented benefits")
+    if "Passes" in ids or "PassService" in kernel or "RequestGamepass" in shell:
+        fail("gamepass support must be absent from the runtime")
+    product_section = re.search(r"Products = table\\.freeze\\(\\{(.*?)\\}\\)", ids, re.S)
+    if not product_section:
+        fail("developer product ID registry could not be parsed")
+    product_ids = dict((name, int(value)) for name, value in re.findall(r"(\\w+)\\s*=\\s*(\\d+)", product_section.group(1)))
     if set(product_ids) != {"SpeedBoost", "CoinBundle"}:
         fail("developer product keys do not match the implemented receipt handlers")
-    configured = [value for value in list(pass_ids.values()) + list(product_ids.values()) if value > 0]
+    configured = [value for value in product_ids.values() if value > 0]
     if len(configured) != len(set(configured)):
-        fail("nonzero monetization IDs must be unique")
+        fail("nonzero developer product IDs must be unique")
 
     publisher = read(".github/workflows/roblox-publish.yml")
     for token in ("workflow_dispatch:", "ROBLOX_API_KEY", "ROUBE_ANIMAL_UNIVERSE_ID", "ROUBE_ANIMAL_PLACE_ID", "15338267657", "5290480963"):
