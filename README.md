@@ -41,7 +41,7 @@ python3 tools/simulate_studio_run.py --report artifacts/studio-run-simulation.js
 
 O GitHub Actions executa as verificações de sintaxe Luau, regras, estrutura, mapa, HUD, persistência, bots, monetização, build Rojo, arquivo RBXL e simulação de layout. O relatório fica no artefato `StealAnAnimal-simulated-studio-report`.
 
-**Limite da validação:** a simulação de CI não executa o motor Roblox, física, DataStore real, replicação, ProximityPrompt real nem toque em um aparelho. Antes de publicar, abra o artefato RBXL no Roblox Studio, use o plugin de auditoria descrito em [docs/STUDIO_AUTOMATED_AUDIT.md](docs/STUDIO_AUTOMATED_AUDIT.md), teste com clientes simulados e faça uma sessão de teste no celular. Guarde o SHA do commit testado como `STEAL_ANIMAL_STUDIO_QA_SHA) nas variáveis do repositório. A publicação manual só prossegue se as duas confirmações forem marcadas e essa variável corresponder exatamente ao commit publicado.
+**Limite da validação:** a simulação de CI não executa o motor Roblox, física, DataStore real, replicação, ProximityPrompt real nem toque em um aparelho. Antes de publicar, abra o artefato RBXL no Roblox Studio, use o plugin de auditoria descrito em [docs/STUDIO_AUTOMATED_AUDIT.md](docs/STUDIO_AUTOMATED_AUDIT.md), teste com clientes simulados e faça uma sessão de teste no celular. Guarde o SHA do commit testado como `STEAL_ANIMAL_STUDIO_QA_SHA` nas variáveis do repositório. A publicação manual só prossegue se as duas confirmações forem marcadas e essa variável corresponder exatamente ao commit publicado.
 
 ## Pesquisa, auditoria e salvamentos
 
