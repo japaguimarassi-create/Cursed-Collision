@@ -1,0 +1,95 @@
+name: Publish Steal An Animal to Roblox
+
+on:
+  workflow_run:
+    workflows: ["Steal An Animal - Validate, Parse, and Build r7"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: roblox-place-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ROBLOX_UNIVERSE_ID: "5290480963"
+      ROBLOX_PLACE_ID: "15338267657"
+    steps:
+      - name: Download the validated Roblox place artifact
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: StealAnAnimal-studio-audit-r7
+          path: build
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout for manual publishing
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v6
+
+      - name: Build and validate place for manual publishing
+        if: github.event_name == 'workflow_dispatch'
+        uses: paradoxum-games/setup-rokit@v3
+        with:
+          cache: true
+
+      - name: Build place for manual publishing
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          rojo build default.project.json --output build/StealAnAnimal.rbxl
+          test -s build/StealAnAnimal.rbxl
+          python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
+
+      - name: Verify publishing credentials and target
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${ROBLOX_API_KEY:-}" ]]; then
+            echo "::error::Missing GitHub Actions secret ROBLOX_API_KEY. Add a Roblox Open Cloud API key with universe-places Write permission."
+            exit 1
+          fi
+          if [[ ! "${ROBLOX_UNIVERSE_ID}" =~ ^[0-9]+$ || ! "${ROBLOX_PLACE_ID}" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid Roblox Universe ID or Place ID."
+            exit 1
+          fi
+          test -s build/StealAnAnimal.rbxl
+
+      - name: Publish validated place to Roblox
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+        run: |
+          set -euo pipefail
+          response_file="$(mktemp)"
+          status="$(curl -sS -L -o "$response_file" -w '%{http_code}' \
+            -X POST "https://apis.roblox.com/universes/v1/${ROBLOX_UNIVERSE_ID}/places/${ROBLOX_PLACE_ID}/versions?versionType=Published" \
+            -H "x-api-key: ${ROBLOX_API_KEY}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @build/StealAnAnimal.rbxl)"
+          cat "$response_file"
+          if [[ "$status" != "200" ]]; then
+            echo "::error::Roblox publish API returned HTTP $status. Check the API key, universe/place IDs, and universe-places Write permission."
+            exit 1
+          fi
+          python3 - "$response_file" <<'PY'
+          import json, sys
+          with open(sys.argv[1], encoding="utf-8") as f:
+              result = json.load(f)
+          version = result.get("versionNumber")
+          if not isinstance(version, int):
+              raise SystemExit("Roblox returned HTTP 200 but no versionNumber; publication cannot be confirmed.")
+          print(f"ROBLOX_PUBLISH_SUCCESS versionNumber={version}")
+          PY
