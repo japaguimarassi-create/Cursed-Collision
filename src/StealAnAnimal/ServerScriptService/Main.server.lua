@@ -1325,7 +1325,11 @@ local function requestRebirth(player)
         profile.BarnBank = previous.BarnBank
         profile.BarnAnimals = previous.BarnAnimals
         profile.LastIncomeAt = previous.LastIncomeAt
-        profile.Persistent = persistenceState == false and false or previous.Persistent
+        if persistenceState == false then
+            profile.Persistent = false
+        else
+            profile.Persistent = previous.Persistent
+        end
         rebirthInProgress[player] = nil
         player:SetAttribute("RebirthInProgress", false)
         updatePlayerAttributes(player)
