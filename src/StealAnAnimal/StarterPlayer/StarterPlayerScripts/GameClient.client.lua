@@ -360,7 +360,7 @@ local function updateCurrencyPosition()
 end
 
 local function updateQuickActionsPosition()
-    dock.Position = UDim2.new(0, 8, 0, 88)
+    dock.Position = UDim2.new(0, 8, 0, 108)
 end
 
 updateCurrencyPosition()
