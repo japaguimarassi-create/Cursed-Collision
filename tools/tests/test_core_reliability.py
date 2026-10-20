@@ -2,13 +2,31 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = ROOT / "src/StealAnAnimal"
-MAIN = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
-CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+MAIN_FILE = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
+WORLD = (BASE / "ReplicatedStorage/Shared/WorldBuilder.lua").read_text(encoding="utf-8")
+ANIMAL = (BASE / "ReplicatedStorage/Shared/AnimalFactory.lua").read_text(encoding="utf-8")
+PROFILE = (BASE / "ServerScriptService/Services/ProfileStore.lua").read_text(encoding="utf-8")
+MAIN = MAIN_FILE + WORLD + ANIMAL + PROFILE
+CLIENT_FILE = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+PROMPT = (BASE / "StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua").read_text(encoding="utf-8")
+CLIENT = CLIENT_FILE + PROMPT
 CONFIG = (BASE / "ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
 RULES = (BASE / "ReplicatedStorage/Shared/GameplayRules.lua").read_text(encoding="utf-8")
 
 checks = {
     "profiles acquire an atomic session lease": all(token in MAIN for token in ("local function acquireSession", "SESSION_LEASE_SECONDS = 180", "ExpiresAt", "sessionTokens[player] = token")),
+    "farm ownership is cleared only after the assigned base is released": (
+        "releaseBase(player)" in MAIN_FILE[MAIN_FILE.find("Players.PlayerRemoving:Connect"):MAIN_FILE.find("for _, player in ipairs(Players:GetPlayers()) do")]
+        and "playerBases[player] = nil" not in MAIN_FILE[MAIN_FILE.find("Players.PlayerRemoving:Connect"):MAIN_FILE.find("for _, player in ipairs(Players:GetPlayers()) do")]
+        and "playerBases[player] = nil" in MAIN_FILE[MAIN_FILE.find("local function releaseBase(player)"):MAIN_FILE.find("local function spawnWild(spec)")]
+    ),
+    "failed final saves retain the datastore lease until expiry": all(token in MAIN_FILE[MAIN_FILE.find("Players.PlayerRemoving:Connect"):MAIN_FILE.find("for _, player in ipairs(Players:GetPlayers()) do")] for token in ("local saved = saveProfile(player)", "if saved then", "releaseSession(player)", "abandonSession(player)"))
+        and all(token in MAIN_FILE[MAIN_FILE.find("game:BindToClose(function()"):] for token in ("local saved = saveProfile(player)", "abandonSession(player)", "releaseSession(player)")),
+    "AnimalFactory and WorldBuilder are isolated modules": all(token in MAIN_FILE for token in ('require(Shared:WaitForChild("WorldBuilder"))', 'require(Shared:WaitForChild("AnimalFactory"))'))
+        and all(token in WORLD for token in ("function WorldBuilder.new(services)", "function createBase(index)", "function buildScenery()"))
+        and all(token in ANIMAL for token in ("function AnimalFactory.new(services)", "local function createAnimalModel", "local function stageFor")),
+    "interaction card preserves mobile thumb-zone clearance": all(token in PROMPT for token in ("UDim2.new(0.5, 0, 1, -154)", "UDim2.new(0.68, 0, 0, 48)", "UserInputService.InputEnded:Connect(function(input)")),
+
     "profiles save and release leases atomically": all(token in MAIN for token in ("Store:UpdateAsync", "local function releaseSession", "lease.Token ~= token")),
     "offline income is capped and stage-aware": all(token in MAIN for token in ("OfflineIncomeCapSeconds", "offlineIncome", "Rules.AnimalIncome")) and "OfflineIncomeCapSeconds = 21600" in CONFIG,
     "autosave and shutdown save exist": all(token in MAIN for token in ("AutosaveSeconds", "BindToClose", "releaseSession(player)", "while saveInProgress[player] do")),
