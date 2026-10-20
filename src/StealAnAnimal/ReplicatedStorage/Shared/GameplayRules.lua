@@ -134,21 +134,30 @@ end
 function Rules.RebirthCost(rebirths, config)
     local current = numberOr(rebirths, -1)
     local maximum = numberOr(config and config.MaxRebirths, -1)
-    local base = numberOr(config and config.RebirthBaseCost, -1)
-    local growth = numberOr(config and config.RebirthCostGrowth, -1)
+    local requiredCoins = numberOr(config and config.RebirthCoinsRequired, -1)
     local coinsLimit = numberOr(config and config.CoinsLimit, 2000000000)
-    if current < 0 or maximum < 0 or base <= 0 or growth < 1 or coinsLimit < 1 then
+    if current < 0 or maximum < 0 or requiredCoins <= 0 or coinsLimit < 1 then
         return nil
     end
-    current = math.floor(current)
-    if current >= maximum then
+    if math.floor(current) >= maximum then
         return nil
     end
-    local cost = base * growth ^ current
-    if not finite(cost) or cost <= 0 then
+    return math.clamp(math.floor(requiredCoins), 1, math.floor(coinsLimit))
+end
+
+function Rules.RebirthSpeedRequirement(config)
+    local base = numberOr(config and config.BaseWalkSpeed, 16)
+    local maximum = numberOr(config and config.MaxWalkSpeed, base)
+    local factor = numberOr(config and config.SpeedPerPointFactor, 0)
+    local pointsLimit = numberOr(config and config.MaxSpeedPoints, 0)
+    if maximum <= base or factor <= 0 or pointsLimit <= 0 then
         return nil
     end
-    return math.clamp(math.floor(cost), 1, math.floor(coinsLimit))
+    local points = math.ceil(((maximum - base) / factor) ^ 2)
+    if not finite(points) or points < 0 then
+        return nil
+    end
+    return math.clamp(points, 0, math.floor(pointsLimit))
 end
 
 function Rules.RebirthIncomeMultiplier(rebirths, config)
