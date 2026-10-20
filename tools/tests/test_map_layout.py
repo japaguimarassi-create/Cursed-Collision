@@ -2,40 +2,21 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[2]
-WORLD = (ROOT / "src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua").read_text(encoding="utf-8")
-CATALOG = (ROOT / "src/RoubeUmAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua").read_text(encoding="utf-8")
-CONFIG = (ROOT / "src/RoubeUmAnimal/ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
-ANIMALS = (ROOT / "src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua").read_text(encoding="utf-8")
-BARN = (ROOT / "src/RoubeUmAnimal/ServerScriptService/Services/BarnService.lua").read_text(encoding="utf-8")
-CLIENT = (ROOT / "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+BASE = ROOT / "src/StealAnAnimal"
+CONFIG = (BASE / "ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
+CATALOG = (BASE / "ReplicatedStorage/Shared/AnimalCatalog.lua").read_text(encoding="utf-8")
+MAIN = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
+CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
 
-definitions = re.findall(r'^\s{4}(\w+) = table\.freeze\(\{\s*\n\s{8}Id = "([^"]+)"', CATALOG, re.MULTILINE)
-animal_ids = {animal_id for _, animal_id in definitions}
-spawn_ids = set(re.findall(r'\{\s*"([A-Za-z0-9]+)",\s*CFrame\.new\(', WORLD))
-assert len(animal_ids) >= 20, "Expected a varied animal catalogue"
-assert animal_ids.issubset(spawn_ids), "Every catalog animal must have a world spawn"
-assert "for index = 1, 8 do" in WORLD, "Expected eight player farms"
-assert "Vector3.new(math.cos(angle) * 86, 0, math.sin(angle) * 86)" in WORLD, "Farms must leave clearance around the main escape path"
-assert "Vector3.new(230, 2, 230), CFrame.new(-10, -1, 0)" in WORLD, "Hub ground must cover all eight farm plots"
-assert 'part(base, "BarnDepositPad"' in WORLD, "Barn deposit pad missing"
-assert 'part(base, "IncomeCollectPad"' in WORLD, "Income collection pad missing"
-assert "HasExtraBarnSlots" not in WORLD and "ExtraBarnSlots" not in WORLD, "World builder must not contain paid barn slots"
-assert 'Vector3.new(-13, 1.28, 12.5)' in WORLD and 'Vector3.new(13, 1.28, 12.5)' in WORLD, "Barn pads must be separated from storage slots"
-assert 'Vector3.new(-6, 1.3, 14)' in WORLD and 'Vector3.new(6, 1.3, 14)' in WORLD, "Six standard animal slots must use the non-overlapping layout"
-assert 'SetAttribute("TrainingType", "Treadmill")' in WORLD, "Speed treadmill missing"
-assert 'createBarnAnimalDisplay' in WORLD and 'SetBarnAnimals(player, animalIds)' in WORLD, "Barn display renderer missing"
-assert "LOCKED SLOT" not in WORLD and "VIP UPGRADE" not in WORLD, "Paid slot lock UI must be removed"
-for biome in ("Meadow", "Forest", "Wetlands", "Snow", "Savannah", "Volcano"):
-    assert '"' + biome + '"' in WORLD, f"{biome} zone missing"
-assert 'biomeName .. "Ground"' in WORLD, "Biome floors missing"
-assert "MapReady" in WORLD and "BiomeCount" in WORLD and "AnimalCount" in WORLD, "Map readiness metrics missing"
-assert "xpcall(callback, debug.traceback)" in WORLD, "Map build steps must fail independently"
-assert "CFrame.new(495, 0.09, 0)" in WORLD, "Main path must sit above biome ground"
-assert "createGuardianBeast" in WORLD and "IsGiantAnimal" in WORLD, "Giant animal guardians missing"
-assert "IncomePerSecond" in CATALOG and "BarnBank" in BARN, "Passive barn income missing"
-assert "ClaimOfflineIncome" in BARN and "OfflineIncomeCapSeconds" in CONFIG, "Offline income cap missing"
-assert "Rules.CanCapture" in ANIMALS and "AnimalService.Deposit" in ANIMALS, "Capture-to-barn loop missing"
-assert "BenchPress" not in WORLD and "RequiredStrength" not in CATALOG, "Strength progression must be removed"
-assert "Strength" not in CLIENT and "Força" not in CLIENT, "Strength UI must be removed"
-assert "UIGradient" in CLIENT and "renderBarn" in CLIENT and "renderQuests" in CLIENT, "Adapted pack-style UI screens missing"
-print(f"PASS StealAnAnimalMapSpec: {len(animal_ids)} species, 6 biomes, 8 farms, giant guardians and barn income.")
+animal_ids = set(re.findall(r'Id = "([A-Za-z0-9]+)"', CATALOG))
+biomes = set(re.findall(r'Id = "([A-Za-z]+)", Name = "', CONFIG))
+assert len(animal_ids) >= 20, "Expected at least twenty original animal species"
+assert len(biomes) == 6, "Expected six distinct biomes"
+assert all(biome in CATALOG for biome in biomes), "Every biome must have animals"
+assert "createAnimalModel" in MAIN and "EvolutionStages" in MAIN, "Stage-aware animal model builder missing"
+assert "buildScenery" in MAIN and "TreeCanopy" in MAIN and "Crystal" in MAIN, "Procedural scenery systems missing"
+assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
+assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
+assert "renderBarn" in MAIN and "StageMultiplier" in MAIN, "Evolution and barn income need to be linked"
+assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
+print(f"PASS FreshWorld: {len(animal_ids)} species, {len(biomes)} biomes, procedural animal models, guardians and barn evolution.")
