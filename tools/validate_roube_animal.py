@@ -97,10 +97,14 @@ def main():
         ("animal index is available by biome", all(token in client for token in ("AnimalIndex", "ÍNDICE ANIMAL", "Catalog.ForBiome(biome.Id)"))),
         ("responsive HUD and gameplay actions", all(token in client for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "TopDashboard", "QuickActions", "OpenIndex", "ContextObjective", "ScreenInsets", "Modal"))),
         ("Studio-only QA bots and sandbox profiles", "RunService:IsStudio()" in config and "StealAnAnimal_StudioSandbox_v1" in config and "if not RunService:IsStudio() then return end" in read("src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua") and "if not RunService:IsStudio() then return end" in read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua") and "StudioTestService:ExecuteMultiplayerTestAsync(2" in read("tools/studio-tests/StealAnAnimalAudit.plugin.lua")),
-        ("BotX human Bacon Hair NPCs are player-gated, non-player, pathfinding observers, and session-logged", all(token in bot_x for token in (
+        ("BotX human Bacon Hair NPCs are player-gated, non-player, grounded, pathfinding observers, and session-logged", all(token in bot_x for token in (
             "local BOT_COUNT = 3", "CountsAsPlayer", "custom_bacon_hair", "PathfindingService:CreatePath",
             "Players.PlayerAdded", "Players.PlayerRemoving", "ProximityPromptService.PromptTriggered",
-            "remote_action", "state_snapshot", "BOTX_SESSION_REPORT", "MAX_RETAINED_EVENTS"))),
+            "leftLeg.CanCollide = true", "rightLeg.CanCollide = true",
+            "GetAttributeChangedSignal", "player_state_changed", 'coins = player:GetAttribute("Coins")',
+            'barnBank = player:GetAttribute("BarnBank")', 'rebirths = player:GetAttribute("Rebirths")',
+            "remote_action", "state_snapshot", "BOTX_SESSION_REPORT", "MAX_RETAINED_EVENTS",
+            "includeRecentEvents and retainedEvents or nil"))),
         ("CI source simulator produces structured non-Studio reports", '"studioRuntimeExecuted": False' in read("tools/simulate_studio_run.py") and '"source_and_layout_simulation"' in read("tools/simulate_studio_run.py") and "studio-run-simulation.json" in read("tools/simulate_studio_run.py")),
         ("minimal greenfield HUD and custom icon actions", all(token in client for token in ("makeGlyph", 'makeDockButton("OpenShop"', 'makeDockButton("OpenIndex"', 'makeDockButton("OpenMore"', "objectiveMarker", "RebirthBadge")) and all(token not in client for token in ("ActionDock", "helpButton.Activated", "barnButton.Activated", "collectButton.Activated", "rebirthButton.Activated"))),
         ("persistent server-validated rebirth progression", all(token in main_source for token in ("RequestRebirth", "requestRebirth", "Rules.RebirthCost", "Rules.RebirthSpeedRequirement(Config)", "profile.Rebirths += 1", "saveProfile(player)", "Rebirths = profile.Rebirths")) and all(token in rules for token in ("RebirthCost", "RebirthIncomeMultiplier", "RebirthSpeedRequirement")) and "RebirthCoinsRequired = 100000" in config and "MaxRebirths = 25" in config),
