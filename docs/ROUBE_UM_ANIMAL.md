@@ -27,7 +27,7 @@ Animal models use procedural body, head, muzzle, eyes, ears, legs, tails, wings,
 
 Profiles contain coins, speed level, barn bank, stored animal IDs, birth timestamps, and the last income timestamp. UpdateAsync persists the profile. Offline income is capped at six hours and calculated across stage transitions rather than applying an adult rate to the entire offline period. If a DataStore load fails, the temporary profile is not written back over the unknown saved data.
 
-The server validates capture targets, one-animal carry limits, farm ownership, barn capacity, collection distance, upgrade cost, and guardian catches. The client only presents the HUD and sends action requests.
+The reviewed r3 build corrects the profile-sanitization syntax and wild-animal ground alignment. The server validates capture targets, one-animal carry limits, farm ownership, barn capacity, collection distance, upgrade cost, and guardian catches. The client only presents the HUD and sends action requests.
 
 ## Build
 
