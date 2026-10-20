@@ -43,6 +43,7 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "StealAnAnimalHUD"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = false
+gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 gui.DisplayOrder = 40
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
@@ -132,136 +133,156 @@ end
 local top = Instance.new("Frame")
 top.Name = "TopDashboard"
 top.AnchorPoint = Vector2.new(0.5, 0)
-top.Position = UDim2.new(0.5, 0, 0, 10)
-top.Size = UDim2.new(1, -20, 0, 128)
+top.Position = UDim2.new(0.5, 0, 0, 8)
+top.Size = UDim2.new(1, -20, 0, 80)
 top.BackgroundColor3 = COLORS.Background
-top.BackgroundTransparency = 0.04
+top.BackgroundTransparency = 0.14
 top.BorderSizePixel = 0
 top.Parent = gui
-round(top, 18)
-outline(top, COLORS.CardEdge, 1.3)
+round(top, 14)
+outline(top, COLORS.CardEdge, 1, 0.58)
 local topConstraint = Instance.new("UISizeConstraint")
-topConstraint.MaxSize = Vector2.new(760, 128)
-topConstraint.MinSize = Vector2.new(260, 128)
+topConstraint.MaxSize = Vector2.new(540, 80)
+topConstraint.MinSize = Vector2.new(260, 80)
 topConstraint.Parent = top
 
-local title = makeLabel(top, "GameTitle", touchDevice and "STEAL ANIMAL" or "STEAL AN ANIMAL", UDim2.new(1, -166, 0, 25), UDim2.new(0, 14, 0, 7), touchDevice and 12 or 16, COLORS.Gold, Enum.Font.GothamBlack)
-local rebirthBadge = Instance.new("Frame")
+local title = makeLabel(top, "GameTitle", touchDevice and "STEAL ANIMAL" or "STEAL AN ANIMAL", UDim2.new(1, -140, 0, 17), UDim2.new(0, 12, 0, 3), touchDevice and 10 or 12, COLORS.Gold, Enum.Font.GothamBlack)
+local rebirthBadge = Instance.new("TextButton")
 rebirthBadge.Name = "RebirthBadge"
 rebirthBadge.AnchorPoint = Vector2.new(1, 0)
-rebirthBadge.Position = UDim2.new(1, -43, 0, 7)
-rebirthBadge.Size = UDim2.new(0, 108, 0, 25)
+rebirthBadge.Position = UDim2.new(1, -36, 0, 3)
+rebirthBadge.Size = UDim2.new(0, 79, 0, 21)
 rebirthBadge.BackgroundColor3 = COLORS.PanelRaised
+rebirthBadge.BackgroundTransparency = 0.12
 rebirthBadge.BorderSizePixel = 0
+rebirthBadge.Text = ""
+rebirthBadge.AutoButtonColor = true
+rebirthBadge.ZIndex = 3
 rebirthBadge.Parent = top
-round(rebirthBadge, 9)
-outline(rebirthBadge, COLORS.Purple, 1)
-local rebirthBadgeText = makeLabel(rebirthBadge, "Count", "RENASC. 0", UDim2.new(1, -8, 1, 0), UDim2.new(0, 4, 0, 0), 10, COLORS.Purple, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
-
+round(rebirthBadge, 8)
+outline(rebirthBadge, COLORS.Purple, 1, 0.48)
+local rebirthBadgeText = makeLabel(rebirthBadge, "Count", "REN. 0", UDim2.new(1, -6, 1, 0), UDim2.new(0, 3, 0, 0), 9, COLORS.Purple, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+rebirthBadgeText.ZIndex = 4
 local helpButton = makeButton(top, "Help", "?", COLORS.Card, COLORS.Cream)
 helpButton.AnchorPoint = Vector2.new(1, 0)
-helpButton.Position = UDim2.new(1, -9, 0, 6)
-helpButton.Size = UDim2.new(0, 27, 0, 27)
-helpButton.TextSize = 16
-outline(helpButton, COLORS.CardEdge, 1)
+helpButton.Position = UDim2.new(1, -6, 0, 2)
+helpButton.Size = UDim2.new(0, 24, 0, 23)
+helpButton.TextSize = 14
+outline(helpButton, COLORS.CardEdge, 1, 0.55)
 
 local statsFrame = Instance.new("Frame")
 statsFrame.Name = "ResourceCards"
-statsFrame.Position = UDim2.new(0, 10, 0, 39)
-statsFrame.Size = UDim2.new(1, -20, 0, 53)
+statsFrame.Position = UDim2.new(0, 8, 0, 24)
+statsFrame.Size = UDim2.new(1, -16, 0, 31)
 statsFrame.BackgroundTransparency = 1
 statsFrame.Parent = top
 
 local statsLayout = Instance.new("UIListLayout")
 statsLayout.FillDirection = Enum.FillDirection.Horizontal
 statsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-statsLayout.Padding = UDim.new(0, 6)
+statsLayout.Padding = UDim.new(0, 4)
 statsLayout.Parent = statsFrame
 
 local function makeStat(name, label, accent, order)
     local card = Instance.new("Frame")
     card.Name = name
     card.LayoutOrder = order
-    card.Size = UDim2.new(1 / 3, -4, 1, 0)
-    card.BackgroundColor3 = COLORS.Card
+    card.Size = UDim2.new(1 / 3, -3, 1, 0)
+    card.BackgroundTransparency = 1
     card.BorderSizePixel = 0
     card.Parent = statsFrame
-    round(card, 11)
-    outline(card, COLORS.CardEdge, 1, 0.3)
-    local marker = Instance.new("Frame")
-    marker.Name = "Accent"
-    marker.Size = UDim2.new(0, 3, 1, -14)
-    marker.Position = UDim2.new(0, 6, 0, 7)
-    marker.BackgroundColor3 = accent
-    marker.BorderSizePixel = 0
-    marker.Parent = card
-    round(marker, 2)
-    makeLabel(card, "Caption", label, UDim2.new(1, -18, 0, 16), UDim2.new(0, 14, 0, 5), 9, COLORS.Muted, Enum.Font.GothamBold)
-    local value = makeLabel(card, "Value", "0", UDim2.new(1, -18, 0, 24), UDim2.new(0, 14, 0, 23), 15, accent, Enum.Font.GothamBlack)
+    local caption = makeLabel(card, "Caption", label, UDim2.new(1, -4, 0, 11), UDim2.new(0, 3, 0, 0), 8, COLORS.Muted, Enum.Font.GothamBold)
+    caption.TextTruncate = Enum.TextTruncate.AtEnd
+    local value = makeLabel(card, "Value", "0", UDim2.new(1, -4, 0, 19), UDim2.new(0, 3, 0, 11), 13, accent, Enum.Font.GothamBlack)
+    value.TextTruncate = Enum.TextTruncate.AtEnd
     return value
 end
 
 local coinsValue = makeStat("CoinsCard", "MOEDAS", COLORS.Gold, 1)
-local incomeValue = makeStat("IncomeCard", "RENDA / SEG", COLORS.Mint, 2)
-local speedValue = makeStat("SpeedCard", "VELOCIDADE", COLORS.Aqua, 3)
-local overview = makeLabel(top, "Overview", "CELEIRO 0/6  •  BANCO 0", UDim2.new(1, -24, 0, 20), UDim2.new(0, 14, 0, 98), 10, COLORS.Muted, Enum.Font.GothamBold)
+local incomeValue = makeStat("IncomeCard", "RENDA/S", COLORS.Mint, 2)
+local speedValue = makeStat("SpeedCard", touchDevice and "VEL." or "VELOCIDADE", COLORS.Aqua, 3)
+local overview = makeLabel(top, "Overview", "FAZENDA 0/6  •  BANCO 0", UDim2.new(1, -20, 0, 14), UDim2.new(0, 12, 0, 59), 9, COLORS.Muted, Enum.Font.GothamMedium)
+overview.TextTruncate = Enum.TextTruncate.AtEnd
 
 local objective = Instance.new("Frame")
-objective.Name = "Objective"
+objective.Name = "ContextObjective"
 objective.AnchorPoint = Vector2.new(0.5, 0)
-objective.Position = UDim2.new(0.5, 0, 0, 146)
-objective.Size = UDim2.new(0.88, 0, 0, 32)
-objective.BackgroundColor3 = COLORS.Panel
-objective.BackgroundTransparency = 0.08
+objective.Position = UDim2.new(0.5, 0, 0, 86)
+objective.Size = UDim2.new(0.9, 0, 0, 25)
+objective.BackgroundTransparency = 1
 objective.BorderSizePixel = 0
 objective.Parent = gui
-round(objective, 10)
-outline(objective, COLORS.CardEdge, 1, 0.35)
-local objectiveText = makeLabel(objective, "Text", "ROUBE UM FILHOTE E LEVE-O À SUA FAZENDA", UDim2.new(1, -16, 1, 0), UDim2.new(0, 8, 0, 0), 10, COLORS.Cream, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+local objectiveText = makeLabel(objective, "Text", "CAPTURE • DEPOSITE • TREINE", UDim2.new(1, -8, 1, 0), UDim2.new(0, 4, 0, 0), 11, COLORS.Cream, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+objectiveText.TextTruncate = Enum.TextTruncate.AtEnd
+objectiveText.TextStrokeTransparency = 0.72
 
 local dock = Instance.new("Frame")
-dock.Name = "ActionDock"
-dock.AnchorPoint = Vector2.new(0.5, 1)
-dock.Position = UDim2.new(0.5, 0, 1, -10)
-dock.Size = UDim2.new(1, -18, 0, 72)
-dock.BackgroundColor3 = COLORS.Background
-dock.BackgroundTransparency = 0.03
+dock.Name = "QuickActions"
+dock.Position = UDim2.new(0, 8, 0, 124)
+dock.Size = UDim2.new(0, 78, 0, 120)
+dock.BackgroundTransparency = 1
 dock.BorderSizePixel = 0
 dock.Parent = gui
-round(dock, 18)
-outline(dock, COLORS.CardEdge, 1.2)
 local dockConstraint = Instance.new("UISizeConstraint")
-dockConstraint.MaxSize = Vector2.new(720, 72)
-dockConstraint.MinSize = Vector2.new(250, 72)
+dockConstraint.MaxSize = Vector2.new(86, 140)
+dockConstraint.MinSize = Vector2.new(70, 120)
 dockConstraint.Parent = dock
 
-local dockPadding = Instance.new("UIPadding")
-dockPadding.PaddingLeft = UDim.new(0, 7)
-dockPadding.PaddingRight = UDim.new(0, 7)
-dockPadding.PaddingTop = UDim.new(0, 7)
-dockPadding.PaddingBottom = UDim.new(0, 7)
-dockPadding.Parent = dock
-
 local dockLayout = Instance.new("UIListLayout")
-dockLayout.FillDirection = Enum.FillDirection.Horizontal
+dockLayout.FillDirection = Enum.FillDirection.Vertical
 dockLayout.SortOrder = Enum.SortOrder.LayoutOrder
-dockLayout.Padding = UDim.new(0, 5)
+dockLayout.Padding = UDim.new(0, 6)
+dockLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 dockLayout.Parent = dock
 
 local function makeDockButton(name, text, order, accent)
-    local button = makeButton(dock, name, text, accent, COLORS.Background)
+    local button = makeButton(dock, name, text, COLORS.Panel, COLORS.Cream)
     button.LayoutOrder = order
-    button.Size = UDim2.new(0.2, -6, 1, 0)
+    button.Size = UDim2.new(1, 0, 0, 36)
     button.TextSize = touchDevice and 10 or 11
-    outline(button, accent, 1.2, 0.05)
+    button.BackgroundTransparency = 0.12
+    outline(button, accent, 1, 0.48)
     return button
 end
 
-local barnButton = makeDockButton("OpenBarn", "CELEIRO", 1, COLORS.Mint)
-local collectButton = makeDockButton("Collect", "COLETAR", 2, COLORS.Gold)
-local upgradeButton = makeDockButton("OpenShop", "LOJA", 3, COLORS.Aqua)
-local rebirthButton = makeDockButton("OpenRebirth", "RENASCER", 4, COLORS.Purple)
-local moreButton = makeDockButton("OpenMore", "MAIS", 5, COLORS.Gold)
+local upgradeButton = makeDockButton("OpenShop", "LOJA", 1, COLORS.Aqua)
+local indexButton = makeDockButton("OpenIndex", "ÍNDICE", 2, COLORS.Mint)
+local moreButton = makeDockButton("OpenMore", "MAIS", 3, COLORS.Gold)
+
+local barnButton = makeButton(gui, "OpenBarn", "CELEIRO", COLORS.Mint, COLORS.Background)
+local collectButton = makeButton(gui, "Collect", "COLETAR", COLORS.Gold, COLORS.Background)
+local rebirthButton = makeButton(gui, "OpenRebirth", "RENASCER", COLORS.Purple, COLORS.Background)
+for _, hiddenButton in ipairs({ barnButton, collectButton, rebirthButton }) do
+    hiddenButton.Visible = false
+    hiddenButton.Active = false
+    hiddenButton.Selectable = false
+end
+collectButton.AnchorPoint = Vector2.new(0.5, 0)
+collectButton.Position = UDim2.new(0.5, 0, 0, 116)
+collectButton.Size = UDim2.new(0, 140, 0, 30)
+collectButton.TextSize = 11
+round(collectButton, 10)
+outline(collectButton, COLORS.Gold, 1, 0.3)
+
+local function updateQuickActionsPosition()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local viewport = camera.ViewportSize
+    local y = touchDevice and math.clamp(viewport.Y * 0.3, 122, 210) or 124
+    dock.Position = UDim2.new(0, 8, 0, y)
+end
+
+updateQuickActionsPosition()
+if workspace.CurrentCamera then
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateQuickActionsPosition)
+end
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+    task.defer(updateQuickActionsPosition)
+    local camera = workspace.CurrentCamera
+    if camera then
+        camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateQuickActionsPosition)
+    end
+end)
 
 local shade = Instance.new("Frame")
 shade.Name = "ModalShade"
@@ -284,8 +305,8 @@ modal.Parent = shade
 round(modal, 18)
 outline(modal, COLORS.CardEdge, 1.5)
 local modalConstraint = Instance.new("UISizeConstraint")
-modalConstraint.MaxSize = Vector2.new(480, 320)
-modalConstraint.MinSize = Vector2.new(260, 300)
+modalConstraint.MaxSize = Vector2.new(480, 500)
+modalConstraint.MinSize = Vector2.new(250, 280)
 modalConstraint.Parent = modal
 
 local modalTitle = makeLabel(modal, "ModalTitle", "", UDim2.new(1, -64, 0, 28), UDim2.new(0, 16, 0, 12), 17, COLORS.Gold, Enum.Font.GothamBlack)
@@ -357,6 +378,28 @@ secondaryButton.Position = UDim2.new(0, 16, 1, -58)
 secondaryButton.Size = UDim2.new(1, -32, 0, 43)
 secondaryButton.ZIndex = 72
 secondaryButton.Visible = false
+
+local function fitModal()
+    local camera = workspace.CurrentCamera
+    local viewport = camera and camera.ViewportSize or Vector2.new(800, 600)
+    local height = math.clamp(viewport.Y * 0.78, 280, 500)
+    modal.Size = UDim2.new(0.92, 0, 0, height)
+    modalBody.Size = UDim2.new(1, -32, 0, math.max(120, height - 150))
+    menuList.Size = UDim2.new(1, -32, 0, math.max(100, height - 168))
+    codeInput.Position = UDim2.new(0, 16, 1, -100)
+end
+
+fitModal()
+if workspace.CurrentCamera then
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitModal)
+end
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+    task.defer(fitModal)
+    local camera = workspace.CurrentCamera
+    if camera then
+        camera:GetPropertyChangedSignal("ViewportSize"):Connect(fitModal)
+    end
+end)
 
 local toast = Instance.new("Frame")
 toast.Name = "Toast"
@@ -515,6 +558,8 @@ local function openPanel(kind, preserveConfirmation)
     if kind == "More" then
         showListPanel("More", "PROGRESSO E SISTEMA", {
             { Title = "ÍNDICE ANIMAL", Detail = "Espécies, biomas, raridade e renda-base", Color = COLORS.Mint, Action = function() openPanel("AnimalIndex") end },
+            { Title = "MEU CELEIRO", Detail = "Animais guardados e renda acumulada", Color = COLORS.Gold, Action = function() openPanel("Barn") end },
+            { Title = "RENASCIMENTO", Detail = "Consulte requisitos e bônus permanentes", Color = COLORS.Purple, Action = function() openPanel("Rebirth") end },
             { Title = "LOJA DE MELHORIAS", Detail = "Compre níveis de esteira usando moedas do jogo", Color = COLORS.Aqua, Action = function() openPanel("Shop") end },
             { Title = "RECOMPENSA DIÁRIA", Detail = "Bônus diário e sequência de 7 dias", Color = COLORS.Gold, Action = function() openPanel("Daily") end },
             { Title = "MISSÕES", Detail = "Quatro objetivos com recompensas permanentes", Color = COLORS.Mint, Action = function() openPanel("Quests") end },
@@ -683,6 +728,7 @@ local function openPanel(kind, preserveConfirmation)
     end
     primaryButton.Visible = true
     if codeInput.Visible then
+        codeInput.Position = UDim2.new(0, 16, 1, -100)
         primaryButton.Position = UDim2.new(0, 16, 1, -58)
         primaryButton.Size = UDim2.new(1, -32, 0, 43)
     elseif secondaryButton.Visible then
@@ -707,16 +753,22 @@ local function refresh()
     coinsValue.Text = formatNumber(coins)
     incomeValue.Text = formatNumber(income)
     speedValue.Text = string.format("%.1f", speed)
-    overview.Text = "CELEIRO " .. tostring(count) .. "/" .. tostring(capacity) .. "  •  BANCO " .. formatNumber(bank)
-    rebirthBadgeText.Text = "RENASC. " .. tostring(rebirths)
+    overview.Text = "FAZENDA " .. tostring(count) .. "/" .. tostring(capacity) .. "  •  BANCO " .. formatNumber(bank)
+    rebirthBadgeText.Text = "REN. " .. tostring(rebirths)
+    local isCarrying = player:GetAttribute("CarryingAnimal") == true
+    local captures = tonumber(player:GetAttribute("TotalCaptured")) or 0
     if player:GetAttribute("ProfileLoaded") ~= true then
         objectiveText.Text = "CARREGANDO SEU PROGRESSO..."
-    elseif player:GetAttribute("CarryingAnimal") == true then
-        objectiveText.Text = "FUGA! LEVE O FILHOTE AO PAD VERDE DA SUA FAZENDA"
-    elseif tonumber(player:GetAttribute("TotalCaptured")) == 0 then
-        objectiveText.Text = "PRIMEIRO OBJETIVO: ROUBE UM FILHOTE NO CORREDOR"
+        objectiveText.TextColor3 = COLORS.Muted
+    elseif isCarrying then
+        objectiveText.Text = "FUGA • LEVE O ANIMAL AO PAD VERDE DA SUA FAZENDA"
+        objectiveText.TextColor3 = COLORS.Orange
+    elseif captures == 0 then
+        objectiveText.Text = "COMECE • CAPTURE UM ANIMAL NO CORREDOR"
+        objectiveText.TextColor3 = COLORS.Cream
     else
-        objectiveText.Text = "ROUBE UM FILHOTE • LEVE-O À SUA FAZENDA • COLETE MOEDAS"
+        objectiveText.Text = "CAPTURE • DEPOSITE • TREINE PARA DESBLOQUEAR NOVOS BIOMAS"
+        objectiveText.TextColor3 = COLORS.Cream
     end
     if activePanel then
         openPanel(activePanel, confirmingRebirth)
@@ -726,7 +778,9 @@ end
 barnButton.Activated:Connect(function() openPanel("Barn") end)
 collectButton.Activated:Connect(function() collectRemote:FireServer() end)
 upgradeButton.Activated:Connect(function() openPanel("Shop") end)
+indexButton.Activated:Connect(function() openPanel("AnimalIndex") end)
 rebirthButton.Activated:Connect(function() openPanel("Rebirth") end)
+rebirthBadge.Activated:Connect(function() openPanel("Rebirth") end)
 moreButton.Activated:Connect(function() openPanel("More") end)
 helpButton.Activated:Connect(function() openPanel("Guide") end)
 closeButton.Activated:Connect(closeModal)
