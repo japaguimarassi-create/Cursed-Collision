@@ -24,6 +24,7 @@ Projeto Roblox mobile-first inspirado no estilo visual de **Steal An Egg**. O ma
 ## Pesquisa e salvamentos
 
 - [Pesquisa visual de Steal An Egg e especificação do mapa](docs/STEAL_AN_EGG_MAP_RESEARCH_2026-10-20.md)
+- [Pesquisa e especificação do HUD mobile](docs/HUD_DESIGN_RESEARCH_2026-10-20.md)
 - [Manifesto dos backups e estados salvos](docs/SAVE_MANIFEST_2026-10-20.md)
 
 ## Validação
