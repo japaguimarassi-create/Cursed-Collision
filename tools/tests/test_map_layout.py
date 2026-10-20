@@ -17,6 +17,6 @@ assert "createAnimalModel" in MAIN and "EvolutionStages" in MAIN, "Stage-aware a
 assert "buildScenery" in MAIN and "TreeCanopy" in MAIN and "Crystal" in MAIN, "Procedural scenery systems missing"
 assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
-assert "renderBarn" in MAIN and "StageMultiplier" in MAIN, "Evolution and barn income need to be linked"
+assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
 assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
 print(f"PASS FreshWorld: {len(animal_ids)} species, {len(biomes)} biomes, procedural animal models, guardians and barn evolution.")
