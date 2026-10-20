@@ -58,6 +58,8 @@ jobs:
         run: python3 tools/tests/test_core_reliability.py
       - name: Validate Studio QA bot harness
         run: python3 tools/tests/test_studio_audit.py
+      - name: Validate BotX human NPC observers
+        run: python3 tools/tests/test_botx_npc.py
       - name: Build Roblox place
         run: |
           set -euo pipefail
