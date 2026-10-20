@@ -10,7 +10,6 @@ local BarnService = {}
 local profiles
 local worldBuilder
 local animalService
-local passService
 local notify
 local collectRemote
 local lastTick = {}
@@ -29,20 +28,8 @@ local function incomeRate(data)
     return rate
 end
 
-local function passMultiplier(player)
-    local multiplier = 1
-    if passService.Has(player, "DoubleIncome") then
-        multiplier *= 2
-    end
-    if passService.Has(player, "VIPFarm") then
-        multiplier *= 1.25
-    end
-    return multiplier
-end
-
-local function capacityFor(player)
+local function capacityFor()
     return Config.Barn.BaseSlots
-        + (passService.Has(player, "ExtraBarnSlots") and Config.Barn.ExtraBarnSlots or 0)
 end
 
 function BarnService.RefreshPlayer(player)
@@ -54,8 +41,8 @@ function BarnService.RefreshPlayer(player)
         return false
     end
     worldBuilder.SetBarnAnimals(player, data.BarnAnimals)
-    player:SetAttribute("BarnCapacity", capacityFor(player))
-    player:SetAttribute("BarnIncomeRate", math.floor(incomeRate(data) * passMultiplier(player) * (1 + data.Rebirths * Config.RebirthIncomeBonusPerRebirth)))
+    player:SetAttribute("BarnCapacity", capacityFor())
+    player:SetAttribute("BarnIncomeRate", math.floor(incomeRate(data) * (1 + data.Rebirths * Config.RebirthIncomeBonusPerRebirth)))
     player:SetAttribute("BarnAnimalCount", #data.BarnAnimals)
     player:SetAttribute("BarnBank", data.BarnBank)
     profiles.Sync(player)
@@ -68,7 +55,7 @@ function BarnService.InitializePlayer(player)
     end
     local success, earned, elapsed, rate = profiles.ClaimOfflineIncome(
         player,
-        passMultiplier(player),
+        1,
         Config.Barn.OfflineIncomeCapSeconds
     )
     if not success then
@@ -218,7 +205,7 @@ local function collectFromUI(player)
 end
 
 
-function BarnService.Start(profileService, builder, animals, passes, requestCollectRemote, notifyFunction)
+function BarnService.Start(profileService, builder, animals, requestCollectRemote, notifyFunction)
     if started then
         return
     end
@@ -226,7 +213,6 @@ function BarnService.Start(profileService, builder, animals, passes, requestColl
     profiles = profileService
     worldBuilder = builder
     animalService = animals
-    passService = passes
     collectRemote = requestCollectRemote
     notify = notifyFunction
 
@@ -264,21 +250,6 @@ function BarnService.Start(profileService, builder, animals, passes, requestColl
         end
     end)
 
-    for _, player in ipairs(Players:GetPlayers()) do
-        for _, attribute in ipairs({ "HasDoubleIncome", "HasVIPFarm", "HasExtraBarnSlots" }) do
-            player:GetAttributeChangedSignal(attribute):Connect(function()
-                BarnService.RefreshPlayer(player)
-            end)
-        end
-    end
-    Players.PlayerAdded:Connect(function(player)
-        for _, attribute in ipairs({ "HasDoubleIncome", "HasVIPFarm", "HasExtraBarnSlots" }) do
-            player:GetAttributeChangedSignal(attribute):Connect(function()
-                BarnService.RefreshPlayer(player)
-            end)
-        end
-    end)
-
     task.spawn(function()
         while true do
             task.wait(Config.Barn.IncomeTickSeconds)
@@ -290,8 +261,7 @@ function BarnService.Start(profileService, builder, animals, passes, requestColl
                     lastTick[player] = now
                     local data = profiles.Get(player)
                     if data then
-                        local rate = incomeRate(data) * passMultiplier(player)
-                            * (1 + data.Rebirths * Config.RebirthIncomeBonusPerRebirth)
+                        local rate = incomeRate(data) * (1 + data.Rebirths * Config.RebirthIncomeBonusPerRebirth)
                         local accumulated = (fractionalIncome[player] or 0) + rate * elapsed
                         local whole = math.floor(accumulated)
                         local credited = profiles.AccrueBarnIncome(player, whole, os.time())
