@@ -1,6 +1,6 @@
 local Config = {
     GameName = "STEAL AN ANIMAL",
-    ReleaseTag = "StealAnAnimal-CoreShell-2026.10.11-r2",
+    ReleaseTag = "StealAnAnimal-NoGamepasses-2026.10.20-r1",
     DataStoreName = "RoubeUmAnimal_Profile_v1",
     SchemaVersion = 2,
     AutosaveSeconds = 180,
@@ -10,7 +10,6 @@ local Config = {
     MaxSpeedLevel = 80,
     BaseWalkSpeed = 16,
     SpeedPerLevel = 0.85,
-    VipSpeedBonus = 8,
     MaximumWalkSpeed = 150,
     MaxRebirths = 25,
     RebirthCoinsRequired = 100000,
@@ -37,7 +36,6 @@ local Config = {
     Training = {
         TreadmillGain = 1,
         TreadmillInterval = 2,
-        DoubleSpeedMultiplier = 2,
     },
     StackableProducts = {
         SpeedAmount = 10,
