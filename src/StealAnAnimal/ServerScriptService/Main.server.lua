@@ -223,14 +223,20 @@ local function createAnimalModel(spec, stageName, position, giant)
         ball("EyeWhite", eyeWidth, 0.31, 0.13, side * eyeX, eyeY, eyeZ, Color3.fromRGB(255, 250, 231))
         ball("EyeIris", eyeWidth * 0.6, 0.2, 0.08, side * eyeX, eyeY - 0.01, eyeZ - 0.09, spec.Accent)
         ball("EyePupil", eyeWidth * 0.32, 0.13, 0.045, side * eyeX, eyeY - 0.01, eyeZ - 0.143, Color3.fromRGB(24, 27, 33))
-        ball("EyeGlint", 0.045, 0.055, 0.025, side * eyeX - 0.03, eyeY + 0.05, eyeZ - 0.165, Color3.fromRGB(255, 255, 255))
-        ball("Eyebrow", eyeWidth * 1.34, 0.11, 0.11, side * eyeX, eyeY + 0.24, eyeZ + 0.05, spec.Accent)
-        ball("CheekBlush", 0.25, 0.15, 0.06, side * math.max(eyeX + 0.24, 0.48), eyeY - 0.42, eyeZ + 0.01, Color3.fromRGB(255, 162, 174))
+        if giant then
+            ball("EyeGlint", 0.045, 0.055, 0.025, side * eyeX - 0.03, eyeY + 0.05, eyeZ - 0.165, Color3.fromRGB(255, 255, 255))
+            ball("Eyebrow", eyeWidth * 1.34, 0.11, 0.11, side * eyeX, eyeY + 0.24, eyeZ + 0.05, spec.Accent)
+        end
+        if stageName == "Baby" or giant then
+            ball("CheekBlush", 0.25, 0.15, 0.06, side * math.max(eyeX + 0.24, 0.48), eyeY - 0.42, eyeZ + 0.01, Color3.fromRGB(255, 162, 174))
+        end
     end
     ball("Nose", 0.19, 0.15, 0.13, 0, 2.02, -1.9, spec.Shape == "Bird" and Color3.fromRGB(255, 145, 47) or Color3.fromRGB(57, 45, 43))
     ball("Mouth", 0.2, 0.07, 0.06, 0, 1.85, -1.74, Color3.fromRGB(83, 45, 48))
-    ball("ChestBadge", 0.34, 0.34, 0.16, 0, 1.24, -1.12, spec.Accent)
-    ball("ChestBadgeCore", 0.14, 0.14, 0.08, 0, 1.25, -1.22, Color3.fromRGB(255, 241, 180))
+    if giant then
+        ball("ChestBadge", 0.34, 0.34, 0.16, 0, 1.24, -1.12, spec.Accent)
+        ball("ChestBadgeCore", 0.14, 0.14, 0.08, 0, 1.25, -1.22, Color3.fromRGB(255, 241, 180))
+    end
 
     for _, side in ipairs({ -1, 1 }) do
         if spec.Shape ~= "Whale" and spec.Shape ~= "Dolphin" and spec.Shape ~= "Ray" then
@@ -916,7 +922,9 @@ local function buildScenery()
         for pillar = 1, 30 do
             local x = 115 + pillar * 49
             createPart(world, "CorridorPillar", Vector3.new(1.05, 17.2, 2.8), CFrame.new(x, 8.3, side * 85.4), pillar % 4 == 0 and Color3.fromRGB(255, 202, 90) or Color3.fromRGB(90, 148, 89), Enum.Material.Brick, nil, false)
-            createPart(world, "CorridorPillarGem", Vector3.new(1.35, 0.75, 3.3), CFrame.new(x, 17.1, side * 85.4), Color3.fromRGB(255, 214, 101), Enum.Material.Neon, nil, false)
+            if pillar % 5 == 0 then
+                createPart(world, "CorridorPillarGem", Vector3.new(1.35, 0.75, 3.3), CFrame.new(x, 17.1, side * 85.4), Color3.fromRGB(255, 214, 101), Enum.Material.Neon, nil, false)
+            end
         end
     end
     createPart(world, "HubFountainBase", Vector3.new(18, 1, 18), CFrame.new(0, 0, 0), Color3.fromRGB(225, 221, 190), Enum.Material.Marble, nil, true)
@@ -946,8 +954,8 @@ local function buildScenery()
             addBall(decorationFolder, biome.Id .. "WildEgg", Vector3.new(2.6, 3.6, 2.6), Vector3.new(eggX, 2.15, nestZ), eggColor, Enum.Material.SmoothPlastic)
             addBall(decorationFolder, biome.Id .. "EggBand", Vector3.new(2.7, 0.48, 2.7), Vector3.new(eggX, 1.65, nestZ), biome.Accent, Enum.Material.Neon)
             addBall(decorationFolder, biome.Id .. "EggTopGem", Vector3.new(0.75, 0.9, 0.75), Vector3.new(eggX, 3.7, nestZ), Color3.fromRGB(255, 250, 221), Enum.Material.Neon)
-            for shard = 1, 5 do
-                local angle = math.rad(shard * 72)
+            for shard = 1, 3 do
+                local angle = math.rad(shard * 120)
                 addBall(decorationFolder, biome.Id .. "EggOrbit", Vector3.new(0.26, 0.26, 0.26), Vector3.new(eggX + math.cos(angle) * 2.1, 2.2 + math.sin(angle) * 0.4, nestZ + math.sin(angle) * 2.1), biome.Accent, Enum.Material.Neon)
             end
         end
@@ -1244,8 +1252,8 @@ local function makeGuardian(spec, biome)
     highlight.OutlineTransparency = 0.04
     highlight.DepthMode = Enum.HighlightDepthMode.Occluded
     highlight.Parent = model
-    for shard = 1, 12 do
-        local angle = math.rad(shard * 30)
+    for shard = 1, 8 do
+        local angle = math.rad(shard * 45)
         local auraPosition = position + Vector3.new(math.cos(angle) * 10.5, 0.45, math.sin(angle) * 10.5)
         local aura = addBall(model, "GuardianAuraShard", Vector3.new(1.1, 0.2, 0.2), auraPosition, biome.Accent, Enum.Material.Neon)
         aura.CFrame = CFrame.new(auraPosition) * CFrame.Angles(0, -angle, math.rad(25))
