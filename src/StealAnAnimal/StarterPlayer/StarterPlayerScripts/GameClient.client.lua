@@ -825,6 +825,7 @@ local function refresh()
     else
         objectiveText.Text = "CAPTURE • DEPOSITE • TREINE PARA DESBLOQUEAR NOVOS BIOMAS"
         objectiveText.TextColor3 = COLORS.Cream
+        objectiveMarker.BackgroundColor3 = COLORS.Mint
     end
     if activePanel then
         openPanel(activePanel, confirmingRebirth)
@@ -835,7 +836,6 @@ upgradeButton.Activated:Connect(function() openPanel("Shop") end)
 indexButton.Activated:Connect(function() openPanel("AnimalIndex") end)
 rebirthBadge.Activated:Connect(function() openPanel("Rebirth") end)
 moreButton.Activated:Connect(function() openPanel("More") end)
-helpButton.Activated:Connect(function() openPanel("Guide") end)
 closeButton.Activated:Connect(closeModal)
 
 primaryButton.Activated:Connect(function()
