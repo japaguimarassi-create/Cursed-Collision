@@ -1045,13 +1045,7 @@ Players.PlayerRemoving:Connect(function(player)
         abandonSession(player)
     end
     clearCarry(player)
-    profiles[player] = nilt(function(player)
-    leaving[player] = true
-    saveProfile(player)
-    releaseSession(player)
-    clearCarry(player)
     profiles[player] = nil
-    playerBases[player] = nil
     actionCooldowns[player] = nil
     rebirthInProgress[player] = nil
     progressionWriteInProgress[player] = nil
