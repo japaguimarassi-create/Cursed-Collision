@@ -225,7 +225,7 @@ objectiveText.TextTruncate = Enum.TextTruncate.AtEnd
 local dock = Instance.new("Frame")
 dock.Name = "QuickActions"
 dock.Position = UDim2.new(0, 8, 0, 36)
-dock.Size = UDim2.new(0, 46, 0, 128)
+dock.Size = UDim2.new(0, 52, 0, 140)
 dock.BackgroundTransparency = 1
 dock.BorderSizePixel = 0
 dock.Parent = gui
@@ -296,7 +296,7 @@ end
 local function makeDockButton(name, label, order, accent, glyph)
     local button = makeButton(dock, name, "", COLORS.PanelRaised, COLORS.Cream)
     button.LayoutOrder = order
-    button.Size = UDim2.new(0, 42, 0, 40)
+    button.Size = UDim2.new(0, 48, 0, 44)
     button.BackgroundTransparency = 0.14
     round(button, 12)
     outline(button, COLORS.CardEdge, 1, 0.72)
@@ -320,7 +320,7 @@ local function updateQuickActionsPosition()
     local camera = workspace.CurrentCamera
     if not camera then return end
     local viewport = camera.ViewportSize
-    local y = touchDevice and 84 or 56
+    local y = touchDevice and 110 or 56
     dock.Position = UDim2.new(0, 8, 0, y)
 end
 
