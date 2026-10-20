@@ -14,6 +14,11 @@ A mobile-first Roblox experience about stealing baby animals, escaping their adu
 
 ## Core gameplay
 
+- Full gameplay HUD redesigned for mobile and desktop: compact resource cards, barn bank/income status, responsive action dock, animal list, treadmill details, guide, readable notifications, and a separate confirmation step for destructive actions.
+- Persistent rebirth progression: the next renascimento costs 25,000 coins and triples in price per level; each rebirth grants +50% permanent animal income, up to 10 rebirths. Rebirth resets coins, barn bank, stored animals, speed points, and treadmill level; the rebirth count and its income bonus persist.
+- Rebirth runs server-side, checks the saved profile/session and wallet, refuses to discard a carried animal, and immediately saves the reset. If the save fails, the previous progression is restored in memory.
+- Character respawn is explicitly enabled with a three-second delay, and respawned characters return to their assigned farm.
+
 - Animals begin as babies, then evolve into children, adolescents, and adults.
 - Each evolution adds 50% to that animal's income. Cumulative income multipliers are 1x, 1.5x, 2.25x, and 3.375x.
 - Giant adult guardians pursue players carrying stolen animals. If caught, the animal escapes and returns to the wild after a delay.
