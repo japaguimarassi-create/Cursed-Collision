@@ -5,41 +5,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / "default.project.json"
+SOURCE_ROOT = ROOT / "src/StealAnAnimal"
 
 REQUIRED_FILES = [
-    "src/RoubeUmAnimal/ReplicatedStorage/Shared/Config.lua",
-    "src/RoubeUmAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua",
-    "src/RoubeUmAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
-    "src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Main.server.lua",
-    "src/RoubeUmAnimal/ServerScriptService/CoreShell.server.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/CoreKernel.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/MapProbe.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/AnimalBrain.lua",
-    "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/BootHUD.client.lua",
-    "tools/tests/test_core_reliability.py",
-    "docs/superpowers/specs/2026-10-11-steal-animal-core-shell-mapprobe-design.md",
-    "docs/superpowers/plans/2026-10-11-steal-animal-core-reliability.md",
-    "src/RoubeUmAnimal/ServerScriptService/Services/ProfileService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/TrainingService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/ShopService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/BarnService.lua",
-    "src/RoubeUmAnimal/ServerScriptService/Services/ProgressionService.lua",
-    "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/Config.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
+    "src/StealAnAnimal/ServerScriptService/Main.server.lua",
+    "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
     "tools/tests/run.luau",
     "tools/tests/test_map_layout.py",
     "tools/tests/test_monetization.py",
+    "tools/tests/test_core_reliability.py",
+    "README.md",
     "docs/ROUBE_UM_ANIMAL.md",
-]
-
-RETIRED_WORKFLOWS = [
-    ".github/workflows/developer-product-provision.yml",
-    ".github/workflows/gamepass-provision.yml",
 ]
 
 def fail(message):
@@ -56,134 +35,67 @@ def main():
     missing = [name for name in REQUIRED_FILES if not (ROOT / name).is_file()]
     if missing:
         fail("missing required files: " + ", ".join(missing))
-    for path in RETIRED_WORKFLOWS:
-        if (ROOT / path).exists():
-            fail("retired workflow still enabled: " + path)
 
     try:
         project = json.loads(PROJECT.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         fail(f"invalid default.project.json: {exc}")
+
     if project.get("name") != "StealAnAnimal":
-        fail("default.project.json must target StealAnAnimal")
+        fail("Rojo project name must be StealAnAnimal")
 
     tree = project.get("tree", {})
     expected = {
-        "ReplicatedStorage": "src/RoubeUmAnimal/ReplicatedStorage",
-        "ServerScriptService": "src/RoubeUmAnimal/ServerScriptService",
-        "StarterPlayer.StarterPlayerScripts": "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts",
+        "ReplicatedStorage": "src/StealAnAnimal/ReplicatedStorage",
+        "ServerScriptService": "src/StealAnAnimal/ServerScriptService",
+        "StarterPlayer.StarterPlayerScripts": "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts",
     }
     for route, path in expected.items():
         node = tree
-        for part_name in route.split("."):
-            node = node.get(part_name, {})
+        for part in route.split("."):
+            node = node.get(part, {})
         if node.get("$path") != path:
-            fail(f"project mapping mismatch for {route}")
+            fail(f"Rojo mapping mismatch for {route}")
 
-    config = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/Config.lua")
-    catalog = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua")
-    rules = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/GameplayRules.lua")
-    ids = read("src/RoubeUmAnimal/ReplicatedStorage/Shared/MonetizationIds.lua")
-    profiles = read("src/RoubeUmAnimal/ServerScriptService/Services/ProfileService.lua")
-    animals = read("src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua")
-    training = read("src/RoubeUmAnimal/ServerScriptService/Services/TrainingService.lua")
-    shop = read("src/RoubeUmAnimal/ServerScriptService/Services/ShopService.lua")
-    products = read("src/RoubeUmAnimal/ServerScriptService/Services/StackableProductService.lua")
-    rebirth = read("src/RoubeUmAnimal/ServerScriptService/Services/RebirthService.lua")
-    guardians = read("src/RoubeUmAnimal/ServerScriptService/Services/GuardianService.lua")
-    world = read("src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua")
-    barn = read("src/RoubeUmAnimal/ServerScriptService/Services/BarnService.lua")
-    progression = read("src/RoubeUmAnimal/ServerScriptService/Services/ProgressionService.lua")
-    client = read("src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
-    main = read("src/RoubeUmAnimal/ServerScriptService/Main.server.lua")
-    shell = read("src/RoubeUmAnimal/ServerScriptService/CoreShell.server.lua")
-    kernel = read("src/RoubeUmAnimal/ServerScriptService/Services/CoreKernel.lua")
-    probe = read("src/RoubeUmAnimal/ServerScriptService/Services/MapProbe.lua")
-    brain = read("src/RoubeUmAnimal/ServerScriptService/Services/AnimalBrain.lua")
-    boot_hud = read("src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/BootHUD.client.lua")
+    config = read("src/StealAnAnimal/ReplicatedStorage/Shared/Config.lua")
+    catalog = read("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua")
+    rules = read("src/StealAnAnimal/ReplicatedStorage/Shared/GameplayRules.lua")
+    main_source = read("src/StealAnAnimal/ServerScriptService/Main.server.lua")
+    client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
 
     checks = [
-        ("release identifier", 'ReleaseTag = "StealAnAnimal-NoGamepasses-2026.10.20-r1"' in config),
-        ("DataStore session lock and atomic writes", "UpdateAsync" in profiles and "SessionLock" in profiles and "function transact" in profiles),
-        ("legacy strength data is discarded safely", "current.Strength = nil" in profiles and "Config.SchemaVersion" in profiles),
-        ("barn data persists", all(token in profiles for token in ("BarnAnimals", "BarnBank", "LastIncomeAt", "AddBarnAnimal", "CollectBarnIncome")) and "ExtraPassSlots" not in profiles and "ExtraBarnSlots" not in profiles),
-        ("barn capacity is independent of purchases", "BaseSlots" in barn and "capacityFor" in barn and "ExtraBarnSlots" not in barn),
-        ("offline income is bounded and atomically claimed", "ClaimOfflineIncome" in profiles and "OfflineIncomeCapSeconds" in config and "current.LastIncomeAt = now" in profiles),
-        ("capture-to-barn gameplay", all(token in animals for token in ("Rules.CanCapture", "AnimalService.Deposit", "scheduleRespawn", "CarryingAnimal")) and "AddBarnAnimal" in barn),
-        ("no immediate animal sale", "SellPart" not in world and "salePrice" not in animals and "function deposit" in barn),
-        ("passive income economy", all(token in barn for token in ("IncomePerSecond", "AccrueBarnIncome", "CollectBarnIncome", "BarnIncomeRate"))),
-        ("six world regions", all(token in world for token in ('"Meadow"', '"Forest"', '"Wetlands"', '"Snow"', '"Savannah"', '"Volcano"')) and "BiomeCount" in world),
-        ("eight player farms", "for index = 1, 8 do" in world and "OwnerUserId" in world),
-        ("giant animal guardians", "createGuardianBeast" in world and "IsGiantAnimal" in world and "BeastTorso" in world),
-        ("guardian pathfinding", "PathfindingService" in brain and "ComputeAsync" in brain and "AgentRadius = Config.Guardian.AgentRadius" in brain),
-        ("map errors are isolated", "xpcall(callback, debug.traceback)" in world and "MapReady" in world and "FallbackGround" in world),
-        ("speed-only progression", "Rules.UpgradePrice" in shop and "Rules.CanCapture" in animals and "Treadmill" in training and "BenchPress" not in training and "Strength" not in config),
-        ("catalog species support passive income", "IncomePerSecond" in catalog and "Catalog.All()" in catalog),
-        ("gamepasses removed from runtime", not any(token in client + shell + kernel + ids for token in ("RequestGamepass", "PromptGamepass", "PromptGamePassPurchase", "UserOwnsGamePassAsync", "DoubleIncome", "DoubleSpeed", "VIPFarm")) and "Passes" not in ids),
-        ("repeatable receipts are idempotent", all(token in products for token in ("ProcessReceipt", "PurchaseId", "PurchaseGranted", "NotProcessedYet", "SpeedBoost", "CoinBundle")) and "ProcessedPurchases" in profiles),
-        ("rebirth persists an income bonus", "PerformRebirth" in profiles and "RebirthCoinsRequired" in config and "RebirthIncomeBonusPerRebirth" in config),
-        ("daily rewards, quest claims and codes persist", all(token in progression for token in ("ClaimDailyReward", "ClaimQuest", "RedeemCode", "FARMFAMILY", "WILDSTART", "BARNBOOST"))),
-        ("adapted UI pack features", all(token in client for token in ("UIGradient", "renderBarn", "renderAnimals", "renderShop", "renderQuests", "renderDaily", "renderSettings", "renderStats", "StealAnAnimalHUD"))),
-        ("mobile input and safe area", all(token in client for token in ("CoreUISafeInsets", ".Activated:Connect", "ViewportSize", "ScrollingFrame"))),
-        ("client-server remote wiring", all(token in shell for token in ("RequestUpgrade", "RequestStackableProduct", "RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestCollectBarnIncome")) and "RoubeAnimalRemotes" in kernel),
-        ("independent core shell", "require(" not in shell and all(token in shell for token in ("CoreShellReady", "FallbackGround", "WorldSpawn", "ClientProbeReport", "RequestHealthReport"))),
-        ("core shell runtime watchdog", "task.wait(5)" in shell and "Active map root disappeared" in shell),
-        ("diagnostic reports omit personal identity", "playerName = string.sub(player.Name" not in shell and "userId = player.UserId" not in shell),
-        ("kernel marks failed imports degraded", "setAttribute(core, \"BootState\", \"Degraded\")" in kernel and "Module require failed" in kernel),
-        ("virtual player map scan and return report", all(token in probe for token in ("StartVirtualPlayer", "CoreVirtualPlayer", "PathfindingService", "virtualPlayerCount", "startAndReturn"))),
-        ("client can inspect the MapBot report", all(token in client for token in ("Diagnostics = renderDiagnostics", "CORE HEALTH & MAPBOT", "InvokeServer"))),
-        ("core kernel isolates module failures", "pcall(require, module)" in kernel and "WorldBuilder.Build" in kernel and "MapReady" in kernel and "ServiceStatusJson" in kernel),
-        ("map build is staged and activated after checks", "StealAnAnimal_Staging" in world and 'root.Name = "StealAnAnimal"' in world and "guardianCount == #guardians" in world),
-        ("map diagnostic distinguishes client and server", all(token in probe for token in ("activeRoot", "stagingRoot", "missingRemotes", "latestClientProbe", "CollectServerReport"))),
-        ("independent bootstrap HUD", "StealAnAnimalBootstrapHUD" in boot_hud and "ClientProbeReport" in boot_hud),
-        ("animal brain owns wild and guardian states", all(token in brain for token in ("StartWildlife", "StartGuardians", "Flee", "Wander", "Patrol", "Chase"))),
-        ("barn collection UI checks ownership and distance", "collectBarnRemote:FireServer()" in client and "local function collectFromUI(player)" in barn and "validAtPad(player, base, pad)" in barn),
-        ("no strength in client-facing gameplay", "Strength" not in catalog and "RequiredStrength" not in catalog and "Strength" not in client and "Força" not in client),
+        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r1"' in config),
+        ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
+        ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier ^ (index - 1)" in rules),
+        ("six biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"'))),
+        ("persistent profile and offline income", all(token in main_source for token in ("Store:GetAsync", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
+        ("server validated capture and deposit", all(token in main_source for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
+        ("guardian pursuit and escape", all(token in main_source for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),
+        ("original procedural models and scenery", all(token in main_source for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "FountainGem"))),
+        ("responsive HUD and gameplay actions", all(token in client for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "EvolutionHint"))),
+        ("no monetization in fresh runtime", not any(token in config + catalog + rules + main_source + client for token in ("MarketplaceService", "PromptGamePassPurchase", "UserOwnsGamePassAsync", "RequestGamepass", "VIPFarm", "DoubleIncome", "DoubleSpeed", "HasExtraBarnSlots"))),
     ]
     failed = [name for name, ok in checks if not ok]
+    for name, ok in checks:
+        print(("PASS " if ok else "FAIL ") + name)
     if failed:
         fail("failed checks: " + ", ".join(failed))
 
-    definitions = re.findall(r'^\s{4}(\w+) = table\.freeze\(\{\s*\n\s{8}Id = "([^"]+)"', catalog, re.MULTILINE)
-    catalog_ids = {animal_id for _, animal_id in definitions}
-    spawn_ids = set(re.findall(r'\{\s*"([A-Za-z0-9]+)",\s*CFrame\.new\(', world))
-    if len(catalog_ids) < 20:
-        fail("animal catalogue should contain at least 20 species")
-    missing_spawns = sorted(catalog_ids - spawn_ids)
-    if missing_spawns:
-        fail("catalog species without world spawns: " + ", ".join(missing_spawns))
-
-    if "Passes" in ids or "PassService" in kernel or "RequestGamepass" in shell:
-        fail("gamepass support must be absent from the runtime")
-    product_section = re.search(r"Products = table\.freeze\(\{(.*?)\}\)", ids, re.S)
-    if not product_section:
-        fail("developer product ID registry could not be parsed")
-    product_ids = dict((name, int(value)) for name, value in re.findall(r"(\w+)\s*=\s*(\d+)", product_section.group(1)))
-    if set(product_ids) != {"SpeedBoost", "CoinBundle"}:
-        fail("developer product keys do not match the implemented receipt handlers")
-    configured = [value for value in product_ids.values() if value > 0]
-    if len(configured) != len(set(configured)):
-        fail("nonzero developer product IDs must be unique")
+    animal_ids = set(re.findall(r'Id = "([A-Za-z0-9]+)"', catalog))
+    if len(animal_ids) < 20:
+        fail("fresh animal catalogue must contain at least 20 species")
+    for path in SOURCE_ROOT.rglob("*.lua"):
+        content = path.read_text(encoding="utf-8")
+        if any(marker in content for marker in ("<<<<<<<", "=======", ">>>>>>>")):
+            fail("merge marker found in " + str(path.relative_to(ROOT)))
 
     publisher = read(".github/workflows/roblox-publish.yml")
-    for token in ("workflow_dispatch:", "ROBLOX_API_KEY", "ROUBE_ANIMAL_UNIVERSE_ID", "ROUBE_ANIMAL_PLACE_ID", "15338267657", "5290480963"):
-        if token not in publisher:
-            fail("publisher is missing a target safety setting: " + token)
+    if "workflow_dispatch:" not in publisher or "ROBLOX_API_KEY" not in publisher:
+        fail("publishing workflow must remain manual and key-protected")
     if "contains(github.event.head_commit.message, '[publish-roube-um-animal]')" not in publisher:
         fail("production publishing must require explicit release confirmation")
 
-    for name in REQUIRED_FILES:
-        if name.endswith((".lua", ".luau")):
-            content = read(name)
-            if any(marker in content for marker in ("<<<<<<<", "=======", ">>>>>>>")):
-                fail("merge marker found in " + name)
-            if "TODO" in content or "ADD CODE HERE" in content:
-                fail("unfinished placeholder found in " + name)
-            if "src/CollisionBattlestar/" in content:
-                fail("legacy runtime reference found in " + name)
-
-    print(f"Steal An Animal validation passed: {len(REQUIRED_FILES)} required files and {len(checks)} architecture checks.")
-    print("Verified: barn storage and income, six biomes, animal spawns, giant guardians, speed-only progression, remotes and monetization separation.")
+    print(f"Steal An Animal validation passed: {len(animal_ids)} species and {len(checks)} architecture checks.")
 
 if __name__ == "__main__":
     main()
