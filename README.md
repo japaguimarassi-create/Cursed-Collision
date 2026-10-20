@@ -1,55 +1,42 @@
-# ROUBE UM ANIMAL
+# STEAL AN ANIMAL
 
-Simulador de exploração, captura de animais, fuga dos guardiões e progressão por treino no Roblox.
+A mobile-first Roblox experience about stealing baby animals, escaping their adult family guardians, bringing them to a rectangular personal farm, and earning passive coins as they grow.
 
-Este repositório mantém o nome histórico Cursed-Collision, mas o projeto ativo de gameplay agora é **ROUBE UM ANIMAL**. Os códigos da experiência Collision Battlestar foram removidos da versão atual; arquivos de ferramentas de engenharia e documentação histórica que não faziam parte do runtime foram preservados.
+## Map layout
 
-## Ciclo do jogador
+- Eight original sequential zones, from the sunny meadow and lake to the amber volcano and blue abyss.
+- Eight farms arranged as a clean 4 by 2 rectangle around the spawn hub.
+- One wide, unobstructed animal corridor with a central track, colored stage gates, and roadside scenery.
+- Every zone has an oversized adult guardian that protects the local animals; the final guardian is a whale.
+- Twenty-nine original animal entries, including a hen, swan, polar bear, lion, dolphin, manta ray, and whale.
+- Every farm has an animated treadmill, a server-checked training zone, and a coin-funded upgrade system. Running on its belt awards speed points; points are converted to capped character WalkSpeed.
+- Native Roblox parts form the animal silhouettes and decorations. The visual direction is inspired by the readable zones, strong color contrast, treadmill placement, and giant guardian scale seen in Steal An Egg, but the farm layout, biomes, palettes, and animal models are original.
 
-Entrar no servidor → receber um curral → treinar Velocidade na esteira e Força no supino → explorar a Fazenda, a Selva Mística e o Vulcão → roubar um animal → correr de volta ao próprio curral → vender o animal por Moedas.
+## Core gameplay
 
-Se um guardião alcançar o jogador durante o transporte, o animal é perdido e reaparece depois de um intervalo. Captura, requisitos de força, penalidade por peso, venda, preços, upgrades e gamepasses são validados no servidor.
+- Animals begin as babies, then evolve into children, adolescents, and adults.
+- Each evolution adds 50% to that animal's income. Cumulative income multipliers are 1x, 1.5x, 2.25x, and 3.375x.
+- Giant adult guardians pursue players carrying stolen animals. If caught, the animal escapes and returns to the wild after a delay.
+- Six animal slots per farm, persistent inventory, passive barn income, manual collection, speed upgrades, and bounded offline income.
+- Mobile-first HUD shows speed points, current movement speed, treadmill level, and training gain.
+- Treadmill level 1 adds 2 speed points per second while the player stands inside the belt zone; each paid in-game upgrade increases training yield by 1.5× (rounded down). Movement speed is calculated from earned points and capped at 40 studs/s; carrying an animal applies a separate weight penalty.
+- Speed points, treadmill level, coins, and barn data are saved; no gamepasses, VIP purchases, or paid barn expansions.
 
-## Sistemas incluídos
+## Build and validate
 
-- Leaderstats em português: Moedas, Velocidade e Força.
-- DataStore com UpdateAsync, token de sessão, autosave de cinco minutos e salvamento ao sair.
-- Catálogo de animais com peso, raridade, requisitos de força e valor-base.
-- Tool lógica com representação visual presa às costas durante o transporte.
-- Penalidade progressiva de velocidade conforme o peso carregado.
-- Venda restrita ao curral proprietário.
-- Treino na esteira e no supino.
-- Loja de upgrades de Força e Velocidade, com verificação de saldo no servidor.
-- Gamepasses configuráveis: Moedas em Dobro e VIP com +50 de velocidade-base.
-- Guardiões com detecção visual, patrulha e perseguição por PathfindingService.
-- Mapa procedural estilizado e HUD adaptada para celular.
-- Workflow para validar e gerar o arquivo Roblox place.
+The Rojo project maps game scripts and a static map preview into Workspace. The RBXL opens with physical map geometry already serialized; on server startup, the interactive world is built separately and the preview is removed only after the runtime scene is created. CI decodes every RBXL chunk and verifies Workspace plus hundreds of embedded Parts.
 
-## Estrutura do projeto
+Validation commands:
+- python3 tools/validate_roube_animal.py
+- luau tools/tests/run.luau
+- python3 tools/tests/test_map_layout.py
+- python3 tools/tests/test_monetization.py
+- python3 tools/tests/test_core_reliability.py
+- rojo build default.project.json --output build/StealAnAnimal.rbxl
+- python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
 
-A implementação Luau está em src/RoubeUmAnimal/. A configuração Rojo está em default.project.json. O guia do mapa, das regras e do procedimento de teste fica em docs/ROUBE_UM_ANIMAL.md.
+Passing automated checks does not replace a live Roblox Studio test. This branch does not publish to Roblox. Publishing remains a separate manual operation with explicit destination configuration and confirmation. Binary validation is automated; it does not claim a live Roblox Studio launch because Studio is not present in this code-only runner.
 
-## Build e validação
+## Visual research
 
-Com Rokit instalado:
-
-    python3 tools/validate_roube_animal.py
-    luau tools/tests/run.luau
-    python3 tools/tests/test_map_layout.py
-    rojo build default.project.json --output build/RoubeUmAnimal.rbxl
-
-O GitHub Actions testa regras de captura, venda, peso e upgrades; verifica a cobertura do mapa, analisa toda a sintaxe Luau e compila um arquivo de experiência para inspeção. Isso não substitui um teste dentro do Roblox Studio.
-
-## Configuração necessária antes da produção
-
-1. Publique uma experiência de teste separada e habilite DataStore para validar o salvamento.
-2. Crie os gamepasses e substitua os IDs 0 em Config.lua pelos IDs reais.
-3. Teste o comportamento dos guardiões, vendas, respawns, salvamento concorrente e HUD em dispositivos reais.
-4. Defina ROUBE_ANIMAL_UNIVERSE_ID e ROUBE_ANIMAL_PLACE_ID como Repository Variables e ROBLOX_API_KEY como Repository Secret somente quando decidir publicar explicitamente.
-5. Use manualmente o workflow de publicação e confirme o alvo antes de enviar uma versão.
-
-A publicação automática da antiga experiência Collision Battlestar foi desativada para impedir que o novo jogo seja enviado para um ID antigo por engano.
-
-## Ferramentas de engenharia preservadas
-
-O repositório também conserva utilitários LuaSmith, scripts de teste e documentação de engenharia anteriores. Eles não fazem parte do runtime de ROUBE UM ANIMAL; o workflow ativo valida este projeto pelo script tools/validate_roube_animal.py.
+Reference screenshots were reviewed before implementation. They were used for high-level ideas only: a legible long route, colorful zone transitions, fenced farms, and large guardian figures. No exact map, mesh, screenshot, or packaged asset was copied.

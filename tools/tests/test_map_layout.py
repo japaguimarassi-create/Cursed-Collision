@@ -2,40 +2,45 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[2]
-WORLD = (ROOT / "src/RoubeUmAnimal/ServerScriptService/Services/WorldBuilder.lua").read_text(encoding="utf-8")
-CATALOG = (ROOT / "src/RoubeUmAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua").read_text(encoding="utf-8")
-CONFIG = (ROOT / "src/RoubeUmAnimal/ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
-ANIMALS = (ROOT / "src/RoubeUmAnimal/ServerScriptService/Services/AnimalService.lua").read_text(encoding="utf-8")
-BARN = (ROOT / "src/RoubeUmAnimal/ServerScriptService/Services/BarnService.lua").read_text(encoding="utf-8")
-CLIENT = (ROOT / "src/RoubeUmAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+BASE = ROOT / "src/StealAnAnimal"
+CONFIG = (BASE / "ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
+CATALOG = (BASE / "ReplicatedStorage/Shared/AnimalCatalog.lua").read_text(encoding="utf-8")
+MAIN = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
+CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+import json
+PROJECT = json.loads((ROOT / "default.project.json").read_text(encoding="utf-8"))
+PREVIEW_PATH = BASE / "Workspace/StealAnAnimalWorld.model.json"
+PREVIEW = json.loads(PREVIEW_PATH.read_text(encoding="utf-8"))
 
-definitions = re.findall(r'^\s{4}(\w+) = table\.freeze\(\{\s*\n\s{8}Id = "([^"]+)"', CATALOG, re.MULTILINE)
-animal_ids = {animal_id for _, animal_id in definitions}
-spawn_ids = set(re.findall(r'\{\s*"([A-Za-z0-9]+)",\s*CFrame\.new\(', WORLD))
-assert len(animal_ids) >= 20, "Expected a varied animal catalogue"
-assert animal_ids.issubset(spawn_ids), "Every catalog animal must have a world spawn"
-assert "for index = 1, 8 do" in WORLD, "Expected eight player farms"
-assert "Vector3.new(math.cos(angle) * 86, 0, math.sin(angle) * 86)" in WORLD, "Farms must leave clearance around the main escape path"
-assert "Vector3.new(230, 2, 230), CFrame.new(-10, -1, 0)" in WORLD, "Hub ground must cover all eight farm plots"
-assert 'part(base, "BarnDepositPad"' in WORLD, "Barn deposit pad missing"
-assert 'part(base, "IncomeCollectPad"' in WORLD, "Income collection pad missing"
-assert "ExtraPassSlots" not in WORLD and "ExtraBarnSlots" in WORLD, "World builder must use the configured extra barn slot key"
-assert 'Vector3.new(-13, 1.28, 12.5)' in WORLD and 'Vector3.new(13, 1.28, 12.5)' in WORLD, "Barn pads must be separated from storage slots"
-assert 'Vector3.new(-6, 1.3, 14)' in WORLD and 'Vector3.new(13, 1.3, 0)' in WORLD, "Animal slots must use the non-overlapping layout"
-assert 'SetAttribute("TrainingType", "Treadmill")' in WORLD, "Speed treadmill missing"
-assert 'createBarnAnimalDisplay' in WORLD and 'SetBarnAnimals(player, animalIds)' in WORLD, "Barn display renderer missing"
-assert "ExtraBarnSlots" in WORLD, "Extra barn slots need visible lock state"
-for biome in ("Meadow", "Forest", "Wetlands", "Snow", "Savannah", "Volcano"):
-    assert '"' + biome + '"' in WORLD, f"{biome} zone missing"
-assert 'biomeName .. "Ground"' in WORLD, "Biome floors missing"
-assert "MapReady" in WORLD and "BiomeCount" in WORLD and "AnimalCount" in WORLD, "Map readiness metrics missing"
-assert "xpcall(callback, debug.traceback)" in WORLD, "Map build steps must fail independently"
-assert "CFrame.new(495, 0.09, 0)" in WORLD, "Main path must sit above biome ground"
-assert "createGuardianBeast" in WORLD and "IsGiantAnimal" in WORLD, "Giant animal guardians missing"
-assert "IncomePerSecond" in CATALOG and "BarnBank" in BARN, "Passive barn income missing"
-assert "ClaimOfflineIncome" in BARN and "OfflineIncomeCapSeconds" in CONFIG, "Offline income cap missing"
-assert "Rules.CanCapture" in ANIMALS and "AnimalService.Deposit" in ANIMALS, "Capture-to-barn loop missing"
-assert "BenchPress" not in WORLD and "RequiredStrength" not in CATALOG, "Strength progression must be removed"
-assert "Strength" not in CLIENT and "Força" not in CLIENT, "Strength UI must be removed"
-assert "UIGradient" in CLIENT and "renderBarn" in CLIENT and "renderQuests" in CLIENT, "Adapted pack-style UI screens missing"
-print(f"PASS StealAnAnimalMapSpec: {len(animal_ids)} species, 6 biomes, 8 farms, giant guardians and barn income.")
+animal_ids = set(re.findall(r'Id = "([A-Za-z0-9]+)"', CATALOG))
+biomes = set(re.findall(r'Id = "([A-Za-z]+)", Name = "', CONFIG))
+phase_numbers = re.findall(r'Phase = ([1-8]), CenterX = ', CONFIG)
+assert len(animal_ids) >= 28, "Expected at least twenty-eight original animal species"
+assert len(biomes) == 8, "Expected eight sequential animal phases"
+assert phase_numbers == [str(n) for n in range(1, 9)], "Phases must be numbered sequentially from 1 to 8"
+assert all(biome in CATALOG for biome in biomes), "Every biome must have animals"
+assert "basePositions = {" in MAIN, "Eight farms must use an explicit rectangular layout"
+assert all(token in MAIN for token in ("CorridorFloor", "CorridorEdge", "MainPath", "GuardianParent_", "PAI PROTETOR")), "Central animal corridor or guardian parents missing"
+assert all(token in MAIN for token in ("createTreadmill", "TrainingZone", "MovingBeltStripe", "UpgradeTreadmill", "TreadmillLevel")), "Functional treadmill and upgrade prompt missing"
+assert "treadmillStrips" in MAIN and "TreadmillBeltSpeed" in CONFIG, "Treadmill belt animation missing"
+assert "Rules.TrainingGain" in MAIN and "Rules.MoveSpeed" in MAIN and "Config.MaxSpeedPoints" in MAIN, "Training and speed cap must be server-authoritative"
+assert "createAnimalModel" in MAIN and "EvolutionStages" in MAIN, "Stage-aware animal model builder missing"
+assert all(token in MAIN for token in ("HenComb", "SwanNeck", "BearPaw", "WhaleTailFluke", "DolphinTailFluke", "MantaWing")), "Distinctive animal silhouettes are missing"
+assert all(token in MAIN for token in ("GiantMushroom", "WetlandPool", "IcePillar", "SavannaBoulder", "LavaRift", "LakeReed", "OceanBubble")), "Biome landmarks are missing"
+assert 'CFrame.new(biome.CenterX, -0.5, 0)' in MAIN, "Biome ground must meet the world baseline"
+assert 'Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), -0.12, rng:NextNumber(-20, 20))' in MAIN, "Wild animals must spawn inside the corridor"
+assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must be placed close to the slot surface"
+assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
+assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
+assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
+assert "TreadmillStatus" in CLIENT and "MELHORAR ESTEIRA" in CLIENT and "TouchEnabled" in CLIENT, "Mobile treadmill UI missing"
+assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
+assert PROJECT["tree"]["Workspace"]["$className"] == "Workspace", "Workspace must be serialized into the place"
+assert PROJECT["tree"]["Workspace"]["$path"] == "src/StealAnAnimal/Workspace", "Workspace must include static map geometry"
+static_json = PREVIEW_PATH.read_text(encoding="utf-8")
+static_parts = len(re.findall(r'"ClassName": "Part"', static_json))
+assert static_parts >= 300, f"Expected at least 300 embedded map Parts, found {static_parts}"
+assert all(token in static_json for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale")), "Static map missing core landmarks"
+assert 'local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")' in MAIN, "Runtime must preserve preview while booting"
+assert "previewWorld:Destroy()" in MAIN, "Runtime must remove preview only after successfully creating its world"
+print(f"PASS AnimalCorridor: {len(animal_ids)} species, {len(biomes)} phases, {static_parts} embedded Parts, eight farms/treadmills, and final whale guardian.")
