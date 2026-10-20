@@ -170,8 +170,7 @@ function CoreKernel.Start()
     local AnimalService = modules.AnimalService or NullService
     local TrainingService = modules.TrainingService or NullService
     local ShopService = modules.ShopService or NullService
-    local PassService = NullService
-    local GuardianService = modules.GuardianService or NullService
+        local GuardianService = modules.GuardianService or NullService
     local AnimalBrain = modules.AnimalBrain or NullService
     local StackableProductService = modules.StackableProductService or NullService
     local RebirthService = modules.RebirthService or NullService
@@ -188,17 +187,17 @@ function CoreKernel.Start()
 
     if modules.AnimalService then
         startService("AnimalService", function()
-            AnimalService.Start(ProfileService, WorldBuilder, PassService, notify)
+            AnimalService.Start(ProfileService, WorldBuilder, notify)
         end)
     end
     if modules.ShopService then
         startService("ShopService", function()
-            ShopService.Start(ProfileService, AnimalService, PassService, remotes:FindFirstChild("RequestUpgrade"), notify)
+            ShopService.Start(ProfileService, AnimalService, remotes:FindFirstChild("RequestUpgrade"), notify)
         end)
     end
     if modules.TrainingService then
         startService("TrainingService", function()
-            TrainingService.Start(ProfileService, WorldBuilder, AnimalService, PassService, notify)
+            TrainingService.Start(ProfileService, WorldBuilder, AnimalService, notify)
         end)
     end
     if modules.AnimalBrain then
@@ -223,7 +222,7 @@ function CoreKernel.Start()
     end
     if modules.BarnService then
         startService("BarnService", function()
-            BarnService.Start(ProfileService, WorldBuilder, AnimalService, PassService, remotes:FindFirstChild("RequestCollectBarnIncome"), notify)
+            BarnService.Start(ProfileService, WorldBuilder, AnimalService, remotes:FindFirstChild("RequestCollectBarnIncome"), notify)
         end)
     end
     if modules.ProgressionService then
