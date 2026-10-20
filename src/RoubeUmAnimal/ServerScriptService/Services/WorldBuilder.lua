@@ -489,10 +489,6 @@ local function createBase(index, position, angle)
         Vector3.new(-6, 1.3, 14),
         Vector3.new(0, 1.3, 14),
         Vector3.new(6, 1.3, 14),
-        Vector3.new(-13, 1.3, -7),
-        Vector3.new(13, 1.3, -7),
-        Vector3.new(-13, 1.3, 0),
-        Vector3.new(13, 1.3, 0),
     }
     for slotIndex, offset in ipairs(slotOffsets) do
         local slotPosition = position + offset
@@ -961,9 +957,6 @@ function WorldBuilder.SetBarnAnimals(player, animalIds)
     end
 
     local capacity = Config.Barn.BaseSlots
-    if player:GetAttribute("HasExtraBarnSlots") == true then
-        capacity += Config.Barn.ExtraBarnSlots
-    end
 
     for index, slot in ipairs(slots) do
         local animalId = animalIds[index]
@@ -985,15 +978,6 @@ function WorldBuilder.SetBarnAnimals(player, animalIds)
                 slot.Color = spec.Color
                 slot.Transparency = 0.08
             end
-        elseif index > capacity then
-            if title then
-                title.Text = "LOCKED SLOT"
-            end
-            if subtitle then
-                subtitle.Text = "VIP UPGRADE"
-            end
-            slot.Color = Color3.fromRGB(92, 95, 83)
-            slot.Transparency = 0.3
         else
             if title then
                 title.Text = "SLOT " .. tostring(index)
