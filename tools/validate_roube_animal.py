@@ -81,7 +81,7 @@ def main():
         ("server-side treadmill training and capped movement", all(token in main_source for token in ("createTreadmill", "TrainingZone", "Rules.TrainingGain", "Rules.MoveSpeed", "Config.MaxSpeedPoints", "MaxTreadmillLevel"))),
         ("standing training does not require forced movement", "zone.CFrame:PointToObjectSpace(root.Position)" in main_source and "humanoid.MoveDirection.Magnitude > 0.12" not in main_source),
         ("animated belts and farm-owned treadmill upgrades", all(token in main_source for token in ("treadmillStrips", "TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId'))),
-        ("treadmill UI reports speed and upgrade levels", all(token in client for token in ("TreadmillStatus", "TreadmillLevel", "TreadmillGain", "EffectiveWalkSpeed", "MELHORAR ESTEIRA"))),
+        ("treadmill UI reports speed and upgrade levels", all(token in client for token in ("TreadmillLevel", "TreadmillGain", "TreadmillUpgradeCost", "EffectiveWalkSpeed", "OpenTreadmill"))),
         ("responsive HUD and gameplay actions", all(token in client for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "TopDashboard", "ActionDock", "Modal"))),
         ("persistent server-validated rebirth progression", all(token in main_source for token in ("RequestRebirth", "requestRebirth", "Rules.RebirthCost", "profile.Rebirths += 1", "saveProfile(player)", "Rebirths = profile.Rebirths")) and all(token in rules for token in ("RebirthCost", "RebirthIncomeMultiplier"))),
         ("rebirth confirmation, bonus, and reset explained", all(token in client for token in ("confirmingRebirth", "CONFIRMAR E REINICIAR", "RebirthMultiplier", "RebirthCost"))),
