@@ -4,6 +4,7 @@ local ProximityPromptService = game:GetService("ProximityPromptService")
 local PathfindingService = game:GetService("PathfindingService")
 local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local remoteFolder = ReplicatedStorage:WaitForChild("StealAnimalRemotes", 30)
@@ -283,13 +284,13 @@ local function makePart(model, name, size, cframe, color, material)
     return part
 end
 
-local function connectJoint(parent, name, part0, part1)
+local function connectJoint(parent, name, part0, part1, c0, c1)
     local joint = Instance.new("Motor6D")
     joint.Name = name
     joint.Part0 = part0
     joint.Part1 = part1
-    joint.C0 = part0.CFrame:ToObjectSpace(part1.CFrame)
-    joint.C1 = CFrame.new()
+    joint.C0 = c0 or part0.CFrame:ToObjectSpace(part1.CFrame)
+    joint.C1 = c1 or CFrame.new()
     joint.Parent = part0
     return joint
 end
@@ -365,19 +366,19 @@ local function createBot(index)
     root.Transparency = 1
     local torso = makePart(model, "Torso", Vector3.new(2, 2, 1), rootCFrame, SHIRT)
     local head = makePart(model, "Head", Vector3.new(2, 1, 1), rootCFrame * CFrame.new(0, 1.5, 0), SKIN)
-    local leftArm = makePart(model, "Left Arm", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(-1.5, -0.5, 0), SKIN)
-    local rightArm = makePart(model, "Right Arm", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(1.5, -0.5, 0), SKIN)
+    local leftArm = makePart(model, "Left Arm", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(-1.5, 0, 0), SKIN)
+    local rightArm = makePart(model, "Right Arm", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(1.5, 0, 0), SKIN)
     local leftLeg = makePart(model, "Left Leg", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(-0.5, -2, 0), PANTS)
     local rightLeg = makePart(model, "Right Leg", Vector3.new(1, 2, 1), rootCFrame * CFrame.new(0.5, -2, 0), PANTS)
     leftLeg.CanCollide = true
     rightLeg.CanCollide = true
 
-    connectJoint(root, "RootJoint", root, torso)
-    connectJoint(torso, "Neck", torso, head)
-    connectJoint(torso, "Left Shoulder", torso, leftArm)
-    connectJoint(torso, "Right Shoulder", torso, rightArm)
-    connectJoint(torso, "Left Hip", torso, leftLeg)
-    connectJoint(torso, "Right Hip", torso, rightLeg)
+    local rootJoint = connectJoint(root, "RootJoint", root, torso, CFrame.new(), CFrame.new())
+    local neck = connectJoint(torso, "Neck", torso, head, CFrame.new(0, 1, 0), CFrame.new(0, -0.5, 0))
+    local leftShoulder = connectJoint(torso, "Left Shoulder", torso, leftArm, CFrame.new(-1, 0.5, 0), CFrame.new(0.5, 0.5, 0))
+    local rightShoulder = connectJoint(torso, "Right Shoulder", torso, rightArm, CFrame.new(1, 0.5, 0), CFrame.new(-0.5, 0.5, 0))
+    local leftHip = connectJoint(torso, "Left Hip", torso, leftLeg, CFrame.new(-0.5, -1, 0), CFrame.new(0, 1, 0))
+    local rightHip = connectJoint(torso, "Right Hip", torso, rightLeg, CFrame.new(0.5, -1, 0), CFrame.new(0, 1, 0))
     makeBaconHair(model, head)
     makeFaceAndBadge(model, head, torso)
 
@@ -412,6 +413,21 @@ local function createBot(index)
         Root = root,
         Mode = "OBSERVING",
         NextWaypoint = 1,
+        Joints = {
+            Root = rootJoint,
+            Neck = neck,
+            LeftShoulder = leftShoulder,
+            RightShoulder = rightShoulder,
+            LeftHip = leftHip,
+            RightHip = rightHip,
+        },
+        JointBases = {
+            Neck = neck.C0,
+            LeftShoulder = leftShoulder.C0,
+            RightShoulder = rightShoulder.C0,
+            LeftHip = leftHip.C0,
+            RightHip = rightHip.C0,
+        },
     }
     table.insert(botModels, model)
     table.insert(botStates, state)
@@ -718,6 +734,28 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, player)
         interactionType = prompt:GetAttribute("InteractionType"),
         parent = prompt.Parent and prompt.Parent.Name or "missing",
     })
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not active then
+        return
+    end
+    local now = os.clock()
+    for _, state in ipairs(botStates) do
+        local humanoid = state.Humanoid
+        local joints = state.Joints
+        local bases = state.JointBases
+        if state.Model and state.Model.Parent and humanoid and humanoid.Health > 0 and joints and bases then
+            local velocity = state.Root and state.Root.Parent and state.Root.AssemblyLinearVelocity.Magnitude or 0
+            local moving = humanoid.MoveDirection.Magnitude > 0.05 or velocity > 1.8
+            local swing = moving and math.sin(now * 7 + state.Index * 1.8) * 0.62 or 0
+            joints.LeftShoulder.C0 = bases.LeftShoulder * CFrame.Angles(swing, 0, 0)
+            joints.RightShoulder.C0 = bases.RightShoulder * CFrame.Angles(-swing, 0, 0)
+            joints.LeftHip.C0 = bases.LeftHip * CFrame.Angles(-swing * 0.78, 0, 0)
+            joints.RightHip.C0 = bases.RightHip * CFrame.Angles(swing * 0.78, 0, 0)
+            joints.Neck.C0 = bases.Neck * CFrame.Angles(0, math.sin(now * 1.35 + state.Index) * (moving and 0.045 or 0.09), 0)
+        end
+    end
 end)
 
 Players.PlayerAdded:Connect(onPlayerAdded)
