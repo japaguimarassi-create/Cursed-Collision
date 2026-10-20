@@ -29,8 +29,8 @@ checks = {
     "world billboards do not render through walls and are bounded": "gui.AlwaysOnTop = false" in WORLD and "gui.MaxDistance = maxDistance or (compactLabel and 18 or 32)" in WORLD,
     "empty barn slots do not generate floating text labels": 'addLabel(pad, "ESPAÇO " .. tostring(slotIndex), "VAZIO"' not in WORLD and "StoredAnimals" in MAIN,
     "Swan guardian has a dedicated neck/head/feet and no duplicate generic head": all(token in ANIMAL for token in ("SwanNeck", "SwanHead", "SwanFoot", 'if spec.Id ~= "Swan" then')),
-    "mobile prompt sits above the lower touch zone and ends holds globally": all(token in PROMPT for token in ("UDim2.new(0.5, 0, 1, -154)", "UDim2.new(0.68, 0, 0, 48)", "UserInputService.InputEnded:Connect", "InputHoldBegin()", "InputHoldEnd()")),
-    "production publisher is manual and confirmation-gated": "workflow_dispatch:" in PUBLISH and "default: false" in PUBLISH and "inputs.confirm == true" in PUBLISH,
+    "mobile prompt sits above the lower touch zone and ends holds globally": all(token in PROMPT for token in ("AnchorPoint = Vector2.new(0.5, 0)", "UDim2.new(0.68, 0, 0, 48)", "UserInputService.InputEnded:Connect", "InputHoldBegin()", "InputHoldEnd()")),
+    "production publisher is manual and confirmation-gated": "workflow_dispatch:" in PUBLISH and "default: false" in PUBLISH and "inputs.confirm == true && inputs.confirm_studio_runtime_qa == true" in PUBLISH and "confirm_studio_runtime_qa:" in PUBLISH,
     "there is no automatic workflow that publishes after every successful CI run": not AUTO_PUBLISH.exists() and "workflow_run:" not in PUBLISH,
     "production destination is configured rather than hardcoded": "STEAL_ANIMAL_UNIVERSE_ID" in PUBLISH and "STEAL_ANIMAL_PLACE_ID" in PUBLISH and "15338267657" not in PUBLISH and "5290480963" not in PUBLISH,
 }
