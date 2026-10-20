@@ -33,7 +33,7 @@ assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must b
 assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
-assert "TreadmillStatus" in CLIENT and "MELHORAR ESTEIRA" in CLIENT and "TouchEnabled" in CLIENT, "Mobile treadmill UI missing"
+assert all(token in CLIENT for token in ("TreadmillLevel", "TreadmillGain", "OpenTreadmill", "TouchEnabled", "TopDashboard", "ActionDock", "Modal")), "Responsive HUD or treadmill panel missing"
 assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
 assert PROJECT["tree"]["Workspace"]["$className"] == "Workspace", "Workspace must be serialized into the place"
 assert PROJECT["tree"]["Workspace"]["$path"] == "src/StealAnAnimal/Workspace", "Workspace must include static map geometry"
