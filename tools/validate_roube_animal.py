@@ -144,6 +144,8 @@ def main():
         fail("production publishing must require manual confirmation plus real Studio/mobile QA")
     if "confirm_studio_runtime_qa:" not in publisher or "default: false" not in publisher:
         fail("real Studio/mobile QA confirmation must be required and default to false")
+    if "STEAL_ANIMAL_STUDIO_QA_SHA" not in publisher or '"${STUDIO_QA_SHA}" = "${GITHUB_SHA}"' not in publisher:
+        fail("publishing must be blocked unless runtime QA attestation matches the exact commit SHA")
     if "STEAL_ANIMAL_UNIVERSE_ID" not in publisher or "STEAL_ANIMAL_PLACE_ID" not in publisher:
         fail("production publishing must use explicitly configured destination IDs")
     if "5290480963" in publisher or "15338267657" in publisher:
