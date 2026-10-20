@@ -33,7 +33,7 @@ assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must b
 assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
-assert all(token in CLIENT for token in ("TreadmillLevel", "TreadmillGain", "OpenTreadmill", "TouchEnabled", "TopDashboard", "ActionDock", "Modal", "OpenMore", "MenuList", "Daily", "Quests", "Codes", "Stats", "Settings", "Diagnostics", "mapBotReportRemote.OnClientEvent")), "Responsive HUD or progression panels missing"
+assert all(token in CLIENT for token in ("TreadmillLevel", "TreadmillGain", "OpenShop", "TouchEnabled", "TopDashboard", "ActionDock", "Modal", "OpenMore", "MenuList", "Daily", "Quests", "Codes", "Stats", "Settings", "Diagnostics", "AnimalIndex", "ÍNDICE ANIMAL", "LOJA DE MELHORIAS", "mapBotReportRemote.OnClientEvent")), "Responsive HUD or progression panels missing"
 assert all(token in MAIN for token in ("RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestMapBot", "PathfindingService:CreatePath")), "Daily rewards, quests, code redemption, or MapBot server remotes are missing"
 assert "RebirthCoinsRequired = 100000" in CONFIG and "MaxRebirths = 25" in CONFIG and "Rules.RebirthSpeedRequirement(Config)" in MAIN, "Original rebirth requirements are missing"
 assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
