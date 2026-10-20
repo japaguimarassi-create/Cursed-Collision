@@ -21,6 +21,7 @@ REQUIRED_FILES = [
     "tools/tests/test_core_reliability.py",
     "README.md",
     "docs/ROUBE_UM_ANIMAL.md",
+    "docs/HUD_DESIGN_RESEARCH_2026-10-20.md",
     "docs/STEAL_AN_EGG_MAP_RESEARCH_2026-10-20.md",
 ]
 
