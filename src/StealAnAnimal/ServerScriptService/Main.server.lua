@@ -91,7 +91,8 @@ local function addBall(parent, name, size, position, color, material)
 end
 
 local function addCylinder(parent, name, size, cf, color, material, canCollide)
-    return createPart(parent, name, size, cf, color, material, Enum.PartType.Cylinder, canCollide)
+    local cylinderSize = Vector3.new(size.Y, size.X, size.Z)
+    return createPart(parent, name, cylinderSize, cf * CFrame.Angles(0, 0, math.rad(90)), color, material, Enum.PartType.Cylinder, canCollide)
 end
 
 local function addLabel(part, title, subtitle, color)
@@ -166,7 +167,7 @@ local function createAnimalModel(spec, stageName, position, giant)
     ball("Nose", 0.19, 0.15, 0.13, 0, 2.02, -1.9, spec.Shape == "Bird" and Color3.fromRGB(255, 145, 47) or Color3.fromRGB(57, 45, 43))
 
     for _, side in ipairs({ -1, 1 }) do
-        ball("Ear", 0.32, spec.Shape == "Fox" or spec.Shape == "Wolf" and 0.75 or 0.55, 0.24, side * 0.38, 2.8, -0.88, spec.Color)
+        ball("Ear", 0.32, (spec.Shape == "Fox" or spec.Shape == "Wolf") and 0.75 or 0.55, 0.24, side * 0.38, 2.8, -0.88, spec.Color)
         ball("LegFront", 0.35, 0.72, 0.38, side * 0.48, 0.48, -0.55, spec.Color)
         ball("LegBack", 0.38, 0.68, 0.4, side * 0.48, 0.45, 0.62, spec.Color)
     end
@@ -252,6 +253,27 @@ local function profileIncome(profile, now)
     return total
 end
 
+local function offlineIncome(profile, fromTime, toTime)
+    local total = 0
+    for _, animal in ipairs(profile.BarnAnimals) do
+        local spec = Catalog.Get(animal.Id)
+        if spec then
+            local bornAt = tonumber(animal.BornAt) or toTime
+            local startAge = math.max(0, fromTime - bornAt)
+            local endAge = math.max(0, toTime - bornAt)
+            for index, stage in ipairs(Config.EvolutionStages) do
+                local nextStage = Config.EvolutionStages[index + 1]
+                local segmentStart = math.max(startAge, stage.AgeSeconds)
+                local segmentEnd = math.min(endAge, nextStage and nextStage.AgeSeconds or endAge)
+                if segmentEnd > segmentStart then
+                    total += Rules.AnimalIncome(spec.Income, index, Config) * (segmentEnd - segmentStart)
+                end
+            end
+        end
+    end
+    return math.floor(total)
+end
+
 local function defaultProfile()
     return {
         Coins = 0,
@@ -277,10 +299,13 @@ local function sanitizeProfile(raw)
                 break
             end
             if type(entry) == "table" and Catalog.Get(entry.Id) then
+                local bornAt = math.max(0, math.floor(tonumber(entry.BornAt) or os.time()))
+                local stage = Rules.StageForAge(math.max(0, os.time() - bornAt), Config)
                 table.insert(data.BarnAnimals, {
                     Uid = tostring(entry.Uid or (entry.Id .. "_" .. tostring(index))),
                     Id = entry.Id,
-                    BornAt = math.max(0, math.floor(tonumber(entry.BornAt) or os.time())),
+                    BornAt = bornAt,
+                    Stage = stage.Name,
                 })
             end
         end
@@ -304,7 +329,7 @@ end
 
 local function saveProfile(player)
     local profile = profiles[player]
-    if not profile then
+    if not profile or profile.Persistent == false then
         return false
     end
     local data = snapshot(profile)
@@ -484,7 +509,7 @@ local function updatePlayerAttributes(player)
     end
 end
 
-local function clearCarry(player, respawnAt)
+local function clearCarry(player)
     local carry = carried[player]
     if not carry then
         return
@@ -495,32 +520,6 @@ local function clearCarry(player, respawnAt)
     end
     player:SetAttribute("CarryingAnimal", false)
     updatePlayerAttributes(player)
-    if respawnAt and carry.Spec then
-        task.delay(Config.AnimalRespawnSeconds, function()
-            if carry.Spec then
-                local biome
-                for _, entry in ipairs(Config.Biomes) do
-                    if entry.Id == carry.Spec.Biome then biome = entry end
-                end
-                if biome then
-                    local position = Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), 2, rng:NextNumber(-35, 35))
-                    local model = createAnimalModel(carry.Spec, "Baby", position, false)
-                    model.Parent = wildlifeFolder
-                    local root = model.PrimaryPart
-                    addLabel(root, carry.Spec.Name, "$" .. tostring(carry.Spec.Income) .. "/s base", carry.Spec.Accent)
-                    local prompt = Instance.new("ProximityPrompt")
-                    prompt.ActionText = "ROUBAR"
-                    prompt.ObjectText = carry.Spec.Name .. " • BEBÊ"
-                    prompt.HoldDuration = Config.CaptureHoldDuration
-                    prompt.MaxActivationDistance = 10
-                    prompt.RequiresLineOfSight = false
-                    prompt:SetAttribute("InteractionType", "StealAnimal")
-                    prompt:SetAttribute("AnimalId", carry.Spec.Id)
-                    prompt.Parent = root
-                end
-            end
-        end)
-    end
 end
 
 local function renderBarn(player)
@@ -647,19 +646,20 @@ local function loadProfile(player)
         return Store:GetAsync(key)
     end)
     local profile = sanitizeProfile(ok and raw or nil)
+    profile.Persistent = ok
     if not ok then
         warn("[StealAnAnimal] Profile load failed; using a temporary profile: " .. tostring(raw))
         notify(player, "Não foi possível carregar o salvamento. Seu progresso desta sessão pode não persistir.", "Warning")
     end
     local now = os.time()
     local elapsed = math.clamp(now - profile.LastIncomeAt, 0, Config.OfflineIncomeCapSeconds)
-    local offlineRate = profileIncome(profile, now)
-    profile.BarnBank = math.clamp(profile.BarnBank + math.floor(offlineRate * elapsed), 0, Config.CoinsLimit)
+    local earnedOffline = offlineIncome(profile, now - elapsed, now)
+    profile.BarnBank = math.clamp(profile.BarnBank + earnedOffline, 0, Config.CoinsLimit)
     profile.LastIncomeAt = now
     profiles[player] = profile
     updatePlayerAttributes(player)
-    if offlineRate > 0 and elapsed > 0 then
-        notify(player, "Seus animais renderam +" .. tostring(math.floor(offlineRate * elapsed)) .. " moedas enquanto você estava fora.", "Success")
+    if earnedOffline > 0 then
+        notify(player, "Seus animais renderam +" .. tostring(earnedOffline) .. " moedas enquanto você estava fora.", "Success")
     end
 end
 
@@ -677,6 +677,9 @@ local function captureAnimal(player, prompt)
     carried[player] = { Spec = spec, Model = model }
     prompt.Enabled = false
     model.Parent = world
+    task.delay(Config.AnimalRespawnSeconds, function()
+        spawnWild(spec)
+    end)
     player:SetAttribute("CarryingAnimal", true)
     updatePlayerAttributes(player)
     notify(player, "Você roubou " .. spec.Name .. "! Corra para sua fazenda antes que o guardião alcance você.", "Success")
@@ -701,6 +704,7 @@ local function depositAnimal(player, prompt)
         Uid = tostring(player.UserId) .. "_" .. tostring(os.time()) .. "_" .. tostring(#profile.BarnAnimals + 1),
         Id = carry.Spec.Id,
         BornAt = os.time(),
+        Stage = "Baby",
     }
     table.insert(profile.BarnAnimals, animal)
     carried[player] = nil
@@ -801,7 +805,7 @@ local function characterAdded(player, character)
         humanoid.Died:Connect(function()
             if carried[player] then
                 local root = character:FindFirstChild("HumanoidRootPart")
-                clearCarry(player, root and root.Position or nil)
+                clearCarry(player)
                 notify(player, "O animal escapou quando você caiu. Tente roubá-lo novamente.", "Warning")
             end
         end)
@@ -839,7 +843,7 @@ end
 Players.PlayerAdded:Connect(playerAdded)
 Players.PlayerRemoving:Connect(function(player)
     saveProfile(player)
-    clearCarry(player, nil)
+    clearCarry(player)
     profiles[player] = nil
     releaseBase(player)
 end)
@@ -857,7 +861,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
         if not root or player.Parent ~= Players then
-            clearCarry(player, nil)
+            clearCarry(player)
         elseif carry.Model and carry.Model.Parent then
             carry.Model:PivotTo(root.CFrame * CFrame.new(0, 1.7, 2.1))
         end
@@ -885,7 +889,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
                 end
                 if targetRoot and targetPlayer then
                     if nearest <= Config.GuardianCatchDistance then
-                        clearCarry(targetPlayer, targetRoot.Position)
+                        clearCarry(targetPlayer)
                         notify(targetPlayer, "O guardião alcançou você! O animal escapou.", "Error")
                     else
                         local current = model:GetPivot()
