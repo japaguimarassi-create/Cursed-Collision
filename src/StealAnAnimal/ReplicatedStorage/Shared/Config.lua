@@ -1,7 +1,9 @@
+local RunService = game:GetService("RunService")
+
 local Config = {
     GameName = "STEAL AN ANIMAL",
     ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r7",
-    DataStoreName = "StealAnAnimal_FreshProfile_v1",
+    DataStoreName = RunService:IsStudio() and "StealAnAnimal_StudioSandbox_v1" or "StealAnAnimal_FreshProfile_v1",
     AutosaveSeconds = 60,
     OfflineIncomeCapSeconds = 21600,
     CoinsLimit = 2000000000,
