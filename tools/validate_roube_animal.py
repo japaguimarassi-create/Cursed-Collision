@@ -66,7 +66,7 @@ def main():
     checks = [
         ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r2"' in config),
         ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
-        ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier ^ (index - 1)" in rules),
+        ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "local multiplier = growth ^ (index - 1)" in rules),
         ("six biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"'))),
         ("session-locked profiles and stage-aware offline income", all(token in main_source for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in main_source for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
