@@ -21,19 +21,19 @@ local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("AnimalCatalog"))
 
 local COLORS = {
-    Background = Color3.fromRGB(20, 34, 48),
-    Panel = Color3.fromRGB(29, 49, 66),
-    PanelRaised = Color3.fromRGB(43, 69, 87),
-    Card = Color3.fromRGB(35, 61, 79),
-    CardEdge = Color3.fromRGB(88, 129, 148),
-    Mint = Color3.fromRGB(83, 235, 125),
-    Gold = Color3.fromRGB(255, 204, 48),
-    Cream = Color3.fromRGB(255, 255, 255),
-    Muted = Color3.fromRGB(190, 208, 218),
-    Aqua = Color3.fromRGB(64, 190, 255),
-    Orange = Color3.fromRGB(255, 132, 46),
-    Red = Color3.fromRGB(255, 67, 77),
-    Purple = Color3.fromRGB(177, 112, 255),
+    Background = Color3.fromRGB(22, 34, 24),
+    Panel = Color3.fromRGB(27, 42, 29),
+    PanelRaised = Color3.fromRGB(37, 55, 37),
+    Card = Color3.fromRGB(31, 48, 32),
+    CardEdge = Color3.fromRGB(111, 139, 99),
+    Mint = Color3.fromRGB(143, 230, 119),
+    Gold = Color3.fromRGB(255, 211, 105),
+    Cream = Color3.fromRGB(250, 249, 236),
+    Muted = Color3.fromRGB(186, 201, 176),
+    Aqua = Color3.fromRGB(121, 205, 224),
+    Orange = Color3.fromRGB(255, 164, 83),
+    Red = Color3.fromRGB(255, 94, 94),
+    Purple = Color3.fromRGB(195, 153, 255),
 }
 
 local old = playerGui:FindFirstChild("StealAnAnimalHUD")
@@ -133,67 +133,59 @@ end
 local top = Instance.new("Frame")
 top.Name = "TopDashboard"
 top.AnchorPoint = Vector2.new(0.5, 0)
-top.Position = UDim2.new(0.5, 0, 0, 8)
-top.Size = UDim2.new(1, -20, 0, 80)
+top.Position = UDim2.new(0.5, 0, 0, 4)
+top.Size = UDim2.new(0.66, 0, 0, 68)
 top.BackgroundColor3 = COLORS.Background
-top.BackgroundTransparency = 0.14
+top.BackgroundTransparency = 0.16
 top.BorderSizePixel = 0
 top.Parent = gui
-round(top, 14)
-outline(top, COLORS.CardEdge, 1, 0.58)
+round(top, 18)
+outline(top, COLORS.CardEdge, 1, 0.76)
 local topConstraint = Instance.new("UISizeConstraint")
-topConstraint.MaxSize = Vector2.new(540, 80)
-topConstraint.MinSize = Vector2.new(260, 80)
+topConstraint.MaxSize = Vector2.new(410, 68)
+topConstraint.MinSize = Vector2.new(250, 68)
 topConstraint.Parent = top
 
-local title = makeLabel(top, "GameTitle", touchDevice and "STEAL ANIMAL" or "STEAL AN ANIMAL", UDim2.new(1, -140, 0, 17), UDim2.new(0, 12, 0, 3), touchDevice and 10 or 12, COLORS.Gold, Enum.Font.GothamBlack)
-local rebirthBadge = Instance.new("TextButton")
-rebirthBadge.Name = "RebirthBadge"
+local rebirthBadge = makeButton(top, "RebirthBadge", "REN. 0", COLORS.PanelRaised, COLORS.Purple)
 rebirthBadge.AnchorPoint = Vector2.new(1, 0)
-rebirthBadge.Position = UDim2.new(1, -36, 0, 3)
-rebirthBadge.Size = UDim2.new(0, 79, 0, 21)
-rebirthBadge.BackgroundColor3 = COLORS.PanelRaised
+rebirthBadge.Position = UDim2.new(1, -8, 0, 43)
+rebirthBadge.Size = UDim2.new(0, 76, 0, 19)
+rebirthBadge.TextSize = 9
 rebirthBadge.BackgroundTransparency = 0.12
-rebirthBadge.BorderSizePixel = 0
-rebirthBadge.Text = ""
-rebirthBadge.AutoButtonColor = true
-rebirthBadge.ZIndex = 3
-rebirthBadge.Parent = top
-round(rebirthBadge, 8)
-outline(rebirthBadge, COLORS.Purple, 1, 0.48)
-local rebirthBadgeText = makeLabel(rebirthBadge, "Count", "REN. 0", UDim2.new(1, -6, 1, 0), UDim2.new(0, 3, 0, 0), 9, COLORS.Purple, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
-rebirthBadgeText.ZIndex = 4
-local helpButton = makeButton(top, "Help", "?", COLORS.Card, COLORS.Cream)
-helpButton.AnchorPoint = Vector2.new(1, 0)
-helpButton.Position = UDim2.new(1, -6, 0, 2)
-helpButton.Size = UDim2.new(0, 24, 0, 23)
-helpButton.TextSize = 14
-outline(helpButton, COLORS.CardEdge, 1, 0.55)
+outline(rebirthBadge, COLORS.CardEdge, 1, 0.72)
 
 local statsFrame = Instance.new("Frame")
 statsFrame.Name = "ResourceCards"
-statsFrame.Position = UDim2.new(0, 8, 0, 24)
-statsFrame.Size = UDim2.new(1, -16, 0, 31)
+statsFrame.Position = UDim2.new(0, 10, 0, 6)
+statsFrame.Size = UDim2.new(1, -20, 0, 34)
 statsFrame.BackgroundTransparency = 1
 statsFrame.Parent = top
 
 local statsLayout = Instance.new("UIListLayout")
 statsLayout.FillDirection = Enum.FillDirection.Horizontal
 statsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-statsLayout.Padding = UDim.new(0, 4)
+statsLayout.Padding = UDim.new(0, 6)
 statsLayout.Parent = statsFrame
 
 local function makeStat(name, label, accent, order)
     local card = Instance.new("Frame")
     card.Name = name
     card.LayoutOrder = order
-    card.Size = UDim2.new(1 / 3, -3, 1, 0)
+    card.Size = UDim2.new(1 / 3, -5, 1, 0)
     card.BackgroundTransparency = 1
     card.BorderSizePixel = 0
     card.Parent = statsFrame
-    local caption = makeLabel(card, "Caption", label, UDim2.new(1, -4, 0, 11), UDim2.new(0, 3, 0, 0), 8, COLORS.Muted, Enum.Font.GothamBold)
+    local marker = Instance.new("Frame")
+    marker.Name = "Marker"
+    marker.Size = UDim2.fromOffset(6, 6)
+    marker.Position = UDim2.new(0, 0, 0, 7)
+    marker.BackgroundColor3 = accent
+    marker.BorderSizePixel = 0
+    marker.Parent = card
+    round(marker, 3)
+    local caption = makeLabel(card, "Caption", label, UDim2.new(1, -12, 0, 11), UDim2.new(0, 12, 0, 0), 8, COLORS.Muted, Enum.Font.GothamBold)
     caption.TextTruncate = Enum.TextTruncate.AtEnd
-    local value = makeLabel(card, "Value", "0", UDim2.new(1, -4, 0, 19), UDim2.new(0, 3, 0, 11), 13, accent, Enum.Font.GothamBlack)
+    local value = makeLabel(card, "Value", "0", UDim2.new(1, -12, 0, 20), UDim2.new(0, 12, 0, 11), 13, accent, Enum.Font.GothamBlack)
     value.TextTruncate = Enum.TextTruncate.AtEnd
     return value
 end
@@ -201,74 +193,134 @@ end
 local coinsValue = makeStat("CoinsCard", "MOEDAS", COLORS.Gold, 1)
 local incomeValue = makeStat("IncomeCard", "RENDA/S", COLORS.Mint, 2)
 local speedValue = makeStat("SpeedCard", touchDevice and "VEL." or "VELOCIDADE", COLORS.Aqua, 3)
-local overview = makeLabel(top, "Overview", "FAZENDA 0/6  •  BANCO 0", UDim2.new(1, -20, 0, 14), UDim2.new(0, 12, 0, 59), 9, COLORS.Muted, Enum.Font.GothamMedium)
+local overview = makeLabel(top, "Overview", "FAZENDA 0/6  •  BANCO 0", UDim2.new(1, -102, 0, 15), UDim2.new(0, 12, 0, 45), 9, COLORS.Muted, Enum.Font.GothamMedium)
 overview.TextTruncate = Enum.TextTruncate.AtEnd
 
 local objective = Instance.new("Frame")
 objective.Name = "ContextObjective"
 objective.AnchorPoint = Vector2.new(0.5, 0)
-objective.Position = UDim2.new(0.5, 0, 0, 86)
-objective.Size = UDim2.new(0.9, 0, 0, 25)
-objective.BackgroundTransparency = 1
+objective.Position = UDim2.new(0.5, 0, 0, 75)
+objective.Size = UDim2.new(0.68, 0, 0, 24)
+objective.BackgroundColor3 = COLORS.Panel
+objective.BackgroundTransparency = 0.22
 objective.BorderSizePixel = 0
 objective.Parent = gui
-local objectiveText = makeLabel(objective, "Text", "CAPTURE • DEPOSITE • TREINE", UDim2.new(1, -8, 1, 0), UDim2.new(0, 4, 0, 0), 11, COLORS.Cream, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+round(objective, 10)
+local objectiveConstraint = Instance.new("UISizeConstraint")
+objectiveConstraint.MaxSize = Vector2.new(460, 24)
+objectiveConstraint.MinSize = Vector2.new(220, 24)
+objectiveConstraint.Parent = objective
+local objectiveMarker = Instance.new("Frame")
+objectiveMarker.Name = "StatusMarker"
+objectiveMarker.AnchorPoint = Vector2.new(0, 0.5)
+objectiveMarker.Position = UDim2.new(0, 8, 0.5, 0)
+objectiveMarker.Size = UDim2.fromOffset(4, 12)
+objectiveMarker.BackgroundColor3 = COLORS.Mint
+objectiveMarker.BorderSizePixel = 0
+objectiveMarker.Parent = objective
+round(objectiveMarker, 2)
+local objectiveText = makeLabel(objective, "Text", "CAPTURE • DEPOSITE • TREINE", UDim2.new(1, -26, 1, 0), UDim2.new(0, 17, 0, 0), 10, COLORS.Cream, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
 objectiveText.TextTruncate = Enum.TextTruncate.AtEnd
-objectiveText.TextStrokeTransparency = 0.72
 
 local dock = Instance.new("Frame")
 dock.Name = "QuickActions"
-dock.Position = UDim2.new(0, 8, 0, 124)
-dock.Size = UDim2.new(0, 78, 0, 120)
+dock.Position = UDim2.new(0, 8, 0, 36)
+dock.Size = UDim2.new(0, 46, 0, 128)
 dock.BackgroundTransparency = 1
 dock.BorderSizePixel = 0
 dock.Parent = gui
-local dockConstraint = Instance.new("UISizeConstraint")
-dockConstraint.MaxSize = Vector2.new(86, 140)
-dockConstraint.MinSize = Vector2.new(70, 120)
-dockConstraint.Parent = dock
 
 local dockLayout = Instance.new("UIListLayout")
 dockLayout.FillDirection = Enum.FillDirection.Vertical
 dockLayout.SortOrder = Enum.SortOrder.LayoutOrder
-dockLayout.Padding = UDim.new(0, 6)
+dockLayout.Padding = UDim.new(0, 4)
 dockLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 dockLayout.Parent = dock
 
-local function makeDockButton(name, text, order, accent)
-    local button = makeButton(dock, name, text, COLORS.Panel, COLORS.Cream)
+local function makeGlyph(parent, kind, accent)
+    if kind == "Bag" then
+        local handle = Instance.new("Frame")
+        handle.Name = "Handle"
+        handle.AnchorPoint = Vector2.new(0.5, 0)
+        handle.Position = UDim2.new(0.5, 0, 0, 2)
+        handle.Size = UDim2.fromOffset(8, 6)
+        handle.BackgroundTransparency = 1
+        handle.BorderSizePixel = 0
+        handle.Parent = parent
+        round(handle, 3)
+        outline(handle, accent, 1.4, 0)
+        local body = Instance.new("Frame")
+        body.Name = "Bag"
+        body.AnchorPoint = Vector2.new(0.5, 0)
+        body.Position = UDim2.new(0.5, 0, 0, 6)
+        body.Size = UDim2.fromOffset(16, 12)
+        body.BackgroundTransparency = 1
+        body.BorderSizePixel = 0
+        body.Parent = parent
+        round(body, 3)
+        outline(body, accent, 1.5, 0)
+    elseif kind == "Book" then
+        local cover = Instance.new("Frame")
+        cover.Name = "Book"
+        cover.AnchorPoint = Vector2.new(0.5, 0)
+        cover.Position = UDim2.new(0.5, 0, 0, 4)
+        cover.Size = UDim2.fromOffset(17, 14)
+        cover.BackgroundTransparency = 1
+        cover.BorderSizePixel = 0
+        cover.Parent = parent
+        round(cover, 2)
+        outline(cover, accent, 1.4, 0)
+        local spine = Instance.new("Frame")
+        spine.Name = "Spine"
+        spine.AnchorPoint = Vector2.new(0.5, 0)
+        spine.Position = UDim2.new(0.5, 0, 0, 6)
+        spine.Size = UDim2.new(0, 1, 0, 10)
+        spine.BackgroundColor3 = accent
+        spine.BorderSizePixel = 0
+        spine.Parent = parent
+    else
+        for index = 1, 3 do
+            local dot = Instance.new("Frame")
+            dot.Name = "Dot" .. tostring(index)
+            dot.AnchorPoint = Vector2.new(0.5, 0.5)
+            dot.Position = UDim2.new(0.5, (index - 2) * 7, 0, 10)
+            dot.Size = UDim2.fromOffset(3.5, 3.5)
+            dot.BackgroundColor3 = accent
+            dot.BorderSizePixel = 0
+            dot.Parent = parent
+            round(dot, 2)
+        end
+    end
+end
+
+local function makeDockButton(name, label, order, accent, glyph)
+    local button = makeButton(dock, name, "", COLORS.PanelRaised, COLORS.Cream)
     button.LayoutOrder = order
-    button.Size = UDim2.new(1, 0, 0, 36)
-    button.TextSize = touchDevice and 10 or 11
-    button.BackgroundTransparency = 0.12
-    outline(button, accent, 1, 0.48)
+    button.Size = UDim2.new(0, 42, 0, 40)
+    button.BackgroundTransparency = 0.14
+    round(button, 12)
+    outline(button, COLORS.CardEdge, 1, 0.72)
+    local iconArea = Instance.new("Frame")
+    iconArea.Name = "Icon"
+    iconArea.BackgroundTransparency = 1
+    iconArea.Size = UDim2.new(1, 0, 0, 22)
+    iconArea.Position = UDim2.new(0, 0, 0, 1)
+    iconArea.Parent = button
+    makeGlyph(iconArea, glyph, accent)
+    local caption = makeLabel(button, "Caption", label, UDim2.new(1, -2, 0, 11), UDim2.new(0, 1, 0, 27), 8, COLORS.Cream, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+    caption.TextTruncate = Enum.TextTruncate.AtEnd
     return button
 end
 
-local upgradeButton = makeDockButton("OpenShop", "LOJA", 1, COLORS.Aqua)
-local indexButton = makeDockButton("OpenIndex", "ÍNDICE", 2, COLORS.Mint)
-local moreButton = makeDockButton("OpenMore", "MAIS", 3, COLORS.Gold)
-
-local barnButton = makeButton(gui, "OpenBarn", "CELEIRO", COLORS.Mint, COLORS.Background)
-local collectButton = makeButton(gui, "Collect", "COLETAR", COLORS.Gold, COLORS.Background)
-local rebirthButton = makeButton(gui, "OpenRebirth", "RENASCER", COLORS.Purple, COLORS.Background)
-for _, hiddenButton in ipairs({ barnButton, collectButton, rebirthButton }) do
-    hiddenButton.Visible = false
-    hiddenButton.Active = false
-    hiddenButton.Selectable = false
-end
-collectButton.AnchorPoint = Vector2.new(0.5, 0)
-collectButton.Position = UDim2.new(0.5, 0, 0, 116)
-collectButton.Size = UDim2.new(0, 140, 0, 30)
-collectButton.TextSize = 11
-round(collectButton, 10)
-outline(collectButton, COLORS.Gold, 1, 0.3)
+local upgradeButton = makeDockButton("OpenShop", "LOJA", 1, COLORS.Mint, "Bag")
+local indexButton = makeDockButton("OpenIndex", "ÍNDICE", 2, COLORS.Gold, "Book")
+local moreButton = makeDockButton("OpenMore", "MAIS", 3, COLORS.Aqua, "More")
 
 local function updateQuickActionsPosition()
     local camera = workspace.CurrentCamera
     if not camera then return end
     local viewport = camera.ViewportSize
-    local y = touchDevice and math.clamp(viewport.Y * 0.3, 122, 210) or 124
+    local y = touchDevice and math.clamp(viewport.Y * 0.1, 30, 40) or 56
     dock.Position = UDim2.new(0, 8, 0, y)
 end
 
@@ -303,7 +355,7 @@ modal.BorderSizePixel = 0
 modal.ZIndex = 71
 modal.Parent = shade
 round(modal, 18)
-outline(modal, COLORS.CardEdge, 1.5)
+outline(modal, COLORS.CardEdge, 1, 0.68)
 local modalConstraint = Instance.new("UISizeConstraint")
 modalConstraint.MaxSize = Vector2.new(480, 500)
 modalConstraint.MinSize = Vector2.new(250, 280)
@@ -407,13 +459,13 @@ toast.AnchorPoint = Vector2.new(0.5, 0)
 toast.Position = UDim2.new(0.5, 0, 0, 188)
 toast.Size = UDim2.new(0.84, 0, 0, 54)
 toast.BackgroundColor3 = COLORS.PanelRaised
-toast.BackgroundTransparency = 0.04
+toast.BackgroundTransparency = 0.1
 toast.BorderSizePixel = 0
 toast.Visible = false
 toast.ZIndex = 100
 toast.Parent = gui
 round(toast, 13)
-outline(toast, COLORS.Gold, 1.4)
+outline(toast, COLORS.CardEdge, 1, 0.5)
 local toastText = makeLabel(toast, "Message", "", UDim2.new(1, -20, 1, -10), UDim2.new(0, 10, 0, 5), 13, COLORS.Cream, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
 toastText.ZIndex = 101
 local toastToken = 0
@@ -567,6 +619,7 @@ local function openPanel(kind, preserveConfirmation)
             { Title = "ESTATÍSTICAS", Detail = "Capturas, depósitos, treino e progresso", Color = COLORS.Purple, Action = function() openPanel("Stats") end },
             { Title = "CONFIGURAÇÕES", Detail = "Reduzir efeitos e compactar a interface", Color = COLORS.Orange, Action = function() openPanel("Settings") end },
             { Title = "MAPBOT / DIAGNÓSTICO", Detail = "Verifica fazendas, biomas, guardiões e caminho", Color = COLORS.Aqua, Action = function() openPanel("Diagnostics") end },
+            { Title = "COMO JOGAR", Detail = "Entenda captura, fuga, depósito e evolução", Color = COLORS.Mint, Action = function() openPanel("Guide") end },
         })
         return
     elseif kind == "AnimalIndex" then
@@ -760,12 +813,15 @@ local function refresh()
     if player:GetAttribute("ProfileLoaded") ~= true then
         objectiveText.Text = "CARREGANDO SEU PROGRESSO..."
         objectiveText.TextColor3 = COLORS.Muted
+        objectiveMarker.BackgroundColor3 = COLORS.Muted
     elseif isCarrying then
         objectiveText.Text = "FUGA • LEVE O ANIMAL AO PAD VERDE DA SUA FAZENDA"
         objectiveText.TextColor3 = COLORS.Orange
+        objectiveMarker.BackgroundColor3 = COLORS.Orange
     elseif captures == 0 then
         objectiveText.Text = "COMECE • CAPTURE UM ANIMAL NO CORREDOR"
         objectiveText.TextColor3 = COLORS.Cream
+        objectiveMarker.BackgroundColor3 = COLORS.Mint
     else
         objectiveText.Text = "CAPTURE • DEPOSITE • TREINE PARA DESBLOQUEAR NOVOS BIOMAS"
         objectiveText.TextColor3 = COLORS.Cream
@@ -775,11 +831,8 @@ local function refresh()
     end
 end
 
-barnButton.Activated:Connect(function() openPanel("Barn") end)
-collectButton.Activated:Connect(function() collectRemote:FireServer() end)
 upgradeButton.Activated:Connect(function() openPanel("Shop") end)
 indexButton.Activated:Connect(function() openPanel("AnimalIndex") end)
-rebirthButton.Activated:Connect(function() openPanel("Rebirth") end)
 rebirthBadge.Activated:Connect(function() openPanel("Rebirth") end)
 moreButton.Activated:Connect(function() openPanel("More") end)
 helpButton.Activated:Connect(function() openPanel("Guide") end)
