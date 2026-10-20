@@ -2,6 +2,7 @@
   "name": "StealAnAnimal",
   "tree": {
     "$className": "DataModel",
+    "Workspace": { "$className": "Workspace", "$path": "src/StealAnAnimal/Workspace" },
     "ReplicatedStorage": { "$path": "src/StealAnAnimal/ReplicatedStorage" },
     "ServerScriptService": { "$path": "src/StealAnAnimal/ServerScriptService" },
     "StarterPlayer": {
