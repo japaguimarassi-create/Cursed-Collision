@@ -28,18 +28,17 @@ Replace the previous oversized, card-heavy interface with an original, mobile-fi
 - **Consistent icon language:** use original, simple line shapes for the bag, book, and overflow menu; don't copy game-specific artwork or rely on undocumented asset IDs.
 - **Progression stays available:** rebirth remains a small direct-access chip; less-frequent features live inside the scrollable More menu.
 
-## Implemented visual direction
+## Implemented visual direction (rebuild)
 
-- Woodland/greenfield palette tuned to the bright outdoor map instead of the former blue-heavy panel palette.
-- One compact, translucent resource strip with three aligned values and a restrained farm/bank footer.
-- A single objective capsule with a small state marker. The escape state uses an orange cue; neutral progression uses green; loading uses muted color.
-- Three compact icon-and-label buttons for Shop, Index, and More, placed away from the lower touch-control areas.
-- Rebirth stays visible as a small badge rather than a full-width primary button.
-- The old permanent bottom action dock and its dead hidden button instances are removed.
-- Existing gameplay remotes, menu routes, reward systems, index data, and server-side validations remain the source of truth.
+- The Shop and Index actions use large, highly differentiated green/blue touch buttons on the left, matching the visual hierarchy seen in Steal An Egg screenshots without importing the original UI assets.
+- Currency, passive income and speed occupy a transparent, compact lower-left panel; farm capacity and bank balance remain one line below it.
+- The contextual objective remains centered near the top. The rebirth chip and BotX status chip stay in the upper-right.
+- The BotX chip opens Diagnostics and requests a fresh server status. The panel reports live NPC count, modes, positions and session event counts instead of only server-output messages.
+- Currency placement adapts to the viewport and leaves the lowest touch-control zone free; tap targets remain at least 44 pixels in the modeled smallest supported scale.
+- Existing gameplay remotes, menu routes, reward systems, animal index and server-side validations remain authoritative.
 
 ## Validation and limits
 
-The GitHub Actions workflow parses Luau, runs the repository checks, builds the Rojo place, and validates the generated RBXL. These checks confirm syntax and project structure, not visual quality in a live session. The final layout still requires playtesting in Roblox Studio with mobile-device emulation and a real touch device at multiple aspect ratios.
+The GitHub Actions workflow parses Luau, runs the repository checks, builds the Rojo place, and validates the generated RBXL. These checks confirm syntax and project structure, not visual quality in a live session. The source-based CI layout model checks phone portrait, landscape, tablet and desktop sizes. That is not a substitute for visual inspection in the actual Roblox engine; live appearance and BotX runtime state still need to be observed in-game.
 
 Screenshots and forum posts are external examples and may show different game versions or design iterations. The implementation uses its own colors, shapes, and layout rather than embedding those screenshots or reusing their art assets.

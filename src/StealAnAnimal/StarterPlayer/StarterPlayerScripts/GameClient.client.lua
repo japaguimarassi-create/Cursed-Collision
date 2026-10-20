@@ -16,6 +16,7 @@ local codeRemote = remotes:WaitForChild("RequestRedeemCode")
 local questRemote = remotes:WaitForChild("RequestQuest")
 local mapBotRemote = remotes:WaitForChild("RequestMapBot")
 local mapBotReportRemote = remotes:WaitForChild("MapBotReport")
+local botXStatusRemote = remotes:WaitForChild("BotXStatus")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("AnimalCatalog"))
@@ -57,7 +58,8 @@ local touchDevice = UserInputService.TouchEnabled
 local compactHud = false
 local lowEffects = false
 local savedEffectStates = {}
-local lastMapBotReport = "Toque em EXECUTAR MAPBOT para verificar as oito fazendas, os biomas, os guardiões e o caminho até o pad."
+local lastMapBotReport = "Execute o diagnóstico para verificar as fazendas, os biomas, os guardiões e as rotas."
+local lastBotXStatus = nil
 
 local function updateScale()
     local camera = workspace.CurrentCamera
@@ -132,100 +134,105 @@ end
 
 local top = Instance.new("Frame")
 top.Name = "TopDashboard"
-top.AnchorPoint = Vector2.new(0.5, 0)
-top.Position = UDim2.new(0.5, 0, 0, 4)
-top.Size = UDim2.new(0.66, 0, 0, 68)
-top.BackgroundColor3 = COLORS.Background
-top.BackgroundTransparency = 0.16
+top.AnchorPoint = Vector2.new(0, 1)
+top.Position = UDim2.new(0, 10, 1, -220)
+top.Size = UDim2.fromOffset(188, 92)
+top.BackgroundTransparency = 1
 top.BorderSizePixel = 0
 top.Parent = gui
-round(top, 18)
-outline(top, COLORS.CardEdge, 1, 0.76)
-local topConstraint = Instance.new("UISizeConstraint")
-topConstraint.MaxSize = Vector2.new(410, 68)
-topConstraint.MinSize = Vector2.new(250, 68)
-topConstraint.Parent = top
-
-local rebirthBadge = makeButton(top, "RebirthBadge", "REN. 0", COLORS.PanelRaised, COLORS.Purple)
-rebirthBadge.AnchorPoint = Vector2.new(1, 0)
-rebirthBadge.Position = UDim2.new(1, -8, 0, 43)
-rebirthBadge.Size = UDim2.new(0, 76, 0, 19)
-rebirthBadge.TextSize = 9
-rebirthBadge.BackgroundTransparency = 0.12
-outline(rebirthBadge, COLORS.CardEdge, 1, 0.72)
 
 local statsFrame = Instance.new("Frame")
 statsFrame.Name = "ResourceCards"
-statsFrame.Position = UDim2.new(0, 10, 0, 6)
-statsFrame.Size = UDim2.new(1, -20, 0, 34)
+statsFrame.Size = UDim2.new(1, 0, 0, 70)
 statsFrame.BackgroundTransparency = 1
 statsFrame.Parent = top
 
 local statsLayout = Instance.new("UIListLayout")
-statsLayout.FillDirection = Enum.FillDirection.Horizontal
+statsLayout.FillDirection = Enum.FillDirection.Vertical
 statsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-statsLayout.Padding = UDim.new(0, 6)
+statsLayout.Padding = UDim.new(0, 2)
 statsLayout.Parent = statsFrame
 
 local function makeStat(name, label, accent, order)
-    local card = Instance.new("Frame")
-    card.Name = name
-    card.LayoutOrder = order
-    card.Size = UDim2.new(1 / 3, -5, 1, 0)
-    card.BackgroundTransparency = 1
-    card.BorderSizePixel = 0
-    card.Parent = statsFrame
+    local row = Instance.new("Frame")
+    row.Name = name
+    row.LayoutOrder = order
+    row.Size = UDim2.new(1, 0, 0, 21)
+    row.BackgroundTransparency = 1
+    row.BorderSizePixel = 0
+    row.Parent = statsFrame
     local marker = Instance.new("Frame")
     marker.Name = "Marker"
     marker.Size = UDim2.fromOffset(6, 6)
-    marker.Position = UDim2.new(0, 0, 0, 7)
+    marker.Position = UDim2.new(0, 1, 0, 7)
     marker.BackgroundColor3 = accent
     marker.BorderSizePixel = 0
-    marker.Parent = card
+    marker.Parent = row
     round(marker, 3)
-    local caption = makeLabel(card, "Caption", label, UDim2.new(1, -12, 0, 11), UDim2.new(0, 12, 0, 0), 8, COLORS.Muted, Enum.Font.GothamBold)
-    caption.TextTruncate = Enum.TextTruncate.AtEnd
-    local value = makeLabel(card, "Value", "0", UDim2.new(1, -12, 0, 20), UDim2.new(0, 12, 0, 11), 13, accent, Enum.Font.GothamBlack)
+    local caption = makeLabel(row, "Caption", label, UDim2.new(0, 64, 1, 0), UDim2.new(0, 12, 0, 0), 9, COLORS.Cream, Enum.Font.GothamBold)
+    caption.TextStrokeTransparency = 0.65
+    local value = makeLabel(row, "Value", "0", UDim2.new(1, -80, 1, 0), UDim2.new(0, 78, 0, 0), 14, accent, Enum.Font.GothamBlack)
+    value.TextStrokeTransparency = 0.2
     value.TextTruncate = Enum.TextTruncate.AtEnd
     return value
 end
 
-local coinsValue = makeStat("CoinsCard", "MOEDAS", COLORS.Gold, 1)
-local incomeValue = makeStat("IncomeCard", "RENDA/S", COLORS.Mint, 2)
-local speedValue = makeStat("SpeedCard", touchDevice and "VEL." or "VELOCIDADE", COLORS.Aqua, 3)
-local overview = makeLabel(top, "Overview", "FAZENDA 0/6  •  BANCO 0", UDim2.new(1, -102, 0, 15), UDim2.new(0, 12, 0, 45), 9, COLORS.Muted, Enum.Font.GothamMedium)
+local coinsValue = makeStat("CoinsCard", "MOEDAS", COLORS.Mint, 1)
+local incomeValue = makeStat("IncomeCard", "RENDA/S", COLORS.Gold, 2)
+local speedValue = makeStat("SpeedCard", touchDevice and "VELOC." or "VELOCIDADE", COLORS.Aqua, 3)
+local overview = makeLabel(top, "Overview", "FAZENDA 0/6  •  BANCO 0", UDim2.new(1, 0, 0, 17), UDim2.new(0, 0, 0, 73), 9, COLORS.Cream, Enum.Font.GothamBold)
+overview.TextStrokeTransparency = 0.45
 overview.TextTruncate = Enum.TextTruncate.AtEnd
+
+local rebirthBadge = makeButton(gui, "RebirthBadge", "RENASCER · 0", COLORS.Gold, COLORS.Background)
+rebirthBadge.AnchorPoint = Vector2.new(1, 0)
+rebirthBadge.Position = UDim2.new(1, -8, 0, 4)
+rebirthBadge.Size = UDim2.fromOffset(104, 30)
+rebirthBadge.TextSize = 10
+round(rebirthBadge, 9)
+outline(rebirthBadge, COLORS.Cream, 1, 0.68)
+local rebirthBadgeText = rebirthBadge
 
 local objective = Instance.new("Frame")
 objective.Name = "ContextObjective"
 objective.AnchorPoint = Vector2.new(0.5, 0)
-objective.Position = UDim2.new(0.5, 0, 0, 75)
-objective.Size = UDim2.new(0.68, 0, 0, 24)
-objective.BackgroundColor3 = COLORS.Panel
-objective.BackgroundTransparency = 0.22
+objective.Position = UDim2.new(0.5, 0, 0, 72)
+objective.Size = UDim2.new(0.82, 0, 0, 27)
+objective.BackgroundColor3 = Color3.fromRGB(28, 57, 34)
+objective.BackgroundTransparency = 0.16
 objective.BorderSizePixel = 0
 objective.Parent = gui
-round(objective, 10)
+round(objective, 9)
+outline(objective, COLORS.Mint, 1, 0.68)
 local objectiveConstraint = Instance.new("UISizeConstraint")
-objectiveConstraint.MaxSize = Vector2.new(460, 24)
-objectiveConstraint.MinSize = Vector2.new(220, 24)
+objectiveConstraint.MaxSize = Vector2.new(360, 27)
+objectiveConstraint.MinSize = Vector2.new(220, 27)
 objectiveConstraint.Parent = objective
 local objectiveMarker = Instance.new("Frame")
 objectiveMarker.Name = "StatusMarker"
 objectiveMarker.AnchorPoint = Vector2.new(0, 0.5)
 objectiveMarker.Position = UDim2.new(0, 8, 0.5, 0)
-objectiveMarker.Size = UDim2.fromOffset(4, 12)
+objectiveMarker.Size = UDim2.fromOffset(4, 13)
 objectiveMarker.BackgroundColor3 = COLORS.Mint
 objectiveMarker.BorderSizePixel = 0
 objectiveMarker.Parent = objective
 round(objectiveMarker, 2)
-local objectiveText = makeLabel(objective, "Text", "CAPTURE • DEPOSITE • TREINE", UDim2.new(1, -26, 1, 0), UDim2.new(0, 17, 0, 0), 10, COLORS.Cream, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+local objectiveText = makeLabel(objective, "Text", "CAPTURE • DEPOSITE • TREINE", UDim2.new(1, -24, 1, 0), UDim2.new(0, 16, 0, 0), 10, COLORS.Cream, Enum.Font.GothamBlack, Enum.TextXAlignment.Center)
+objectiveText.TextStrokeTransparency = 0.85
 objectiveText.TextTruncate = Enum.TextTruncate.AtEnd
+
+local botXChip = makeButton(gui, "BotXStatus", "BOTX • 0/3", COLORS.Panel, COLORS.Cream)
+botXChip.AnchorPoint = Vector2.new(1, 0)
+botXChip.Position = UDim2.new(1, -8, 0, 39)
+botXChip.Size = UDim2.fromOffset(104, 27)
+botXChip.TextSize = 10
+round(botXChip, 9)
+outline(botXChip, COLORS.Aqua, 1, 0.52)
 
 local dock = Instance.new("Frame")
 dock.Name = "QuickActions"
-dock.Position = UDim2.new(0, 8, 0, 36)
-dock.Size = UDim2.new(0, 52, 0, 140)
+dock.Position = UDim2.new(0, 8, 0, 108)
+dock.Size = UDim2.new(0, 86, 0, 174)
 dock.BackgroundTransparency = 1
 dock.BorderSizePixel = 0
 dock.Parent = gui
@@ -238,7 +245,35 @@ dockLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 dockLayout.Parent = dock
 
 local function makeGlyph(parent, kind, accent)
-    if kind == "Bag" then
+    if kind == "Cart" then
+        local handle = Instance.new("Frame")
+        handle.Name = "CartHandle"
+        handle.Position = UDim2.new(0.5, -10, 0, 4)
+        handle.Size = UDim2.fromOffset(5, 2)
+        handle.Rotation = 58
+        handle.BackgroundColor3 = accent
+        handle.BorderSizePixel = 0
+        handle.Parent = parent
+        local basket = Instance.new("Frame")
+        basket.Name = "CartBasket"
+        basket.Position = UDim2.new(0.5, -7, 0, 7)
+        basket.Size = UDim2.fromOffset(14, 7)
+        basket.BackgroundTransparency = 1
+        basket.BorderSizePixel = 0
+        basket.Parent = parent
+        round(basket, 2)
+        outline(basket, accent, 1.6, 0)
+        for index = 1, 2 do
+            local wheel = Instance.new("Frame")
+            wheel.Name = "Wheel" .. tostring(index)
+            wheel.Position = UDim2.new(0.5, index == 1 and -5 or 4, 0, 16)
+            wheel.Size = UDim2.fromOffset(4, 4)
+            wheel.BackgroundColor3 = accent
+            wheel.BorderSizePixel = 0
+            wheel.Parent = parent
+            round(wheel, 2)
+        end
+    elseif kind == "Bag" then
         local handle = Instance.new("Frame")
         handle.Name = "Handle"
         handle.AnchorPoint = Vector2.new(0.5, 0)
@@ -293,46 +328,60 @@ local function makeGlyph(parent, kind, accent)
     end
 end
 
-local function makeDockButton(name, label, order, accent, glyph)
-    local button = makeButton(dock, name, "", COLORS.PanelRaised, COLORS.Cream)
+local function makeDockButton(name, label, order, accent, glyph, background)
+    local button = makeButton(dock, name, "", background, COLORS.Cream)
     button.LayoutOrder = order
-    button.Size = UDim2.new(0, 48, 0, 44)
-    button.BackgroundTransparency = 0.14
-    round(button, 12)
-    outline(button, COLORS.CardEdge, 1, 0.72)
+    button.Size = UDim2.new(0, 82, 0, 54)
+    button.BackgroundTransparency = 0.02
+    round(button, 10)
+    outline(button, COLORS.Cream, 1, 0.78)
     local iconArea = Instance.new("Frame")
     iconArea.Name = "Icon"
     iconArea.BackgroundTransparency = 1
-    iconArea.Size = UDim2.new(1, 0, 0, 22)
-    iconArea.Position = UDim2.new(0, 0, 0, 1)
+    iconArea.Size = UDim2.new(1, 0, 0, 24)
+    iconArea.Position = UDim2.new(0, 0, 0, 2)
     iconArea.Parent = button
     makeGlyph(iconArea, glyph, accent)
-    local caption = makeLabel(button, "Caption", label, UDim2.new(1, -2, 0, 11), UDim2.new(0, 1, 0, 27), 8, COLORS.Cream, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+    local caption = makeLabel(button, "Caption", label, UDim2.new(1, -4, 0, 14), UDim2.new(0, 2, 0, 34), 10, COLORS.Cream, Enum.Font.GothamBlack, Enum.TextXAlignment.Center)
+    caption.TextStrokeTransparency = 0.75
     caption.TextTruncate = Enum.TextTruncate.AtEnd
     return button
 end
 
-local upgradeButton = makeDockButton("OpenShop", "LOJA", 1, COLORS.Mint, "Bag")
-local indexButton = makeDockButton("OpenIndex", "ÍNDICE", 2, COLORS.Gold, "Book")
-local moreButton = makeDockButton("OpenMore", "MAIS", 3, COLORS.Aqua, "More")
+local upgradeButton = makeDockButton("OpenShop", "SHOP", 1, Color3.fromRGB(255, 255, 255), "Cart", Color3.fromRGB(51, 198, 77))
+local indexButton = makeDockButton("OpenIndex", "INDEX", 2, Color3.fromRGB(255, 255, 255), "Book", Color3.fromRGB(38, 143, 236))
+local moreButton = makeDockButton("OpenMore", "MORE", 3, COLORS.Gold, "More", Color3.fromRGB(67, 88, 94))
 
-local function updateQuickActionsPosition()
+local function updateCurrencyPosition()
     local camera = workspace.CurrentCamera
     if not camera then return end
-    local viewport = camera.ViewportSize
-    local y = 110
-    dock.Position = UDim2.new(0, 8, 0, y)
+    local offset = math.max(118, camera.ViewportSize.Y * 0.145)
+    top.Position = UDim2.new(0, 10, 1, -offset)
 end
 
+local function updateQuickActionsPosition()
+    dock.Position = UDim2.new(0, 8, 0, 108)
+end
+
+updateCurrencyPosition()
 updateQuickActionsPosition()
 if workspace.CurrentCamera then
-    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateQuickActionsPosition)
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        updateCurrencyPosition()
+        updateQuickActionsPosition()
+    end)
 end
 workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
-    task.defer(updateQuickActionsPosition)
+    task.defer(function()
+        updateCurrencyPosition()
+        updateQuickActionsPosition()
+    end)
     local camera = workspace.CurrentCamera
     if camera then
-        camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateQuickActionsPosition)
+        camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+            updateCurrencyPosition()
+            updateQuickActionsPosition()
+        end)
     end
 end)
 
@@ -592,7 +641,41 @@ workspace.DescendantAdded:Connect(function(object)
     end
 end)
 
+local function formatBotXStatus()
+    local status = lastBotXStatus
+    if type(status) ~= "table" then
+        return "BOTX • aguardando o primeiro relatório do servidor."
+    end
+    local bots = type(status.bots) == "table" and status.bots or {}
+    local alive = 0
+    local rows = {}
+    for _, bot in ipairs(bots) do
+        if bot.alive then alive += 1 end
+        local position = type(bot.position) == "table" and bot.position or {}
+        table.insert(rows, string.upper(tostring(bot.name or "bot?")) .. "  •  " .. tostring(bot.mode or "AGUARDANDO")
+            .. "  •  " .. (bot.alive and "VISÍVEL" or "INDISPONÍVEL")
+            .. "  •  X " .. tostring(math.floor(tonumber(position.x) or 0))
+            .. " / Z " .. tostring(math.floor(tonumber(position.z) or 0)))
+    end
+    local counts = type(status.eventCounts) == "table" and status.eventCounts or {}
+    local total = 0
+    for _, amount in pairs(counts) do total += tonumber(amount) or 0 end
+    local actions = tonumber(counts.remote_action) or 0
+    local interactions = tonumber(counts.interaction) or 0
+    local heading = "BOTX • " .. tostring(alive) .. "/" .. tostring(#bots) .. " NPCs • " .. tostring(status.activeRealPlayers or 0) .. " jogador(es) real(is)"
+    local activity = "SESSÃO " .. tostring(math.floor(tonumber(status.elapsedSeconds) or 0)) .. "s • EVENTOS " .. tostring(total)
+        .. " • AÇÕES " .. tostring(actions) .. " • INTERAÇÕES " .. tostring(interactions)
+    table.insert(rows, 1, heading)
+    table.insert(rows, 2, activity)
+    return table.concat(rows, "\n")
+end
+
+local function formatDiagnosticReport()
+    return tostring(lastMapBotReport) .. "\n\n" .. formatBotXStatus()
+end
+
 local function openPanel(kind, preserveConfirmation)
+    modalBody.TextSize = 13
     activePanel = kind
     if preserveConfirmation ~= true then
         confirmingRebirth = false
@@ -716,7 +799,8 @@ local function openPanel(kind, preserveConfirmation)
         return
     elseif kind == "Diagnostics" then
         modalTitle.Text = "MAPBOT • DIAGNÓSTICO"
-        modalBody.Text = lastMapBotReport
+        modalBody.Text = formatDiagnosticReport()
+        modalBody.TextSize = 11
         primaryButton.Text = "EXECUTAR MAPBOT"
         primaryButton.BackgroundColor3 = COLORS.Aqua
         return
@@ -836,6 +920,10 @@ upgradeButton.Activated:Connect(function() openPanel("Shop") end)
 indexButton.Activated:Connect(function() openPanel("AnimalIndex") end)
 rebirthBadge.Activated:Connect(function() openPanel("Rebirth") end)
 moreButton.Activated:Connect(function() openPanel("More") end)
+botXChip.Activated:Connect(function()
+    botXStatusRemote:FireServer("request")
+    openPanel("Diagnostics")
+end)
 closeButton.Activated:Connect(closeModal)
 
 primaryButton.Activated:Connect(function()
@@ -890,9 +978,30 @@ end)
 mapBotReportRemote.OnClientEvent:Connect(function(report, kind)
     lastMapBotReport = tostring(report)
     if activePanel == "Diagnostics" then
-        openPanel("Diagnostics")
+        modalBody.Text = formatDiagnosticReport()
     end
     showToast(kind == "Success" and "MapBot concluiu a verificação." or "MapBot concluiu a verificação com alertas.", kind or "Info")
+end)
+
+botXStatusRemote.OnClientEvent:Connect(function(status)
+    if type(status) ~= "table" then return end
+    lastBotXStatus = status
+    local bots = type(status.bots) == "table" and status.bots or {}
+    local alive = 0
+    for _, bot in ipairs(bots) do
+        if bot.alive then alive += 1 end
+    end
+    botXChip.Text = status.activeRealPlayers and status.activeRealPlayers > 0 and ("BOTX • " .. tostring(alive) .. "/" .. tostring(#bots)) or "BOTX • OFF"
+    botXChip.BackgroundColor3 = alive == 3 and Color3.fromRGB(34, 116, 63) or COLORS.Panel
+    if activePanel == "Diagnostics" then
+        modalBody.Text = formatDiagnosticReport()
+    end
+end)
+
+task.delay(2, function()
+    if botXStatusRemote.Parent then
+        botXStatusRemote:FireServer("request")
+    end
 end)
 
 for _, attribute in ipairs({
