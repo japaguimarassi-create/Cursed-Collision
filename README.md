@@ -8,7 +8,7 @@ Este repositório mantém o nome histórico Cursed-Collision, mas o projeto ativ
 
 Entrar no servidor → receber um curral → treinar Velocidade na esteira e Força no supino → explorar a Fazenda, a Selva Mística e o Vulcão → roubar um animal → correr de volta ao próprio curral → vender o animal por Moedas.
 
-Se um guardião alcançar o jogador durante o transporte, o animal é perdido e reaparece depois de um intervalo. Captura, requisitos de força, penalidade por peso, venda, preços, upgrades e gamepasses são validados no servidor.
+Se um guardião alcançar o jogador durante o transporte, o animal é perdido e reaparece depois de um intervalo. Captura, penalidade por peso, armazenamento, renda passiva e upgrades são validados no servidor.
 
 ## Sistemas incluídos
 
@@ -20,7 +20,7 @@ Se um guardião alcançar o jogador durante o transporte, o animal é perdido e 
 - Venda restrita ao curral proprietário.
 - Treino na esteira e no supino.
 - Loja de upgrades de Força e Velocidade, com verificação de saldo no servidor.
-- Gamepasses configuráveis: Moedas em Dobro e VIP com +50 de velocidade-base.
+- Nenhuma gamepass: velocidade, capacidade do celeiro e renda passiva usam regras padrão.
 - Guardiões com detecção visual, patrulha e perseguição por PathfindingService.
 - Mapa procedural estilizado e HUD adaptada para celular.
 - Workflow para validar e gerar o arquivo Roblox place.
@@ -43,7 +43,7 @@ O GitHub Actions testa regras de captura, venda, peso e upgrades; verifica a cob
 ## Configuração necessária antes da produção
 
 1. Publique uma experiência de teste separada e habilite DataStore para validar o salvamento.
-2. Crie os gamepasses e substitua os IDs 0 em Config.lua pelos IDs reais.
+2. Se quiser habilitar compras opcionais, configure apenas os IDs dos Developer Products em MonetizationIds.lua; gamepasses foram removidas do projeto.
 3. Teste o comportamento dos guardiões, vendas, respawns, salvamento concorrente e HUD em dispositivos reais.
 4. Defina ROUBE_ANIMAL_UNIVERSE_ID e ROUBE_ANIMAL_PLACE_ID como Repository Variables e ROBLOX_API_KEY como Repository Secret somente quando decidir publicar explicitamente.
 5. Use manualmente o workflow de publicação e confirme o alvo antes de enviar uma versão.
