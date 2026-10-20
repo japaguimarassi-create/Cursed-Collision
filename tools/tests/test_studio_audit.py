@@ -5,6 +5,7 @@ CONFIG = (ROOT / "src/StealAnAnimal/ReplicatedStorage/Shared/Config.lua").read_t
 SERVER = (ROOT / "src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua").read_text(encoding="utf-8")
 CLIENT = (ROOT / "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua").read_text(encoding="utf-8")
 HUD = (ROOT / "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+PROMPT = (ROOT / "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua").read_text(encoding="utf-8")
 PLUGIN = (ROOT / "tools/studio-tests/StealAnAnimalAudit.plugin.lua").read_text(encoding="utf-8")
 DOCS = (ROOT / "docs/STUDIO_AUTOMATED_AUDIT.md").read_text(encoding="utf-8")
 SIMULATOR = (ROOT / "tools/simulate_studio_run.py").read_text(encoding="utf-8")
@@ -20,7 +21,7 @@ checks = {
     "audit avoids economy-changing button actions": all(token not in CLIENT for token in ("collectRemote:FireServer()", "rebirthRemote:FireServer()", "upgradeRemote:FireServer()")),
     "plugin does not call external endpoints": all(token not in PLUGIN for token in ("RequestAsync(", "GetAsync(", "PostAsync(", "HttpGet(")),
     "instructions document the supported Studio test flow": all(token in DOCS for token in ("StudioTestService", "VirtualInput", "StudioSandbox", "Output", "API Services")),
-    "compact interaction prompt is part of the HUD and remains client-driven": all(token in HUD for token in ("CompactInteractionPrompt", "PromptShown:Connect", "PromptHidden:Connect", "InputHoldBegin()", "InputHoldEnd()")),
+    "compact interaction prompt is a responsive client module and ends holds globally": all(token in PROMPT for token in ("CompactInteractionPrompt", "PromptShown:Connect", "PromptHidden:Connect", "InputHoldBegin()", "InputHoldEnd()", "UserInputService.InputEnded:Connect", "UDim2.new(0.5, 0, 1, -154)")),
     "CI simulator identifies itself as a simulation, not a real Studio run": '"studioRuntimeExecuted": False' in SIMULATOR and '"source_and_layout_simulation"' in SIMULATOR and "This is a deterministic source-level simulation" in SIMULATOR,
     "CI simulator creates full JSON and Markdown reports": all(token in SIMULATOR for token in ("studio-run-simulation.json", "studio-run-simulation.md", '"layoutProfiles"', '"sourceSha256"', '"compiledPlace"')),
     "CI simulator models phone, landscape, tablet, and desktop sizes": all(token in SIMULATOR for token in ("Phone small portrait", "Android portrait", "Large phone portrait", "Phone landscape", "Tablet landscape", "Desktop window")),
