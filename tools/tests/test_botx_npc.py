@@ -6,7 +6,7 @@ PROJECT = (ROOT / "default.project.json").read_text(encoding="utf-8")
 WORKFLOW = (ROOT / ".github/workflows/validate.yml").read_text(encoding="utf-8")
 
 checks = {
-    "BotX is a real ServerScriptService source file included by Rojo": '"ServerScriptService": { "$path": "src/StealAnAnimal/ServerScriptService" }' in PROJECT and "BotX.server.lua" in BOT,
+    "BotX is a real ServerScriptService source file included by Rojo": '"ServerScriptService": { "$path": "src/StealAnAnimal/ServerScriptService" }' in PROJECT and (ROOT / "src/StealAnAnimal/ServerScriptService/BotX.server.lua").is_file(),
     "the bots are NPC models and never become Players": all(token in BOT for token in ('local BOT_FOLDER_NAME = "BotX_NPCs"', 'model:SetAttribute("IsBotX", true)', 'model:SetAttribute("CountsAsPlayer", false)', 'local name = "bot" .. tostring(index)')) and "Players.PlayerAdded" not in BOT.replace("Players.PlayerAdded:Connect(onPlayerAdded)", ""),
     "each NPC has a humanoid R6 body and Bacon Hair locks": all(token in BOT for token in ('"HumanoidRootPart"', '"Torso"', '"Head"', '"Left Arm"', '"Right Arm"', '"Left Leg"', '"Right Leg"', 'Instance.new("Humanoid")', 'Humanoid.DisplayName = name'.replace("Humanoid.DisplayName", "humanoid.DisplayName"), "BaconHairLock", "makeBaconHair")),
     "three bots spawn only while at least one real player is connected": all(token in BOT for token in ("local BOT_COUNT = 3", "local function hasActivePlayer()", "if active or not hasActivePlayer() then", 'trigger = "real_player_present"', "Players:GetPlayers()")),
