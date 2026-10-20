@@ -355,7 +355,7 @@ local moreButton = makeDockButton("OpenMore", "MORE", 3, COLORS.Gold, "More", Co
 local function updateCurrencyPosition()
     local camera = workspace.CurrentCamera
     if not camera then return end
-    local offset = math.max(180, camera.ViewportSize.Y * 0.27)
+    local offset = math.max(118, camera.ViewportSize.Y * 0.145)
     top.Position = UDim2.new(0, 10, 1, -offset)
 end
 
@@ -675,6 +675,7 @@ local function formatDiagnosticReport()
 end
 
 local function openPanel(kind, preserveConfirmation)
+    modalBody.TextSize = 13
     activePanel = kind
     if preserveConfirmation ~= true then
         confirmingRebirth = false
