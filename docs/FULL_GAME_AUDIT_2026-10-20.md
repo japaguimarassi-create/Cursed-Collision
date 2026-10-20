@@ -23,7 +23,7 @@ A construção das fazendas, cercas, esteiras, letreiros e cenário passou para 
 A interface ProximityPrompt customizada foi isolada em `StarterPlayerScripts/InteractionPrompt.lua`. A caixa tem tamanho máximo de 280×48 e fica na área central entre os botões de menu e os controles inferiores. O botão de interação encerra a ação mesmo se o dedo/mouse for solto fora da caixa. A simulação de CI agora mede sua posição em vários perfis de viewport; ela não a renderiza no motor Roblox.
 
 ### Publicação
-O workflow `.github/workflows/publish-roblox.yml`, que publicava automaticamente após uma validação bem-sucedida na `main`, foi removido. A revisão dos logs da execução anterior confirmou que essa automação publicou a versão Roblox 109. O novo workflow manual exige dois sinais de confirmação e a variável `STEAL_ANIMAL_STUDIO_QA_SHA) com o SHA exato do código aprovado em um teste real de Roblox Studio/celular.
+O workflow `.github/workflows/publish-roblox.yml`, que publicava automaticamente após uma validação bem-sucedida na `main`, foi removido. A revisão dos logs da execução anterior confirmou que essa automação publicou a versão Roblox 109. O novo workflow manual exige dois sinais de confirmação e a variável `STEAL_ANIMAL_STUDIO_QA_SHA` com o SHA exato do código aprovado em um teste real de Roblox Studio/celular.
 
 A variável é uma atestação explícita de quem opera a publicação; a CI não consegue provar que a sessão real foi executada. O workflow não deve ser iniciado com essa variável preenchida até que o teste desse commit tenha sido realizado.
 
@@ -41,7 +41,7 @@ A variável é uma atestação explícita de quem opera a publicação; a CI nã
 2. Abrir o artifact RBXL dessa execução no Roblox Studio.
 3. Executar o plugin `Steal An Animal QA → Run Studio Audit` com perfil de telefone; guardar o relatório `[STEAL_ANIMAL_AUDIT_REPORT]`.
 4. Testar no aparelho: abrir Shop/Index/More; capturar, carregar e depositar um animal; manter/soltar a interação; comprar melhoria de esteira; coletar; renascer em condições válidas; sair e entrar novamente para verificar o perfil e a reutilização da fazenda.
-5. Só depois, registrar o SHA exato do commit aprovado em `STEAL_ANIMAL_STUDIO_QA_SHA) e usar o workflow manual com ambas as confirmações.
+5. Só depois, registrar o SHA exato do commit aprovado em `STEAL_ANIMAL_STUDIO_QA_SHA` e usar o workflow manual com ambas as confirmações.
 
 ## Estado e limitações
 
