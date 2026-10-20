@@ -1,35 +1,28 @@
-# Animal corridor and eight-phase map — visual specification
+# Animal corridor, family guardians, and treadmills — visual specification
 
-## Reference review
+## Reference review before implementation
 
-Before changing the map, we reviewed the official Roblox listing and public gameplay screenshots for Steal An Egg. The useful high-level signals are a route that reads at a glance, strong size contrast between collectible animals and adult guardians, colorful zones, and clear farm boundaries. No screenshot, mesh, exact zone layout, or packaged model is reused.
+We reviewed the official Steal An Egg listing and a public screenshot showing the treadmill. The official listing explicitly describes treadmill training, Speed gain, and treadmill/base upgrades: https://www.roblox.com/games/107778070777162/Steal-An-Egg. The screenshot used to assess visual hierarchy is https://eggipedia.com/images/sae/shots/tapis.webp.
 
-References:
-- Official Roblox listing: https://www.roblox.com/games/107778070777162/Steal-An-Egg
-- Guardian scale and floor composition: https://kinglabbok.com/assets/guardian.jpg
-- Colorful creature and open-lane composition: https://cdn-media.sforum.vn/storage/app/media/phuonganh/phuonganh/cach-choi-steal-egg-roblox-2.jpg
-- Fenced animal pens: https://www.phucanh.vn/media/news/1509_steal-an-egg-roblox-5.jpg
+Reference signals retained at a high level:
+- low, dark running belt with strong luminous contrast;
+- robust side rails and a small, readable console;
+- a training loop that is obvious to a player without reading a manual;
+- a distinction between accumulated speed points, training rate, upgrade level, and actual movement speed.
 
-## Layout rules
+No source mesh, screenshot, map coordinates, branded treadmill, or packaged model is reused. The new treadmill is assembled from native Roblox Parts and uses a single server-side animation loop for belt stripes.
 
-- Eight personal farms in a rectangular 4 x 2 block near spawn.
-- A wide, uninterrupted corridor starts beyond the farm block and runs along the X axis through all eight phases.
-- The stone center stripe guides players; glowing edge strips clarify the safe route.
-- Zone gates show the phase number and distinctive accent color.
-- Trees, pools, ice, rocks, mushrooms, lava, and marine bubbles are placed outside the central running lane.
-- Every phase has collectible baby animals and one oversized adult family guardian. The final phase guardian is a whale.
+## Implemented behavior
 
-## Phase order
+- Eight personal farms in a rectangular 4 x 2 block.
+- One animated treadmill on each farm, with a server-side TrainingZone.
+- Speed points are awarded only while the server sees the character moving inside the belt zone.
+- The treadmill can be upgraded with in-game coins up to level 10.
+- Training gain scales by a 1.5× level multiplier, rounded down to whole points per second.
+- Movement speed follows a square-root curve and is clamped to 40 studs/s. Carrying an animal applies the existing weight penalty.
+- An adult family guardian protects every stage; its chase speed rises with phase so early-stage escapes remain possible.
+- Eight phases in order: hen, swan, wolf, crocodile, polar bear, lion, dragon, and whale.
 
-1. Sunny Meadow — Hen guardian.
-2. Wing Lake — Swan guardian.
-3. Whispering Forest — Wolf guardian.
-4. Misty Wetlands — Crocodile guardian.
-5. Frost Peak — Polar bear guardian.
-6. Golden Savanna — Lion guardian.
-7. Amber Volcano — Dragon guardian.
-8. Blue Abyss — Whale guardian.
+## Visual test loop
 
-## Original model silhouettes
-
-The creatures use native Roblox parts with species-specific proportions and details. Birds have crests, beaks, and wing feathers; the swan gains an upright neck; the polar bear gets round ears, a pale muzzle, and paws; marine animals use elongated bodies, contrasting bellies, fins, and tail flukes. These are original procedural builds rather than copied meshes.
+After each structural change, check Luau parsing, server-authoritative movement rules, map dimensions and spawn positions, current HUD attributes, the no-monetization audit, and RBXL generation. A passing cloud build confirms the source and artifact generation, not a live Roblox Studio playtest.

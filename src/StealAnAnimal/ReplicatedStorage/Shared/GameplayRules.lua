@@ -61,6 +61,39 @@ function Rules.AnimalIncome(baseIncome, stageIndex, config)
     return math.floor(income)
 end
 
+function Rules.TrainingGain(level, config)
+    local maximum = math.max(1, math.floor(numberOr(config and config.MaxTreadmillLevel, 1)))
+    local current = math.clamp(math.floor(numberOr(level, 1)), 1, maximum)
+    local baseGain = numberOr(config and config.BaseTrainingGain, 1)
+    local growth = numberOr(config and config.TreadmillGainMultiplier, 1)
+    if baseGain < 0 or growth < 1 then
+        return 0
+    end
+    local gain = baseGain * growth ^ (current - 1)
+    if not finite(gain) then
+        return 0
+    end
+    return math.max(0, math.floor(gain))
+end
+
+function Rules.MoveSpeed(speedPoints, config)
+    local base = numberOr(config and config.BaseWalkSpeed, 16)
+    local maximum = numberOr(config and config.MaxWalkSpeed, base)
+    local factor = numberOr(config and config.SpeedPerPointFactor, 0)
+    local points = numberOr(speedPoints, 0)
+    if points < 0 then
+        points = 0
+    end
+    if factor < 0 or maximum < base then
+        return base
+    end
+    local calculated = base + math.sqrt(points) * factor
+    if not finite(calculated) then
+        return maximum
+    end
+    return math.clamp(calculated, base, maximum)
+end
+
 function Rules.CarrySpeed(baseSpeed, weight, config)
     if not finite(baseSpeed) or not finite(weight) or baseSpeed <= 0 or weight < 0 then
         return nil
@@ -81,17 +114,17 @@ end
 
 function Rules.UpgradeCost(level, config)
     local current = numberOr(level, -1)
-    local maximum = numberOr(config and config.MaxSpeedLevel, -1)
+    local maximum = numberOr(config and config.MaxTreadmillLevel, -1)
     local base = numberOr(config and config.UpgradeBaseCost, -1)
     local growth = numberOr(config and config.UpgradeCostGrowth, -1)
-    if current < 0 or maximum < 0 or base <= 0 or growth < 1 then
+    if current < 1 or maximum < 1 or base <= 0 or growth < 1 then
         return nil
     end
     current = math.floor(current)
     if current >= maximum then
         return nil
     end
-    local cost = base * growth ^ current
+    local cost = base * growth ^ (current - 1)
     if not finite(cost) or cost <= 0 then
         return nil
     end

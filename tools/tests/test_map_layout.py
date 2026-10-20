@@ -17,6 +17,9 @@ assert phase_numbers == [str(n) for n in range(1, 9)], "Phases must be numbered 
 assert all(biome in CATALOG for biome in biomes), "Every biome must have animals"
 assert "basePositions = {" in MAIN, "Eight farms must use an explicit rectangular layout"
 assert all(token in MAIN for token in ("CorridorFloor", "CorridorEdge", "MainPath", "GuardianParent_", "PAI PROTETOR")), "Central animal corridor or guardian parents missing"
+assert all(token in MAIN for token in ("createTreadmill", "TrainingZone", "MovingBeltStripe", "UpgradeTreadmill", "TreadmillLevel")), "Functional treadmill and upgrade prompt missing"
+assert "treadmillStrips" in MAIN and "TreadmillBeltSpeed" in CONFIG, "Treadmill belt animation missing"
+assert "Rules.TrainingGain" in MAIN and "Rules.MoveSpeed" in MAIN and "Config.MaxSpeedPoints" in MAIN, "Training and speed cap must be server-authoritative"
 assert "createAnimalModel" in MAIN and "EvolutionStages" in MAIN, "Stage-aware animal model builder missing"
 assert all(token in MAIN for token in ("HenComb", "SwanNeck", "BearPaw", "WhaleTailFluke", "DolphinTailFluke", "MantaWing")), "Distinctive animal silhouettes are missing"
 assert all(token in MAIN for token in ("GiantMushroom", "WetlandPool", "IcePillar", "SavannaBoulder", "LavaRift", "LakeReed", "OceanBubble")), "Biome landmarks are missing"
@@ -26,5 +29,6 @@ assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must b
 assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
+assert "TreadmillStatus" in CLIENT and "MELHORAR ESTEIRA" in CLIENT and "TouchEnabled" in CLIENT, "Mobile treadmill UI missing"
 assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
-print(f"PASS AnimalCorridor: {len(animal_ids)} species, {len(biomes)} phases, rectangular farms, original marine models, and guardian parents.")
+print(f"PASS AnimalCorridor: {len(animal_ids)} species, {len(biomes)} phases, rectangular farms, original models, animated treadmills, and server-side speed training.")

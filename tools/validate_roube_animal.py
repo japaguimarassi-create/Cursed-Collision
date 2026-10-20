@@ -64,7 +64,7 @@ def main():
     client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
 
     checks = [
-        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r4"' in config),
+        ("fresh release tag", 'ReleaseTag = "StealAnAnimal-FromScratch-2026.10.20-r5"' in config),
         ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
         ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier" in rules and "StageMultiplier" in rules and "growth ^" in rules),
         ("eight sequential biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Lake"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"', 'Id = "Ocean"', 'Phase = 1, CenterX = 170', 'Phase = 8, CenterX = 1430'))),
@@ -74,6 +74,9 @@ def main():
         ("server validated capture and deposit", all(token in main_source for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
         ("guardian pursuit and escape", all(token in main_source for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),
         ("original procedural models and scenery", all(token in main_source for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "FountainGem"))),
+        ("server-side treadmill training and capped movement", all(token in main_source for token in ("createTreadmill", "TrainingZone", "Rules.TrainingGain", "Rules.MoveSpeed", "Config.MaxSpeedPoints", "MaxTreadmillLevel"))),
+        ("animated belts and farm-owned treadmill upgrades", all(token in main_source for token in ("treadmillStrips", "TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId'))),
+        ("treadmill UI reports speed and upgrade levels", all(token in client for token in ("TreadmillStatus", "TreadmillLevel", "TreadmillGain", "EffectiveWalkSpeed", "MELHORAR ESTEIRA"))),
         ("responsive HUD and gameplay actions", all(token in client for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "EvolutionHint"))),
         ("no monetization in fresh runtime", not any(token in config + catalog + rules + main_source + client for token in ("MarketplaceService", "PromptGamePassPurchase", "UserOwnsGamePassAsync", "RequestGamepass", "VIPFarm", "DoubleIncome", "DoubleSpeed", "HasExtraBarnSlots"))),
     ]
@@ -101,7 +104,7 @@ def main():
     if "5290480963" in publisher or "15338267657" in publisher:
         fail("production publishing must not guess Roblox destination IDs")
 
-    print(f"Steal An Animal validation passed: {len(animal_ids)} species and {len(checks)} architecture checks.")
+    print(f"Steal An Animal validation passed: {len(animal_ids)} species and {len(checks)} architecture checks, including treadmill training.")
 
 if __name__ == "__main__":
     main()

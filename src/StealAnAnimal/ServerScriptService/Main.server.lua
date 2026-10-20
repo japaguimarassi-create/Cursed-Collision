@@ -60,6 +60,9 @@ local sessionTokens = {}
 local saveInProgress = {}
 local leaving = {}
 local actionCooldowns = {}
+local trainingNoticeAt = {}
+local treadmillStrips = {}
+local treadmillAnimationAccumulator = 0
 local playerBases = {}
 local carried = {}
 local guardians = {}
@@ -405,6 +408,7 @@ local function defaultProfile()
     return {
         Coins = 0,
         Speed = 0,
+        TreadmillLevel = 1,
         BarnBank = 0,
         BarnAnimals = {},
         LastIncomeAt = os.time(),
@@ -424,7 +428,8 @@ local function sanitizeProfile(raw)
         return math.clamp(math.floor(numberValue), minimum, maximum)
     end
     data.Coins = safeInteger(raw.Coins, 0, Config.CoinsLimit, 0)
-    data.Speed = safeInteger(raw.Speed, 0, Config.MaxSpeedLevel, 0)
+    data.Speed = safeInteger(raw.Speed, 0, Config.MaxSpeedPoints, 0)
+    data.TreadmillLevel = safeInteger(raw.TreadmillLevel, 1, Config.MaxTreadmillLevel, 1)
     data.BarnBank = safeInteger(raw.BarnBank, 0, Config.CoinsLimit, 0)
     data.LastIncomeAt = safeInteger(raw.LastIncomeAt, 0, 2147483647, os.time())
     if type(raw.BarnAnimals) == "table" then
@@ -451,6 +456,7 @@ local function snapshot(profile)
     local data = {
         Coins = profile.Coins,
         Speed = profile.Speed,
+        TreadmillLevel = profile.TreadmillLevel,
         BarnBank = profile.BarnBank,
         LastIncomeAt = profile.LastIncomeAt,
         BarnAnimals = {},
@@ -596,6 +602,56 @@ local function allowAction(player, action, cooldown)
     return true
 end
 
+local function createTreadmill(base, center)
+    local treadmill = Instance.new("Model")
+    treadmill.Name = "Treadmill"
+    treadmill.Parent = base
+    local origin = center + Vector3.new(0, 0, -9.5)
+
+    createPart(treadmill, "TreadmillHousing", Vector3.new(7.4, 0.62, 9.2), CFrame.new(origin + Vector3.new(0, 0.38, 0)), Color3.fromRGB(38, 52, 60), Enum.Material.Metal, nil, true)
+    createPart(treadmill, "TreadmillBelt", Vector3.new(5.9, 0.14, 7.8), CFrame.new(origin + Vector3.new(0, 0.76, 0)), Color3.fromRGB(32, 43, 49), Enum.Material.DiamondPlate, nil, true)
+
+    for _, side in ipairs({ -1, 1 }) do
+        createPart(treadmill, "TreadmillRail", Vector3.new(0.34, 0.95, 8.8), CFrame.new(origin + Vector3.new(side * 3.15, 1.14, 0)), Color3.fromRGB(60, 192, 198), Enum.Material.Metal, nil, true)
+        createPart(treadmill, "TreadmillRailLight", Vector3.new(0.08, 0.08, 8.1), CFrame.new(origin + Vector3.new(side * 3.15, 1.65, 0)), Color3.fromRGB(91, 236, 244), Enum.Material.Neon, nil, false)
+    end
+
+    for index = 1, 7 do
+        local phase = (index - 1) * (Config.TreadmillBeltLength / 7)
+        local stripe = createPart(treadmill, "MovingBeltStripe", Vector3.new(5.45, 0.035, 0.11), CFrame.new(origin + Vector3.new(0, 0.86, phase - Config.TreadmillBeltLength / 2)), index % 2 == 0 and Color3.fromRGB(87, 220, 225) or Color3.fromRGB(56, 145, 161), Enum.Material.Neon, nil, false)
+        stripe.CastShadow = false
+        table.insert(treadmillStrips, { Part = stripe, Origin = origin, Phase = phase, Length = Config.TreadmillBeltLength })
+    end
+
+    for _, side in ipairs({ -1, 1 }) do
+        local roller = createPart(treadmill, "BeltRoller", Vector3.new(0.28, 5.75, 0.28), CFrame.new(origin + Vector3.new(0, 0.88, side * 3.82)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(126, 147, 154), Enum.Material.Metal, Enum.PartType.Cylinder, false)
+        roller.CastShadow = false
+    end
+
+    local console = createPart(treadmill, "TreadmillConsole", Vector3.new(2.6, 1.15, 0.38), CFrame.new(origin + Vector3.new(0, 2.05, -3.45)), Color3.fromRGB(35, 67, 72), Enum.Material.Metal, nil, true)
+    createPart(treadmill, "ConsoleScreen", Vector3.new(1.95, 0.48, 0.06), CFrame.new(origin + Vector3.new(0, 2.22, -3.68)), Color3.fromRGB(62, 242, 204), Enum.Material.Neon, nil, false)
+    addLabel(console, "ESTEIRA DE VELOCIDADE", "CORRA SOBRE A FAIXA PARA TREINAR", Color3.fromRGB(95, 239, 226))
+
+    local upgradePrompt = Instance.new("ProximityPrompt")
+    upgradePrompt.Name = "UpgradeTreadmillPrompt"
+    upgradePrompt.ActionText = "MELHORAR ESTEIRA"
+    upgradePrompt.ObjectText = "Equipamento da sua fazenda"
+    upgradePrompt.HoldDuration = 0.35
+    upgradePrompt.MaxActivationDistance = 10
+    upgradePrompt.RequiresLineOfSight = false
+    upgradePrompt:SetAttribute("InteractionType", "UpgradeTreadmill")
+    upgradePrompt.Parent = console
+
+    local zone = createPart(treadmill, "TrainingZone", Vector3.new(5.45, 1.3, 6.35), CFrame.new(origin + Vector3.new(0, 4.05, 0)), Color3.fromRGB(0, 0, 0), Enum.Material.SmoothPlastic, nil, false)
+    zone.Transparency = 1
+    zone.CastShadow = false
+    zone.CanTouch = false
+    zone.CanQuery = false
+
+    treadmill.PrimaryPart = treadmill:FindFirstChild("TreadmillHousing")
+    return treadmill
+end
+
 local function createBase(index)
     local basePositions = {
         Vector3.new(-69, 0, -53), Vector3.new(-23, 0, -53), Vector3.new(23, 0, -53), Vector3.new(69, 0, -53),
@@ -621,8 +677,8 @@ local function createBase(index)
     display.Name = "StoredAnimals"
     display.Parent = base
     local offsets = {
-        Vector3.new(-5.5, 0.35, -4), Vector3.new(0, 0.35, -4), Vector3.new(5.5, 0.35, -4),
-        Vector3.new(-5.5, 0.35, 2), Vector3.new(0, 0.35, 2), Vector3.new(5.5, 0.35, 2),
+        Vector3.new(-5.5, 0.35, -1), Vector3.new(0, 0.35, -1), Vector3.new(5.5, 0.35, -1),
+        Vector3.new(-5.5, 0.35, 5), Vector3.new(0, 0.35, 5), Vector3.new(5.5, 0.35, 5),
     }
     for slotIndex, offset in ipairs(offsets) do
         local pad = createPart(display, "Slot_" .. tostring(slotIndex), Vector3.new(5.1, 0.25, 5.1), CFrame.new(center + offset), Color3.fromRGB(235, 222, 183), Enum.Material.Sand, nil, false)
@@ -630,7 +686,9 @@ local function createBase(index)
         addLabel(pad, "ESPAÇO " .. tostring(slotIndex), "VAZIO", Color3.fromRGB(255, 218, 105))
     end
 
-    local deposit = createPart(base, "DepositPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(-12, 0.35, -8)), Color3.fromRGB(78, 235, 128), Enum.Material.Neon, nil, false)
+    createTreadmill(base, center)
+
+    local deposit = createPart(base, "DepositPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(-12, 0.35, -10)), Color3.fromRGB(78, 235, 128), Enum.Material.Neon, nil, false)
     addLabel(deposit, "GUARDAR ANIMAL", "Leve o bebê para casa", Color3.fromRGB(255, 255, 230))
     local depositPrompt = Instance.new("ProximityPrompt")
     depositPrompt.Name = "DepositPrompt"
@@ -642,7 +700,7 @@ local function createBase(index)
     depositPrompt:SetAttribute("InteractionType", "DepositAnimal")
     depositPrompt.Parent = deposit
 
-    local collect = createPart(base, "CollectPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(12, 0.35, -8)), Color3.fromRGB(255, 203, 65), Enum.Material.Neon, nil, false)
+    local collect = createPart(base, "CollectPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(12, 0.35, -10)), Color3.fromRGB(255, 203, 65), Enum.Material.Neon, nil, false)
     addLabel(collect, "COLETAR MOEDAS", "Renda dos animais", Color3.fromRGB(255, 255, 230))
     local collectPrompt = Instance.new("ProximityPrompt")
     collectPrompt.Name = "CollectPrompt"
@@ -803,12 +861,14 @@ local function updatePlayerAttributes(player)
     local now = os.time()
     player:SetAttribute("Coins", profile.Coins)
     player:SetAttribute("SpeedLevel", profile.Speed)
+    player:SetAttribute("TreadmillLevel", profile.TreadmillLevel)
+    player:SetAttribute("TreadmillGain", Rules.TrainingGain(profile.TreadmillLevel, Config))
     player:SetAttribute("BarnBank", profile.BarnBank)
     player:SetAttribute("BarnAnimalCount", #profile.BarnAnimals)
     player:SetAttribute("BarnCapacity", Config.BaseSlots)
     player:SetAttribute("BarnIncomeRate", profileIncome(profile, now))
     player:SetAttribute("CarryingAnimal", carried[player] ~= nil)
-    local baseSpeed = Config.BaseWalkSpeed + profile.Speed * Config.SpeedPerLevel
+    local baseSpeed = Rules.MoveSpeed(profile.Speed, Config)
     local carry = carried[player]
     if carry then
         local speed = Rules.CarrySpeed(baseSpeed, carry.Spec.Weight, Config)
@@ -950,7 +1010,7 @@ local function makeGuardian(spec, biome)
     model.Name = "GuardianParent_" .. biome.Id
     model.Parent = guardiansFolder
     addLabel(model.PrimaryPart, "PAI PROTETOR: " .. string.upper(spec.Name), "FASE " .. tostring(biome.Phase) .. " • PROTEGE A FAMÍLIA", biome.Accent)
-    table.insert(guardians, { Model = model, Home = CFrame.new(position), Biome = biome, Spec = spec })
+    table.insert(guardians, { Model = model, Home = CFrame.new(position), Biome = biome, Spec = spec, Speed = math.min(Config.GuardianSpeed, 12 + biome.Phase * 1.1) })
 end
 
 local function loadProfile(player)
@@ -1087,12 +1147,51 @@ local function collectIncome(player, prompt)
     notify(player, "Você coletou +" .. tostring(credited) .. " moedas!", "Success")
 end
 
+local function upgradeTreadmill(player, prompt)
+    local profile = profiles[player]
+    if not profile or leaving[player] then
+        return
+    end
+
+    if prompt then
+        local current = prompt.Parent
+        local ownerBase
+        while current and current ~= basesFolder do
+            if current:IsA("Model") and current.Parent == basesFolder then
+                ownerBase = current
+                break
+            end
+            current = current.Parent
+        end
+        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if not ownerBase or ownerBase ~= playerBases[player] or ownerBase:GetAttribute("OwnerUserId") ~= player.UserId
+            or not root or (root.Position - prompt.Parent.Position).Magnitude > 15 then
+            return
+        end
+    end
+
+    local cost = Rules.UpgradeCost(profile.TreadmillLevel, Config)
+    if not cost then
+        notify(player, "Sua esteira já está no nível máximo.", "Info")
+        return
+    end
+    if profile.Coins < cost then
+        notify(player, "Você precisa de " .. tostring(cost) .. " moedas para melhorar a esteira.", "Warning")
+        return
+    end
+
+    profile.Coins -= cost
+    profile.TreadmillLevel += 1
+    updatePlayerAttributes(player)
+    notify(player, "Esteira nível " .. tostring(profile.TreadmillLevel) .. "! Agora você ganha +" .. tostring(Rules.TrainingGain(profile.TreadmillLevel, Config)) .. " de velocidade por segundo correndo nela.", "Success")
+end
+
 local function onPrompt(prompt, player)
     if not profiles[player] or leaving[player] then
         return
     end
     local interaction = prompt:GetAttribute("InteractionType")
-    if interaction ~= "StealAnimal" and interaction ~= "DepositAnimal" and interaction ~= "CollectIncome" then
+    if interaction ~= "StealAnimal" and interaction ~= "DepositAnimal" and interaction ~= "CollectIncome" and interaction ~= "UpgradeTreadmill" then
         return
     end
     if not allowAction(player, interaction, 0.45) then
@@ -1104,6 +1203,8 @@ local function onPrompt(prompt, player)
         depositAnimal(player, prompt)
     elseif interaction == "CollectIncome" then
         collectIncome(player, prompt)
+    elseif interaction == "UpgradeTreadmill" then
+        upgradeTreadmill(player, prompt)
     end
 end
 
@@ -1117,21 +1218,8 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, player)
 end)
 
 upgradeRemote.OnServerEvent:Connect(function(player)
-    local profile = profiles[player]
-    if not profile or leaving[player] or not allowAction(player, "upgradeRemote", 0.8) then return end
-    local cost = Rules.UpgradeCost(profile.Speed, Config)
-    if not cost then
-        notify(player, "Sua velocidade já chegou ao nível máximo.", "Info")
-        return
-    end
-    if profile.Coins < cost then
-        notify(player, "Você precisa de " .. tostring(cost) .. " moedas para melhorar a velocidade.", "Warning")
-        return
-    end
-    profile.Coins -= cost
-    profile.Speed += 1
-    updatePlayerAttributes(player)
-    notify(player, "Velocidade melhorada para o nível " .. tostring(profile.Speed) .. ".", "Success")
+    if not profiles[player] or leaving[player] or not allowAction(player, "upgradeRemote", 0.8) then return end
+    upgradeTreadmill(player, nil)
 end)
 
 collectRemote.OnServerEvent:Connect(function(player)
@@ -1212,6 +1300,7 @@ Players.PlayerRemoving:Connect(function(player)
     profiles[player] = nil
     playerBases[player] = nil
     actionCooldowns[player] = nil
+    trainingNoticeAt[player] = nil
     releaseBase(player)
     leaving[player] = nil
 end)
@@ -1225,6 +1314,18 @@ local incomeAccumulator = 0
 RunService.Heartbeat:Connect(function(deltaTime)
     accumulator += deltaTime
     incomeAccumulator += deltaTime
+    treadmillAnimationAccumulator += deltaTime
+    if treadmillAnimationAccumulator >= 0.1 then
+        treadmillAnimationAccumulator = 0
+        local elapsed = os.clock() * Config.TreadmillBeltSpeed
+        for _, entry in ipairs(treadmillStrips) do
+            local part = entry.Part
+            if part and part.Parent then
+                local offset = ((entry.Phase + elapsed) % entry.Length) - entry.Length / 2
+                part.Position = Vector3.new(entry.Origin.X, part.Position.Y, entry.Origin.Z + offset)
+            end
+        end
+    end
     for player, carry in pairs(carried) do
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -1264,7 +1365,7 @@ RunService.Heartbeat:Connect(function(deltaTime)
                         local destination = Vector3.new(targetRoot.Position.X, current.Position.Y, targetRoot.Position.Z)
                         local direction = destination - current.Position
                         if direction.Magnitude > 0.1 then
-                            local step = math.min(direction.Magnitude, Config.GuardianSpeed * Config.GuardianThinkSeconds)
+                            local step = math.min(direction.Magnitude, (guardian.Speed or Config.GuardianSpeed) * Config.GuardianThinkSeconds)
                             local nextPosition = current.Position + direction.Unit * step
                             model:PivotTo(CFrame.lookAt(nextPosition, destination))
                         end
@@ -1287,6 +1388,31 @@ RunService.Heartbeat:Connect(function(deltaTime)
         local now = os.time()
         for player, profile in pairs(profiles) do
             local changed = false
+            local base = playerBases[player]
+            local treadmill = base and base:FindFirstChild("Treadmill")
+            local zone = treadmill and treadmill:FindFirstChild("TrainingZone")
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if zone and root and humanoid and humanoid.Health > 0 and not carried[player] and humanoid.MoveDirection.Magnitude > 0.12 then
+                local localPosition = zone.CFrame:PointToObjectSpace(root.Position)
+                local inside = math.abs(localPosition.X) <= zone.Size.X / 2
+                    and math.abs(localPosition.Y) <= zone.Size.Y / 2
+                    and math.abs(localPosition.Z) <= zone.Size.Z / 2
+                if inside then
+                    local gain = Rules.TrainingGain(profile.TreadmillLevel, Config)
+                    local nextSpeed = math.clamp(profile.Speed + gain, 0, Config.MaxSpeedPoints)
+                    if nextSpeed > profile.Speed then
+                        profile.Speed = nextSpeed
+                        updatePlayerAttributes(player)
+                        local previousNotice = trainingNoticeAt[player] or 0
+                        if now - previousNotice >= Config.TrainingNoticeCooldown then
+                            trainingNoticeAt[player] = now
+                            notify(player, "Treino na esteira: +" .. tostring(gain) .. " velocidade. Total: " .. tostring(profile.Speed) .. ".", "Success")
+                        end
+                    end
+                end
+            end
             for _, animal in ipairs(profile.BarnAnimals) do
                 local stage = stageFor(animal, now)
                 if animal.Stage ~= stage.Name then

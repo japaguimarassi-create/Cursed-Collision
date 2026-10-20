@@ -29,3 +29,21 @@ Os modelos são montados com Parts nativas e formas esféricas alongadas, não c
 - Imagem de referência do guardião de galinha: https://kinglabbok.com/assets/guardian.jpg
 
 As imagens servem apenas como referência de composição, hierarquia visual e escala. O novo mapa não reproduz o mapa original; suas fazendas, oito biomas, distribuição, cores, sinalização e modelos procedurais foram desenhados para este projeto.
+
+
+## Esteiras e velocidade — revisão r5
+
+Cada uma das oito fazendas tem uma esteira com faixa animada e um painel de melhoria. Correr sobre a faixa gera pontos de velocidade no servidor, sem confiar em valores enviados pelo cliente. As melhorias são compradas com moedas do jogo; não existem gamepasses.
+
+- Esteira inicial: +2 pontos de velocidade por segundo correndo na área da faixa.
+- Cada nível de esteira aumenta o rendimento em 1,5×; máximo de 10 níveis.
+- Velocidade de movimento calculada: 16 + raiz quadrada dos pontos × 0,35, limitada a 40 studs/s.
+- Carregar um animal aplica a penalidade de peso depois do cálculo da velocidade.
+- O HUD mostra pontos acumulados, nível da esteira, ganho por segundo e velocidade de movimento.
+
+Referências consultadas antes e depois da implementação:
+- Descrição oficial de Steal An Egg (inclui treinar velocidade na esteira e melhorá-la): https://www.roblox.com/games/107778070777162/Steal-An-Egg
+- Captura visual pública da esteira e sua faixa iluminada: https://eggipedia.com/images/sae/shots/tapis.webp
+- Guia comunitário para o conceito de progresso e esteira: https://steal-an-egg.robloxgamewiki.com/progression/treadmill-guide
+
+As referências orientaram apenas a função da esteira, a faixa escura com detalhes luminosos, o mostrador de treino e a relação entre velocidade e fuga. O equipamento e o mapa foram montados em Parts nativas com posicionamento, formas, cores e geometria próprios.

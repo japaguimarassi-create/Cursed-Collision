@@ -9,7 +9,8 @@ A mobile-first Roblox experience about stealing baby animals, escaping their adu
 - One wide, unobstructed animal corridor with a central track, colored stage gates, and roadside scenery.
 - Every zone has an oversized adult guardian that protects the local animals; the final guardian is a whale.
 - Twenty-nine original animal entries, including a hen, swan, polar bear, lion, dolphin, manta ray, and whale.
-- Native Roblox parts form the animal silhouettes and decorations. The visual direction is inspired by the readable zones, strong color contrast, and giant guardian scale seen in Steal An Egg, but the farm layout, biomes, palettes, and animal models are original.
+- Every farm has an animated treadmill, a server-checked training zone, and a coin-funded upgrade system. Running on its belt awards speed points; points are converted to capped character WalkSpeed.
+- Native Roblox parts form the animal silhouettes and decorations. The visual direction is inspired by the readable zones, strong color contrast, treadmill placement, and giant guardian scale seen in Steal An Egg, but the farm layout, biomes, palettes, and animal models are original.
 
 ## Core gameplay
 
@@ -17,7 +18,9 @@ A mobile-first Roblox experience about stealing baby animals, escaping their adu
 - Each evolution adds 50% to that animal's income. Cumulative income multipliers are 1x, 1.5x, 2.25x, and 3.375x.
 - Giant adult guardians pursue players carrying stolen animals. If caught, the animal escapes and returns to the wild after a delay.
 - Six animal slots per farm, persistent inventory, passive barn income, manual collection, speed upgrades, and bounded offline income.
-- Mobile-first HUD, server-validated capture and deposit, persistent profiles, no gamepasses, no VIP purchases, and no paid barn expansions.
+- Mobile-first HUD shows speed points, current movement speed, treadmill level, and training gain.
+- Treadmill level 1 adds 2 speed points per second while the player is moving inside the belt zone; each paid in-game upgrade increases training yield by 1.5× (rounded down). Movement speed is calculated from earned points and capped at 40 studs/s; carrying an animal applies a separate weight penalty.
+- Speed points, treadmill level, coins, and barn data are saved; no gamepasses, VIP purchases, or paid barn expansions.
 
 ## Build and validate
 

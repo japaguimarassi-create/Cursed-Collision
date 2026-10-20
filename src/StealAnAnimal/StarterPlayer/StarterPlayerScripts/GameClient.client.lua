@@ -102,7 +102,7 @@ local panel = Instance.new("Frame")
 panel.Name = "MainPanel"
 panel.AnchorPoint = Vector2.new(0, 0)
 panel.Position = UDim2.new(0, 12, 0, 12)
-panel.Size = compact and UDim2.new(0, 250, 0, 142) or UDim2.new(0, 305, 0, 154)
+panel.Size = compact and UDim2.new(0, 250, 0, 166) or UDim2.new(0, 305, 0, 168)
 panel.BackgroundColor3 = COLORS.Background
 panel.BackgroundTransparency = 0.06
 panel.BorderSizePixel = 0
@@ -114,7 +114,8 @@ local title = textLabel(panel, "Title", "STEAL AN ANIMAL", UDim2.new(1, -22, 0, 
 local stats = textLabel(panel, "Stats", "Moedas  0     Renda  0/s", UDim2.new(1, -22, 0, 25), UDim2.new(0, 12, 0, 34), 13, COLORS.Cream)
 local barn = textLabel(panel, "Barn", "Celeiro  0/6     Velocidade  0", UDim2.new(1, -22, 0, 24), UDim2.new(0, 12, 0, 59), 12, COLORS.Aqua)
 local carry = textLabel(panel, "Carry", "Mãos livres • Roube um bebê", UDim2.new(1, -22, 0, 25), UDim2.new(0, 12, 0, 84), 12, COLORS.Cream)
-local stageHint = textLabel(panel, "EvolutionHint", "Bebê → Criança → Adolescente → Adulto", UDim2.new(1, -22, 0, 23), UDim2.new(0, 12, 0, 110), 10, COLORS.Gold)
+local treadmillStatus = textLabel(panel, "TreadmillStatus", "Esteira nível 1 • +2 velocidade/s", UDim2.new(1, -22, 0, 22), UDim2.new(0, 12, 0, 109), 11, COLORS.Aqua)
+local stageHint = textLabel(panel, "EvolutionHint", "Bebê → Criança → Adolescente → Adulto", UDim2.new(1, -22, 0, 23), UDim2.new(0, 12, 0, 135), 10, COLORS.Gold)
 
 local actions = Instance.new("Frame")
 actions.Name = "ActionPanel"
@@ -143,7 +144,7 @@ actionLayout.Parent = actions
 makeButton(actions, "Collect", "COLETAR MOEDAS", COLORS.Gold, 1, function()
     collectRemote:FireServer()
 end)
-makeButton(actions, "Upgrade", "MELHORAR VELOCIDADE", COLORS.Green, 2, function()
+makeButton(actions, "Upgrade", "MELHORAR ESTEIRA", COLORS.Green, 2, function()
     upgradeRemote:FireServer()
 end)
 makeButton(actions, "OpenBarn", "MEU CELEIRO", COLORS.Aqua, 3, function()
@@ -157,7 +158,7 @@ makeButton(actions, "AnimalGuide", "GUIA DE ANIMAIS", COLORS.Purple, 4, function
     for _, spec in ipairs(Catalog.All()) do
         counts[spec.Biome] = (counts[spec.Biome] or 0) + 1
     end
-    showToast("21 espécies em 6 biomas. Os animais começam bebês e evoluem com o tempo.", "Info")
+    showToast("29 espécies em 8 fases. Corra na esteira da sua fazenda para treinar velocidade.", "Info")
 end)
 
 local toastFrame = Instance.new("Frame")
@@ -200,11 +201,13 @@ end
 local function refresh()
     stats.Text = "Moedas  " .. number(player:GetAttribute("Coins")) .. "     Renda  " .. number(player:GetAttribute("BarnIncomeRate")) .. "/s"
     barn.Text = "Celeiro  " .. tostring(player:GetAttribute("BarnAnimalCount") or 0) .. "/" .. tostring(player:GetAttribute("BarnCapacity") or Config.BaseSlots)
-        .. "     Velocidade  " .. tostring(player:GetAttribute("SpeedLevel") or 0)
+        .. "     Velocidade  " .. number(player:GetAttribute("SpeedLevel") or 0)
     carry.Text = player:GetAttribute("CarryingAnimal") and "Carregando um animal • FUJA DO GUARDIÃO" or "Mãos livres • Roube um bebê"
+    treadmillStatus.Text = "Esteira Nv. " .. tostring(player:GetAttribute("TreadmillLevel") or 1)
+        .. " • +" .. tostring(player:GetAttribute("TreadmillGain") or Config.BaseTrainingGain) .. "/s • Corrida " .. string.format("%.1f", tonumber(player:GetAttribute("EffectiveWalkSpeed")) or Config.BaseWalkSpeed)
 end
 
-for _, attribute in ipairs({ "Coins", "BarnIncomeRate", "BarnAnimalCount", "BarnCapacity", "SpeedLevel", "CarryingAnimal", "BarnBank" }) do
+for _, attribute in ipairs({ "Coins", "BarnIncomeRate", "BarnAnimalCount", "BarnCapacity", "SpeedLevel", "TreadmillLevel", "TreadmillGain", "EffectiveWalkSpeed", "CarryingAnimal", "BarnBank" }) do
     player:GetAttributeChangedSignal(attribute):Connect(refresh)
 end
 notifyRemote.OnClientEvent:Connect(showToast)

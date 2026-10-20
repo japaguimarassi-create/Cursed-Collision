@@ -1,4 +1,4 @@
-name: Steal An Animal - Validate and Build
+name: Steal An Animal - Validate, Train, and Build
 
 on:
   pull_request:
@@ -64,6 +64,6 @@ jobs:
       - name: Upload place artifact
         uses: actions/upload-artifact@v4
         with:
-          name: StealAnAnimal-reviewed-r3
+          name: StealAnAnimal-corridor-treadmill-r5
           path: build/StealAnAnimal.rbxl
           if-no-files-found: error

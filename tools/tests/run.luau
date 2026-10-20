@@ -27,9 +27,15 @@ local config = {
     CarrySpeedMinimum = 8,
     CarryWeightPenalty = 0.006,
     CarryPenaltyCap = 0.48,
-    MaxSpeedLevel = 60,
+    MaxTreadmillLevel = 10,
+    BaseTrainingGain = 2,
+    TreadmillGainMultiplier = 1.5,
+    MaxSpeedPoints = 1000000,
+    BaseWalkSpeed = 16,
+    MaxWalkSpeed = 40,
+    SpeedPerPointFactor = 0.35,
     UpgradeBaseCost = 80,
-    UpgradeCostGrowth = 1.13,
+    UpgradeCostGrowth = 1.65,
 }
 
 equal(Rules.StageForAge(0, config).Name, "Baby", "new animal starts as a baby")
@@ -51,8 +57,16 @@ equal(Rules.AnimalIncome(math.huge, 2, config), 0, "infinite income is rejected"
 near(Rules.CarrySpeed(20, 10, config), 18.8, 0.0001, "carrying slows movement")
 equal(Rules.CarrySpeed(20, -1, config), nil, "negative weight rejected")
 equal(Rules.CarrySpeed(20, 0 / 0, config), nil, "NaN weight rejected")
-equal(Rules.UpgradeCost(0, config), 80, "first speed upgrade cost")
-equal(Rules.UpgradeCost(60, config), nil, "maximum speed cannot be upgraded")
-equal(Rules.UpgradeCost(0 / 0, config), nil, "invalid levels cannot be upgraded")
+equal(Rules.UpgradeCost(1, config), 80, "first treadmill upgrade cost")
+equal(Rules.UpgradeCost(2, config), 132, "second treadmill upgrade cost")
+equal(Rules.UpgradeCost(10, config), nil, "maximum treadmill cannot be upgraded")
+equal(Rules.UpgradeCost(0, config), nil, "invalid treadmill level cannot be upgraded")
+equal(Rules.UpgradeCost(0 / 0, config), nil, "NaN treadmill levels cannot be upgraded")
+equal(Rules.TrainingGain(1, config), 2, "basic treadmill adds two speed points each second")
+equal(Rules.TrainingGain(2, config), 3, "level two increases training gain")
+equal(Rules.TrainingGain(10, config), 76, "maximum treadmill gain is bounded and deterministic")
+near(Rules.MoveSpeed(0, config), 16, 0.0001, "untrained character starts at normal walk speed")
+near(Rules.MoveSpeed(100, config), 19.5, 0.0001, "trained speed affects character movement")
+equal(Rules.MoveSpeed(1000000, config), 40, "movement speed obeys the server-side cap")
 
 print("PASS " .. tostring(checks) .. " fresh gameplay rule assertions")
