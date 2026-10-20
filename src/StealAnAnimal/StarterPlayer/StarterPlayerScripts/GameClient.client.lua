@@ -21,19 +21,19 @@ local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("AnimalCatalog"))
 
 local COLORS = {
-    Background = Color3.fromRGB(13, 25, 29),
-    Panel = Color3.fromRGB(20, 39, 43),
-    PanelRaised = Color3.fromRGB(28, 53, 55),
-    Card = Color3.fromRGB(32, 59, 60),
-    CardEdge = Color3.fromRGB(59, 92, 86),
-    Mint = Color3.fromRGB(130, 231, 173),
-    Gold = Color3.fromRGB(255, 207, 105),
-    Cream = Color3.fromRGB(250, 247, 232),
-    Muted = Color3.fromRGB(174, 194, 186),
-    Aqua = Color3.fromRGB(105, 211, 221),
-    Orange = Color3.fromRGB(255, 159, 95),
-    Red = Color3.fromRGB(255, 113, 112),
-    Purple = Color3.fromRGB(196, 162, 255),
+    Background = Color3.fromRGB(20, 34, 48),
+    Panel = Color3.fromRGB(29, 49, 66),
+    PanelRaised = Color3.fromRGB(43, 69, 87),
+    Card = Color3.fromRGB(35, 61, 79),
+    CardEdge = Color3.fromRGB(88, 129, 148),
+    Mint = Color3.fromRGB(83, 235, 125),
+    Gold = Color3.fromRGB(255, 204, 48),
+    Cream = Color3.fromRGB(255, 255, 255),
+    Muted = Color3.fromRGB(190, 208, 218),
+    Aqua = Color3.fromRGB(64, 190, 255),
+    Orange = Color3.fromRGB(255, 132, 46),
+    Red = Color3.fromRGB(255, 67, 77),
+    Purple = Color3.fromRGB(177, 112, 255),
 }
 
 local old = playerGui:FindFirstChild("StealAnAnimalHUD")
