@@ -42,7 +42,7 @@ assert all(token in MAIN for token in ("GiantMushroom", "WetlandPool", "IcePilla
 assert 'CFrame.new(biome.CenterX, -0.5, 0)' in MAIN, "Biome ground must meet the world baseline"
 assert 'Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), -0.12, rng:NextNumber(-20, 20))' in MAIN, "Wild animals must spawn inside the corridor"
 assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must be placed close to the slot surface"
-assert "SwanFoot" in ANIMAL and 'spec.Id ~= "Swan"' in ANIMAL and "chestColor = spec.Id == \"Swan\" and spec.Color" in ANIMAL, "Swan guardian must use its dedicated silhouette without generic duplicated bird parts"
+assert "SwanFoot" in ANIMAL and 'spec.Id ~= "Swan"' in ANIMAL and 'chestColor = spec.Id == "Swan" and spec.Color' in ANIMAL, "Swan guardian must use its dedicated silhouette without generic duplicated bird parts"
 assert "local function releaseBase(player)" in MAIN_FILE and "releaseBase(player)" in MAIN_FILE[MAIN_FILE.find("Players.PlayerRemoving:Connect"):MAIN_FILE.find("for _, player in ipairs(Players:GetPlayers()) do")], "PlayerRemoving must release the assigned farm"
 assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
