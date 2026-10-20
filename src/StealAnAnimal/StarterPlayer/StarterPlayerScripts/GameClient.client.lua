@@ -145,7 +145,7 @@ topConstraint.MaxSize = Vector2.new(760, 128)
 topConstraint.MinSize = Vector2.new(260, 128)
 topConstraint.Parent = top
 
-local title = makeLabel(top, "GameTitle", "STEAL AN ANIMAL", UDim2.new(1, -166, 0, 25), UDim2.new(0, 14, 0, 7), 16, COLORS.Gold, Enum.Font.GothamBlack)
+local title = makeLabel(top, "GameTitle", touchDevice and "STEAL ANIMAL" or "STEAL AN ANIMAL", UDim2.new(1, -166, 0, 25), UDim2.new(0, 14, 0, 7), touchDevice and 12 or 16, COLORS.Gold, Enum.Font.GothamBlack)
 local rebirthBadge = Instance.new("Frame")
 rebirthBadge.Name = "RebirthBadge"
 rebirthBadge.AnchorPoint = Vector2.new(1, 0)
@@ -249,17 +249,17 @@ dockLayout.Padding = UDim.new(0, 5)
 dockLayout.Parent = dock
 
 local function makeDockButton(name, text, order, accent)
-    local button = makeButton(dock, name, text, COLORS.PanelRaised, COLORS.Cream)
+    local button = makeButton(dock, name, text, accent, COLORS.Background)
     button.LayoutOrder = order
     button.Size = UDim2.new(0.2, -6, 1, 0)
-    button.TextSize = 11
-    outline(button, accent, 1.2, 0.2)
+    button.TextSize = touchDevice and 10 or 11
+    outline(button, accent, 1.2, 0.05)
     return button
 end
 
 local barnButton = makeDockButton("OpenBarn", "CELEIRO", 1, COLORS.Mint)
 local collectButton = makeDockButton("Collect", "COLETAR", 2, COLORS.Gold)
-local upgradeButton = makeDockButton("OpenTreadmill", "ESTEIRA", 3, COLORS.Aqua)
+local upgradeButton = makeDockButton("OpenShop", "LOJA", 3, COLORS.Aqua)
 local rebirthButton = makeDockButton("OpenRebirth", "RENASCER", 4, COLORS.Purple)
 local moreButton = makeDockButton("OpenMore", "MAIS", 5, COLORS.Gold)
 
@@ -514,6 +514,8 @@ local function openPanel(kind, preserveConfirmation)
 
     if kind == "More" then
         showListPanel("More", "PROGRESSO E SISTEMA", {
+            { Title = "ÍNDICE ANIMAL", Detail = "Espécies, biomas, raridade e renda-base", Color = COLORS.Mint, Action = function() openPanel("AnimalIndex") end },
+            { Title = "LOJA DE MELHORIAS", Detail = "Compre níveis de esteira usando moedas do jogo", Color = COLORS.Aqua, Action = function() openPanel("Shop") end },
             { Title = "RECOMPENSA DIÁRIA", Detail = "Bônus diário e sequência de 7 dias", Color = COLORS.Gold, Action = function() openPanel("Daily") end },
             { Title = "MISSÕES", Detail = "Quatro objetivos com recompensas permanentes", Color = COLORS.Mint, Action = function() openPanel("Quests") end },
             { Title = "CÓDIGOS", Detail = "Resgate FARMFAMILY, WILDSTART e BARNBOOST", Color = COLORS.Aqua, Action = function() openPanel("Codes") end },
@@ -521,6 +523,16 @@ local function openPanel(kind, preserveConfirmation)
             { Title = "CONFIGURAÇÕES", Detail = "Reduzir efeitos e compactar a interface", Color = COLORS.Orange, Action = function() openPanel("Settings") end },
             { Title = "MAPBOT / DIAGNÓSTICO", Detail = "Verifica fazendas, biomas, guardiões e caminho", Color = COLORS.Aqua, Action = function() openPanel("Diagnostics") end },
         })
+        return
+    elseif kind == "AnimalIndex" then
+        local rows = {}
+        for _, biome in ipairs(Config.Biomes) do
+            table.insert(rows, { Title = string.upper(biome.Name), Detail = "BIOMA " .. tostring(biome.Phase), Color = biome.Accent, Disabled = true })
+            for _, spec in ipairs(Catalog.ForBiome(biome.Id)) do
+                table.insert(rows, { Title = spec.Name .. " • " .. spec.Rarity, Detail = "Renda-base: +" .. formatNumber(spec.Income) .. "/s • Peso: " .. tostring(spec.Weight), Color = spec.Accent, Disabled = true })
+            end
+        end
+        showListPanel("AnimalIndex", "ÍNDICE ANIMAL", rows)
         return
     elseif kind == "Barn" then
         local bank = tonumber(player:GetAttribute("BarnBank")) or 0
@@ -610,8 +622,8 @@ local function openPanel(kind, preserveConfirmation)
         primaryButton.Text = "EXECUTAR MAPBOT"
         primaryButton.BackgroundColor3 = COLORS.Aqua
         return
-    elseif kind == "Treadmill" then
-        modalTitle.Text = "ESTEIRA DE VELOCIDADE"
+    elseif kind == "Treadmill" or kind == "Shop" then
+        modalTitle.Text = kind == "Shop" and "LOJA DE MELHORIAS" or "ESTEIRA DE VELOCIDADE"
         local level = tonumber(player:GetAttribute("TreadmillLevel")) or 1
         local gain = tonumber(player:GetAttribute("TreadmillGain")) or Config.BaseTrainingGain
         local cost = tonumber(player:GetAttribute("TreadmillUpgradeCost")) or 0
@@ -713,7 +725,7 @@ end
 
 barnButton.Activated:Connect(function() openPanel("Barn") end)
 collectButton.Activated:Connect(function() collectRemote:FireServer() end)
-upgradeButton.Activated:Connect(function() openPanel("Treadmill") end)
+upgradeButton.Activated:Connect(function() openPanel("Shop") end)
 rebirthButton.Activated:Connect(function() openPanel("Rebirth") end)
 moreButton.Activated:Connect(function() openPanel("More") end)
 helpButton.Activated:Connect(function() openPanel("Guide") end)
@@ -723,7 +735,7 @@ primaryButton.Activated:Connect(function()
     if activePanel == "Barn" then
         collectRemote:FireServer()
         closeModal()
-    elseif activePanel == "Treadmill" then
+    elseif activePanel == "Treadmill" or activePanel == "Shop" then
         if (tonumber(player:GetAttribute("TreadmillUpgradeCost")) or 0) > 0 then
             upgradeRemote:FireServer()
         end
