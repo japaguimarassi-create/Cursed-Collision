@@ -26,6 +26,7 @@ Projeto Roblox mobile-first inspirado no estilo visual de **Steal An Egg**. O ma
 - [Pesquisa visual de Steal An Egg e especificação do mapa](docs/STEAL_AN_EGG_MAP_RESEARCH_2026-10-20.md)
 - [Pesquisa e especificação do HUD mobile](docs/HUD_DESIGN_RESEARCH_2026-10-20.md)
 - [Bots de QA do Roblox Studio e relatórios automatizados](docs/STUDIO_AUTOMATED_AUDIT.md)
+- [NPCs BotX em jogo e registro de sessão](docs/BOTX_NPC_AUDIT.md)
 - [Simulador de execução e relatório JSON](tools/simulate_studio_run.py)
 - [Manifesto dos backups e estados salvos](docs/SAVE_MANIFEST_2026-10-20.md)
 
@@ -38,10 +39,11 @@ python3 tools/tests/test_map_layout.py
 python3 tools/tests/test_monetization.py
 python3 tools/tests/test_core_reliability.py
 python3 tools/tests/test_studio_audit.py
+python3 tools/tests/test_botx_npc.py
 rojo build default.project.json --output build/StealAnAnimal.rbxl
 python3 tools/simulate_studio_run.py --report artifacts/studio-run-simulation.json --markdown artifacts/studio-run-simulation.md --place build/StealAnAnimal.rbxl
 rojo build default.project.json --output build/StealAnAnimal.rbxl
 python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
 ```
 
-A CI valida sintaxe, regras, mapa, bots de QA, build Rojo, estrutura binária RBXL e simulação determinística do HUD. O relatório JSON/Markdown fica no artefato `StealAnAnimal-simulated-studio-report`. Essa simulação não se apresenta como execução real do Studio; para o teste de engine com clientes simulados, use o plugin descrito em `docs/STUDIO_AUTOMATED_AUDIT.md`. A publicação continua manual e exige confirmação explícita.
+A CI valida sintaxe, regras, mapa, bots de QA do Studio, NPCs observadores BotX, build Rojo, estrutura binária RBXL e simulação determinística do HUD. O relatório JSON/Markdown fica no artefato `StealAnAnimal-simulated-studio-report`. Os NPCs BotX só existem no servidor do jogo enquanto ao menos um jogador real está conectado; a CI do GitHub analisa, testa estruturalmente e compila o código, mas não hospeda uma partida Roblox. A simulação do HUD não se apresenta como execução real do Studio; para o teste de engine com clientes simulados, use o plugin descrito em `docs/STUDIO_AUTOMATED_AUDIT.md`. A publicação continua manual e exige confirmação explícita.
