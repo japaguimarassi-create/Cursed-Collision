@@ -643,6 +643,44 @@ local function buildScenery()
         local sign = createPart(world, biome.Id .. "Sign", Vector3.new(18, 3, 0.5), CFrame.new(biome.CenterX - 63, 10, -0.1), Color3.fromRGB(45, 52, 47), Enum.Material.Wood, nil, false)
         addLabel(sign, biome.Name, "EXPLORE • ROUBE • FUJA", biome.Accent)
 
+        if biome.Id == "Meadow" then
+            for flower = 1, 9 do
+                local x = biome.CenterX + rng:NextNumber(-28, 28)
+                local z = rng:NextNumber(-48, 48)
+                addBall(decorationFolder, "MeadowBloom", Vector3.new(1.8, 0.45, 1.8), Vector3.new(x, 0.18, z), flower % 2 == 0 and Color3.fromRGB(255, 194, 92) or Color3.fromRGB(255, 155, 199), Enum.Material.Neon)
+            end
+        elseif biome.Id == "Forest" then
+            for mushroom = 1, 5 do
+                local x = biome.CenterX + rng:NextNumber(-42, 42)
+                local z = rng:NextNumber(-58, 58)
+                addCylinder(decorationFolder, "MushroomStem", Vector3.new(0.7, 2.2, 0.7), CFrame.new(x, 1.1, z), Color3.fromRGB(235, 222, 194), Enum.Material.SmoothPlastic, false)
+                addBall(decorationFolder, "GiantMushroom", Vector3.new(3.2, 1.1, 3.2), Vector3.new(x, 2.3, z), mushroom % 2 == 0 and Color3.fromRGB(231, 91, 94) or biome.Accent, Enum.Material.SmoothPlastic)
+            end
+        elseif biome.Id == "Wetlands" then
+            for pool = 1, 4 do
+                addBall(decorationFolder, "WetlandPool", Vector3.new(20, 0.18, 14), Vector3.new(biome.CenterX + rng:NextNumber(-46, 46), 0.03, rng:NextNumber(-58, 58)), Color3.fromRGB(70, 180, 184), Enum.Material.Glass)
+            end
+        elseif biome.Id == "Frost" then
+            for pillar = 1, 4 do
+                local x = biome.CenterX + rng:NextNumber(-48, 48)
+                local z = rng:NextNumber(-60, 60)
+                addCylinder(decorationFolder, "IcePillar", Vector3.new(2.2, rng:NextNumber(5, 10), 2.2), CFrame.new(x, 2.8, z), Color3.fromRGB(142, 220, 255), Enum.Material.Ice, false)
+            end
+        elseif biome.Id == "Savanna" then
+            for stone = 1, 5 do
+                local x = biome.CenterX + rng:NextNumber(-48, 48)
+                local z = rng:NextNumber(-58, 58)
+                addBall(decorationFolder, "SavannaBoulder", Vector3.new(rng:NextNumber(4, 8), rng:NextNumber(3, 6), rng:NextNumber(4, 8)), Vector3.new(x, 1.2, z), Color3.fromRGB(174, 143, 78), Enum.Material.Sand)
+            end
+        elseif biome.Id == "Volcano" then
+            for rift = 1, 5 do
+                local x = biome.CenterX + rng:NextNumber(-48, 48)
+                local z = rng:NextNumber(-62, 62)
+                local lava = createPart(decorationFolder, "LavaRift", Vector3.new(rng:NextNumber(7, 16), 0.18, rng:NextNumber(1.2, 2.6)), CFrame.new(x, 0.06, z) * CFrame.Angles(0, math.rad(rng:NextInteger(-35, 35)), 0), Color3.fromRGB(255, 91, 40), Enum.Material.Neon, nil, false)
+                lava.Transparency = 0.08
+            end
+        end
+
         for index = 1, 12 do
             local x = biome.CenterX + rng:NextNumber(-62, 62)
             local z = rng:NextNumber(-76, 76)
