@@ -222,7 +222,11 @@ def main():
         "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua",
         "src/StealAnAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
         "src/StealAnAnimal/ServerScriptService/Main.server.lua",
+        "src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua",
+        "src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua",
+        "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
+        "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
         "src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua",
         "tools/studio-tests/StealAnAnimalAudit.plugin.lua",
@@ -240,8 +244,14 @@ def main():
         config = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/Config.lua")
         catalog = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua")
         rules = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/GameplayRules.lua")
-        server = read_text("src/StealAnAnimal/ServerScriptService/Main.server.lua")
-        client = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
+        main_server = read_text("src/StealAnAnimal/ServerScriptService/Main.server.lua")
+        world_builder = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua")
+        animal_factory = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua")
+        profile_store = read_text("src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua")
+        client_script = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
+        interaction_prompt = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua")
+        server = main_server + world_builder + animal_factory + profile_store
+        client = client_script + interaction_prompt
         studio_server = read_text("src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua")
         studio_client = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua")
         plugin = read_text("tools/studio-tests/StealAnAnimalAudit.plugin.lua")
@@ -249,7 +259,7 @@ def main():
     except OSError as error:
         audit.check("All audited sources are readable", False, error)
         project = {}
-        config = catalog = rules = server = client = studio_server = studio_client = plugin = studio_docs = ""
+        config = catalog = rules = server = client = main_server = world_builder = animal_factory = profile_store = client_script = interaction_prompt = studio_server = studio_client = plugin = studio_docs = ""
 
     ids = sorted(set(re.findall(r'Id\s*=\s*"([A-Za-z0-9]+)"', catalog)))
     biomes = re.findall(r'Id\s*=\s*"([A-Za-z]+)"\s*,\s*Name\s*=', config)
