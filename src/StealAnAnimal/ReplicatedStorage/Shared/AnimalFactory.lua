@@ -137,6 +137,13 @@ function AnimalFactory.new(services)
         if spec.Shape == "Bird" or spec.Shape == "Bluejay" then
             for _, side in ipairs({ -1, 1 }) do
                 ball("Wing", 0.42, 0.78, 1.0, side * 0.82, 1.52, 0.05, spec.Accent)
+                if spec.Id ~= "Swan" and spec.Id ~= "Duckling" then
+                    block("BirdLowerLeg", 0.14, 0.48, 0.14, side * 0.27, 0.32, -0.04, Color3.fromRGB(190, 123, 54))
+                    block("BirdFoot", 0.24, 0.13, 0.40, side * 0.27, 0.12, -0.18, Color3.fromRGB(232, 145, 52))
+                    for toe = 1, 3 do
+                        block("BirdToe", 0.09, 0.09, 0.33, side * (0.27 + (toe - 2) * 0.12), 0.09, -0.43, Color3.fromRGB(231, 157, 62))
+                    end
+                end
             end
             ball("Crest", 0.18, 0.42, 0.18, 0, 2.9, -0.8, spec.Accent)
             if spec.Id == "Hen" then
