@@ -334,6 +334,21 @@ function WorldBuilder.new(services)
                 post.CastShadow = false
                 addBall(world, biome.Id .. "RouteMarkerCap", Vector3.new(1.2, 1.2, 1.2), post.Position + Vector3.new(0, 2.7, 0), biome.Accent, Enum.Material.Neon)
             end
+            local gateX = biome.CenterX - 76
+            for _, side in ipairs({ -1, 1 }) do
+                createPart(world, biome.Id .. "SpeedGatePost", Vector3.new(1.2, 8, 1.2), CFrame.new(gateX, 4, side * 10), biome.Accent, Enum.Material.Metal, nil, false)
+                addBall(world, biome.Id .. "SpeedGateCap", Vector3.new(1.8, 1.8, 1.8), Vector3.new(gateX, 8.6, side * 10), biome.Accent, Enum.Material.Neon)
+            end
+            createPart(world, biome.Id .. "SpeedGateTop", Vector3.new(1.2, 1, 22), CFrame.new(gateX, 8.1, 0), biome.Accent, Enum.Material.Metal, nil, false)
+            local gateBarrier = createPart(world, biome.Id .. "SpeedGateBarrier", Vector3.new(0.35, 5.5, 18), CFrame.new(gateX, 2.75, 0), biome.Accent, Enum.Material.Neon, nil, false)
+            gateBarrier.Transparency = 0.48
+            gateBarrier.CanTouch = false
+            gateBarrier.CanQuery = false
+            gateBarrier:SetAttribute("BiomeId", biome.Id)
+            gateBarrier:SetAttribute("MinimumSpeed", biome.MinSpeed)
+            local gateSign = createPart(world, biome.Id .. "SpeedGateSign", Vector3.new(12, 1.6, 0.4), CFrame.new(gateX, 10, -15), Color3.fromRGB(39, 57, 53), Enum.Material.Wood, nil, false)
+            addLabel(gateSign, "VELOCIDADE MÍNIMA", tostring(biome.MinSpeed) .. " SPEED", biome.Accent, false, 90, 1.4)
+
             local sign = createPart(world, biome.Id .. "Sign", Vector3.new(18, 3, 0.5), CFrame.new(biome.CenterX - 76, 8, -31), Color3.fromRGB(55, 65, 48), Enum.Material.Wood, nil, false)
             addLabel(sign, "FASE " .. tostring(biomeIndex) .. " • " .. biome.Name, "OVOS SELVAGENS • GUARDA-COSTAS", biome.Accent, false, 70, 1.8)
 
