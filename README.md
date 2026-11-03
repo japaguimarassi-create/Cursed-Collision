@@ -4,7 +4,7 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 
 ## Sistemas de jogo
 
-- Corredor de captura com oito biomas, ninhos e ovos decorativos.
+- Mapa com praça quadriculada, oito fazendas em cercados, portal de entrada, corredor de captura, oito biomas, marcos monumentais e ninhos de animais.
 - Oito fazendas em grade 4×2, seis espaços por celeiro e esteiras com melhorias.
 - 49 espécies, cada uma com detalhes anatômicos específicos, quatro estágios de evolução, renda passiva e renda offline limitada; oito espécies de destaque recebem anatomia em camadas, padrões de superfície, cristais de vidro, peças emissivas, filigranas, penas sobrepostas, carapaças segmentadas, galhadas ramificadas, folhagem, caudas múltiplas e juba radial.
 - Sistema visual por raridade: halo geométrico nos pets Míticos ou superiores em estágios avançados; partículas e luz local apenas nos níveis Secreto, Eterno e Divino. Os adornos de raridade não são aplicados aos filhotes comuns.
@@ -15,7 +15,7 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 
 ## Arquitetura revisada
 
-- `ReplicatedStorage/Shared/WorldBuilder.lua`: cenário, fazendas, cercas, esteiras e letreiros.
+- `ReplicatedStorage/Shared/WorldBuilder.lua`: praça quadriculada, portal de rota, transições entre biomas, monumentos temáticos, cenário, fazendas, cercas, esteiras e letreiros. A prévia estática do Workspace contém a mesma estrutura de entrada e os oito marcos.
 - `ReplicatedStorage/Shared/AnimalFactory.lua`: fábrica procedural com anatomia por espécie, camadas de escamas, carapaças, penas, chifres, patas, filigranas e adornos luminosos. O acabamento diferencia plástico, vidro e Neon, com efeitos reservados a estágios/raridades superiores.
 - `ServerScriptService/Services/ProfileStore.lua`: sanitização, bloqueio de sessão e persistência.
 - `StarterPlayerScripts/InteractionPrompt.lua`: interface compacta de interação e tratamento do pressionar/soltar.
