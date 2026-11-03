@@ -93,6 +93,7 @@ def main():
         ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
         ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier" in rules and "StageMultiplier" in rules and "growth ^" in rules),
         ("eight sequential biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Lake"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"', 'Id = "Ocean"', 'Phase = 1, CenterX = 170', 'Phase = 8, CenterX = 1430'))),
+        ("eight server-enforced biome speed gates", all(token in config for token in ("MinSpeed = 10", "MinSpeed = 100", "MinSpeed = 1230", "MinSpeed = 12300", "MinSpeed = 123000", "MinSpeed = 1230000", "MinSpeed = 12300000", "MinSpeed = 123000000", "MaxSpeedPoints = 150000000")) and all(token in main_source for token in ("enforceBiomeSpeedGates", "profile.Speed < biome.MinSpeed", "gateCheckAccumulator >= 0.1")) and all(token in world_builder for token in ("SpeedGatePost", "SpeedGateBarrier", "VELOCIDADE MÍNIMA"))),
         ("preview is retained until runtime map is built", all(token in server_all for token in ('local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")', 'world.Name = "StealAnAnimalRuntimeWorld"', 'previewWorld:Destroy()'))),
         ("rectangular farms and clear corridor", all(token in server_all for token in ("basePositions = {", "CorridorFloor", "CorridorEdge", "PAI PROTETOR"))),
         ("egg-stealing map landmarks and fenced farms", all(token in server_all for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower"))),
@@ -187,7 +188,7 @@ def main():
     if part_count < 300:
         fail(f"static map preview contains only {part_count} Parts")
     preview_text = json.dumps(preview)
-    if not all(token in preview_text for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale", "CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower")):
+    if not all(token in preview_text for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale", "CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "MeadowSpeedGateBarrier", "OceanSpeedGateBarrier")):
         fail("static map preview is missing core map landmarks")
     print(f"Steal An Animal validation passed: {len(animal_ids)} species, {len(checks)} architecture checks, and {part_count} embedded Workspace Parts.")
 
