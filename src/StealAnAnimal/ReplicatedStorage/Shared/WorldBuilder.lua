@@ -85,6 +85,7 @@ function WorldBuilder.new(services)
     local function createTreadmill(base, center)
         local treadmill = Instance.new("Model")
         treadmill.Name = "Treadmill"
+        treadmill:SetAttribute("TreadmillLevel", 1)
         treadmill.Parent = base
         local frontSide = center.Z < 0 and 1 or -1
         local origin = center + Vector3.new(0, 0, frontSide * 9.5)
@@ -101,12 +102,25 @@ function WorldBuilder.new(services)
             local phase = (index - 1) * (Config.TreadmillBeltLength / 7)
             local stripe = createPart(treadmill, "MovingBeltStripe", Vector3.new(5.45, 0.035, 0.11), CFrame.new(origin + Vector3.new(0, 0.86, phase - Config.TreadmillBeltLength / 2)), index % 2 == 0 and Color3.fromRGB(87, 220, 225) or Color3.fromRGB(56, 145, 161), Enum.Material.Neon, nil, false)
             stripe.CastShadow = false
-            table.insert(treadmillStrips, { Part = stripe, Origin = origin, Phase = phase, Length = Config.TreadmillBeltLength })
+            table.insert(treadmillStrips, {
+                Part = stripe,
+                Kind = "Stripe",
+                Origin = origin,
+                Phase = phase,
+                Length = Config.TreadmillBeltLength,
+                Speed = Config.TreadmillBeltSpeed,
+            })
         end
     
         for _, side in ipairs({ -1, 1 }) do
             local roller = createPart(treadmill, "BeltRoller", Vector3.new(0.28, 5.75, 0.28), CFrame.new(origin + Vector3.new(0, 0.88, side * 3.82)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(126, 147, 154), Enum.Material.Metal, Enum.PartType.Cylinder, false)
             roller.CastShadow = false
+            table.insert(treadmillStrips, {
+                Part = roller,
+                Kind = "Roller",
+                BaseCFrame = roller.CFrame,
+                Speed = Config.TreadmillBeltSpeed * 1.4,
+            })
         end
     
         local console = createPart(treadmill, "TreadmillConsole", Vector3.new(2.6, 1.15, 0.38), CFrame.new(origin + Vector3.new(0, 2.05, -3.45)), Color3.fromRGB(35, 67, 72), Enum.Material.Metal, nil, true)
