@@ -360,9 +360,9 @@ function WorldBuilder.new(services)
                 addBall(decorationFolder, "LakeMonumentTop", Vector3.new(4, 4, 4), landmarkPosition + Vector3.new(0, 14, 3), Color3.fromRGB(127, 239, 246), Enum.Material.Neon)
             elseif biome.Id == "Forest" then
                 addBall(decorationFolder, "ForestMonumentDune", Vector3.new(24, 7, 19), landmarkPosition + Vector3.new(0, 2.7, 0), Color3.fromRGB(219, 180, 106), Enum.Material.Sand)
-                addCylinder(decorationFolder, "ForestMonumentStoneArchLeft", Vector3.new(2.4, 13, 2.4), CFrame.new(landmarkPosition + Vector3.new(-7, 6.5, 0)), Color3.fromRGB(160, 124, 77), Enum.Material.Sandstone, false)
-                addCylinder(decorationFolder, "ForestMonumentStoneArchRight", Vector3.new(2.4, 13, 2.4), CFrame.new(landmarkPosition + Vector3.new(7, 6.5, 0)), Color3.fromRGB(160, 124, 77), Enum.Material.Sandstone, false)
-                createPart(decorationFolder, "ForestMonumentStoneArchTop", Vector3.new(16, 2.4, 3), CFrame.new(landmarkPosition + Vector3.new(0, 13, 0)), Color3.fromRGB(180, 143, 91), Enum.Material.Sandstone, nil, false)
+                addCylinder(decorationFolder, "ForestMonumentStoneArchLeft", Vector3.new(2.4, 13, 2.4), CFrame.new(landmarkPosition + Vector3.new(-7, 6.5, 0)), Color3.fromRGB(160, 124, 77), Enum.Material.Rock, false)
+                addCylinder(decorationFolder, "ForestMonumentStoneArchRight", Vector3.new(2.4, 13, 2.4), CFrame.new(landmarkPosition + Vector3.new(7, 6.5, 0)), Color3.fromRGB(160, 124, 77), Enum.Material.Rock, false)
+                createPart(decorationFolder, "ForestMonumentStoneArchTop", Vector3.new(16, 2.4, 3), CFrame.new(landmarkPosition + Vector3.new(0, 13, 0)), Color3.fromRGB(180, 143, 91), Enum.Material.Rock, nil, false)
             elseif biome.Id == "Wetlands" then
                 createPart(decorationFolder, "WetlandsMonumentDeck", Vector3.new(18, 0.8, 14), CFrame.new(landmarkPosition + Vector3.new(0, 0.4, 0)), Color3.fromRGB(119, 88, 60), Enum.Material.WoodPlanks, nil, false)
                 for postSide = -1, 1, 2 do
@@ -383,10 +383,10 @@ function WorldBuilder.new(services)
             elseif biome.Id == "Savanna" then
                 addBall(decorationFolder, "SavannaMonumentFossilBase", Vector3.new(24, 4, 15), landmarkPosition + Vector3.new(0, 1.8, 0), Color3.fromRGB(165, 145, 107), Enum.Material.Rock)
                 for rib = -2, 2 do
-                    local ribPart = addCylinder(decorationFolder, "SavannaMonumentFossilRib", Vector3.new(1.15, 13, 1.15), CFrame.new(landmarkPosition + Vector3.new(rib * 4, 7, 0)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(223, 207, 161), Enum.Material.Bone, false)
+                    local ribPart = addCylinder(decorationFolder, "SavannaMonumentFossilRib", Vector3.new(1.15, 13, 1.15), CFrame.new(landmarkPosition + Vector3.new(rib * 4, 7, 0)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(223, 207, 161), Enum.Material.Rock, false)
                     ribPart.CastShadow = false
                 end
-                addBall(decorationFolder, "SavannaMonumentSkull", Vector3.new(6, 4, 5), landmarkPosition + Vector3.new(13, 3, 0), Color3.fromRGB(223, 207, 161), Enum.Material.Bone)
+                addBall(decorationFolder, "SavannaMonumentSkull", Vector3.new(6, 4, 5), landmarkPosition + Vector3.new(13, 3, 0), Color3.fromRGB(223, 207, 161), Enum.Material.Rock)
             elseif biome.Id == "Volcano" then
                 addBall(decorationFolder, "VolcanoMonumentBase", Vector3.new(25, 15, 23), landmarkPosition + Vector3.new(0, 5.5, 0), Color3.fromRGB(67, 60, 63), Enum.Material.Slate)
                 addBall(decorationFolder, "VolcanoMonumentLava", Vector3.new(10, 3.2, 10), landmarkPosition + Vector3.new(0, 12.5, 0), Color3.fromRGB(255, 100, 40), Enum.Material.Neon)
@@ -442,7 +442,7 @@ function WorldBuilder.new(services)
                     local x = biome.CenterX + rng:NextNumber(-54, 54)
                     local z = (cactus % 2 == 0 and 1 or -1) * rng:NextNumber(34, 62)
                     addCylinder(decorationFolder, "DesertCactus", Vector3.new(1.1, rng:NextNumber(4, 7), 1.1), CFrame.new(x, 2.5, z), Color3.fromRGB(72, 139, 76), Enum.Material.Grass, false)
-                    addBall(decorationFolder, "DesertRock", Vector3.new(4, 2.2, 3.6), Vector3.new(x + 4, 0.7, z + 2), Color3.fromRGB(176, 139, 89), Enum.Material.Sandstone)
+                    addBall(decorationFolder, "DesertRock", Vector3.new(4, 2.2, 3.6), Vector3.new(x + 4, 0.7, z + 2), Color3.fromRGB(176, 139, 89), Enum.Material.Rock)
                 end
             elseif biome.Id == "Wetlands" then
                 for pool = 1, 4 do
@@ -462,7 +462,7 @@ function WorldBuilder.new(services)
                     addBall(decorationFolder, "SavannaBoulder", Vector3.new(rng:NextNumber(4, 8), rng:NextNumber(3, 6), rng:NextNumber(4, 8)), Vector3.new(x, 1.2, z), Color3.fromRGB(140, 124, 93), Enum.Material.Rock)
                 end
                 for fossil = 1, 3 do
-                    createPart(decorationFolder, "PrehistoricFossilRib", Vector3.new(0.8, 5.5, 0.8), CFrame.new(biome.CenterX + (fossil - 2) * 10, 2.75, (fossil % 2 == 0 and 1 or -1) * 42), Color3.fromRGB(220, 203, 157), Enum.Material.Bone, nil, false)
+                    createPart(decorationFolder, "PrehistoricFossilRib", Vector3.new(0.8, 5.5, 0.8), CFrame.new(biome.CenterX + (fossil - 2) * 10, 2.75, (fossil % 2 == 0 and 1 or -1) * 42), Color3.fromRGB(220, 203, 157), Enum.Material.Rock, nil, false)
                 end
             elseif biome.Id == "Ocean" then
                 for bubble = 1, 9 do
