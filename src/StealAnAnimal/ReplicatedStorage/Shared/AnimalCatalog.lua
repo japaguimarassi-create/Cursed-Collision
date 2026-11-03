@@ -39,6 +39,20 @@ local species = {
     { Id = "Whale", Name = "Baleia", Biome = "Ocean", Rarity = "Mítico", Weight = 60, Income = 320, Color = Color3.fromRGB(77, 133, 180), Shape = "Whale", Accent = Color3.fromRGB(160, 218, 239) },
 }
 
+
+    { Id = "ShibaInu", Name = "Shiba Inu", Biome = "Forest", Rarity = "Incomum", Weight = 6, Income = 16, Color = Color3.fromRGB(224, 132, 61), Shape = "Fox", Accent = Color3.fromRGB(250, 225, 181) },
+    { Id = "RedPanda", Name = "Panda-Vermelho", Biome = "Forest", Rarity = "Épico", Weight = 13, Income = 48, Color = Color3.fromRGB(183, 73, 39), Shape = "Mammal", Accent = Color3.fromRGB(250, 229, 193) },
+    { Id = "HouseCat", Name = "Gatinho", Biome = "Meadow", Rarity = "Incomum", Weight = 4, Income = 14, Color = Color3.fromRGB(128, 139, 151), Shape = "Mammal", Accent = Color3.fromRGB(236, 225, 207) },
+    { Id = "Axolotl", Name = "Axolote", Biome = "Wetlands", Rarity = "Épico", Weight = 8, Income = 56, Color = Color3.fromRGB(239, 151, 165), Shape = "Reptile", Accent = Color3.fromRGB(255, 222, 224) },
+    { Id = "Unicorn", Name = "Unicórnio Celestial", Biome = "Frost", Rarity = "Mítico", Weight = 18, Income = 190, Color = Color3.fromRGB(241, 233, 255), Shape = "Mammal", Accent = Color3.fromRGB(174, 126, 230) },
+    { Id = "Koala", Name = "Coalinha", Biome = "Forest", Rarity = "Raro", Weight = 7, Income = 33, Color = Color3.fromRGB(145, 153, 157), Shape = "Bear", Accent = Color3.fromRGB(238, 178, 184) },
+    { Id = "Peacock", Name = "Pavão Real", Biome = "Savanna", Rarity = "Épico", Weight = 12, Income = 78, Color = Color3.fromRGB(36, 112, 139), Shape = "Bird", Accent = Color3.fromRGB(52, 190, 151) },
+    { Id = "Capybara", Name = "Capivara", Biome = "Wetlands", Rarity = "Incomum", Weight = 6, Income = 22, Color = Color3.fromRGB(155, 105, 68), Shape = "Mammal", Accent = Color3.fromRGB(221, 190, 151) },
+    { Id = "Panda", Name = "Panda-Gigante", Biome = "Frost", Rarity = "Épico", Weight = 16, Income = 88, Color = Color3.fromRGB(235, 232, 218), Shape = "Bear", Accent = Color3.fromRGB(42, 39, 37) },
+    { Id = "Raccoon", Name = "Guaxinim", Biome = "Forest", Rarity = "Incomum", Weight = 5, Income = 25, Color = Color3.fromRGB(116, 119, 119), Shape = "Mammal", Accent = Color3.fromRGB(45, 43, 42) },
+    { Id = "Sloth", Name = "Bicho-Preguiça", Biome = "Wetlands", Rarity = "Raro", Weight = 9, Income = 44, Color = Color3.fromRGB(126, 143, 95), Shape = "Mammal", Accent = Color3.fromRGB(205, 185, 143) },
+    { Id = "Cheetah", Name = "Guepardo", Biome = "Savanna", Rarity = "Lendário", Weight = 22, Income = 145, Color = Color3.fromRGB(222, 169, 91), Shape = "Mammal", Accent = Color3.fromRGB(52, 43, 35) },
+
 local byId = {}
 for _, entry in ipairs(species) do
     byId[entry.Id] = table.freeze(entry)
