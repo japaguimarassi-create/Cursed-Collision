@@ -10,6 +10,7 @@ WORLD = (BASE / "ReplicatedStorage/Shared/WorldBuilder.lua").read_text(encoding=
 ANIMAL = (BASE / "ReplicatedStorage/Shared/AnimalFactory.lua").read_text(encoding="utf-8")
 GUARDIAN_CATALOG = (BASE / "ReplicatedStorage/Shared/GuardianCatalog.lua").read_text(encoding="utf-8")
 ANIMATOR = (BASE / "ReplicatedStorage/Shared/AnimalAnimator.lua").read_text(encoding="utf-8")
+ANIMATION_CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua").read_text(encoding="utf-8")
 TREADMILL_ANIMATOR = (BASE / "ReplicatedStorage/Shared/TreadmillAnimator.lua").read_text(encoding="utf-8")
 GUARDIAN_CONTROLLER = (BASE / "ServerScriptService/Services/GuardianController.lua").read_text(encoding="utf-8")
 PROFILE = (BASE / "ServerScriptService/Services/ProfileStore.lua").read_text(encoding="utf-8")
@@ -45,7 +46,7 @@ assert [int(value) for value in re.findall(r'MinSpeed = (\d+)', CONFIG)] == [10,
 
 assert all(token in MAIN for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower")), "Egg-stealing map landmarks, walls, or fenced farms missing"
 assert all(token in MAIN for token in ("createTreadmill", "TrainingZone", "MovingBeltStripe", "UpgradeTreadmill", "TreadmillLevel")), "Functional treadmill and upgrade prompt missing"
-assert "treadmillStrips" in MAIN and "TreadmillBeltSpeed" in CONFIG and "TreadmillAnimator.Step(treadmillStrips" in MAIN_FILE, "Treadmill belt animation missing"
+assert "TreadmillBeltSpeed" in CONFIG and "TreadmillAnimator.Step(treadmillEntries, os.clock())" in ANIMATION_CLIENT, "Client treadmill belt and roller animation missing"
 assert all(token in WORLD for token in ('Kind = "Stripe"', 'Kind = "Roller"', "BaseCFrame = roller.CFrame")), "Treadmill stripes and rollers need separate animation tracks"
 assert "TreadmillAnimator.ApplyLevel(treadmill, level, gain)" in MAIN_FILE, "Treadmill upgrade level must update its live visuals"
 assert "Rules.TrainingGain" in MAIN and "Rules.MoveSpeed" in MAIN and "Config.MaxSpeedPoints" in MAIN, "Training and speed cap must be server-authoritative"
@@ -66,7 +67,9 @@ assert all(token in GUARDIAN_CONTROLLER for token in ("GuardianCatalog.Get(biome
 assert all(token in ANIMAL for token in ("GuardianHenTailFeather", "GuardianSwanWingFeather", "GuardianScorpionTailSegment", "GuardianTigerFlankStripe", "GuardianYetiFurTuft", "GuardianHellhoundHead", "GuardianWhaleBioluminescentSpot", "GuardianTyrannosaurDorsalPlate")), "Guardian-specific 3D anatomy branches are missing"
 assert all(token in ANIMATOR for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "StepInterval = 0.05")), "Animal procedural animation states are missing"
 assert all(token in TREADMILL_ANIMATOR for token in ("Kind == \"Roller\"", "TreadmillLevel", "TrainingGain", "MovingBeltStripe")), "Treadmill belt, roller and upgrade visuals must animate"
-assert "guardianController:SpawnAll()" in MAIN_FILE and "guardianController:Step(deltaTime, carried)" in MAIN_FILE and "animalAnimator:Step(deltaTime)" in MAIN_FILE, "Main server must wire the dedicated animation and guardian services"
+assert "guardianController:SpawnAll()" in MAIN_FILE and "guardianController:Step(deltaTime, carried)" in MAIN_FILE and "AnimalAnimator:Step(deltaTime)" in ANIMATION_CLIENT, "Server guardian AI and client animal animation must both be wired"
+assert all(token in ANIMATION_CLIENT for token in ("Workspace.DescendantAdded", "GetAttributeChangedSignal(\"AnimationState\")", "SetViewPosition", "MaxDistance")), "Client animation discovery and distance culling are missing"
+assert all(token in WORLD for token in ('SetAttribute("TreadmillOrigin"', 'SetAttribute("AnimationPhase"', 'SetAttribute("AnimationSpeed"')), "Treadmill geometry must publish local animation metadata"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
 assert all(token in CLIENT for token in ("TreadmillLevel", "TreadmillGain", "OpenShop", "OpenIndex", "TouchEnabled", "TopDashboard", "QuickActions", "ContextObjective", "ScreenInsets", "Modal", "OpenMore", "MenuList", "Daily", "Quests", "Codes", "Stats", "Settings", "Diagnostics", "AnimalIndex", "ÍNDICE ANIMAL", "LOJA DE MELHORIAS", "mapBotReportRemote.OnClientEvent")), "Responsive HUD or progression panels missing"
