@@ -18,7 +18,7 @@ O catálogo atual tem 29 espécies e o mapa tem oito biomas sequenciais. Cada fa
 
 - Um corredor comprido, com chão central, bordas e paredes laterais para definir o espaço jogável.
 - Oito biomas: Prado Solar, Lago das Asas, Floresta Sussurrante, Pântano Nebuloso, Pico Congelado, Savana Dourada, Vulcão de Âmbar e Abismo Azul.
-- Ninhos decorativos com três ovos em cada bioma, usados como referência visual para o estilo de Steal An Egg.
+- Ninhos decorativos próprios em cada bioma, com leitura visual consistente com a identidade de Steal An Animal.
 - Oito fazendas organizadas em uma grade 4×2, com cercas de dois níveis e entradas.
 - Guardiões grandes e marcos ambientais específicos para diferenciar a progressão de cada bioma.
 
