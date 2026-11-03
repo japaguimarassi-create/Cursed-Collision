@@ -68,7 +68,7 @@ assert all(token in ANIMAL for token in ("GuardianHenTailFeather", "GuardianSwan
 assert all(token in ANIMATOR for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "StepInterval = 0.05")), "Animal procedural animation states are missing"
 assert all(token in TREADMILL_ANIMATOR for token in ("Kind == \"Roller\"", "TreadmillLevel", "TrainingGain", "MovingBeltStripe")), "Treadmill belt, roller and upgrade visuals must animate"
 assert "guardianController:SpawnAll()" in MAIN_FILE and "guardianController:Step(deltaTime, carried)" in MAIN_FILE and "animalAnimator:Step(deltaTime)" in ANIMATION_CLIENT, "Server guardian AI and client animal animation must both be wired"
-assert all(token in ANIMATION_CLIENT for token in ("Workspace.DescendantAdded", "GetAttributeChangedSignal(\"AnimationState\")", "SetViewPosition", "MaxDistance")), "Client animation discovery and distance culling are missing"
+assert all(token in ANIMATION_CLIENT for token in ("Workspace.DescendantAdded", "GetAttributeChangedSignal(\"AnimationState\")", "animalAnimator:SetViewPosition", "animalAnimator:Step(deltaTime)")) and "MaxDistance = 240" in ANIMATOR, "Client animation discovery and distance culling are missing"
 assert all(token in WORLD for token in ('SetAttribute("TreadmillOrigin"', 'SetAttribute("AnimationPhase"', 'SetAttribute("AnimationSpeed"')), "Treadmill geometry must publish local animation metadata"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
