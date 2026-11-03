@@ -110,7 +110,7 @@ def main():
             "Jackalope antler branch", "Spirit panda lantern", "Novafox giant star tail",
             "Sunlion crown mane crystal", "Sky whale ancient tree trunk",
         ))),
-        ("all catalogue species have explicit species-specific visual detail branches", set(re.findall(r'spec\\.Id == "([A-Za-z0-9]+)"', animal_factory)).issuperset(set(re.findall(r'Id = "([A-Za-z0-9]+)"', catalog)))),
+        ("all catalogue species have explicit species-specific visual detail branches", set(re.findall(r'spec\.Id == "([A-Za-z0-9]+)"', animal_factory)).issuperset(set(re.findall(r'Id = "([A-Za-z0-9]+)"', catalog)))),
         ("flagship material layers, rarity tiers, evolved halos, and elite lighting", all(token in animal_factory for token in (
             "local function crystal(", "local function glow(", "local rarityRanks", "model:SetAttribute(\"RarityTier\", rarityTier)",
             "Gecko tail band", "Beetle antenna stem", "Bluejay covert feather", "Jackalope antler jewel",
