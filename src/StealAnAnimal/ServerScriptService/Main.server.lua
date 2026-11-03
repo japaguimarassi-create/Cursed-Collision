@@ -14,7 +14,6 @@ local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("AnimalCatalog"))
 local Rules = require(Shared:WaitForChild("GameplayRules"))
 local GuardianCatalog = require(Shared:WaitForChild("GuardianCatalog"))
-local AnimalAnimatorFactory = require(Shared:WaitForChild("AnimalAnimator"))
 local TreadmillAnimator = require(Shared:WaitForChild("TreadmillAnimator"))
 local GuardianControllerFactory = require(script.Parent:WaitForChild("Services"):WaitForChild("GuardianController"))
 local Store = DataStoreService:GetDataStore(Config.DataStoreName)
@@ -130,7 +129,6 @@ local animalFactory = AnimalFactory.new({
 })
 local createAnimalModel = animalFactory.CreateAnimalModel
 local stageFor = animalFactory.StageFor
-local animalAnimator = AnimalAnimatorFactory.new()
 
 local function incomeFor(animal, now, rebirths)
     local spec = Catalog.Get(animal.Id)
@@ -294,8 +292,7 @@ local function clearCarry(player)
     end
     carried[player] = nil
     if carry.Model then
-        animalAnimator:Remove(carry.Model)
-        if carry.Model.Parent then
+                if carry.Model.Parent then
             carry.Model:Destroy()
         end
     end
@@ -347,7 +344,7 @@ local function renderBarn(player)
                 local model = createAnimalModel(spec, stage.Name, slot.Position + Vector3.new(0, 0.05, 0), false)
                 model.Name = "StoredAnimal_" .. tostring(index)
                 model.Parent = display
-                animalAnimator:Register(model, "Rest")
+                model:SetAttribute("AnimationState", "Rest")
                 local income = math.floor(Rules.AnimalIncome(spec.Income, stageIndex, Config) * Rules.RebirthIncomeMultiplier(profile.Rebirths, Config))
                 addLabel(model.PrimaryPart, spec.Name, stage.DisplayName .. " • +" .. tostring(income) .. "/s", spec.Accent, true, 18, 1.2)
                 slot.Color = spec.Color
@@ -409,7 +406,7 @@ local function spawnWild(spec)
     local position = Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), -0.12, rng:NextNumber(-20, 20))
     local model = createAnimalModel(spec, "Baby", position, false)
     model.Parent = wildlifeFolder
-    animalAnimator:Register(model, "Walk")
+    model:SetAttribute("AnimationState", "Walk")
     local root = model.PrimaryPart
     addLabel(root, spec.Name, spec.Rarity .. " • $" .. tostring(spec.Income) .. "/s base", spec.Accent, true, 18, 1.2)
     local prompt = Instance.new("ProximityPrompt")
@@ -434,7 +431,6 @@ local guardianController = GuardianControllerFactory.new({
     CreateAnimalModel = createAnimalModel,
     AddLabel = addLabel,
     AddBall = addBall,
-    Animator = animalAnimator,
     Notify = notify,
     ClearCarry = clearCarry,
 })
@@ -554,8 +550,7 @@ local function depositAnimal(player, prompt)
     profile.TotalDeposited = math.min(2147483647, (profile.TotalDeposited or 0) + 1)
     carried[player] = nil
     if carry.Model then
-        animalAnimator:Remove(carry.Model)
-        if carry.Model.Parent then
+                if carry.Model.Parent then
             carry.Model:Destroy()
         end
     end
@@ -1092,7 +1087,6 @@ local incomeAccumulator = 0
 RunService.Heartbeat:Connect(function(deltaTime)
     incomeAccumulator += deltaTime
     TreadmillAnimator.Step(treadmillStrips, os.clock(), Config)
-    animalAnimator:Step(deltaTime)
 
     for player, carry in pairs(carried) do
         local character = player.Character
