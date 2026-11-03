@@ -1,11 +1,55 @@
 {
-  "universeId": "5290480963",
+  "game": "Steal An Animal",
+  "universeId": null,
+  "universeIdStatus": "REQUIRES_ROBLOX_STEAL_AN_ANIMAL_UNIVERSE_ID",
   "passes": [
-    {"key":"EliteBonus","name":"Elite Hunter","description":"Dobra as recompensas recebidas de inimigos Elite.","price":49},
-    {"key":"SecondCompanion","name":"Companion Slot+","description":"Permite equipar dois NPCs aliados.","price":79},
-    {"key":"ShopDiscount","name":"Arsenal VIP","description":"Reduz permanentemente os preços da loja em 15%.","price":59},
-    {"key":"VIP","name":"VIP","description":"Bônus permanente de recompensas e cosméticos VIP.","price":99},
-    {"key":"ExtraWaveReward","name":"Wave Master","description":"Aumenta em 25% a recompensa de conclusão das ondas.","price":89},
-    {"key":"StarterCompanion","name":"Companion Prime","description":"Desbloqueia imediatamente o uso do Scout.","price":39}
+    {
+      "key": "DoubleCoins",
+      "name": "2x Coins",
+      "description": "Receba o dobro de moedas ao coletar a renda dos seus animais.",
+      "price": 99,
+      "robloxPassId": null
+    },
+    {
+      "key": "VIPFarm",
+      "name": "VIP Farm",
+      "description": "Desbloqueia uma área VIP exclusiva na fazenda, decoração especial e bônus de renda.",
+      "price": 149,
+      "robloxPassId": null
+    },
+    {
+      "key": "AutoCollect",
+      "name": "Auto Collect",
+      "description": "Coleta automaticamente as moedas produzidas pelos animais da sua fazenda.",
+      "price": 199,
+      "robloxPassId": null
+    },
+    {
+      "key": "ExtraAnimalSlots",
+      "name": "+3 Animal Slots",
+      "description": "Adiciona três espaços permanentes para guardar mais animais no celeiro.",
+      "price": 79,
+      "robloxPassId": null
+    },
+    {
+      "key": "LuckySteal",
+      "name": "Lucky Steal",
+      "description": "Aumenta a chance de sucesso ao tentar roubar animais de outras fazendas.",
+      "price": 129,
+      "robloxPassId": null
+    },
+    {
+      "key": "FastHatch",
+      "name": "Fast Hatch",
+      "description": "Reduz o tempo de abertura dos ovos e acelera a descoberta de novos animais.",
+      "price": 99,
+      "robloxPassId": null
+    }
+  ],
+  "notes": [
+    "These are Steal An Animal products, not Collision Battlestar products.",
+    "Prices are proposed Robux prices and must be confirmed in Roblox Creator Dashboard.",
+    "Pass IDs intentionally remain null until the correct Steal An Animal universe is confirmed.",
+    "Do not reuse Collision Battlestar universe or pass IDs."
   ]
 }
