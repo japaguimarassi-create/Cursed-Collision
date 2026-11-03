@@ -44,11 +44,11 @@
           0
         ],
         "Color": [
-          0.4117647058823529,
-          0.6,
-          0.5333333333333333
+          0.41568627450980394,
+          0.7450980392156863,
+          0.29411764705882354
         ],
-        "Material": "SmoothPlastic"
+        "Material": "Grass"
       }
     },
     {
@@ -61,7 +61,7 @@
         "Size": [
           1500,
           0.35,
-          12
+          16
         ],
         "Position": [
           850,
@@ -69,11 +69,11 @@
           0
         ],
         "Color": [
-          0.8117647058823529,
-          0.7254901960784313,
-          0.5450980392156862
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
@@ -94,11 +94,11 @@
           -28
         ],
         "Color": [
-          1,
-          0.8549019607843137,
-          0.4117647058823529
+          0.9568627450980393,
+          0.7490196078431373,
+          0.43137254901960786
         ],
-        "Material": "Neon"
+        "Material": "SmoothPlastic"
       }
     },
     {
@@ -119,88 +119,94 @@
           28
         ],
         "Color": [
-          1,
-          0.8549019607843137,
-          0.4117647058823529
+          0.9568627450980393,
+          0.7490196078431373,
+          0.43137254901960786
         ],
-        "Material": "Neon"
+        "Material": "SmoothPlastic"
       }
     },
     {
-      "Name": "HubFountainBase",
-      "ClassName": "Part",
-      "Properties": {
-        "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
-        "Size": [
-          18,
-          1,
-          18
-        ],
-        "Position": [
-          0,
-          0,
-          0
-        ],
-        "Color": [
-          0.8823529411764706,
-          0.8666666666666667,
-          0.7450980392156863
-        ],
-        "Material": "Marble"
-      }
-    },
-    {
-      "Name": "HubFountain",
+      "Name": "HubSpawnPadBase",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
+        "Size": [
+          16,
+          0.8,
+          16
+        ],
+        "Position": [
+          0,
+          -0.05,
+          0
+        ],
+        "Color": [
+          0.9058823529411765,
+          0.8666666666666667,
+          0.7450980392156863
+        ],
+        "Material": "SmoothPlastic",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
+      }
+    },
+    {
+      "Name": "HubSpawnPad",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           9,
-          2.2,
+          0.8,
           9
         ],
         "Position": [
           0,
-          1.4,
+          0.55,
           0
         ],
         "Color": [
-          0.35294117647058826,
-          0.7607843137254902,
-          0.8666666666666667
+          0.38823529411764707,
+          0.7764705882352941,
+          0.4823529411764706
         ],
-        "Material": "Glass",
-        "Shape": "Ball"
+        "Material": "SmoothPlastic",
+        "Shape": "Ball",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "FountainGem",
+      "Name": "HubSpawnMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          3.5,
-          3.5,
-          3.5
+          1.2,
+          1.2,
+          1.2
         ],
         "Position": [
           0,
-          4.2,
+          1.25,
           0
         ],
         "Color": [
-          0.45098039215686275,
-          0.9176470588235294,
-          1
+          1,
+          0.8549019607843137,
+          0.4117647058823529
         ],
         "Material": "Neon",
-        "Shape": "Ball"
+        "Shape": "Ball",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -221,9 +227,9 @@
           0
         ],
         "Color": [
-          0.49019607843137253,
-          0.7686274509803922,
-          0.3568627450980392
+          0.3568627450980392,
+          0.6901960784313725,
+          0.2901960784313726
         ],
         "Material": "Grass"
       }
@@ -238,7 +244,7 @@
         "Size": [
           180,
           0.32,
-          56
+          18
         ],
         "Position": [
           170,
@@ -246,95 +252,101 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7803921568627451,
-          0.615686274509804
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
-      "Name": "MeadowGateTop",
+      "Name": "MeadowEntryStrip",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          2,
-          26
+          1.2,
+          0.12,
+          44
         ],
         "Position": [
           94,
-          13,
+          0.12,
           0
         ],
         "Color": [
-          1,
-          0.8549019607843137,
-          0.4117647058823529
+          0.592156862745098,
+          0.8588235294117647,
+          0.4235294117647059
         ],
-        "Material": "Neon"
+        "Material": "Neon",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "MeadowGatePost-1",
+      "Name": "MeadowRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           94,
-          6,
-          -11.5
+          2.4,
+          -24
         ],
         "Color": [
-          1,
-          0.8549019607843137,
-          0.4117647058823529
+          0.592156862745098,
+          0.8588235294117647,
+          0.4235294117647059
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "MeadowGatePost1",
+      "Name": "MeadowRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           94,
-          6,
-          11.5
+          2.4,
+          24
         ],
         "Color": [
-          1,
-          0.8549019607843137,
-          0.4117647058823529
+          0.592156862745098,
+          0.8588235294117647,
+          0.4235294117647059
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "PhaseSign_Meadow",
+      "Name": "MeadowSign",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           18,
           3,
@@ -342,15 +354,17 @@
         ],
         "Position": [
           94,
-          10,
-          -0.1
+          8,
+          -31
         ],
         "Color": [
-          0.17647058823529413,
-          0.20392156862745098,
-          0.1843137254901961
+          0.21568627450980393,
+          0.2549019607843137,
+          0.18823529411764706
         ],
-        "Material": "Wood"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -371,9 +385,9 @@
           0
         ],
         "Color": [
-          0.39215686274509803,
-          0.6941176470588235,
-          0.6823529411764706
+          0.3568627450980392,
+          0.6705882352941176,
+          0.6313725490196078
         ],
         "Material": "Grass"
       }
@@ -388,7 +402,7 @@
         "Size": [
           180,
           0.32,
-          56
+          18
         ],
         "Position": [
           350,
@@ -396,28 +410,28 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7803921568627451,
-          0.615686274509804
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
-      "Name": "LakeGateTop",
+      "Name": "LakeEntryStrip",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          2,
-          26
+          1.2,
+          0.12,
+          44
         ],
         "Position": [
           274,
-          13,
+          0.12,
           0
         ],
         "Color": [
@@ -425,66 +439,72 @@
           0.8862745098039215,
           0.9411764705882353
         ],
-        "Material": "Neon"
+        "Material": "Neon",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "LakeGatePost-1",
+      "Name": "LakeRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           274,
-          6,
-          -11.5
+          2.4,
+          -24
         ],
         "Color": [
           0.4549019607843137,
           0.8862745098039215,
           0.9411764705882353
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "LakeGatePost1",
+      "Name": "LakeRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           274,
-          6,
-          11.5
+          2.4,
+          24
         ],
         "Color": [
           0.4549019607843137,
           0.8862745098039215,
           0.9411764705882353
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "PhaseSign_Lake",
+      "Name": "LakeSign",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           18,
           3,
@@ -492,15 +512,17 @@
         ],
         "Position": [
           274,
-          10,
-          -0.1
+          8,
+          -31
         ],
         "Color": [
-          0.17647058823529413,
-          0.20392156862745098,
-          0.1843137254901961
+          0.21568627450980393,
+          0.2549019607843137,
+          0.18823529411764706
         ],
-        "Material": "Wood"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -521,11 +543,11 @@
           0
         ],
         "Color": [
-          0.25882352941176473,
-          0.5450980392156862,
-          0.3215686274509804
+          0.803921568627451,
+          0.6470588235294118,
+          0.36470588235294116
         ],
-        "Material": "Grass"
+        "Material": "Sand"
       }
     },
     {
@@ -538,7 +560,7 @@
         "Size": [
           180,
           0.32,
-          56
+          18
         ],
         "Position": [
           530,
@@ -546,95 +568,101 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7803921568627451,
-          0.615686274509804
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
-      "Name": "ForestGateTop",
+      "Name": "ForestEntryStrip",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          2,
-          26
+          1.2,
+          0.12,
+          44
         ],
         "Position": [
           454,
-          13,
+          0.12,
           0
         ],
         "Color": [
-          0.6470588235294118,
-          0.8549019607843137,
-          0.4588235294117647
+          0.9568627450980393,
+          0.8,
+          0.4666666666666667
         ],
-        "Material": "Neon"
+        "Material": "Neon",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "ForestGatePost-1",
+      "Name": "ForestRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           454,
-          6,
-          -11.5
+          2.4,
+          -24
         ],
         "Color": [
-          0.6470588235294118,
-          0.8549019607843137,
-          0.4588235294117647
+          0.9568627450980393,
+          0.8,
+          0.4666666666666667
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "ForestGatePost1",
+      "Name": "ForestRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           454,
-          6,
-          11.5
+          2.4,
+          24
         ],
         "Color": [
-          0.6470588235294118,
-          0.8549019607843137,
-          0.4588235294117647
+          0.9568627450980393,
+          0.8,
+          0.4666666666666667
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "PhaseSign_Forest",
+      "Name": "ForestSign",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           18,
           3,
@@ -642,15 +670,17 @@
         ],
         "Position": [
           454,
-          10,
-          -0.1
+          8,
+          -31
         ],
         "Color": [
-          0.17647058823529413,
-          0.20392156862745098,
-          0.1843137254901961
+          0.21568627450980393,
+          0.2549019607843137,
+          0.18823529411764706
         ],
-        "Material": "Wood"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -671,11 +701,11 @@
           0
         ],
         "Color": [
-          0.25882352941176473,
-          0.5215686274509804,
-          0.49019607843137253
+          0.18823529411764706,
+          0.4666666666666667,
+          0.27058823529411763
         ],
-        "Material": "Ground"
+        "Material": "Grass"
       }
     },
     {
@@ -688,7 +718,7 @@
         "Size": [
           180,
           0.32,
-          56
+          18
         ],
         "Position": [
           710,
@@ -696,95 +726,101 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7803921568627451,
-          0.615686274509804
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
-      "Name": "WetlandsGateTop",
+      "Name": "WetlandsEntryStrip",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          2,
-          26
+          1.2,
+          0.12,
+          44
         ],
         "Position": [
           634,
-          13,
+          0.12,
           0
         ],
         "Color": [
           0.4588235294117647,
           0.8901960784313725,
-          0.803921568627451
+          0.49019607843137253
         ],
-        "Material": "Neon"
+        "Material": "Neon",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "WetlandsGatePost-1",
+      "Name": "WetlandsRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           634,
-          6,
-          -11.5
+          2.4,
+          -24
         ],
         "Color": [
           0.4588235294117647,
           0.8901960784313725,
-          0.803921568627451
+          0.49019607843137253
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "WetlandsGatePost1",
+      "Name": "WetlandsRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           634,
-          6,
-          11.5
+          2.4,
+          24
         ],
         "Color": [
           0.4588235294117647,
           0.8901960784313725,
-          0.803921568627451
+          0.49019607843137253
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "PhaseSign_Wetlands",
+      "Name": "WetlandsSign",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           18,
           3,
@@ -792,15 +828,17 @@
         ],
         "Position": [
           634,
-          10,
-          -0.1
+          8,
+          -31
         ],
         "Color": [
-          0.17647058823529413,
-          0.20392156862745098,
-          0.1843137254901961
+          0.21568627450980393,
+          0.2549019607843137,
+          0.18823529411764706
         ],
-        "Material": "Wood"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -838,7 +876,7 @@
         "Size": [
           180,
           0.32,
-          56
+          18
         ],
         "Position": [
           890,
@@ -846,28 +884,28 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7803921568627451,
-          0.615686274509804
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
-      "Name": "FrostGateTop",
+      "Name": "FrostEntryStrip",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          2,
-          26
+          1.2,
+          0.12,
+          44
         ],
         "Position": [
           814,
-          13,
+          0.12,
           0
         ],
         "Color": [
@@ -875,66 +913,72 @@
           0.792156862745098,
           1
         ],
-        "Material": "Neon"
+        "Material": "Neon",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "FrostGatePost-1",
+      "Name": "FrostRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           814,
-          6,
-          -11.5
+          2.4,
+          -24
         ],
         "Color": [
           0.43137254901960786,
           0.792156862745098,
           1
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "FrostGatePost1",
+      "Name": "FrostRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           814,
-          6,
-          11.5
+          2.4,
+          24
         ],
         "Color": [
           0.43137254901960786,
           0.792156862745098,
           1
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "PhaseSign_Frost",
+      "Name": "FrostSign",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           18,
           3,
@@ -942,15 +986,17 @@
         ],
         "Position": [
           814,
-          10,
-          -0.1
+          8,
+          -31
         ],
         "Color": [
-          0.17647058823529413,
-          0.20392156862745098,
-          0.1843137254901961
+          0.21568627450980393,
+          0.2549019607843137,
+          0.18823529411764706
         ],
-        "Material": "Wood"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -971,11 +1017,11 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7098039215686275,
-          0.3568627450980392
+          0.5490196078431373,
+          0.4549019607843137,
+          0.29411764705882354
         ],
-        "Material": "Sand"
+        "Material": "Ground"
       }
     },
     {
@@ -988,7 +1034,7 @@
         "Size": [
           180,
           0.32,
-          56
+          18
         ],
         "Position": [
           1070,
@@ -996,95 +1042,101 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7803921568627451,
-          0.615686274509804
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
-      "Name": "SavannaGateTop",
+      "Name": "SavannaEntryStrip",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          2,
-          26
+          1.2,
+          0.12,
+          44
         ],
         "Position": [
           994,
-          13,
+          0.12,
           0
         ],
         "Color": [
-          1,
-          0.8901960784313725,
+          0.8627450980392157,
+          0.7607843137254902,
           0.5019607843137255
         ],
-        "Material": "Neon"
+        "Material": "Neon",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "SavannaGatePost-1",
+      "Name": "SavannaRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           994,
-          6,
-          -11.5
+          2.4,
+          -24
         ],
         "Color": [
-          1,
-          0.8901960784313725,
+          0.8627450980392157,
+          0.7607843137254902,
           0.5019607843137255
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "SavannaGatePost1",
+      "Name": "SavannaRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           994,
-          6,
-          11.5
+          2.4,
+          24
         ],
         "Color": [
-          1,
-          0.8901960784313725,
+          0.8627450980392157,
+          0.7607843137254902,
           0.5019607843137255
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "PhaseSign_Savanna",
+      "Name": "SavannaSign",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           18,
           3,
@@ -1092,15 +1144,17 @@
         ],
         "Position": [
           994,
-          10,
-          -0.1
+          8,
+          -31
         ],
         "Color": [
-          0.17647058823529413,
-          0.20392156862745098,
-          0.1843137254901961
+          0.21568627450980393,
+          0.2549019607843137,
+          0.18823529411764706
         ],
-        "Material": "Wood"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -1138,7 +1192,7 @@
         "Size": [
           180,
           0.32,
-          56
+          18
         ],
         "Position": [
           1250,
@@ -1146,28 +1200,28 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7803921568627451,
-          0.615686274509804
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
-      "Name": "VolcanoGateTop",
+      "Name": "VolcanoEntryStrip",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          2,
-          26
+          1.2,
+          0.12,
+          44
         ],
         "Position": [
           1174,
-          13,
+          0.12,
           0
         ],
         "Color": [
@@ -1175,66 +1229,72 @@
           0.396078431372549,
           0.21568627450980393
         ],
-        "Material": "Neon"
+        "Material": "Neon",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "VolcanoGatePost-1",
+      "Name": "VolcanoRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           1174,
-          6,
-          -11.5
+          2.4,
+          -24
         ],
         "Color": [
           1,
           0.396078431372549,
           0.21568627450980393
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "VolcanoGatePost1",
+      "Name": "VolcanoRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           1174,
-          6,
-          11.5
+          2.4,
+          24
         ],
         "Color": [
           1,
           0.396078431372549,
           0.21568627450980393
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "PhaseSign_Volcano",
+      "Name": "VolcanoSign",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           18,
           3,
@@ -1242,15 +1302,17 @@
         ],
         "Position": [
           1174,
-          10,
-          -0.1
+          8,
+          -31
         ],
         "Color": [
-          0.17647058823529413,
-          0.20392156862745098,
-          0.1843137254901961
+          0.21568627450980393,
+          0.2549019607843137,
+          0.18823529411764706
         ],
-        "Material": "Wood"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -1288,7 +1350,7 @@
         "Size": [
           180,
           0.32,
-          56
+          18
         ],
         "Position": [
           1430,
@@ -1296,28 +1358,28 @@
           0
         ],
         "Color": [
-          0.8549019607843137,
-          0.7803921568627451,
-          0.615686274509804
+          0.8274509803921568,
+          0.7450980392156863,
+          0.5686274509803921
         ],
-        "Material": "Cobblestone"
+        "Material": "Ground"
       }
     },
     {
-      "Name": "OceanGateTop",
+      "Name": "OceanEntryStrip",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          2,
-          26
+          1.2,
+          0.12,
+          44
         ],
         "Position": [
           1354,
-          13,
+          0.12,
           0
         ],
         "Color": [
@@ -1325,66 +1387,72 @@
           0.8627450980392157,
           0.9803921568627451
         ],
-        "Material": "Neon"
+        "Material": "Neon",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "OceanGatePost-1",
+      "Name": "OceanRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           1354,
-          6,
-          -11.5
+          2.4,
+          -24
         ],
         "Color": [
           0.3254901960784314,
           0.8627450980392157,
           0.9803921568627451
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "OceanGatePost1",
+      "Name": "OceanRouteMarker",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
         "CanCollide": false,
-        "CastShadow": true,
+        "CastShadow": false,
         "Size": [
-          2,
-          14,
-          2
+          0.85,
+          4.8,
+          0.85
         ],
         "Position": [
           1354,
-          6,
-          11.5
+          2.4,
+          24
         ],
         "Color": [
           0.3254901960784314,
           0.8627450980392157,
           0.9803921568627451
         ],
-        "Material": "Neon"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
-      "Name": "PhaseSign_Ocean",
+      "Name": "OceanSign",
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": true,
-        "CastShadow": true,
+        "CanCollide": false,
+        "CastShadow": false,
         "Size": [
           18,
           3,
@@ -1392,15 +1460,17 @@
         ],
         "Position": [
           1354,
-          10,
-          -0.1
+          8,
+          -31
         ],
         "Color": [
-          0.17647058823529413,
-          0.20392156862745098,
-          0.1843137254901961
+          0.21568627450980393,
+          0.2549019607843137,
+          0.18823529411764706
         ],
-        "Material": "Wood"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
       }
     },
     {
@@ -10900,103 +10970,53 @@
               }
             },
             {
-              "Name": "BarnBack",
+              "Name": "FarmBackWall",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  20,
-                  10,
-                  1
+                  28,
+                  5.5,
+                  0.8
                 ],
                 "Position": [
                   -69,
-                  5,
-                  -44
+                  2.75,
+                  -66.8
                 ],
                 "Color": [
-                  0.6823529411764706,
-                  0.4196078431372549,
-                  0.2549019607843137
+                  0.6431372549019608,
+                  0.43529411764705883,
+                  0.2823529411764706
                 ],
                 "Material": "WoodPlanks"
               }
             },
             {
-              "Name": "BarnLeft",
+              "Name": "FarmCanopy",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  -78.5,
-                  5,
-                  -51.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRight",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  -59.5,
-                  5,
-                  -51.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRoof",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  22,
-                  1.2,
-                  17
+                  30,
+                  0.75,
+                  6
                 ],
                 "Position": [
                   -69,
-                  10.3,
-                  -51.5
+                  5.75,
+                  -63.3
                 ],
                 "Color": [
-                  0.4392156862745098,
-                  0.23921568627450981,
-                  0.21176470588235294
+                  0.45098039215686275,
+                  0.2823529411764706,
+                  0.2
                 ],
-                "Material": "Slate"
+                "Material": "Wood"
               }
             },
             {
@@ -11007,14 +11027,14 @@
                 "CanCollide": false,
                 "CastShadow": true,
                 "Size": [
-                  10,
+                  13,
                   2,
-                  0.35
+                  0.4
                 ],
                 "Position": [
                   -69,
-                  7.5,
-                  -59.7
+                  6.7,
+                  -61.8
                 ],
                 "Color": [
                   0.29411764705882354,
@@ -11195,7 +11215,7 @@
                 "Position": [
                   -81,
                   0.35,
-                  -63
+                  -43
                 ],
                 "Color": [
                   0.3058823529411765,
@@ -11220,7 +11240,7 @@
                 "Position": [
                   -57,
                   0.35,
-                  -63
+                  -43
                 ],
                 "Color": [
                   1,
@@ -11249,7 +11269,7 @@
                     "Position": [
                       -69,
                       0.38,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.14901960784313725,
@@ -11274,7 +11294,7 @@
                     "Position": [
                       -69,
                       0.76,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.12549019607843137,
@@ -11299,7 +11319,7 @@
                     "Position": [
                       -72.15,
                       1.14,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.23529411764705882,
@@ -11324,7 +11344,7 @@
                     "Position": [
                       -72.15,
                       1.65,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.3568627450980392,
@@ -11349,7 +11369,7 @@
                     "Position": [
                       -65.85,
                       1.14,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.23529411764705882,
@@ -11374,7 +11394,7 @@
                     "Position": [
                       -65.85,
                       1.65,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.3568627450980392,
@@ -11399,7 +11419,7 @@
                     "Position": [
                       -69,
                       0.86,
-                      -66.1
+                      -47.099999999999994
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -11424,7 +11444,7 @@
                     "Position": [
                       -69,
                       0.86,
-                      -65.07142857142857
+                      -46.07142857142857
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -11449,7 +11469,7 @@
                     "Position": [
                       -69,
                       0.86,
-                      -64.04285714285714
+                      -45.042857142857144
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -11474,7 +11494,7 @@
                     "Position": [
                       -69,
                       0.86,
-                      -63.01428571428571
+                      -44.01428571428571
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -11499,7 +11519,7 @@
                     "Position": [
                       -69,
                       0.86,
-                      -61.98571428571429
+                      -42.98571428571429
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -11524,7 +11544,7 @@
                     "Position": [
                       -69,
                       0.86,
-                      -60.957142857142856
+                      -41.957142857142856
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -11549,7 +11569,7 @@
                     "Position": [
                       -69,
                       0.86,
-                      -59.92857142857143
+                      -40.92857142857143
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -11574,7 +11594,7 @@
                     "Position": [
                       -69,
                       0.88,
-                      -66.32
+                      -47.31999999999999
                     ],
                     "Color": [
                       0.49411764705882355,
@@ -11605,7 +11625,7 @@
                     "Position": [
                       -69,
                       0.88,
-                      -58.68
+                      -39.68
                     ],
                     "Color": [
                       0.49411764705882355,
@@ -11636,7 +11656,7 @@
                     "Position": [
                       -69,
                       2.05,
-                      -65.95
+                      -46.95
                     ],
                     "Color": [
                       0.13725490196078433,
@@ -11661,7 +11681,7 @@
                     "Position": [
                       -69,
                       2.22,
-                      -66.18
+                      -47.18000000000001
                     ],
                     "Color": [
                       0.24313725490196078,
@@ -11686,7 +11706,7 @@
                     "Position": [
                       -69,
                       4.05,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0,
@@ -12074,6 +12094,56 @@
                 "Material": "Wood",
                 "TopSurface": "Smooth",
                 "BottomSurface": "Smooth"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  -82.2,
+                  2.75,
+                  -63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  -55.8,
+                  2.75,
+                  -63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
               }
             }
           ]
@@ -12108,103 +12178,53 @@
               }
             },
             {
-              "Name": "BarnBack",
+              "Name": "FarmBackWall",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  20,
-                  10,
-                  1
+                  28,
+                  5.5,
+                  0.8
                 ],
                 "Position": [
                   -23,
-                  5,
-                  -44
+                  2.75,
+                  -66.8
                 ],
                 "Color": [
-                  0.6823529411764706,
-                  0.4196078431372549,
-                  0.2549019607843137
+                  0.6431372549019608,
+                  0.43529411764705883,
+                  0.2823529411764706
                 ],
                 "Material": "WoodPlanks"
               }
             },
             {
-              "Name": "BarnLeft",
+              "Name": "FarmCanopy",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  -32.5,
-                  5,
-                  -51.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRight",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  -13.5,
-                  5,
-                  -51.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRoof",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  22,
-                  1.2,
-                  17
+                  30,
+                  0.75,
+                  6
                 ],
                 "Position": [
                   -23,
-                  10.3,
-                  -51.5
+                  5.75,
+                  -63.3
                 ],
                 "Color": [
-                  0.4392156862745098,
-                  0.23921568627450981,
-                  0.21176470588235294
+                  0.45098039215686275,
+                  0.2823529411764706,
+                  0.2
                 ],
-                "Material": "Slate"
+                "Material": "Wood"
               }
             },
             {
@@ -12215,14 +12235,14 @@
                 "CanCollide": false,
                 "CastShadow": true,
                 "Size": [
-                  10,
+                  13,
                   2,
-                  0.35
+                  0.4
                 ],
                 "Position": [
                   -23,
-                  7.5,
-                  -59.7
+                  6.7,
+                  -61.8
                 ],
                 "Color": [
                   0.29411764705882354,
@@ -12403,7 +12423,7 @@
                 "Position": [
                   -35,
                   0.35,
-                  -63
+                  -43
                 ],
                 "Color": [
                   0.3058823529411765,
@@ -12428,7 +12448,7 @@
                 "Position": [
                   -11,
                   0.35,
-                  -63
+                  -43
                 ],
                 "Color": [
                   1,
@@ -12457,7 +12477,7 @@
                     "Position": [
                       -23,
                       0.38,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.14901960784313725,
@@ -12482,7 +12502,7 @@
                     "Position": [
                       -23,
                       0.76,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.12549019607843137,
@@ -12507,7 +12527,7 @@
                     "Position": [
                       -26.15,
                       1.14,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.23529411764705882,
@@ -12532,7 +12552,7 @@
                     "Position": [
                       -26.15,
                       1.65,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.3568627450980392,
@@ -12557,7 +12577,7 @@
                     "Position": [
                       -19.85,
                       1.14,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.23529411764705882,
@@ -12582,7 +12602,7 @@
                     "Position": [
                       -19.85,
                       1.65,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.3568627450980392,
@@ -12607,7 +12627,7 @@
                     "Position": [
                       -23,
                       0.86,
-                      -66.1
+                      -47.099999999999994
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -12632,7 +12652,7 @@
                     "Position": [
                       -23,
                       0.86,
-                      -65.07142857142857
+                      -46.07142857142857
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -12657,7 +12677,7 @@
                     "Position": [
                       -23,
                       0.86,
-                      -64.04285714285714
+                      -45.042857142857144
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -12682,7 +12702,7 @@
                     "Position": [
                       -23,
                       0.86,
-                      -63.01428571428571
+                      -44.01428571428571
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -12707,7 +12727,7 @@
                     "Position": [
                       -23,
                       0.86,
-                      -61.98571428571429
+                      -42.98571428571429
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -12732,7 +12752,7 @@
                     "Position": [
                       -23,
                       0.86,
-                      -60.957142857142856
+                      -41.957142857142856
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -12757,7 +12777,7 @@
                     "Position": [
                       -23,
                       0.86,
-                      -59.92857142857143
+                      -40.92857142857143
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -12782,7 +12802,7 @@
                     "Position": [
                       -23,
                       0.88,
-                      -66.32
+                      -47.31999999999999
                     ],
                     "Color": [
                       0.49411764705882355,
@@ -12813,7 +12833,7 @@
                     "Position": [
                       -23,
                       0.88,
-                      -58.68
+                      -39.68
                     ],
                     "Color": [
                       0.49411764705882355,
@@ -12844,7 +12864,7 @@
                     "Position": [
                       -23,
                       2.05,
-                      -65.95
+                      -46.95
                     ],
                     "Color": [
                       0.13725490196078433,
@@ -12869,7 +12889,7 @@
                     "Position": [
                       -23,
                       2.22,
-                      -66.18
+                      -47.18000000000001
                     ],
                     "Color": [
                       0.24313725490196078,
@@ -12894,7 +12914,7 @@
                     "Position": [
                       -23,
                       4.05,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0,
@@ -13283,6 +13303,56 @@
                 "TopSurface": "Smooth",
                 "BottomSurface": "Smooth"
               }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  -36.2,
+                  2.75,
+                  -63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  -9.8,
+                  2.75,
+                  -63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
             }
           ]
         },
@@ -13316,103 +13386,53 @@
               }
             },
             {
-              "Name": "BarnBack",
+              "Name": "FarmBackWall",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  20,
-                  10,
-                  1
+                  28,
+                  5.5,
+                  0.8
                 ],
                 "Position": [
                   23,
-                  5,
-                  -44
+                  2.75,
+                  -66.8
                 ],
                 "Color": [
-                  0.6823529411764706,
-                  0.4196078431372549,
-                  0.2549019607843137
+                  0.6431372549019608,
+                  0.43529411764705883,
+                  0.2823529411764706
                 ],
                 "Material": "WoodPlanks"
               }
             },
             {
-              "Name": "BarnLeft",
+              "Name": "FarmCanopy",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  13.5,
-                  5,
-                  -51.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRight",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  32.5,
-                  5,
-                  -51.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRoof",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  22,
-                  1.2,
-                  17
+                  30,
+                  0.75,
+                  6
                 ],
                 "Position": [
                   23,
-                  10.3,
-                  -51.5
+                  5.75,
+                  -63.3
                 ],
                 "Color": [
-                  0.4392156862745098,
-                  0.23921568627450981,
-                  0.21176470588235294
+                  0.45098039215686275,
+                  0.2823529411764706,
+                  0.2
                 ],
-                "Material": "Slate"
+                "Material": "Wood"
               }
             },
             {
@@ -13423,14 +13443,14 @@
                 "CanCollide": false,
                 "CastShadow": true,
                 "Size": [
-                  10,
+                  13,
                   2,
-                  0.35
+                  0.4
                 ],
                 "Position": [
                   23,
-                  7.5,
-                  -59.7
+                  6.7,
+                  -61.8
                 ],
                 "Color": [
                   0.29411764705882354,
@@ -13611,7 +13631,7 @@
                 "Position": [
                   11,
                   0.35,
-                  -63
+                  -43
                 ],
                 "Color": [
                   0.3058823529411765,
@@ -13636,7 +13656,7 @@
                 "Position": [
                   35,
                   0.35,
-                  -63
+                  -43
                 ],
                 "Color": [
                   1,
@@ -13665,7 +13685,7 @@
                     "Position": [
                       23,
                       0.38,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.14901960784313725,
@@ -13690,7 +13710,7 @@
                     "Position": [
                       23,
                       0.76,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.12549019607843137,
@@ -13715,7 +13735,7 @@
                     "Position": [
                       19.85,
                       1.14,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.23529411764705882,
@@ -13740,7 +13760,7 @@
                     "Position": [
                       19.85,
                       1.65,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.3568627450980392,
@@ -13765,7 +13785,7 @@
                     "Position": [
                       26.15,
                       1.14,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.23529411764705882,
@@ -13790,7 +13810,7 @@
                     "Position": [
                       26.15,
                       1.65,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.3568627450980392,
@@ -13815,7 +13835,7 @@
                     "Position": [
                       23,
                       0.86,
-                      -66.1
+                      -47.099999999999994
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -13840,7 +13860,7 @@
                     "Position": [
                       23,
                       0.86,
-                      -65.07142857142857
+                      -46.07142857142857
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -13865,7 +13885,7 @@
                     "Position": [
                       23,
                       0.86,
-                      -64.04285714285714
+                      -45.042857142857144
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -13890,7 +13910,7 @@
                     "Position": [
                       23,
                       0.86,
-                      -63.01428571428571
+                      -44.01428571428571
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -13915,7 +13935,7 @@
                     "Position": [
                       23,
                       0.86,
-                      -61.98571428571429
+                      -42.98571428571429
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -13940,7 +13960,7 @@
                     "Position": [
                       23,
                       0.86,
-                      -60.957142857142856
+                      -41.957142857142856
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -13965,7 +13985,7 @@
                     "Position": [
                       23,
                       0.86,
-                      -59.92857142857143
+                      -40.92857142857143
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -13990,7 +14010,7 @@
                     "Position": [
                       23,
                       0.88,
-                      -66.32
+                      -47.31999999999999
                     ],
                     "Color": [
                       0.49411764705882355,
@@ -14021,7 +14041,7 @@
                     "Position": [
                       23,
                       0.88,
-                      -58.68
+                      -39.68
                     ],
                     "Color": [
                       0.49411764705882355,
@@ -14052,7 +14072,7 @@
                     "Position": [
                       23,
                       2.05,
-                      -65.95
+                      -46.95
                     ],
                     "Color": [
                       0.13725490196078433,
@@ -14077,7 +14097,7 @@
                     "Position": [
                       23,
                       2.22,
-                      -66.18
+                      -47.18000000000001
                     ],
                     "Color": [
                       0.24313725490196078,
@@ -14102,7 +14122,7 @@
                     "Position": [
                       23,
                       4.05,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0,
@@ -14491,6 +14511,56 @@
                 "TopSurface": "Smooth",
                 "BottomSurface": "Smooth"
               }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  9.8,
+                  2.75,
+                  -63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  36.2,
+                  2.75,
+                  -63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
             }
           ]
         },
@@ -14524,103 +14594,53 @@
               }
             },
             {
-              "Name": "BarnBack",
+              "Name": "FarmBackWall",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  20,
-                  10,
-                  1
+                  28,
+                  5.5,
+                  0.8
                 ],
                 "Position": [
                   69,
-                  5,
-                  -44
+                  2.75,
+                  -66.8
                 ],
                 "Color": [
-                  0.6823529411764706,
-                  0.4196078431372549,
-                  0.2549019607843137
+                  0.6431372549019608,
+                  0.43529411764705883,
+                  0.2823529411764706
                 ],
                 "Material": "WoodPlanks"
               }
             },
             {
-              "Name": "BarnLeft",
+              "Name": "FarmCanopy",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  59.5,
-                  5,
-                  -51.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRight",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  78.5,
-                  5,
-                  -51.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRoof",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  22,
-                  1.2,
-                  17
+                  30,
+                  0.75,
+                  6
                 ],
                 "Position": [
                   69,
-                  10.3,
-                  -51.5
+                  5.75,
+                  -63.3
                 ],
                 "Color": [
-                  0.4392156862745098,
-                  0.23921568627450981,
-                  0.21176470588235294
+                  0.45098039215686275,
+                  0.2823529411764706,
+                  0.2
                 ],
-                "Material": "Slate"
+                "Material": "Wood"
               }
             },
             {
@@ -14631,14 +14651,14 @@
                 "CanCollide": false,
                 "CastShadow": true,
                 "Size": [
-                  10,
+                  13,
                   2,
-                  0.35
+                  0.4
                 ],
                 "Position": [
                   69,
-                  7.5,
-                  -59.7
+                  6.7,
+                  -61.8
                 ],
                 "Color": [
                   0.29411764705882354,
@@ -14819,7 +14839,7 @@
                 "Position": [
                   57,
                   0.35,
-                  -63
+                  -43
                 ],
                 "Color": [
                   0.3058823529411765,
@@ -14844,7 +14864,7 @@
                 "Position": [
                   81,
                   0.35,
-                  -63
+                  -43
                 ],
                 "Color": [
                   1,
@@ -14873,7 +14893,7 @@
                     "Position": [
                       69,
                       0.38,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.14901960784313725,
@@ -14898,7 +14918,7 @@
                     "Position": [
                       69,
                       0.76,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.12549019607843137,
@@ -14923,7 +14943,7 @@
                     "Position": [
                       65.85,
                       1.14,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.23529411764705882,
@@ -14948,7 +14968,7 @@
                     "Position": [
                       65.85,
                       1.65,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.3568627450980392,
@@ -14973,7 +14993,7 @@
                     "Position": [
                       72.15,
                       1.14,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.23529411764705882,
@@ -14998,7 +15018,7 @@
                     "Position": [
                       72.15,
                       1.65,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0.3568627450980392,
@@ -15023,7 +15043,7 @@
                     "Position": [
                       69,
                       0.86,
-                      -66.1
+                      -47.099999999999994
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -15048,7 +15068,7 @@
                     "Position": [
                       69,
                       0.86,
-                      -65.07142857142857
+                      -46.07142857142857
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -15073,7 +15093,7 @@
                     "Position": [
                       69,
                       0.86,
-                      -64.04285714285714
+                      -45.042857142857144
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -15098,7 +15118,7 @@
                     "Position": [
                       69,
                       0.86,
-                      -63.01428571428571
+                      -44.01428571428571
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -15123,7 +15143,7 @@
                     "Position": [
                       69,
                       0.86,
-                      -61.98571428571429
+                      -42.98571428571429
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -15148,7 +15168,7 @@
                     "Position": [
                       69,
                       0.86,
-                      -60.957142857142856
+                      -41.957142857142856
                     ],
                     "Color": [
                       0.3411764705882353,
@@ -15173,7 +15193,7 @@
                     "Position": [
                       69,
                       0.86,
-                      -59.92857142857143
+                      -40.92857142857143
                     ],
                     "Color": [
                       0.2196078431372549,
@@ -15198,7 +15218,7 @@
                     "Position": [
                       69,
                       0.88,
-                      -66.32
+                      -47.31999999999999
                     ],
                     "Color": [
                       0.49411764705882355,
@@ -15229,7 +15249,7 @@
                     "Position": [
                       69,
                       0.88,
-                      -58.68
+                      -39.68
                     ],
                     "Color": [
                       0.49411764705882355,
@@ -15260,7 +15280,7 @@
                     "Position": [
                       69,
                       2.05,
-                      -65.95
+                      -46.95
                     ],
                     "Color": [
                       0.13725490196078433,
@@ -15285,7 +15305,7 @@
                     "Position": [
                       69,
                       2.22,
-                      -66.18
+                      -47.18000000000001
                     ],
                     "Color": [
                       0.24313725490196078,
@@ -15310,7 +15330,7 @@
                     "Position": [
                       69,
                       4.05,
-                      -62.5
+                      -43.5
                     ],
                     "Color": [
                       0,
@@ -15699,6 +15719,56 @@
                 "TopSurface": "Smooth",
                 "BottomSurface": "Smooth"
               }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  55.8,
+                  2.75,
+                  -63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  82.2,
+                  2.75,
+                  -63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
             }
           ]
         },
@@ -15732,103 +15802,53 @@
               }
             },
             {
-              "Name": "BarnBack",
+              "Name": "FarmBackWall",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  20,
-                  10,
-                  1
+                  28,
+                  5.5,
+                  0.8
                 ],
                 "Position": [
                   -69,
-                  5,
-                  62
+                  2.75,
+                  66.8
                 ],
                 "Color": [
-                  0.6823529411764706,
-                  0.4196078431372549,
-                  0.2549019607843137
+                  0.6431372549019608,
+                  0.43529411764705883,
+                  0.2823529411764706
                 ],
                 "Material": "WoodPlanks"
               }
             },
             {
-              "Name": "BarnLeft",
+              "Name": "FarmCanopy",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  -78.5,
-                  5,
-                  54.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRight",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  -59.5,
-                  5,
-                  54.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRoof",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  22,
-                  1.2,
-                  17
+                  30,
+                  0.75,
+                  6
                 ],
                 "Position": [
                   -69,
-                  10.3,
-                  54.5
+                  5.75,
+                  63.3
                 ],
                 "Color": [
-                  0.4392156862745098,
-                  0.23921568627450981,
-                  0.21176470588235294
+                  0.45098039215686275,
+                  0.2823529411764706,
+                  0.2
                 ],
-                "Material": "Slate"
+                "Material": "Wood"
               }
             },
             {
@@ -15839,14 +15859,14 @@
                 "CanCollide": false,
                 "CastShadow": true,
                 "Size": [
-                  10,
+                  13,
                   2,
-                  0.35
+                  0.4
                 ],
                 "Position": [
                   -69,
-                  7.5,
-                  46.3
+                  6.7,
+                  61.8
                 ],
                 "Color": [
                   0.29411764705882354,
@@ -16907,6 +16927,56 @@
                 "TopSurface": "Smooth",
                 "BottomSurface": "Smooth"
               }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  -82.2,
+                  2.75,
+                  63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  -55.8,
+                  2.75,
+                  63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
             }
           ]
         },
@@ -16940,103 +17010,53 @@
               }
             },
             {
-              "Name": "BarnBack",
+              "Name": "FarmBackWall",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  20,
-                  10,
-                  1
+                  28,
+                  5.5,
+                  0.8
                 ],
                 "Position": [
                   -23,
-                  5,
-                  62
+                  2.75,
+                  66.8
                 ],
                 "Color": [
-                  0.6823529411764706,
-                  0.4196078431372549,
-                  0.2549019607843137
+                  0.6431372549019608,
+                  0.43529411764705883,
+                  0.2823529411764706
                 ],
                 "Material": "WoodPlanks"
               }
             },
             {
-              "Name": "BarnLeft",
+              "Name": "FarmCanopy",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  -32.5,
-                  5,
-                  54.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRight",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  -13.5,
-                  5,
-                  54.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRoof",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  22,
-                  1.2,
-                  17
+                  30,
+                  0.75,
+                  6
                 ],
                 "Position": [
                   -23,
-                  10.3,
-                  54.5
+                  5.75,
+                  63.3
                 ],
                 "Color": [
-                  0.4392156862745098,
-                  0.23921568627450981,
-                  0.21176470588235294
+                  0.45098039215686275,
+                  0.2823529411764706,
+                  0.2
                 ],
-                "Material": "Slate"
+                "Material": "Wood"
               }
             },
             {
@@ -17047,14 +17067,14 @@
                 "CanCollide": false,
                 "CastShadow": true,
                 "Size": [
-                  10,
+                  13,
                   2,
-                  0.35
+                  0.4
                 ],
                 "Position": [
                   -23,
-                  7.5,
-                  46.3
+                  6.7,
+                  61.8
                 ],
                 "Color": [
                   0.29411764705882354,
@@ -18115,6 +18135,56 @@
                 "TopSurface": "Smooth",
                 "BottomSurface": "Smooth"
               }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  -36.2,
+                  2.75,
+                  63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  -9.8,
+                  2.75,
+                  63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
             }
           ]
         },
@@ -18148,103 +18218,53 @@
               }
             },
             {
-              "Name": "BarnBack",
+              "Name": "FarmBackWall",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  20,
-                  10,
-                  1
+                  28,
+                  5.5,
+                  0.8
                 ],
                 "Position": [
                   23,
-                  5,
-                  62
+                  2.75,
+                  66.8
                 ],
                 "Color": [
-                  0.6823529411764706,
-                  0.4196078431372549,
-                  0.2549019607843137
+                  0.6431372549019608,
+                  0.43529411764705883,
+                  0.2823529411764706
                 ],
                 "Material": "WoodPlanks"
               }
             },
             {
-              "Name": "BarnLeft",
+              "Name": "FarmCanopy",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  13.5,
-                  5,
-                  54.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRight",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  32.5,
-                  5,
-                  54.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRoof",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  22,
-                  1.2,
-                  17
+                  30,
+                  0.75,
+                  6
                 ],
                 "Position": [
                   23,
-                  10.3,
-                  54.5
+                  5.75,
+                  63.3
                 ],
                 "Color": [
-                  0.4392156862745098,
-                  0.23921568627450981,
-                  0.21176470588235294
+                  0.45098039215686275,
+                  0.2823529411764706,
+                  0.2
                 ],
-                "Material": "Slate"
+                "Material": "Wood"
               }
             },
             {
@@ -18255,14 +18275,14 @@
                 "CanCollide": false,
                 "CastShadow": true,
                 "Size": [
-                  10,
+                  13,
                   2,
-                  0.35
+                  0.4
                 ],
                 "Position": [
                   23,
-                  7.5,
-                  46.3
+                  6.7,
+                  61.8
                 ],
                 "Color": [
                   0.29411764705882354,
@@ -19323,6 +19343,56 @@
                 "TopSurface": "Smooth",
                 "BottomSurface": "Smooth"
               }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  9.8,
+                  2.75,
+                  63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  36.2,
+                  2.75,
+                  63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
             }
           ]
         },
@@ -19356,103 +19426,53 @@
               }
             },
             {
-              "Name": "BarnBack",
+              "Name": "FarmBackWall",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  20,
-                  10,
-                  1
+                  28,
+                  5.5,
+                  0.8
                 ],
                 "Position": [
                   69,
-                  5,
-                  62
+                  2.75,
+                  66.8
                 ],
                 "Color": [
-                  0.6823529411764706,
-                  0.4196078431372549,
-                  0.2549019607843137
+                  0.6431372549019608,
+                  0.43529411764705883,
+                  0.2823529411764706
                 ],
                 "Material": "WoodPlanks"
               }
             },
             {
-              "Name": "BarnLeft",
+              "Name": "FarmCanopy",
               "ClassName": "Part",
               "Properties": {
                 "Anchored": true,
                 "CanCollide": true,
                 "CastShadow": true,
                 "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  59.5,
-                  5,
-                  54.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRight",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  1,
-                  10,
-                  15
-                ],
-                "Position": [
-                  78.5,
-                  5,
-                  54.5
-                ],
-                "Color": [
-                  0.7686274509803922,
-                  0.5176470588235295,
-                  0.3176470588235294
-                ],
-                "Material": "WoodPlanks"
-              }
-            },
-            {
-              "Name": "BarnRoof",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": true,
-                "CanCollide": true,
-                "CastShadow": true,
-                "Size": [
-                  22,
-                  1.2,
-                  17
+                  30,
+                  0.75,
+                  6
                 ],
                 "Position": [
                   69,
-                  10.3,
-                  54.5
+                  5.75,
+                  63.3
                 ],
                 "Color": [
-                  0.4392156862745098,
-                  0.23921568627450981,
-                  0.21176470588235294
+                  0.45098039215686275,
+                  0.2823529411764706,
+                  0.2
                 ],
-                "Material": "Slate"
+                "Material": "Wood"
               }
             },
             {
@@ -19463,14 +19483,14 @@
                 "CanCollide": false,
                 "CastShadow": true,
                 "Size": [
-                  10,
+                  13,
                   2,
-                  0.35
+                  0.4
                 ],
                 "Position": [
                   69,
-                  7.5,
-                  46.3
+                  6.7,
+                  61.8
                 ],
                 "Color": [
                   0.29411764705882354,
@@ -20530,6 +20550,56 @@
                 "Material": "Wood",
                 "TopSurface": "Smooth",
                 "BottomSurface": "Smooth"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  55.8,
+                  2.75,
+                  63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
+              }
+            },
+            {
+              "Name": "FarmCanopyPost",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  0.7,
+                  5.5,
+                  0.7
+                ],
+                "Position": [
+                  82.2,
+                  2.75,
+                  63.3
+                ],
+                "Color": [
+                  0.4392156862745098,
+                  0.28627450980392155,
+                  0.18823529411764706
+                ],
+                "Material": "Wood"
               }
             }
           ]
@@ -25324,22 +25394,22 @@
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": false,
+        "CanCollide": true,
         "CastShadow": true,
         "Size": [
           1500,
-          18,
+          20,
           2
         ],
         "Position": [
           850,
-          8.5,
+          9.5,
           -86
         ],
         "Color": [
-          0.7607843137254902,
-          0.49411764705882355,
-          0.3254901960784314
+          0.7215686274509804,
+          0.4666666666666667,
+          0.2823529411764706
         ],
         "Material": "Brick",
         "TopSurface": "Smooth",
@@ -25355,18 +25425,18 @@
         "CastShadow": true,
         "Size": [
           1500,
-          0.65,
+          0.8,
           2.4
         ],
         "Position": [
           850,
-          17.8,
+          19.9,
           -86
         ],
         "Color": [
-          0.9215686274509803,
-          0.6941176470588235,
-          0.403921568627451
+          0.9098039215686274,
+          0.6784313725490196,
+          0.4392156862745098
         ],
         "Material": "WoodPlanks",
         "TopSurface": "Smooth",
@@ -25378,22 +25448,22 @@
       "ClassName": "Part",
       "Properties": {
         "Anchored": true,
-        "CanCollide": false,
+        "CanCollide": true,
         "CastShadow": true,
         "Size": [
           1500,
-          18,
+          20,
           2
         ],
         "Position": [
           850,
-          8.5,
+          9.5,
           86
         ],
         "Color": [
-          0.7607843137254902,
-          0.49411764705882355,
-          0.3254901960784314
+          0.7215686274509804,
+          0.4666666666666667,
+          0.2823529411764706
         ],
         "Material": "Brick",
         "TopSurface": "Smooth",
@@ -25409,149 +25479,22 @@
         "CastShadow": true,
         "Size": [
           1500,
-          0.65,
+          0.8,
           2.4
         ],
         "Position": [
           850,
-          17.8,
+          19.9,
           86
         ],
         "Color": [
-          0.9215686274509803,
-          0.6941176470588235,
-          0.403921568627451
+          0.9098039215686274,
+          0.6784313725490196,
+          0.4392156862745098
         ],
         "Material": "WoodPlanks",
         "TopSurface": "Smooth",
         "BottomSurface": "Smooth"
-      }
-    },
-    {
-      "Name": "RouteStartArchPost",
-      "ClassName": "Part",
-      "Properties": {
-        "Anchored": true,
-        "CanCollide": false,
-        "CastShadow": false,
-        "Size": [
-          2.4,
-          15,
-          2.4
-        ],
-        "Position": [
-          68,
-          7.5,
-          -14
-        ],
-        "Color": [
-          1,
-          0.8196078431372549,
-          0.3568627450980392
-        ],
-        "Material": "Metal"
-      }
-    },
-    {
-      "Name": "RouteStartArchPost",
-      "ClassName": "Part",
-      "Properties": {
-        "Anchored": true,
-        "CanCollide": false,
-        "CastShadow": false,
-        "Size": [
-          2.4,
-          15,
-          2.4
-        ],
-        "Position": [
-          68,
-          7.5,
-          14
-        ],
-        "Color": [
-          1,
-          0.8196078431372549,
-          0.3568627450980392
-        ],
-        "Material": "Metal"
-      }
-    },
-    {
-      "Name": "RouteStartArchGem",
-      "ClassName": "Part",
-      "Properties": {
-        "Anchored": true,
-        "CanCollide": false,
-        "CastShadow": false,
-        "Size": [
-          1.7,
-          1.7,
-          1.7
-        ],
-        "Position": [
-          68,
-          15.2,
-          -14
-        ],
-        "Color": [
-          1,
-          0.9372549019607843,
-          0.6039215686274509
-        ],
-        "Material": "Neon",
-        "Shape": "Ball"
-      }
-    },
-    {
-      "Name": "RouteStartArchGem",
-      "ClassName": "Part",
-      "Properties": {
-        "Anchored": true,
-        "CanCollide": false,
-        "CastShadow": false,
-        "Size": [
-          1.7,
-          1.7,
-          1.7
-        ],
-        "Position": [
-          68,
-          15.2,
-          14
-        ],
-        "Color": [
-          1,
-          0.9372549019607843,
-          0.6039215686274509
-        ],
-        "Material": "Neon",
-        "Shape": "Ball"
-      }
-    },
-    {
-      "Name": "RouteStartArchTop",
-      "ClassName": "Part",
-      "Properties": {
-        "Anchored": true,
-        "CanCollide": false,
-        "CastShadow": false,
-        "Size": [
-          2.4,
-          2.2,
-          30
-        ],
-        "Position": [
-          68,
-          15,
-          0
-        ],
-        "Color": [
-          1,
-          0.8196078431372549,
-          0.3568627450980392
-        ],
-        "Material": "Metal"
       }
     },
     {
@@ -25562,21 +25505,1873 @@
         "CanCollide": false,
         "CastShadow": false,
         "Size": [
-          0.8,
+          0.7,
           3.2,
           18
         ],
         "Position": [
-          66.8,
-          19,
+          68,
+          7.4,
           0
         ],
         "Color": [
-          0.16862745098039217,
-          0.23137254901960785,
-          0.2
+          0.20392156862745098,
+          0.26666666666666666,
+          0.18823529411764706
         ],
-        "Material": "Slate"
+        "Material": "Wood",
+        "TopSurface": "Smooth",
+        "BottomSurface": "Smooth"
+      }
+    },
+    {
+      "Name": "SafeZoneLine",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.9,
+          0.16,
+          56
+        ],
+        "Position": [
+          100,
+          0.08,
+          0
+        ],
+        "Color": [
+          1,
+          0.8,
+          0.34509803921568627
+        ],
+        "Material": "Neon"
+      }
+    },
+    {
+      "Name": "SafeZoneSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.7,
+          3.2,
+          18
+        ],
+        "Position": [
+          34,
+          7.4,
+          -37
+        ],
+        "Color": [
+          0.20392156862745098,
+          0.26666666666666666,
+          0.18823529411764706
+        ],
+        "Material": "Wood"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          125,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          145,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          165,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          185,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          205,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          225,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          245,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          265,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          285,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          305,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          325,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          345,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          365,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          385,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          405,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          425,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          445,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          465,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          485,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          505,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          525,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          545,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          565,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          585,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          605,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          625,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          645,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          665,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          685,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          705,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          725,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          745,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          765,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          785,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          805,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          825,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          845,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          865,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          885,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          905,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          925,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          945,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          965,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          985,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1005,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1025,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1045,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1065,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1085,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1105,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1125,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1145,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1165,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1185,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1205,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1225,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1245,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1265,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1285,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1305,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1325,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1345,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1365,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1385,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1405,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1425,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1445,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1465,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1485,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1505,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1525,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.7372549019607844,
+          0.6392156862745098,
+          0.4745098039215686
+        ],
+        "Material": "SmoothPlastic"
+      }
+    },
+    {
+      "Name": "MainPathTile",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.4,
+          0.055,
+          1.2
+        ],
+        "Position": [
+          1545,
+          0.055,
+          0
+        ],
+        "Color": [
+          0.9607843137254902,
+          0.8705882352941177,
+          0.6549019607843137
+        ],
+        "Material": "SmoothPlastic"
       }
     }
   ]
