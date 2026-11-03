@@ -48,6 +48,8 @@ function AnimalAnimator.new()
     local self = {
         Tracks = setmetatable({}, { __mode = "k" }),
         TrackCount = 0,
+        Accumulator = 0,
+        StepInterval = 0.05,
     }
 
     function self:Register(model, state)
@@ -64,13 +66,17 @@ function AnimalAnimator.new()
         for _, descendant in ipairs(model:GetDescendants()) do
             if descendant:IsA("BasePart") then
                 index += 1
-                table.insert(parts, {
-                    Part = descendant,
-                    Offset = pivot:ToObjectSpace(descendant.CFrame),
-                    Role = roleFor(descendant.Name),
-                    Side = pivot:ToObjectSpace(descendant.CFrame).Position.X >= 0 and 1 or -1,
-                    Phase = index * 0.47,
-                })
+                local role = roleFor(descendant.Name)
+                if descendant ~= model.PrimaryPart and role ~= "Static" then
+                    local offset = pivot:ToObjectSpace(descendant.CFrame)
+                    table.insert(parts, {
+                        Part = descendant,
+                        Offset = offset,
+                        Role = role,
+                        Side = offset.Position.X >= 0 and 1 or -1,
+                        Phase = index * 0.47,
+                    })
+                end
             end
         end
 
@@ -108,12 +114,18 @@ function AnimalAnimator.new()
 
     function self:Step(deltaTime)
         local dt = math.clamp(tonumber(deltaTime) or 0, 0, 0.1)
+        self.Accumulator += dt
+        if self.Accumulator < self.StepInterval then
+            return
+        end
+        local step = self.Accumulator
+        self.Accumulator = 0
         for model, track in pairs(self.Tracks) do
             if not model.Parent or not model.PrimaryPart then
                 self.Tracks[model] = nil
                 self.TrackCount = math.max(0, self.TrackCount - 1)
             else
-                track.Time += dt
+                track.Time += step
                 local pivot = model:GetPivot()
                 local state = track.State
                 local frequency = state == "Run" and 11.5 or state == "Walk" and 6.2 or 1.8
