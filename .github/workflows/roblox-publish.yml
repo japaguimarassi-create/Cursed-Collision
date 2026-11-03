@@ -8,6 +8,18 @@ on:
         required: true
         type: boolean
         default: false
+      universe_id:
+        description: "Target Roblox Universe ID"
+        required: true
+        type: string
+      place_id:
+        description: "Target Roblox Place ID"
+        required: true
+        type: string
+      studio_qa_sha:
+        description: "Exact 40-character commit SHA that passed real Studio and mobile QA"
+        required: true
+        type: string
       confirm_studio_runtime_qa:
         description: "Confirm a real Roblox Studio multi-client and mobile-device playtest completed for this exact build"
         required: true
@@ -74,7 +86,7 @@ jobs:
           python3 tools/simulate_studio_run.py --report artifacts/studio-run-simulation.json --markdown artifacts/studio-run-simulation.md --place build/StealAnAnimal.rbxl
       - name: Verify runtime QA approval is tied to the exact source revision
         env:
-          STUDIO_QA_SHA: ${{ vars.STEAL_ANIMAL_STUDIO_QA_SHA }}
+          STUDIO_QA_SHA: ${{ inputs.studio_qa_sha }}
         run: |
           set -euo pipefail
           test -n "${STUDIO_QA_SHA:-}" || { echo "::error::Set STEAL_ANIMAL_STUDIO_QA_SHA only after real Studio multi-client and mobile QA passes."; exit 1; }
@@ -84,8 +96,8 @@ jobs:
       - name: Publish only to explicitly configured place
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          UNIVERSE_ID: ${{ vars.STEAL_ANIMAL_UNIVERSE_ID }}
-          PLACE_ID: ${{ vars.STEAL_ANIMAL_PLACE_ID }}
+          UNIVERSE_ID: ${{ inputs.universe_id }}
+          PLACE_ID: ${{ inputs.place_id }}
         run: |
           set -euo pipefail
           test -n "${ROBLOX_API_KEY}" || { echo "::error::Missing repository secret ROBLOX_API_KEY"; exit 1; }
