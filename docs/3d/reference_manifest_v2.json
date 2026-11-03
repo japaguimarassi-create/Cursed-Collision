@@ -1,0 +1,143 @@
+{
+  "version": "2.0.0",
+  "generatedAt": "2026-11-03",
+  "modelFormat": "glTF Binary (.glb)",
+  "measurementUnit": "meters",
+  "summary": "Procedural low-poly 3D reference reconstruction. The full scene and each modular asset were exported as independent GLB geometry. It is not the final Roblox place or a replacement of the saved Blender map.",
+  "objects": [
+    "Guardian_01_Galinha_Guardia.glb",
+    "Guardian_02_Cisne_Real.glb",
+    "Guardian_03_Escorpiao_Dunas.glb",
+    "Guardian_04_Tigre_Guardiao.glb",
+    "Guardian_05_Yeti_Glacial.glb",
+    "Guardian_06_Cao_Infernal.glb",
+    "Guardian_07_Baleia_Abissal.glb",
+    "Guardian_08_Tiranossauro_Ancestral.glb",
+    "Open_Animal_Pen_No_House.glb",
+    "Treadmill_Base.glb",
+    "Treadmill_Premium_Ice.glb",
+    "Egg_Nests_and_Eggs.glb",
+    "Player_Carrying_Egg.glb",
+    "Straight_Map_8_Biomes.glb",
+    "StealAnAnimal_Complete_Reference_Scene.glb"
+  ],
+  "research": [
+    {
+      "label": "Official Roblox game listing",
+      "url": "https://www.roblox.com/games/107778070777162/Steal-An-Egg",
+      "mapsTo": "steal/hatch/earn/base and treadmill upgrades/train Speed"
+    },
+    {
+      "label": "Steal An Egg gameplay screenshot",
+      "url": "https://www.phucanh.vn/media/news/1509_steal-an-egg-roblox-5.jpg",
+      "mapsTo": "pen enclosure layout, safe route and crowded animal base"
+    },
+    {
+      "label": "Animal farm pen visual reference",
+      "url": "https://tr.rbxcdn.com/180DAY-f2244eb286f04f0ed3d31cf8e9c0ae0f/768/432/Image/Webp/noFilter",
+      "mapsTo": "raised grass pad and rail proportions; unrelated Roblox farm reference"
+    },
+    {
+      "label": "Chicken coop pen reference",
+      "url": "https://tr.rbxcdn.com/180DAY-f3ee2a2a9495659ca9a085f74e57e483/768/432/Image/Webp/noFilter",
+      "mapsTo": "chicken cluster and pen floor"
+    },
+    {
+      "label": "Base treadmill",
+      "url": "https://eggipedia.com/images/sae/shots/tapis.webp",
+      "mapsTo": "deck, side rails, console and light strip"
+    },
+    {
+      "label": "Premium Ice treadmill",
+      "url": "https://stealanegg-wiki.com/images/game-assets/97611802500180.png",
+      "mapsTo": "dark belt and blue crystal housing"
+    },
+    {
+      "label": "Forest sleeping chicken guardian",
+      "url": "https://stealanegg-wiki.com/images/progression/forest-guardian.png",
+      "mapsTo": "guardian beside nests and sleep indicator"
+    },
+    {
+      "label": "Abyss Ocean sleeping whale guardian",
+      "url": "https://stealanegg-wiki.com/images/progression/abyss-ocean-guardian.png",
+      "mapsTo": "horizontal whale proportions and underwater palette"
+    },
+    {
+      "label": "Yeti promotional thumbnail",
+      "url": "https://tr.rbxcdn.com/180DAY-3a7682bf777c8b5a9ee044f2ff932ae6/768/432/Image/Webp/noFilter",
+      "mapsTo": "oversized icy guardian and egg nest"
+    },
+    {
+      "label": "T-Rex egg promotional image",
+      "url": "https://stealegg.com/assets/images/official/trex-egg.png",
+      "mapsTo": "prehistoric silhouette, jaw, warm palette"
+    },
+    {
+      "label": "Scorpion silhouette reference",
+      "url": "https://creatorexchange.io/_next/image?q=75&url=https%3A%2F%2Ftr.rbxcdn.com%2F180DAY-289c777fb10126512e01ebaa30d2664d%2F512%2F512%2FImage%2FWebp%2FnoFilter&w=384",
+      "mapsTo": "faceted scorpion / egg composition; adjacent Roblox game only"
+    },
+    {
+      "label": "Open base fence",
+      "url": "https://stealanegg-wiki.com/images/progression/base-default.png",
+      "mapsTo": "rectangular perimeter without buildings"
+    },
+    {
+      "label": "Jungle guardian/pet family",
+      "url": "https://stealanegg-wiki.com/wiki/jungle",
+      "mapsTo": "Tiger confirmed as a Jungle species"
+    },
+    {
+      "label": "Biome route and guardian names",
+      "url": "https://stealanegg-wiki.com/wiki/zones",
+      "mapsTo": "Chicken, Swan, Scorpion, Tiger, Yeti, Hellhound, whale/Moby and T-Rex"
+    },
+    {
+      "label": "Treadmill and Speed guide",
+      "url": "https://stealanegg-wiki.com/wiki/treadmills",
+      "mapsTo": "treadmill as a training system"
+    }
+  ],
+  "priorChatConcepts": [
+    "Earlier straight eight-biome map concept with checkerboard safe hub and gate markers",
+    "Earlier original guardian lineup concept sheet",
+    "Earlier visual board for open pen, sleeping guardian/nest and treadmill",
+    "Earlier treadmill concept with moving belt, rollers, hand rails and upgrade panel"
+  ],
+  "iterations": [
+    {
+      "version": "v1",
+      "changes": [],
+      "reviewFindings": [
+        "Missing explicit Z sleep markers",
+        "Missing avatar carrying egg reference"
+      ]
+    },
+    {
+      "version": "v2",
+      "changes": [
+        "Added eight Z sleep markers",
+        "Added generic block-avatar carrying an egg",
+        "Kept animal pen open with no houses",
+        "Split each guardian and all major props into individual GLBs"
+      ],
+      "checks": [
+        "507 unique geometry nodes in master scene",
+        "8 guardian families",
+        "8 sleep markers",
+        "No barn/house object names",
+        "2 treadmill variants",
+        "8 map gates",
+        "Player and egg present",
+        "All GLBs reopen with matching geometry/node counts"
+      ]
+    }
+  ],
+  "limitations": [
+    "GLBs contain static meshes; no embedded animation clips.",
+    "Walk/Rest/Run remain defined by the project's Roblox Luau runtime.",
+    "This asset pack is not a Roblox RBXL place.",
+    "The saved Blender scene has not yet been revised to remove its earlier barns; the Blender CPU allowance was exhausted and the attempted revision was cancelled.",
+    "A live Roblox Studio multiplayer playtest has not been run."
+  ]
+}
