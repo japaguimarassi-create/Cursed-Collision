@@ -721,18 +721,22 @@ function AnimalFactory.new(services)
                 ring.Transparency = 0.18
             end
             if rarityTier >= 8 then
+                local auraAttachment = Instance.new("Attachment")
+                auraAttachment.Name = "RarityAuraAttachment"
+                auraAttachment.Position = Vector3.new(0, 2.15 * scale, 0)
+                auraAttachment.Parent = core
                 local sparkles = Instance.new("Sparkles")
                 sparkles.Name = "RaritySparkles"
                 sparkles.SparkleColor = spec.Accent
                 sparkles.TimeScale = 0.8
-                sparkles.Parent = core
+                sparkles.Parent = auraAttachment
                 local light = Instance.new("PointLight")
                 light.Name = "RarityCoreLight"
                 light.Color = spec.Accent
                 light.Brightness = giant and 1.2 or 0.55
                 light.Range = giant and 18 or 9
                 light.Shadows = false
-                light.Parent = core
+                light.Parent = auraAttachment
             end
         end
 
