@@ -57,6 +57,8 @@ O GitHub Actions executa as verificações de sintaxe Luau, regras, estrutura, m
 - [Prancha de referências visuais do mapa e cercados](docs/visual/STEAL_AN_EGG_REFERENCE_BOARD.svg)
 - [Conceito visual original dos oito guardiões](docs/visual/GUARDIAN_CONCEPTS.svg)
 - [Conceito técnico e plano de animação da esteira](docs/visual/TREADMILL_CONCEPT.svg)
+- [Reconstrução 3D de referências — v2](docs/3d/REFERENCE_RECONSTRUCTION_V2.md)
+- [Manifesto de imagens e geometria — v2](docs/3d/reference_manifest_v2.json)
 - [Manifesto dos backups](docs/SAVE_MANIFEST_2026-10-20.md)
 
 Não há publicação automática após a validação. Publicar é uma operação separada e bloqueada até a aprovação explícita de um teste real do Studio para o mesmo commit.
