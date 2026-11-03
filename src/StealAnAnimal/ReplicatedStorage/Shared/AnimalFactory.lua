@@ -126,7 +126,7 @@ function AnimalFactory.new(services)
             end
         else
             for _, side in ipairs({ -1, 1 }) do
-                if spec.Shape ~= "Whale" and spec.Shape ~= "Dolphin" and spec.Shape ~= "Ray" and spec.Shape ~= "SkyWhale" then
+                if spec.Shape ~= "Whale" and spec.Shape ~= "Dolphin" and spec.Shape ~= "Ray" and spec.Shape ~= "SkyWhale" and spec.Shape ~= "Gecko" and spec.Shape ~= "Beetle" and spec.Shape ~= "Bird" then
                     ball("Ear", 0.32, (spec.Shape == "Fox" or spec.Shape == "Wolf") and 0.75 or 0.55, 0.24, side * 0.38, 2.8, -0.88, spec.Color)
                     ball("LegFront", 0.35, 0.72, 0.38, side * 0.48, 0.48, -0.55, spec.Color)
                     ball("LegBack", 0.38, 0.68, 0.4, side * 0.48, 0.45, 0.62, spec.Color)
