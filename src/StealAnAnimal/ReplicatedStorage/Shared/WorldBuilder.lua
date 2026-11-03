@@ -6,7 +6,6 @@ function WorldBuilder.new(services)
     local basesFolder = services.BasesFolder
     local decorationFolder = services.DecorationFolder
     local rng = services.Rng
-    local treadmillStrips = services.TreadmillStrips
     local Lighting = services.Lighting
 
     local function createPart(parent, name, size, cf, color, material, shape, canCollide)
@@ -106,26 +105,12 @@ function WorldBuilder.new(services)
             stripe:SetAttribute("AnimationPhase", phase)
             stripe:SetAttribute("AnimationLength", Config.TreadmillBeltLength)
             stripe:SetAttribute("AnimationSpeed", Config.TreadmillBeltSpeed)
-            table.insert(treadmillStrips, {
-                Part = stripe,
-                Kind = "Stripe",
-                Origin = origin,
-                Phase = phase,
-                Length = Config.TreadmillBeltLength,
-                Speed = Config.TreadmillBeltSpeed,
-            })
         end
     
         for _, side in ipairs({ -1, 1 }) do
             local roller = createPart(treadmill, "BeltRoller", Vector3.new(0.28, 5.75, 0.28), CFrame.new(origin + Vector3.new(0, 0.88, side * 3.82)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(126, 147, 154), Enum.Material.Metal, Enum.PartType.Cylinder, false)
             roller.CastShadow = false
             roller:SetAttribute("AnimationSpeed", Config.TreadmillBeltSpeed * 1.4)
-            table.insert(treadmillStrips, {
-                Part = roller,
-                Kind = "Roller",
-                BaseCFrame = roller.CFrame,
-                Speed = Config.TreadmillBeltSpeed * 1.4,
-            })
         end
     
         local console = createPart(treadmill, "TreadmillConsole", Vector3.new(2.6, 1.15, 0.38), CFrame.new(origin + Vector3.new(0, 2.05, -3.45)), Color3.fromRGB(35, 67, 72), Enum.Material.Metal, nil, true)
