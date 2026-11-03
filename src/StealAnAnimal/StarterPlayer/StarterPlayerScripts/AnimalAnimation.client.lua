@@ -106,11 +106,25 @@ for _, instance in ipairs(Workspace:GetDescendants()) do
     end
 end
 
+local function queueTreadmillPart(part)
+    task.defer(function()
+        if not part.Parent then return end
+        attachTreadmillPart(part)
+        if not trackedTreadmillParts[part] then
+            task.delay(0.12, function()
+                if part.Parent then
+                    attachTreadmillPart(part)
+                end
+            end)
+        end
+    end)
+end
+
 Workspace.DescendantAdded:Connect(function(instance)
     if instance:IsA("Model") then
         queueAnimalAttachment(instance)
     elseif instance:IsA("BasePart") then
-        task.defer(attachTreadmillPart, instance)
+        queueTreadmillPart(instance)
     end
 end)
 
