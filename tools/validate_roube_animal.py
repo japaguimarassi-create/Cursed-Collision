@@ -120,7 +120,7 @@ def main():
         ("session-locked profiles and stage-aware offline income", all(token in server_all for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in server_all for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
         ("guardian pursuit and escape", all(token in server_all for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),
-        ("original procedural models and scenery", all(token in server_all for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "FountainGem"))),
+        ("original procedural models and scenery", all(token in server_all for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "HubSpawnMarker"))),
         ("server-side treadmill training and capped movement", all(token in server_all for token in ("createTreadmill", "TrainingZone", "Rules.TrainingGain", "Rules.MoveSpeed", "Config.MaxSpeedPoints", "MaxTreadmillLevel"))),
         ("standing training does not require forced movement", "zone.CFrame:PointToObjectSpace(root.Position)" in server_all and "humanoid.MoveDirection.Magnitude > 0.12" not in server_all),
         ("animated belts and farm-owned treadmill upgrades", all(token in server_all for token in ("treadmillStrips", "TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId'))),
