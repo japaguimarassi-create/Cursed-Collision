@@ -177,13 +177,11 @@ function WorldBuilder.new(services)
                 createPart(base, "PenFencePost", Vector3.new(0.8, 3.2, 0.8), CFrame.new(center + Vector3.new(xSide * 16.4, 1.35, zSide * 14.8)), Color3.fromRGB(124, 73, 42), Enum.Material.Wood, nil, false)
             end
         end
-        createPart(base, "FarmBackWall", Vector3.new(28, 5.5, 0.8), CFrame.new(center + Vector3.new(0, 2.75, -frontSide * 13.8)), Color3.fromRGB(164, 111, 72), Enum.Material.WoodPlanks, nil, true)
-        createPart(base, "FarmCanopy", Vector3.new(30, 0.75, 6), CFrame.new(center + Vector3.new(0, 5.75, -frontSide * 10.3)), Color3.fromRGB(115, 72, 51), Enum.Material.Wood, nil, true)
         for _, side in ipairs({ -1, 1 }) do
-            createPart(base, "FarmCanopyPost", Vector3.new(0.7, 5.5, 0.7), CFrame.new(center + Vector3.new(side * 13.2, 2.75, -frontSide * 10.3)), Color3.fromRGB(112, 73, 48), Enum.Material.Wood, nil, false)
+            createPart(base, "PenSignPost", Vector3.new(0.55, 3.8, 0.55), CFrame.new(center + Vector3.new(side * 5.7, 1.9, -frontSide * 10.8)), Color3.fromRGB(124, 73, 42), Enum.Material.Wood, nil, false)
         end
-        local sign = createPart(base, "BarnSign", Vector3.new(13, 2, 0.4), CFrame.new(center + Vector3.new(0, 6.7, -frontSide * 8.8)), Color3.fromRGB(58, 55, 43), Enum.Material.Wood, nil, false)
-        addLabel(sign, "SUA FAZENDA", "BEBÊS • ESPAÇOS • RENDA", Color3.fromRGB(255, 218, 105), false, 28, 1.5)
+        local sign = createPart(base, "PenSign", Vector3.new(12.5, 1.8, 0.45), CFrame.new(center + Vector3.new(0, 3.75, -frontSide * 10.8)), Color3.fromRGB(58, 55, 43), Enum.Material.Wood, nil, false)
+        addLabel(sign, "SEU CERCADO", "OVOS • ANIMAIS • RENDA", Color3.fromRGB(255, 218, 105), false, 28, 1.35)
 
         local display = Instance.new("Folder")
         display.Name = "StoredAnimals"
@@ -350,7 +348,7 @@ function WorldBuilder.new(services)
             addLabel(gateSign, "VELOCIDADE MÍNIMA", tostring(biome.MinSpeed) .. " SPEED", biome.Accent, false, 90, 1.4)
 
             local sign = createPart(world, biome.Id .. "Sign", Vector3.new(18, 3, 0.5), CFrame.new(biome.CenterX - 76, 8, -31), Color3.fromRGB(55, 65, 48), Enum.Material.Wood, nil, false)
-            addLabel(sign, "FASE " .. tostring(biomeIndex) .. " • " .. biome.Name, "OVOS SELVAGENS • GUARDA-COSTAS", biome.Accent, false, 70, 1.8)
+            addLabel(sign, "FASE " .. tostring(biomeIndex) .. " • " .. biome.Name, "SPEED MÍNIMA: " .. tostring(biome.MinSpeed), biome.Accent, false, 70, 1.8)
 
             local transitionX = biome.CenterX + 88
             local transition = createPart(world, biome.Id .. "TransitionLine", Vector3.new(0.65, 0.12, 44), CFrame.new(transitionX, 0.12, 0), biome.Accent, Enum.Material.Neon, nil, false)
