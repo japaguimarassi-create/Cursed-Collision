@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<defs>
+ <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#e9f3f5"/><stop offset="1" stop-color="#cbdde2"/></linearGradient>
+ <linearGradient id="metal" x2="0" y2="1"><stop stop-color="#526d7b"/><stop offset="1" stop-color="#172d39"/></linearGradient>
+ <linearGradient id="belt" x2="0" y2="1"><stop stop-color="#273a47"/><stop offset="1" stop-color="#101e28"/></linearGradient>
+ <linearGradient id="cyan" x2="0" y2="1"><stop stop-color="#88ffe5"/><stop offset="1" stop-color="#20a9ca"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#1d3541" flood-opacity=".24"/></filter>
+</defs>
+<rect width="1440" height="900" fill="url(#bg)"/>
+<text x="70" y="80" font-family="Arial" font-size="40" font-weight="800" fill="#152e3c">TREADMILL — ORIGINAL 3D DESIGN + ANIMATION PLAN</text>
+<text x="72" y="120" font-family="Arial" font-size="18" fill="#56717e">A functional training machine sized for the fenced farm plots and mobile play</text>
+<!-- treadmill frame -->
+<g filter="url(#shadow)">
+ <path d="M250 562 L1010 562 L1190 450 L425 450Z" fill="url(#metal)" stroke="#132d39" stroke-width="8"/>
+ <path d="M290 526 L977 526 L1124 454 L437 454Z" fill="url(#belt)" stroke="#5a8796" stroke-width="5"/>
+ <path d="M335 510 L951 510 L1080 451" stroke="#1b5263" stroke-width="6" fill="none"/>
+ <g stroke="#74f5e5" stroke-width="8" stroke-linecap="round">
+  <path d="M390 498 L501 498"/><path d="M530 498 L641 498"/><path d="M670 498 L781 498"/><path d="M810 498 L921 498"/>
+ </g>
+ <g stroke="#2a687c" stroke-width="12" fill="none"><path d="M317 474 L358 246 L423 228"/><path d="M1040 474 L1082 246 L1149 226"/></g>
+ <g stroke="#74f5e5" stroke-width="7"><path d="M421 230 L1150 230"/><path d="M348 273 L1072 273"/></g>
+ <g fill="url(#metal)" stroke="#142f3a" stroke-width="6">
+  <ellipse cx="428" cy="522" rx="28" ry="16"/><ellipse cx="1040" cy="522" rx="28" ry="16"/>
+ </g>
+ <path d="M560 230 L560 162 L772 162 L772 230Z" fill="#243b48" stroke="#0d2632" stroke-width="7"/>
+ <rect x="584" y="180" width="164" height="30" rx="7" fill="url(#cyan)"/>
+ <text x="666" y="202" text-anchor="middle" font-family="Arial" font-size="18" font-weight="800" fill="#15404a">SPEED +123</text>
+ <circle cx="603" cy="145" r="11" fill="#4df5ce"/><circle cx="733" cy="145" r="11" fill="#ffca62"/>
+ <path d="M810 230 L810 160" stroke="#1c414f" stroke-width="13"/><path d="M792 160 H835" stroke="#1c414f" stroke-width="13" stroke-linecap="round"/>
+</g>
+<!-- arrows -->
+<g fill="none" stroke="#1787a0" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M520 605 Q660 665 820 604"/><path d="M800 590 L820 604 L795 622"/>
+ <path d="M920 390 Q1072 350 1130 392"/><path d="M1110 372 L1130 392 L1103 402"/>
+</g>
+<text x="685" y="688" text-anchor="middle" font-family="Arial" font-size="19" font-weight="700" fill="#1a6c7d">BELT STRIPES MOVE TOWARD THE REAR ROLLER</text>
+<!-- feature notes -->
+<g font-family="Arial" fill="#193746">
+ <rect x="62" y="175" width="310" height="72" rx="14" fill="#fff" stroke="#acc5cd" stroke-width="2"/><text x="84" y="205" font-size="18" font-weight="800">01 • END ROLLERS</text><text x="84" y="229" font-size="15">Cylinders rotate with the belt</text>
+ <path d="M372 210 L427 500" stroke="#3c7f91" stroke-width="3" fill="none"/>
+ <rect x="1060" y="305" width="310" height="76" rx="14" fill="#fff" stroke="#acc5cd" stroke-width="2"/><text x="1082" y="336" font-size="18" font-weight="800">02 • HAND RAILS</text><text x="1082" y="360" font-size="15">Side support + cyan light strip</text>
+ <path d="M1060 345 L1044 286" stroke="#3c7f91" stroke-width="3" fill="none"/>
+ <rect x="82" y="738" width="320" height="78" rx="14" fill="#fff" stroke="#acc5cd" stroke-width="2"/><text x="104" y="770" font-size="18" font-weight="800">03 • TRAINING ZONE</text><text x="104" y="794" font-size="15">Player standing region is server-checked</text>
+ <rect x="1040" y="738" width="330" height="78" rx="14" fill="#fff" stroke="#acc5cd" stroke-width="2"/><text x="1062" y="770" font-size="18" font-weight="800">04 • UPGRADE CONSOLE</text><text x="1062" y="794" font-size="15">Level, gain and next upgrade cost</text>
+</g>
+<text x="72" y="858" font-family="Arial" font-size="14" fill="#56717e">Animation targets: belt translation loop • roller spin • light pulse • console value refresh • no forced player movement.</text>
+</svg>
