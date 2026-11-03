@@ -10,6 +10,8 @@ function AnimalFactory.new(services)
         model.Name = (giant and "Guardian_" or "Animal_") .. spec.Id
         model:SetAttribute("AnimalId", spec.Id)
         model:SetAttribute("Stage", stageName or "Baby")
+        model:SetAttribute("GuardianType", spec.GuardianType or "")
+        model:SetAttribute("IsGuardian", giant == true)
         local rarityRanks = {
             Comum = 1,
             Incomum = 2,
@@ -914,6 +916,130 @@ function AnimalFactory.new(services)
                 ball("Whale tail fluke ridge", 0.08, 0.08, 0.72, (tailLine - 2) * 0.42, 1.37, 2.92, Color3.fromRGB(179, 221, 237))
             end
             end
+        end
+
+        if giant and spec.GuardianType == "Chicken" then
+            for featherIndex = 1, 7 do
+                local featherX = (featherIndex - 4) * 0.29
+                ball("GuardianHenTailFeather", 0.34, 0.65, 1.1, featherX, 1.62, 1.55 + math.abs(featherIndex - 4) * 0.08, featherIndex % 2 == 0 and spec.Accent or spec.Color)
+                ball("GuardianHenWingPlate", 0.20, 0.42, 0.92, featherX * 2.1, 1.52, 0.72, spec.Accent)
+            end
+            ball("GuardianHenChestShield", 1.10, 0.72, 0.20, 0, 1.35, -1.23, Color3.fromRGB(255, 231, 174))
+            for crestIndex = 1, 3 do
+                crystal("GuardianHenCrest", 0.20, 0.54, 0.18, (crestIndex - 2) * 0.24, 3.18, -0.72, Color3.fromRGB(227, 69, 48))
+            end
+        elseif giant and spec.GuardianType == "Swan" then
+            for featherIndex = 1, 9 do
+                local side = featherIndex % 2 == 0 and -1 or 1
+                local row = math.floor((featherIndex - 1) / 2)
+                crystal("GuardianSwanWingFeather", 0.20, 0.42, 0.96, side * (0.72 + row * 0.12), 1.52 + row * 0.10, 0.10 + row * 0.24, row % 2 == 0 and spec.Accent or Color3.fromRGB(242, 250, 255))
+            end
+            for crownIndex = 1, 5 do
+                local crownX = (crownIndex - 3) * 0.22
+                crystal("GuardianSwanCrownSpire", 0.16, 0.55 + (crownIndex % 2) * 0.18, 0.16, crownX, 3.92, -0.72, Color3.fromRGB(255, 211, 94))
+            end
+            ball("GuardianSwanCrownGem", 0.24, 0.24, 0.24, 0, 4.05, -0.86, spec.Accent, Enum.Material.Neon)
+        elseif giant and spec.GuardianType == "Scorpion" then
+            ball("GuardianScorpionShell", 1.52, 0.52, 1.55, 0, 1.75, 0.20, spec.Accent, Enum.Material.Metal)
+            for side = -1, 1, 2 do
+                block("GuardianScorpionClawArm", 0.40, 0.38, 1.10, side * 1.05, 1.85, -1.25, spec.Color, CFrame.Angles(math.rad(side * 16), 0, math.rad(side * 26)))
+                ball("GuardianScorpionPincer", 0.72, 0.62, 0.78, side * 1.48, 1.62, -1.95, spec.Accent, Enum.Material.Metal)
+                crystal("GuardianScorpionClawTip", 0.26, 0.26, 0.82, side * 1.54, 1.45, -2.48, Color3.fromRGB(255, 218, 108), CFrame.Angles(math.rad(30), 0, math.rad(side * 18)))
+                for legIndex = 1, 3 do
+                    block("GuardianScorpionLeg", 0.18, 0.20, 1.15, side * (0.74 + legIndex * 0.18), 0.78, -0.10 + legIndex * 0.62, spec.Color, CFrame.Angles(math.rad(18), 0, math.rad(side * 34)))
+                    ball("GuardianScorpionFoot", 0.22, 0.22, 0.30, side * (1.12 + legIndex * 0.18), 0.50, 0.05 + legIndex * 0.62, spec.Accent)
+                end
+            end
+            local tailOffsets = {
+                { 0, 2.15, 1.05 }, { 0.18, 2.75, 1.55 }, { 0.34, 3.35, 1.82 },
+                { 0.22, 3.92, 1.52 }, { 0, 4.42, 1.08 },
+            }
+            for index, offset in ipairs(tailOffsets) do
+                ball("GuardianScorpionTailSegment", 0.38 - index * 0.025, 0.42 - index * 0.025, 0.48 - index * 0.02, offset[1], offset[2], offset[3], index % 2 == 0 and spec.Accent or spec.Color, Enum.Material.Metal)
+            end
+            crystal("GuardianScorpionStinger", 0.28, 0.82, 0.30, 0, 4.92, 0.78, Color3.fromRGB(255, 82, 40), CFrame.Angles(math.rad(-22), 0, 0))
+        elseif giant and spec.GuardianType == "Tiger" then
+            for side = -1, 1, 2 do
+                for stripeIndex = 1, 5 do
+                    block("GuardianTigerFlankStripe", 0.14, 0.18, 0.72, side * 0.92, 1.35 + (stripeIndex % 2) * 0.15, -0.82 + stripeIndex * 0.42, Color3.fromRGB(35, 29, 29), CFrame.Angles(math.rad(side * 9), 0, math.rad(side * 12)))
+                end
+                crystal("GuardianTigerEarInner", 0.25, 0.30, 0.10, side * 0.48, 2.92, -0.96, Color3.fromRGB(255, 190, 144))
+                ball("GuardianTigerCheekFur", 0.50, 0.54, 0.26, side * 0.76, 2.08, -1.48, Color3.fromRGB(255, 222, 184))
+                for toe = 1, 3 do
+                    crystal("GuardianTigerClaw", 0.12, 0.20, 0.42, side * (0.48 + toe * 0.11), 0.25, -0.95, Color3.fromRGB(245, 235, 215))
+                end
+            end
+            for stripeIndex = 1, 4 do
+                block("GuardianTigerForeheadStripe", 0.14, 0.11, 0.48, (stripeIndex - 2.5) * 0.27, 2.85, -1.78, Color3.fromRGB(35, 29, 29))
+            end
+            ball("GuardianTigerTailTip", 0.34, 0.34, 0.68, 0, 1.52, 2.55, Color3.fromRGB(30, 26, 26))
+        elseif giant and spec.GuardianType == "Yeti" then
+            ball("GuardianYetiChestFur", 1.36, 1.12, 0.54, 0, 1.58, -0.95, Color3.fromRGB(244, 251, 255))
+            for side = -1, 1, 2 do
+                ball("GuardianYetiShoulder", 0.82, 0.92, 0.88, side * 1.05, 2.02, 0.12, spec.Color)
+                ball("GuardianYetiArm", 0.55, 1.10, 0.62, side * 1.22, 1.02, -0.14, spec.Accent)
+                for tuftIndex = 1, 5 do
+                    local tuftY = 1.00 + tuftIndex * 0.38
+                    ball("GuardianYetiFurTuft", 0.28, 0.32, 0.30, side * (1.30 + (tuftIndex % 2) * 0.12), tuftY, -0.58 + tuftIndex * 0.12, Color3.fromRGB(246, 252, 255))
+                end
+                crystal("GuardianYetiIceSpike", 0.20, 0.66, 0.22, side * (0.52 + 0.22), 3.12, 0.12, spec.Accent)
+                ball("GuardianYetiFoot", 0.52, 0.28, 0.72, side * 0.52, 0.18, -0.58, spec.Accent)
+            end
+            for spikeIndex = 1, 5 do
+                crystal("GuardianYetiCrownIce", 0.18, 0.58 + (spikeIndex % 2) * 0.20, 0.18, (spikeIndex - 3) * 0.31, 3.38, -0.70, Color3.fromRGB(156, 226, 255))
+            end
+        elseif giant and spec.GuardianType == "Hellhound" then
+            for headIndex = 1, 3 do
+                local headX = (headIndex - 2) * 0.82
+                ball("GuardianHellhoundNeck", 0.66, 0.82, 0.86, headX, 1.88, -1.12, spec.Color, Enum.Material.Slate)
+                ball("GuardianHellhoundHead", 0.62, 0.58, 0.72, headX, 2.35, -1.72, spec.Color, Enum.Material.Slate)
+                ball("GuardianHellhoundMuzzle", 0.46, 0.30, 0.55, headX, 2.13, -2.18, Color3.fromRGB(31, 26, 34), Enum.Material.Slate)
+                glow("GuardianHellhoundEye", 0.10, 0.12, 0.10, headX - 0.23, 2.50, -2.25, spec.Accent)
+                glow("GuardianHellhoundEye", 0.10, 0.12, 0.10, headX + 0.23, 2.50, -2.25, spec.Accent)
+                crystal("GuardianHellhoundFang", 0.13, 0.32, 0.13, headX - 0.17, 1.91, -2.48, Color3.fromRGB(255, 226, 190))
+                crystal("GuardianHellhoundFang", 0.13, 0.32, 0.13, headX + 0.17, 1.91, -2.48, Color3.fromRGB(255, 226, 190))
+                crystal("GuardianHellhoundHorn", 0.18, 0.62, 0.18, headX, 2.92, -1.48, spec.Accent, CFrame.Angles(math.rad(-18), 0, 0))
+            end
+            for side = -1, 1, 2 do
+                for crackIndex = 1, 4 do
+                    glow("GuardianHellhoundLavaCrack", 0.08, 0.10, 0.50, side * 0.94, 1.40 + (crackIndex % 2) * 0.24, -0.82 + crackIndex * 0.40, spec.Accent)
+                end
+                crystal("GuardianHellhoundSpine", 0.18, 0.52, 0.22, side * 0.58, 2.45, 0.12, spec.Accent)
+            end
+            glow("GuardianHellhoundTailFlame", 0.42, 0.75, 0.42, 0, 2.25, 2.35, spec.Accent)
+        elseif giant and spec.GuardianType == "Whale" then
+            ball("GuardianWhaleUnderbelly", 1.65, 0.48, 2.85, 0, 0.92, -0.22, Color3.fromRGB(204, 239, 250))
+            for side = -1, 1, 2 do
+                ball("GuardianWhaleFin", 0.28, 0.30, 1.75, side * 1.55, 0.92, -0.22, spec.Accent)
+                for gillIndex = 1, 5 do
+                    block("GuardianWhaleGill", 0.08, 0.28, 0.10, side * 1.44, 1.18, -1.22 + gillIndex * 0.23, Color3.fromRGB(132, 217, 245))
+                end
+            end
+            ball("GuardianWhaleTailStock", 0.38, 0.42, 1.34, 0, 1.18, 2.02, spec.Accent)
+            crystal("GuardianWhaleTailFluke", 1.35, 0.20, 1.12, 0, 1.28, 2.92, spec.Accent)
+            ball("GuardianWhaleDorsalFin", 0.18, 0.76, 0.88, 0, 2.10, 0.24, spec.Accent)
+            for spotIndex = 1, 12 do
+                local side = spotIndex % 2 == 0 and 1 or -1
+                glow("GuardianWhaleBioluminescentSpot", 0.09, 0.09, 0.09, side * (0.72 + (spotIndex % 3) * 0.18), 1.62 + (spotIndex % 4) * 0.18, -0.70 + math.floor(spotIndex / 2) * 0.25, spec.Accent)
+            end
+        elseif giant and spec.GuardianType == "Tyrannosaur" then
+            ball("GuardianTyrannosaurSkull", 1.05, 0.84, 1.36, 0, 2.18, -1.78, spec.Accent, Enum.Material.Rock)
+            ball("GuardianTyrannosaurJaw", 0.98, 0.30, 1.16, 0, 1.72, -2.05, Color3.fromRGB(75, 49, 34), Enum.Material.Rock)
+            for toothIndex = 1, 7 do
+                local toothX = (toothIndex - 4) * 0.23
+                crystal("GuardianTyrannosaurTooth", 0.12, 0.32, 0.16, toothX, 1.86, -2.46, Color3.fromRGB(246, 229, 188))
+            end
+            for side = -1, 1, 2 do
+                block("GuardianTyrannosaurArm", 0.24, 0.58, 0.32, side * 0.82, 1.25, -1.00, spec.Color, CFrame.Angles(math.rad(-18), 0, math.rad(side * 18)))
+                for clawIndex = 1, 2 do
+                    crystal("GuardianTyrannosaurClaw", 0.10, 0.18, 0.26, side * (0.84 + clawIndex * 0.12), 0.98, -1.18, Color3.fromRGB(243, 222, 176))
+                end
+                ball("GuardianTyrannosaurFoot", 0.64, 0.28, 0.84, side * 0.58, 0.17, -0.62, spec.Accent)
+            end
+            for spikeIndex = 1, 7 do
+                crystal("GuardianTyrannosaurDorsalPlate", 0.18, 0.42 + (spikeIndex % 2) * 0.12, 0.18, 0, 2.22, -0.68 + spikeIndex * 0.36, spec.Accent)
+            end
+            ball("GuardianTyrannosaurTail", 0.48, 0.50, 2.05, 0, 1.52, 2.10, spec.Color, Enum.Material.Rock)
         end
 
         if rarityTier >= 6 and (stageIndex >= 3 or giant) then
