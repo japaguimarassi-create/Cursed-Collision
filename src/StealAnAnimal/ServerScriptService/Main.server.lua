@@ -74,7 +74,6 @@ local rebirthInProgress = {}
 local progressionWriteInProgress = {}
 local mapBotCooldowns = {}
 local actionCooldowns = {}
-local biomeGateNoticeAt = {}
 local trainingNoticeAt = {}
 local treadmillStrips = {}
 local treadmillAnimationAccumulator = 0
@@ -282,34 +281,6 @@ local function updatePlayerAttributes(player)
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     if humanoid then
         humanoid.WalkSpeed = baseSpeed
-    end
-end
-
-local function enforceBiomeSpeedGates(player, profile)
-    local character = player.Character
-    local root = character and character:FindFirstChild("HumanoidRootPart")
-    if not root or not profile then
-        return
-    end
-
-    local position = root.Position
-    for _, biome in ipairs(Config.Biomes) do
-        local gateX = biome.CenterX - 76
-        if position.X >= gateX and profile.Speed < biome.MinSpeed then
-            root.CFrame = CFrame.new(gateX - 4, position.Y, position.Z) * root.CFrame.Rotation
-            local velocity = root.AssemblyLinearVelocity
-            if velocity.X > 0 then
-                root.AssemblyLinearVelocity = Vector3.new(0, velocity.Y, velocity.Z)
-            end
-
-            local now = os.clock()
-            local previousNotice = biomeGateNoticeAt[player] or 0
-            if now - previousNotice >= 3 then
-                biomeGateNoticeAt[player] = now
-                notify(player, "Velocidade insuficiente para " .. biome.Name .. ". Necessário: " .. tostring(biome.MinSpeed) .. " SPEED.", "Warning")
-            end
-            return
-        end
     end
 end
 
@@ -522,9 +493,21 @@ local function captureAnimal(player, prompt)
     if not spec or not model:IsDescendantOf(wildlifeFolder) then
         return
     end
+    local profile = profiles[player]
+    local requiredBiome
+    for _, biome in ipairs(Config.Biomes) do
+        if biome.Id == spec.Biome then
+            requiredBiome = biome
+            break
+        end
+    end
+    local minimumSpeed = requiredBiome and requiredBiome.MinSpeed or 0
+    if not profile or profile.Speed < minimumSpeed then
+        notify(player, "Você precisa de " .. tostring(minimumSpeed) .. " SPEED para roubar ovos de " .. (requiredBiome and requiredBiome.Name or "este bioma") .. ".", "Warning")
+        return
+    end
     wildRecords[model] = nil
     carried[player] = { Spec = spec, Model = model }
-    local profile = profiles[player]
     if profile then
         profile.TotalCaptured = math.min(2147483647, (profile.TotalCaptured or 0) + 1)
     end
@@ -1092,7 +1075,6 @@ Players.PlayerRemoving:Connect(function(player)
     progressionWriteInProgress[player] = nil
     mapBotCooldowns[player] = nil
     trainingNoticeAt[player] = nil
-    biomeGateNoticeAt[player] = nil
     releaseBase(player)
     playerSetupDone[player] = nil
     leaving[player] = nil
@@ -1104,17 +1086,9 @@ end
 
 local accumulator = 0
 local incomeAccumulator = 0
-local gateCheckAccumulator = 0
 RunService.Heartbeat:Connect(function(deltaTime)
     accumulator += deltaTime
     incomeAccumulator += deltaTime
-    gateCheckAccumulator += deltaTime
-    if gateCheckAccumulator >= 0.1 then
-        gateCheckAccumulator = 0
-        for player, profile in pairs(profiles) do
-            enforceBiomeSpeedGates(player, profile)
-        end
-    end
     treadmillAnimationAccumulator += deltaTime
     if treadmillAnimationAccumulator >= 0.1 then
         treadmillAnimationAccumulator = 0
