@@ -2,9 +2,11 @@
 
 ## Scope
 
-This pass deepens the eight flagship animal models inside `AnimalFactory.lua`. It keeps the procedural Roblox-native part workflow and does not replace the game with a static showcase.
+This pass adds explicit species-specific detailing to all 49 catalogued animals and gives the eight flagship models another high-detail layer inside `AnimalFactory.lua`. It keeps the procedural Roblox-native part workflow and does not replace the game with a static showcase.
 
 ## Geometry layers
+
+Every catalogue ID now has its own detailing branch instead of relying only on the shared base silhouette. This includes Chick, Fox, Hedgehog, Wolf, Frog, Turtle, Arctic Fox, Mammoth, Polar Bear, Lion Cub, Elephant, Lion Guardian, Salamander, Dragon, Dolphin and Whale, alongside the eight featured designs below.
 
 - Crystalback Gecko: raised cheek scales, temple crystals, dorsal crystal crown, suction-pad toes and segmented tail bands.
 - Bloomforged Beetle: antennae, glowing terminals, mandibles, abdomen plates, elytra veins and dorsal flower assembly.
