@@ -2,6 +2,10 @@
 
 Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guardiões, renda passiva e HUD adaptativa. O visual usa modelos e peças originais; as referências de *Steal An Egg* são usadas para orientar composição e ritmo de jogo, não para copiar recursos proprietários.
 
+## Direção visual original — 03/11/2026
+
+O visual de Steal An Animal é próprio. Referências de outros jogos são usadas somente para estudar composição, escala, legibilidade e progressão, sem copiar construções, animais, interface ou layouts. A revisão geométrica substitui estruturas fechadas por marcos esculturais abertos, volumes facetados, WedgeParts, anéis poligonais e formas próprias por bioma. Consulte [a direção visual original](docs/3d/ORIGINAL_VISUAL_DIRECTION_2026-11-03.md).
+
 ## Sistemas de jogo
 
 - Mapa inspirado no fluxo de Steal an Egg: safe zone aberta, oito fazendas, uma única pista reta e oito biomas em sequência. Cada bioma tem um requisito mínimo de SPEED para roubar os ovos: 10, 100, 1.230, 12.300, 123.000, 1.230.000, 12.300.000 e 123.000.000. O percurso continua fisicamente aberto; o servidor valida o requisito da fase no momento da captura. A velocidade física do personagem continua limitada para preservar o controle mobile.

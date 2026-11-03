@@ -9720,31 +9720,6 @@
           }
         },
         {
-          "Name": "WetlandsMonumentRoof",
-          "ClassName": "Part",
-          "Properties": {
-            "Anchored": true,
-            "CanCollide": false,
-            "CastShadow": false,
-            "Size": [
-              22,
-              1.1,
-              17
-            ],
-            "Position": [
-              728,
-              7.4,
-              66
-            ],
-            "Color": [
-              0.2196078431372549,
-              0.36470588235294116,
-              0.3333333333333333
-            ],
-            "Material": "Slate"
-          }
-        },
-        {
           "Name": "WetlandsMonumentLamp",
           "ClassName": "Part",
           "Properties": {
@@ -10809,31 +10784,6 @@
           }
         },
         {
-          "Name": "OceanMonumentRoof",
-          "ClassName": "Part",
-          "Properties": {
-            "Anchored": true,
-            "CanCollide": false,
-            "CastShadow": false,
-            "Size": [
-              7.5,
-              2.8,
-              7.5
-            ],
-            "Position": [
-              1268,
-              18,
-              66
-            ],
-            "Color": [
-              0.1803921568627451,
-              0.30196078431372547,
-              0.40784313725490196
-            ],
-            "Material": "Metal"
-          }
-        },
-        {
           "Name": "OceanMonumentBeacon",
           "ClassName": "Part",
           "Properties": {
@@ -10932,6 +10882,2630 @@
               0.20784313725490197
             ],
             "Material": "Wood"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              6,
+              5.5,
+              0
+            ],
+            "Orientation": [
+              0,
+              0,
+              -18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              4.854101966249685,
+              5.5,
+              3.526711513754839
+            ],
+            "Orientation": [
+              0,
+              -36,
+              18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              1.8541019662496847,
+              5.5,
+              5.706339097770921
+            ],
+            "Orientation": [
+              0,
+              -72,
+              -18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              -1.854101966249684,
+              5.5,
+              5.706339097770922
+            ],
+            "Orientation": [
+              0,
+              -108,
+              18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              -4.854101966249684,
+              5.5,
+              3.5267115137548393
+            ],
+            "Orientation": [
+              0,
+              -144,
+              -18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              -6,
+              5.5,
+              7.347880794884119e-16
+            ],
+            "Orientation": [
+              0,
+              -180,
+              18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              -4.854101966249686,
+              5.5,
+              -3.5267115137548384
+            ],
+            "Orientation": [
+              0,
+              -216,
+              -18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              -1.8541019662496854,
+              5.5,
+              -5.706339097770921
+            ],
+            "Orientation": [
+              0,
+              -252,
+              18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              1.8541019662496834,
+              5.5,
+              -5.706339097770922
+            ],
+            "Orientation": [
+              0,
+              -288,
+              -18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "HubWildCoreShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.4,
+              7.2,
+              1.35
+            ],
+            "Position": [
+              4.854101966249684,
+              5.5,
+              -3.52671151375484
+            ],
+            "Orientation": [
+              0,
+              -324,
+              18
+            ],
+            "Color": [
+              0.31,
+              0.66,
+              0.36
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentRoot",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.3,
+              3.2
+            ],
+            "Position": [
+              176,
+              1.15,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              -18
+            ],
+            "Color": [
+              0.41,
+              0.29,
+              0.19
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentRoot",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.3,
+              3.2
+            ],
+            "Position": [
+              174.2426406871193,
+              1.15,
+              70.24264068711929
+            ],
+            "Orientation": [
+              0,
+              -45,
+              -18
+            ],
+            "Color": [
+              0.41,
+              0.29,
+              0.19
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentRoot",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.3,
+              3.2
+            ],
+            "Position": [
+              170,
+              1.15,
+              72
+            ],
+            "Orientation": [
+              0,
+              -90,
+              -18
+            ],
+            "Color": [
+              0.41,
+              0.29,
+              0.19
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentRoot",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.3,
+              3.2
+            ],
+            "Position": [
+              165.7573593128807,
+              1.15,
+              70.24264068711929
+            ],
+            "Orientation": [
+              0,
+              -135,
+              -18
+            ],
+            "Color": [
+              0.41,
+              0.29,
+              0.19
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentRoot",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.3,
+              3.2
+            ],
+            "Position": [
+              164,
+              1.15,
+              66
+            ],
+            "Orientation": [
+              0,
+              -180,
+              -18
+            ],
+            "Color": [
+              0.41,
+              0.29,
+              0.19
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentRoot",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.3,
+              3.2
+            ],
+            "Position": [
+              165.7573593128807,
+              1.15,
+              61.757359312880716
+            ],
+            "Orientation": [
+              0,
+              -225,
+              -18
+            ],
+            "Color": [
+              0.41,
+              0.29,
+              0.19
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentRoot",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.3,
+              3.2
+            ],
+            "Position": [
+              170,
+              1.15,
+              60
+            ],
+            "Orientation": [
+              0,
+              -270,
+              -18
+            ],
+            "Color": [
+              0.41,
+              0.29,
+              0.19
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentRoot",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              13,
+              2.3,
+              3.2
+            ],
+            "Position": [
+              174.2426406871193,
+              1.15,
+              61.757359312880716
+            ],
+            "Orientation": [
+              0,
+              -315,
+              -18
+            ],
+            "Color": [
+              0.41,
+              0.29,
+              0.19
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              180,
+              25,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              178.6602540378444,
+              26,
+              71
+            ],
+            "Orientation": [
+              0,
+              -30,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              175,
+              27,
+              74.66025403784438
+            ],
+            "Orientation": [
+              0,
+              -60,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              170,
+              25,
+              76
+            ],
+            "Orientation": [
+              0,
+              -90,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              165,
+              26,
+              74.66025403784438
+            ],
+            "Orientation": [
+              0,
+              -120,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              161.3397459621556,
+              27,
+              71
+            ],
+            "Orientation": [
+              0,
+              -150,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              160,
+              25,
+              66
+            ],
+            "Orientation": [
+              0,
+              -180,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              161.3397459621556,
+              26,
+              61
+            ],
+            "Orientation": [
+              0,
+              -210,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              165,
+              27,
+              57.33974596215562
+            ],
+            "Orientation": [
+              0,
+              -240,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              170,
+              25,
+              56
+            ],
+            "Orientation": [
+              0,
+              -270,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              175,
+              26,
+              57.33974596215562
+            ],
+            "Orientation": [
+              0,
+              -300,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "MeadowMonumentLeaf",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.8,
+              1.2,
+              2.1
+            ],
+            "Position": [
+              178.6602540378444,
+              27,
+              60.99999999999999
+            ],
+            "Orientation": [
+              0,
+              -330,
+              14
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeMonumentRockShoulder",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              15,
+              9,
+              12
+            ],
+            "Position": [
+              341,
+              4.5,
+              -61
+            ],
+            "Orientation": [
+              0,
+              12,
+              0
+            ],
+            "Color": [
+              0.39,
+              0.46,
+              0.49
+            ],
+            "Material": "Rock",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "LakeMonumentRockShoulder",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              15,
+              9,
+              12
+            ],
+            "Position": [
+              359,
+              4.5,
+              -61
+            ],
+            "Orientation": [
+              0,
+              -12,
+              0
+            ],
+            "Color": [
+              0.39,
+              0.46,
+              0.49
+            ],
+            "Material": "Rock",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestMonumentSandstoneSpire",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              3.8,
+              12,
+              4.2
+            ],
+            "Position": [
+              519,
+              8,
+              66
+            ],
+            "Orientation": [
+              0,
+              -36,
+              -7
+            ],
+            "Color": [
+              0.68,
+              0.52,
+              0.31
+            ],
+            "Material": "Sand",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestMonumentSandstoneSpire",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              3.8,
+              16,
+              4.2
+            ],
+            "Position": [
+              524.5,
+              10,
+              66
+            ],
+            "Orientation": [
+              0,
+              -18,
+              7
+            ],
+            "Color": [
+              0.68,
+              0.52,
+              0.31
+            ],
+            "Material": "Sand",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestMonumentSandstoneSpire",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              3.8,
+              12,
+              4.2
+            ],
+            "Position": [
+              530,
+              8,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              -7
+            ],
+            "Color": [
+              0.68,
+              0.52,
+              0.31
+            ],
+            "Material": "Sand",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestMonumentSandstoneSpire",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              3.8,
+              16,
+              4.2
+            ],
+            "Position": [
+              535.5,
+              10,
+              66
+            ],
+            "Orientation": [
+              0,
+              18,
+              7
+            ],
+            "Color": [
+              0.68,
+              0.52,
+              0.31
+            ],
+            "Material": "Sand",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "ForestMonumentSandstoneSpire",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              3.8,
+              12,
+              4.2
+            ],
+            "Position": [
+              541,
+              8,
+              66
+            ],
+            "Orientation": [
+              0,
+              36,
+              -7
+            ],
+            "Color": [
+              0.68,
+              0.52,
+              0.31
+            ],
+            "Material": "Sand",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsRootArch",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              12,
+              14,
+              2.8
+            ],
+            "Position": [
+              716,
+              6,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              -26
+            ],
+            "Color": [
+              0.36,
+              0.3,
+              0.22
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsCanopyBlade",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              9,
+              1.3,
+              2.7
+            ],
+            "Position": [
+              720,
+              13,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              20
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsRootArch",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              12,
+              14,
+              2.8
+            ],
+            "Position": [
+              714.2426406871193,
+              6,
+              70.24264068711929
+            ],
+            "Orientation": [
+              0,
+              -45,
+              26
+            ],
+            "Color": [
+              0.36,
+              0.3,
+              0.22
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsCanopyBlade",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              9,
+              1.3,
+              2.7
+            ],
+            "Position": [
+              717.0710678118655,
+              14,
+              73.07106781186548
+            ],
+            "Orientation": [
+              0,
+              -45,
+              20
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsRootArch",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              12,
+              14,
+              2.8
+            ],
+            "Position": [
+              710,
+              6,
+              72
+            ],
+            "Orientation": [
+              0,
+              -90,
+              -26
+            ],
+            "Color": [
+              0.36,
+              0.3,
+              0.22
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsCanopyBlade",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              9,
+              1.3,
+              2.7
+            ],
+            "Position": [
+              710,
+              15,
+              76
+            ],
+            "Orientation": [
+              0,
+              -90,
+              20
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsRootArch",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              12,
+              14,
+              2.8
+            ],
+            "Position": [
+              705.7573593128807,
+              6,
+              70.24264068711929
+            ],
+            "Orientation": [
+              0,
+              -135,
+              26
+            ],
+            "Color": [
+              0.36,
+              0.3,
+              0.22
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsCanopyBlade",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              9,
+              1.3,
+              2.7
+            ],
+            "Position": [
+              702.9289321881346,
+              13,
+              73.07106781186548
+            ],
+            "Orientation": [
+              0,
+              -135,
+              20
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsRootArch",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              12,
+              14,
+              2.8
+            ],
+            "Position": [
+              704,
+              6,
+              66
+            ],
+            "Orientation": [
+              0,
+              -180,
+              -26
+            ],
+            "Color": [
+              0.36,
+              0.3,
+              0.22
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsCanopyBlade",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              9,
+              1.3,
+              2.7
+            ],
+            "Position": [
+              700,
+              14,
+              66
+            ],
+            "Orientation": [
+              0,
+              -180,
+              20
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsRootArch",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              12,
+              14,
+              2.8
+            ],
+            "Position": [
+              705.7573593128807,
+              6,
+              61.757359312880716
+            ],
+            "Orientation": [
+              0,
+              -225,
+              26
+            ],
+            "Color": [
+              0.36,
+              0.3,
+              0.22
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsCanopyBlade",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              9,
+              1.3,
+              2.7
+            ],
+            "Position": [
+              702.9289321881345,
+              15,
+              58.928932188134524
+            ],
+            "Orientation": [
+              0,
+              -225,
+              20
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsRootArch",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              12,
+              14,
+              2.8
+            ],
+            "Position": [
+              710,
+              6,
+              60
+            ],
+            "Orientation": [
+              0,
+              -270,
+              -26
+            ],
+            "Color": [
+              0.36,
+              0.3,
+              0.22
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsCanopyBlade",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              9,
+              1.3,
+              2.7
+            ],
+            "Position": [
+              710,
+              13,
+              56
+            ],
+            "Orientation": [
+              0,
+              -270,
+              20
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsRootArch",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              12,
+              14,
+              2.8
+            ],
+            "Position": [
+              714.2426406871193,
+              6,
+              61.757359312880716
+            ],
+            "Orientation": [
+              0,
+              -315,
+              26
+            ],
+            "Color": [
+              0.36,
+              0.3,
+              0.22
+            ],
+            "Material": "Wood",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "WetlandsCanopyBlade",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              9,
+              1.3,
+              2.7
+            ],
+            "Position": [
+              717.0710678118654,
+              14,
+              58.928932188134524
+            ],
+            "Orientation": [
+              0,
+              -315,
+              20
+            ],
+            "Color": [
+              0.38,
+              0.72,
+              0.37
+            ],
+            "Material": "Grass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.1,
+              14,
+              3.2
+            ],
+            "Position": [
+              896,
+              7,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              -8
+            ],
+            "Color": [
+              0.49,
+              0.84,
+              0.98
+            ],
+            "Material": "Ice",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.1,
+              19,
+              3.2
+            ],
+            "Position": [
+              894.2426406871193,
+              9,
+              70.24264068711929
+            ],
+            "Orientation": [
+              0,
+              -45,
+              8
+            ],
+            "Color": [
+              0.49,
+              0.84,
+              0.98
+            ],
+            "Material": "Ice",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.1,
+              14,
+              3.2
+            ],
+            "Position": [
+              890,
+              7,
+              72
+            ],
+            "Orientation": [
+              0,
+              -90,
+              -8
+            ],
+            "Color": [
+              0.49,
+              0.84,
+              0.98
+            ],
+            "Material": "Ice",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.1,
+              19,
+              3.2
+            ],
+            "Position": [
+              885.7573593128807,
+              9,
+              70.24264068711929
+            ],
+            "Orientation": [
+              0,
+              -135,
+              8
+            ],
+            "Color": [
+              0.49,
+              0.84,
+              0.98
+            ],
+            "Material": "Ice",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.1,
+              14,
+              3.2
+            ],
+            "Position": [
+              884,
+              7,
+              66
+            ],
+            "Orientation": [
+              0,
+              -180,
+              -8
+            ],
+            "Color": [
+              0.49,
+              0.84,
+              0.98
+            ],
+            "Material": "Ice",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.1,
+              19,
+              3.2
+            ],
+            "Position": [
+              885.7573593128807,
+              9,
+              61.757359312880716
+            ],
+            "Orientation": [
+              0,
+              -225,
+              8
+            ],
+            "Color": [
+              0.49,
+              0.84,
+              0.98
+            ],
+            "Material": "Ice",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.1,
+              14,
+              3.2
+            ],
+            "Position": [
+              890,
+              7,
+              60
+            ],
+            "Orientation": [
+              0,
+              -270,
+              -8
+            ],
+            "Color": [
+              0.49,
+              0.84,
+              0.98
+            ],
+            "Material": "Ice",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.1,
+              19,
+              3.2
+            ],
+            "Position": [
+              894.2426406871193,
+              9,
+              61.757359312880716
+            ],
+            "Orientation": [
+              0,
+              -315,
+              8
+            ],
+            "Color": [
+              0.49,
+              0.84,
+              0.98
+            ],
+            "Material": "Ice",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoBasaltFin",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.2,
+              11,
+              4.8
+            ],
+            "Position": [
+              1080,
+              9,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              10
+            ],
+            "Color": [
+              0.29,
+              0.25,
+              0.28
+            ],
+            "Material": "Basalt",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoBasaltFin",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.2,
+              16,
+              4.8
+            ],
+            "Position": [
+              1077.0710678118655,
+              11,
+              73.07106781186548
+            ],
+            "Orientation": [
+              0,
+              -45,
+              10
+            ],
+            "Color": [
+              0.29,
+              0.25,
+              0.28
+            ],
+            "Material": "Basalt",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoBasaltFin",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.2,
+              11,
+              4.8
+            ],
+            "Position": [
+              1070,
+              9,
+              76
+            ],
+            "Orientation": [
+              0,
+              -90,
+              10
+            ],
+            "Color": [
+              0.29,
+              0.25,
+              0.28
+            ],
+            "Material": "Basalt",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoBasaltFin",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.2,
+              16,
+              4.8
+            ],
+            "Position": [
+              1062.9289321881345,
+              11,
+              73.07106781186548
+            ],
+            "Orientation": [
+              0,
+              -135,
+              10
+            ],
+            "Color": [
+              0.29,
+              0.25,
+              0.28
+            ],
+            "Material": "Basalt",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoBasaltFin",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.2,
+              11,
+              4.8
+            ],
+            "Position": [
+              1060,
+              9,
+              66
+            ],
+            "Orientation": [
+              0,
+              -180,
+              10
+            ],
+            "Color": [
+              0.29,
+              0.25,
+              0.28
+            ],
+            "Material": "Basalt",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoBasaltFin",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.2,
+              16,
+              4.8
+            ],
+            "Position": [
+              1062.9289321881345,
+              11,
+              58.928932188134524
+            ],
+            "Orientation": [
+              0,
+              -225,
+              10
+            ],
+            "Color": [
+              0.29,
+              0.25,
+              0.28
+            ],
+            "Material": "Basalt",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoBasaltFin",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.2,
+              11,
+              4.8
+            ],
+            "Position": [
+              1070,
+              9,
+              56
+            ],
+            "Orientation": [
+              0,
+              -270,
+              10
+            ],
+            "Color": [
+              0.29,
+              0.25,
+              0.28
+            ],
+            "Material": "Basalt",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "VolcanoBasaltFin",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              4.2,
+              16,
+              4.8
+            ],
+            "Position": [
+              1077.0710678118655,
+              11,
+              58.928932188134524
+            ],
+            "Orientation": [
+              0,
+              -315,
+              10
+            ],
+            "Color": [
+              0.29,
+              0.25,
+              0.28
+            ],
+            "Material": "Basalt",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanCoralFan",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.5,
+              2.1,
+              1.6
+            ],
+            "Position": [
+              1260,
+              14,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              12
+            ],
+            "Color": [
+              0.35,
+              0.69,
+              0.77
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanCoralFan",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.5,
+              2.1,
+              1.6
+            ],
+            "Position": [
+              1257.0710678118655,
+              14,
+              73.07106781186548
+            ],
+            "Orientation": [
+              0,
+              -45,
+              12
+            ],
+            "Color": [
+              0.35,
+              0.69,
+              0.77
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanCoralFan",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.5,
+              2.1,
+              1.6
+            ],
+            "Position": [
+              1250,
+              14,
+              76
+            ],
+            "Orientation": [
+              0,
+              -90,
+              12
+            ],
+            "Color": [
+              0.35,
+              0.69,
+              0.77
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanCoralFan",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.5,
+              2.1,
+              1.6
+            ],
+            "Position": [
+              1242.9289321881345,
+              14,
+              73.07106781186548
+            ],
+            "Orientation": [
+              0,
+              -135,
+              12
+            ],
+            "Color": [
+              0.35,
+              0.69,
+              0.77
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanCoralFan",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.5,
+              2.1,
+              1.6
+            ],
+            "Position": [
+              1240,
+              14,
+              66
+            ],
+            "Orientation": [
+              0,
+              -180,
+              12
+            ],
+            "Color": [
+              0.35,
+              0.69,
+              0.77
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanCoralFan",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.5,
+              2.1,
+              1.6
+            ],
+            "Position": [
+              1242.9289321881345,
+              14,
+              58.928932188134524
+            ],
+            "Orientation": [
+              0,
+              -225,
+              12
+            ],
+            "Color": [
+              0.35,
+              0.69,
+              0.77
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanCoralFan",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.5,
+              2.1,
+              1.6
+            ],
+            "Position": [
+              1250,
+              14,
+              56
+            ],
+            "Orientation": [
+              0,
+              -270,
+              12
+            ],
+            "Color": [
+              0.35,
+              0.69,
+              0.77
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "OceanCoralFan",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              5.5,
+              2.1,
+              1.6
+            ],
+            "Position": [
+              1257.0710678118655,
+              14,
+              58.928932188134524
+            ],
+            "Orientation": [
+              0,
+              -315,
+              12
+            ],
+            "Color": [
+              0.35,
+              0.69,
+              0.77
+            ],
+            "Material": "Glass",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaFossilRibTip",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.3,
+              2.4,
+              2.3
+            ],
+            "Position": [
+              1422,
+              13.5,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              0
+            ],
+            "Color": [
+              0.87,
+              0.81,
+              0.63
+            ],
+            "Material": "Rock",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaFossilRibTip",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.3,
+              2.4,
+              2.3
+            ],
+            "Position": [
+              1426,
+              13.5,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              0
+            ],
+            "Color": [
+              0.87,
+              0.81,
+              0.63
+            ],
+            "Material": "Rock",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaFossilRibTip",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.3,
+              2.4,
+              2.3
+            ],
+            "Position": [
+              1430,
+              13.5,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              0
+            ],
+            "Color": [
+              0.87,
+              0.81,
+              0.63
+            ],
+            "Material": "Rock",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaFossilRibTip",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.3,
+              2.4,
+              2.3
+            ],
+            "Position": [
+              1434,
+              13.5,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              0
+            ],
+            "Color": [
+              0.87,
+              0.81,
+              0.63
+            ],
+            "Material": "Rock",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
+          }
+        },
+        {
+          "Name": "SavannaFossilRibTip",
+          "ClassName": "WedgePart",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": true,
+            "Size": [
+              2.3,
+              2.4,
+              2.3
+            ],
+            "Position": [
+              1438,
+              13.5,
+              66
+            ],
+            "Orientation": [
+              0,
+              0,
+              0
+            ],
+            "Color": [
+              0.87,
+              0.81,
+              0.63
+            ],
+            "Material": "Rock",
+            "TopSurface": "Smooth",
+            "BottomSurface": "Smooth"
           }
         }
       ]
