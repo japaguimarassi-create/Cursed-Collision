@@ -7,7 +7,6 @@ local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
-local PathfindingService = game:GetService("PathfindingService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
@@ -16,6 +15,7 @@ local Rules = require(Shared:WaitForChild("GameplayRules"))
 local GuardianCatalog = require(Shared:WaitForChild("GuardianCatalog"))
 local TreadmillAnimator = require(Shared:WaitForChild("TreadmillAnimator"))
 local GuardianControllerFactory = require(script.Parent:WaitForChild("Services"):WaitForChild("GuardianController"))
+local GuardianAIFactory = require(script.Parent:WaitForChild("Services"):WaitForChild("GuardianAI"))
 local Store = DataStoreService:GetDataStore(Config.DataStoreName)
 
 local remotes = ReplicatedStorage:FindFirstChild("StealAnimalRemotes") or Instance.new("Folder")
@@ -39,9 +39,6 @@ local rebirthRemote = remote("RequestRebirth")
 local dailyRemote = remote("RequestDailyReward")
 local codeRemote = remote("RequestRedeemCode")
 local questRemote = remote("RequestQuest")
-local mapBotRemote = remote("RequestMapBot")
-local mapBotReportRemote = remote("MapBotReport")
-local botXStatusRemote = remote("BotXStatus")
 
 local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")
 local previousRuntimeWorld = Workspace:FindFirstChild("StealAnAnimalRuntimeWorld")
@@ -75,13 +72,13 @@ local saveInProgress = {}
 local leaving = {}
 local rebirthInProgress = {}
 local progressionWriteInProgress = {}
-local mapBotCooldowns = {}
 local actionCooldowns = {}
 local trainingNoticeAt = {}
 local playerBases = {}
 local playerSetupDone = {}
 local carried = {}
 local wildRecords = {}
+local guardianController
 local rng = Random.new(20261020)
 local SESSION_LEASE_SECONDS = 180
 local DAILY_CODES = table.freeze({
@@ -289,6 +286,9 @@ local function clearCarry(player)
         return
     end
     carried[player] = nil
+    if guardianController then
+        guardianController:OnCarryEnded(player)
+    end
     if carry.Model then
                 if carry.Model.Parent then
             carry.Model:Destroy()
@@ -421,11 +421,12 @@ local function spawnWild(spec)
     wildRecords[model] = spec
 end
 
-local guardianController = GuardianControllerFactory.new({
+guardianController = GuardianControllerFactory.new({
     Config = Config,
     Players = Players,
     Folder = guardiansFolder,
     GuardianCatalog = GuardianCatalog,
+    GuardianAI = GuardianAIFactory,
     CreateAnimalModel = createAnimalModel,
     AddLabel = addLabel,
     AddBall = addBall,
@@ -503,6 +504,9 @@ local function captureAnimal(player, prompt)
     end
     wildRecords[model] = nil
     carried[player] = { Spec = spec, Model = model }
+    if guardianController then
+        guardianController:OnAnimalStolen(player, spec.Biome)
+    end
     if profile then
         profile.TotalCaptured = math.min(2147483647, (profile.TotalCaptured or 0) + 1)
     end
@@ -547,6 +551,9 @@ local function depositAnimal(player, prompt)
     table.insert(profile.BarnAnimals, animal)
     profile.TotalDeposited = math.min(2147483647, (profile.TotalDeposited or 0) + 1)
     carried[player] = nil
+    if guardianController then
+        guardianController:OnCarryEnded(player)
+    end
     if carry.Model then
                 if carry.Model.Parent then
             carry.Model:Destroy()
@@ -929,68 +936,6 @@ questRemote.OnServerEvent:Connect(function(player, questId)
     end
 end)
 
-local function mapSummary()
-    local partCount = 0
-    for _, item in ipairs(world:GetDescendants()) do
-        if item:IsA("BasePart") then partCount += 1 end
-    end
-    local occupiedFarms = 0
-    for _, base in ipairs(basesFolder:GetChildren()) do
-        if base:GetAttribute("OwnerUserId") ~= 0 then occupiedFarms += 1 end
-    end
-    local biomes = 0
-    for _, biome in ipairs(Config.Biomes) do
-        if world:FindFirstChild(biome.Id .. "Ground", true) then biomes += 1 end
-    end
-    return {
-        Parts = partCount,
-        Farms = #basesFolder:GetChildren(),
-        OccupiedFarms = occupiedFarms,
-        Biomes = biomes,
-        WildAnimals = #wildlifeFolder:GetChildren(),
-        Guardians = #guardiansFolder:GetChildren(),
-    }
-end
-
-mapBotRemote.OnServerEvent:Connect(function(player)
-    if not profiles[player] or leaving[player] then return end
-    local now = os.clock()
-    if now - (mapBotCooldowns[player] or 0) < 20 then
-        notify(player, "O MapBot pode testar novamente em 20 segundos.", "Warning")
-        return
-    end
-    mapBotCooldowns[player] = now
-    local base = playerBases[player]
-    local pad = base and base:FindFirstChild("CollectPad")
-    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    local summary = mapSummary()
-    local pathStatus = "SEM PERSONAGEM"
-    local waypointCount = 0
-    if root and pad then
-        local path = PathfindingService:CreatePath({ AgentRadius = 2, AgentHeight = 5, AgentCanJump = true })
-        local success, err = pcall(function()
-            path:ComputeAsync(root.Position, pad.Position + Vector3.new(0, 3, 0))
-        end)
-        if success then
-            pathStatus = tostring(path.Status)
-            waypointCount = #path:GetWaypoints()
-        else
-            pathStatus = "ERRO: " .. tostring(err)
-        end
-    end
-    local report = table.concat({
-        "MAPBOT • DIAGNÓSTICO",
-        "Mapa: " .. ((summary.Parts > 300 and summary.Farms == 8 and summary.Biomes == 8) and "PASSOU" or "INCOMPLETO"),
-        "Peças: " .. tostring(summary.Parts),
-        "Fazendas: " .. tostring(summary.Farms) .. " (ocupadas " .. tostring(summary.OccupiedFarms) .. ")",
-        "Biomas: " .. tostring(summary.Biomes) .. "/8",
-        "Animais selvagens: " .. tostring(summary.WildAnimals),
-        "Guardiões: " .. tostring(summary.Guardians) .. "/8",
-        "Rota até o pad da fazenda: " .. pathStatus,
-        "Pontos de caminho: " .. tostring(waypointCount),
-    }, "\n")
-    mapBotReportRemote:FireClient(player, report, pathStatus == "Success" and "Success" or "Warning")
-end)
 
 buildScenery()
 for index = 1, 8 do
@@ -1070,7 +1015,6 @@ Players.PlayerRemoving:Connect(function(player)
     actionCooldowns[player] = nil
     rebirthInProgress[player] = nil
     progressionWriteInProgress[player] = nil
-    mapBotCooldowns[player] = nil
     trainingNoticeAt[player] = nil
     releaseBase(player)
     playerSetupDone[player] = nil
@@ -1094,7 +1038,9 @@ RunService.Heartbeat:Connect(function(deltaTime)
             carry.Model:PivotTo(root.CFrame * CFrame.new(0, 1.7, 2.1))
         end
     end
-    guardianController:Step(deltaTime, carried)
+    if guardianController:HasActiveGuardians() then
+        guardianController:Step(deltaTime, carried)
+    end
 
     if incomeAccumulator >= 1 then
         incomeAccumulator = 0

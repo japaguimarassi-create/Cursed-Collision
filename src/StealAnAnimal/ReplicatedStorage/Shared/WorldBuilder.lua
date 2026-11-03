@@ -303,6 +303,106 @@ function WorldBuilder.new(services)
         end
     end
     
+    local function buildBiomeGeometry(biome, biomeIndex)
+        local stoneColor = biome.Id == "Frost" and Color3.fromRGB(163, 207, 231)
+            or biome.Id == "Volcano" and Color3.fromRGB(70, 61, 70)
+            or biome.Id == "Ocean" and Color3.fromRGB(73, 124, 146)
+            or biome.Id == "Forest" and Color3.fromRGB(185, 145, 86)
+            or Color3.fromRGB(112, 116, 96)
+        local stoneMaterial = biome.Id == "Frost" and Enum.Material.Ice
+            or biome.Id == "Volcano" and Enum.Material.Basalt
+            or biome.Id == "Forest" and Enum.Material.Sandstone
+            or Enum.Material.Rock
+        local gateX = biome.CenterX - 76
+        for _, side in ipairs({ -1, 1 }) do
+            local postPosition = Vector3.new(gateX, 0, side * 10)
+            createPart(decorationFolder, biome.Id .. "GateFooting", Vector3.new(3.7, 0.62, 3.7), CFrame.new(postPosition + Vector3.new(0, 0.12, 0)), stoneColor, stoneMaterial, nil, false)
+            createPart(decorationFolder, biome.Id .. "GateFootInlay", Vector3.new(2.7, 0.10, 2.7), CFrame.new(postPosition + Vector3.new(0, 0.49, 0)), biome.Accent, Enum.Material.Metal, nil, false)
+            addWedge(decorationFolder, biome.Id .. "GateShoulder", Vector3.new(2.2, 2.8, 1.25), CFrame.new(postPosition + Vector3.new(side * 1.05, 6.1, 0)) * CFrame.Angles(0, 0, math.rad(side * 18)), stoneColor, stoneMaterial, false)
+            for segment = 1, 3 do
+                local tileX = biome.CenterX - 58 + segment * 29
+                local tile = createPart(decorationFolder, biome.Id .. "PathEdgeSegment", Vector3.new(17, 0.16, 0.72), CFrame.new(tileX, 0.075, side * 9.8), stoneColor, stoneMaterial, nil, false)
+                tile.CastShadow = false
+                local inlay = addWedge(decorationFolder, biome.Id .. "PathEdgeFacet", Vector3.new(3.2, 0.12, 0.82), CFrame.new(tileX, 0.14, side * 9.8) * CFrame.Angles(0, math.rad((segment % 2 == 0 and 1 or -1) * 8), 0), biome.Accent, Enum.Material.Metal, false)
+                inlay.CastShadow = false
+            end
+            local clusterX = biome.CenterX + (biomeIndex % 2 == 0 and -48 or 48)
+            local clusterZ = side * 63
+            local footing = createPart(decorationFolder, biome.Id .. "FacetedOutcropBase", Vector3.new(15, 0.9, 12), CFrame.new(clusterX, 0.28, clusterZ), stoneColor, stoneMaterial, nil, false)
+            footing.CFrame = footing.CFrame * CFrame.Angles(0, math.rad(biomeIndex * 7), 0)
+            for facet = 1, 3 do
+                local height = 5.5 + ((facet + biomeIndex) % 3) * 2.7
+                local offsetX = (facet - 2) * 3.4
+                local outcrop = addWedge(decorationFolder, biome.Id .. "FacetedOutcrop", Vector3.new(5.2, height, 5.6), CFrame.new(clusterX + offsetX, height / 2, clusterZ + (facet % 2 == 0 and 1.6 or -1.6)) * CFrame.Angles(0, math.rad(facet * 24 + biomeIndex * 11), math.rad((facet % 2 == 0 and 1 or -1) * 7)), stoneColor, stoneMaterial, false)
+                outcrop.CastShadow = true
+            end
+            if biome.Id == "Meadow" or biome.Id == "Wetlands" then
+                for root = 1, 2 do
+                    addWedge(decorationFolder, biome.Id .. "RootButtress", Vector3.new(11, 1.6, 2.4), CFrame.new(clusterX, 0.8, clusterZ + side * root * 3.2) * CFrame.Angles(0, math.rad(root * 28), math.rad(-12)), Color3.fromRGB(104, 77, 52), Enum.Material.Wood, false)
+                end
+            elseif biome.Id == "Lake" or biome.Id == "Ocean" then
+                for coral = 1, 2 do
+                    local height = coral == 1 and 6.5 or 4.6
+                    local stalk = addCylinder(decorationFolder, biome.Id .. "ReefColumn", Vector3.new(1.05, height, 1.05), CFrame.new(clusterX + (coral - 1.5) * 4.2, height / 2, clusterZ), biome.Accent, stoneMaterial, false)
+                    stalk.CastShadow = true
+                    addWedge(decorationFolder, biome.Id .. "ReefCrown", Vector3.new(3.8, 1.0, 2.1), CFrame.new(stalk.Position + Vector3.new(0, height / 2 + 0.7, 0)) * CFrame.Angles(0, math.rad(coral * 45), math.rad(14)), biome.Accent, Enum.Material.Glass, false)
+                end
+            elseif biome.Id == "Forest" or biome.Id == "Savanna" then
+                for stratum = 1, 2 do
+                    addWedge(decorationFolder, biome.Id .. "ErodedStrata", Vector3.new(10, 1.1, 5.2), CFrame.new(clusterX + (stratum - 1.5) * 3.8, 2.1 + stratum * 1.2, clusterZ) * CFrame.Angles(0, math.rad(stratum * 17), math.rad(9)), stoneColor, stoneMaterial, false)
+                end
+            elseif biome.Id == "Frost" or biome.Id == "Volcano" then
+                for shard = 1, 2 do
+                    local height = shard == 1 and 8.5 or 6.1
+                    local crystal = addWedge(decorationFolder, biome.Id .. "OutcropShard", Vector3.new(2.4, height, 2.2), CFrame.new(clusterX + (shard == 1 and -3.4 or 3.4), height / 2, clusterZ - side * 1.8) * CFrame.Angles(0, math.rad(shard * 33), math.rad(shard == 1 and -9 or 11)), biome.Accent, biome.Id == "Frost" and Enum.Material.Ice or Enum.Material.Basalt, false)
+                    crystal.CastShadow = true
+                end
+            end
+        end
+        addPolygonRing(decorationFolder, biome.Id .. "GateBaseRing", Vector3.new(gateX - 18, 0.25, 24), 5, 8, 0.18, 0.22, biome.Accent, Enum.Material.Neon)
+        local keystone = addWedge(decorationFolder, biome.Id .. "GateKeystone", Vector3.new(3.2, 2.3, 1.0), CFrame.new(gateX, 8.9, 0), biome.Accent, Enum.Material.Metal, false)
+        keystone.CastShadow = false
+        if biome.Id == "Meadow" then
+            addCylinder(decorationFolder, "MeadowRootColumn", Vector3.new(1.2, 8.5, 1.2), CFrame.new(biome.CenterX - 21, 4.25, -52), Color3.fromRGB(110, 78, 51), Enum.Material.Wood, false)
+            addWedge(decorationFolder, "MeadowBranchCrown", Vector3.new(11, 1.4, 3), CFrame.new(biome.CenterX - 21, 8.4, -52) * CFrame.Angles(0, math.rad(25), math.rad(-12)), Color3.fromRGB(73, 145, 71), Enum.Material.Grass, false)
+        elseif biome.Id == "Lake" then
+            for pier = 1, 2 do
+                local x = biome.CenterX + (pier == 1 and -26 or 26)
+                addWedge(decorationFolder, "LakeBridgePier", Vector3.new(8, 9, 8), CFrame.new(x, 4.5, 54) * CFrame.Angles(0, math.rad(pier * 8), 0), stoneColor, stoneMaterial, false)
+            end
+            createPart(decorationFolder, "LakeBridgeSpan", Vector3.new(56, 1.1, 5), CFrame.new(biome.CenterX, 9.3, 54), Color3.fromRGB(100, 151, 161), Enum.Material.Slate, nil, false)
+        elseif biome.Id == "Forest" then
+            for archSide = -1, 1, 2 do
+                addWedge(decorationFolder, "ForestMonolithFoot", Vector3.new(5.5, 12, 5), CFrame.new(biome.CenterX + archSide * 23, 6, -54) * CFrame.Angles(0, 0, math.rad(archSide * 9)), stoneColor, stoneMaterial, false)
+            end
+            createPart(decorationFolder, "ForestMonolithLintel", Vector3.new(52, 2.3, 5), CFrame.new(biome.CenterX, 12.4, -54), stoneColor, stoneMaterial, nil, false)
+        elseif biome.Id == "Wetlands" then
+            for root = 1, 4 do
+                local angle = math.rad((root - 1) * 90)
+                addWedge(decorationFolder, "WetlandsRootRib", Vector3.new(15, 1.8, 2.2), CFrame.new(biome.CenterX + math.cos(angle) * 29, 2.2, 55 + math.sin(angle) * 8) * CFrame.Angles(0, -angle, math.rad(12)), Color3.fromRGB(92, 77, 49), Enum.Material.Wood, false)
+            end
+        elseif biome.Id == "Frost" then
+            for shard = 1, 3 do
+                local height = 10 + shard * 2.5
+                addWedge(decorationFolder, "FrostSculptedSpire", Vector3.new(3.2, height, 3.2), CFrame.new(biome.CenterX + (shard - 2) * 6, height / 2, 55), biome.Accent, Enum.Material.Ice, false)
+            end
+        elseif biome.Id == "Volcano" then
+            for fin = 1, 3 do
+                local height = 8 + fin * 2
+                addWedge(decorationFolder, "VolcanoBasaltRidgeFin", Vector3.new(4.2, height, 3.8), CFrame.new(biome.CenterX + (fin - 2) * 7, height / 2, -55) * CFrame.Angles(0, math.rad(fin * 19), math.rad(fin == 2 and 0 or 8)), stoneColor, Enum.Material.Basalt, false)
+            end
+        elseif biome.Id == "Ocean" then
+            for fan = 1, 3 do
+                addWedge(decorationFolder, "OceanCoralFan", Vector3.new(5.4, 2.2, 1.5), CFrame.new(biome.CenterX + (fan - 2) * 7, 4.2, 56) * CFrame.Angles(0, math.rad(fan * 38), math.rad(15)), biome.Accent, Enum.Material.Glass, false)
+            end
+        elseif biome.Id == "Savanna" then
+            for rib = 1, 4 do
+                local x = biome.CenterX + (rib - 2.5) * 8
+                addCylinder(decorationFolder, "SavannaFossilRib", Vector3.new(0.9, 8 + (rib % 2) * 2, 0.9), CFrame.new(x, 4.5, -56) * CFrame.Angles(0, 0, math.rad(rib % 2 == 0 and 16 or -16)), Color3.fromRGB(225, 211, 172), Enum.Material.Rock, false)
+            end
+        end
+    end
+
     local function buildScenery()
         Lighting.ClockTime = 14
         Lighting.Brightness = 2.2
@@ -415,6 +515,7 @@ function WorldBuilder.new(services)
             local transitionX = biome.CenterX + 88
             local transition = createPart(world, biome.Id .. "TransitionLine", Vector3.new(0.65, 0.12, 44), CFrame.new(transitionX, 0.12, 0), biome.Accent, Enum.Material.Neon, nil, false)
             transition.CastShadow = false
+            buildBiomeGeometry(biome, biomeIndex)
 
             local landmarkX = biome.CenterX + 18
             local landmarkZ = biomeIndex % 2 == 0 and 66 or -66

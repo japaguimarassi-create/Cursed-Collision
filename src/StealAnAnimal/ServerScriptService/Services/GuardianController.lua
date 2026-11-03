@@ -5,48 +5,34 @@ function GuardianController.new(services)
     local Players = services.Players
     local Folder = services.Folder
     local GuardianCatalog = services.GuardianCatalog
+    local GuardianAIFactory = services.GuardianAI
     local CreateAnimalModel = services.CreateAnimalModel
     local AddLabel = services.AddLabel
     local AddBall = services.AddBall
-    local Notify = services.Notify
-    local ClearCarry = services.ClearCarry
 
-    local self = {
-        Guardians = {},
-        Accumulator = 0,
-        Spawned = false,
-    }
+    local self = { Guardians = {}, Spawned = false }
 
     function self:SpawnAll()
-        if self.Spawned then
-            return #self.Guardians
-        end
+        if self.Spawned then return #self.Guardians end
         for _, biome in ipairs(Config.Biomes) do
             local spec = GuardianCatalog.Get(biome.Id)
             if spec then
                 local side = biome.Phase % 2 == 0 and 1 or -1
                 local position = Vector3.new(biome.CenterX - 50, -0.12, side * 23)
+                local home = CFrame.new(position)
                 local model = CreateAnimalModel(spec, "Adult", position, true)
                 if model and model.PrimaryPart then
                     model.Name = "GuardianParent_" .. biome.Id
                     model:SetAttribute("GuardianBiome", biome.Id)
                     model:SetAttribute("GuardianType", spec.GuardianType)
                     model:SetAttribute("ThreatLevel", biome.Phase)
+                    model:SetAttribute("GuardianAIActive", false)
+                    model:SetAttribute("GuardianBrainState", "Dormant")
                     model:SetAttribute("AnimationState", "Rest")
                     model.Parent = Folder
 
-                    local labelPart = model:FindFirstChild("Head")
-                        or model:FindFirstChild("SwanHead")
-                        or model.PrimaryPart
-                    AddLabel(
-                        labelPart,
-                        "GUARDIÃO: " .. string.upper(spec.Name),
-                        "PROTEGE OS OVOS • FASE " .. tostring(biome.Phase),
-                        biome.Accent,
-                        false,
-                        64,
-                        1.5
-                    )
+                    local labelPart = model:FindFirstChild("Head") or model:FindFirstChild("SwanHead") or model.PrimaryPart
+                    AddLabel(labelPart, "GUARDIÃO: " .. string.upper(spec.Name), "IA DORMENTE • ATIVA APÓS ROUBO • FASE " .. tostring(biome.Phase), biome.Accent, false, 64, 1.5)
 
                     local highlight = Instance.new("Highlight")
                     highlight.Name = "GuardianRim"
@@ -67,15 +53,19 @@ function GuardianController.new(services)
                         aura.CanQuery = false
                         aura.CastShadow = false
                     end
-
                     AddBall(model, "GuardianCrownGem", Vector3.new(1.9, 1.9, 1.9), position + Vector3.new(0, 16.4, 0), biome.Accent, Enum.Material.Neon)
-                    table.insert(self.Guardians, {
+
+                    local brain = GuardianAIFactory.new({
                         Model = model,
-                        Home = CFrame.new(position),
+                        Home = home,
                         Biome = biome,
-                        Spec = spec,
+                        Config = Config,
+                        Players = Players,
                         Speed = math.min(Config.GuardianSpeed + (biome.Phase - 1) * 1.5, Config.GuardianSpeed * 1.8),
+                        ClearCarry = services.ClearCarry,
+                        Notify = services.Notify,
                     })
+                    table.insert(self.Guardians, { Model = model, Home = home, Biome = biome, Spec = spec, Brain = brain })
                 end
             end
         end
@@ -83,68 +73,30 @@ function GuardianController.new(services)
         return #self.Guardians
     end
 
-    function self:Step(deltaTime, carried)
-        self.Accumulator += math.clamp(tonumber(deltaTime) or 0, 0, 0.1)
-        if self.Accumulator < Config.GuardianThinkSeconds then
-            return
-        end
-        local stepTime = self.Accumulator
-        self.Accumulator = 0
-
+    function self:OnAnimalStolen(player, biomeId)
+        if not player or player.Parent ~= Players or not biomeId then return 0 end
+        local activated = 0
         for _, guardian in ipairs(self.Guardians) do
-            local model = guardian.Model
-            if model and model.Parent and model.PrimaryPart then
-                local targetRoot
-                local targetPlayer
-                local nearest = Config.GuardianNoticeDistance
+            if guardian.Biome.Id == biomeId and guardian.Brain:Activate(player) then activated += 1 end
+        end
+        return activated
+    end
 
-                for player in pairs(carried) do
-                    if player.Parent == Players then
-                        local character = player.Character
-                        local root = character and character:FindFirstChild("HumanoidRootPart")
-                        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                        if root and humanoid and humanoid.Health > 0 then
-                            local distance = (root.Position - model.PrimaryPart.Position).Magnitude
-                            if distance < nearest then
-                                nearest = distance
-                                targetRoot = root
-                                targetPlayer = player
-                            end
-                        end
-                    end
-                end
+    function self:OnCarryEnded(player)
+        if not player then return end
+        for _, guardian in ipairs(self.Guardians) do guardian.Brain:Deactivate(player) end
+    end
 
-                if targetRoot and targetPlayer then
-                    if nearest <= Config.GuardianCatchDistance then
-                        ClearCarry(targetPlayer)
-                        Notify(targetPlayer, "O guardião alcançou você! O animal escapou.", "Error")
-                        model:SetAttribute("AnimationState", "Rest")
-                    else
-                        local current = model:GetPivot()
-                        local destination = Vector3.new(targetRoot.Position.X, current.Position.Y, targetRoot.Position.Z)
-                        local direction = destination - current.Position
-                        if direction.Magnitude > 0.1 then
-                            local movement = math.min(direction.Magnitude, (guardian.Speed or Config.GuardianSpeed) * stepTime)
-                            local nextPosition = current.Position + direction.Unit * movement
-                            model:PivotTo(CFrame.lookAt(nextPosition, destination))
-                        end
-                        model:SetAttribute("AnimationState", "Run")
-                    end
-                else
-                    local current = model:GetPivot()
-                    local home = guardian.Home.Position
-                    local direction = home - current.Position
-                    if direction.Magnitude > 1 then
-                        local movement = math.min(direction.Magnitude, 7 * stepTime)
-                        local nextPosition = current.Position + direction.Unit * movement
-                        model:PivotTo(CFrame.lookAt(nextPosition, home))
-                        model:SetAttribute("AnimationState", "Walk")
-                    else
-                        model:PivotTo(guardian.Home)
-                        model:SetAttribute("AnimationState", "Rest")
-                    end
-                end
-            end
+    function self:HasActiveGuardians()
+        for _, guardian in ipairs(self.Guardians) do
+            if guardian.Brain:IsActive() then return true end
+        end
+        return false
+    end
+
+    function self:Step(deltaTime, carried)
+        for _, guardian in ipairs(self.Guardians) do
+            if guardian.Brain:IsActive() then guardian.Brain:Step(deltaTime, carried) end
         end
     end
 
@@ -154,9 +106,8 @@ function GuardianController.new(services)
 
     function self:Destroy()
         for _, guardian in ipairs(self.Guardians) do
-            if guardian.Model then
-                guardian.Model:Destroy()
-            end
+            guardian.Brain:Destroy()
+            if guardian.Model then guardian.Model:Destroy() end
         end
         table.clear(self.Guardians)
         self.Spawned = false
