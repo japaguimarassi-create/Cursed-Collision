@@ -13,6 +13,10 @@ REQUIRED_FILES = [
     "src/StealAnAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
     "src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua",
     "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/GuardianCatalog.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua",
+    "src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua",
     "src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua",
     "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
     "tools/tests/test_release_safety.py",
@@ -83,9 +87,13 @@ def main():
     client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
     world_builder = read("src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua")
     animal_factory = read("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua")
+    guardian_catalog = read("src/StealAnAnimal/ReplicatedStorage/Shared/GuardianCatalog.lua")
+    animal_animator = read("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua")
+    treadmill_animator = read("src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua")
+    guardian_controller = read("src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua")
     profile_store = read("src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua")
     interaction_prompt = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua")
-    server_all = main_source + world_builder + animal_factory + profile_store
+    server_all = main_source + world_builder + animal_factory + profile_store + guardian_catalog + animal_animator + treadmill_animator + guardian_controller
     client_all = client + interaction_prompt
 
     checks = [
@@ -120,7 +128,9 @@ def main():
         ))),
         ("session-locked profiles and stage-aware offline income", all(token in server_all for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in server_all for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
-        ("guardian pursuit and escape", all(token in server_all for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),
+        ("eight dedicated guardians with rest/run/walk pursuit states", all(token in guardian_catalog for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger", "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")) and all(token in guardian_controller for token in ("GuardianCatalog.Get(biome.Id)", "Config.GuardianCatchDistance", "Animator:SetState(model, \"Run\")", "Animator:SetState(model, \"Walk\")", "Animator:SetState(model, \"Rest\")", "ClearCarry(targetPlayer)")) and all(token in main_source for token in ("guardianController:SpawnAll()", "guardianController:Step(deltaTime, carried)"))),
+        ("animal walk rest run animations and custom guardian anatomy", all(token in animal_animator for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "self:Step(deltaTime)")) and all(token in animal_factory for token in ("GuardianHenTailFeather", "GuardianSwanWingFeather", "GuardianScorpionTailSegment", "GuardianTigerFlankStripe", "GuardianYetiFurTuft", "GuardianHellhoundHead", "GuardianWhaleBioluminescentSpot", "GuardianTyrannosaurDorsalPlate"))),
+        ("treadmill belt, rollers, and level visuals use a dedicated module", all(token in treadmill_animator for token in ('Kind == "Roller"', "TreadmillBeltLength", "TreadmillBeltSpeed", "TreadmillLevel", "TrainingGain")) and all(token in main_source for token in ("TreadmillAnimator.Step(treadmillStrips", "TreadmillAnimator.ApplyLevel(treadmill, level, gain)"))),
         ("original procedural models and scenery", all(token in server_all for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "HubSpawnMarker"))),
         ("server-side treadmill training and capped movement", all(token in server_all for token in ("createTreadmill", "TrainingZone", "Rules.TrainingGain", "Rules.MoveSpeed", "Config.MaxSpeedPoints", "MaxTreadmillLevel"))),
         ("standing training does not require forced movement", "zone.CFrame:PointToObjectSpace(root.Position)" in server_all and "humanoid.MoveDirection.Magnitude > 0.12" not in server_all),
