@@ -47,7 +47,7 @@ assert [int(value) for value in re.findall(r'MinSpeed = (\d+)', CONFIG)] == [10,
 assert all(token in MAIN for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower")), "Egg-stealing map landmarks, walls, or fenced farms missing"
 assert all(token in MAIN for token in ("createTreadmill", "TrainingZone", "MovingBeltStripe", "UpgradeTreadmill", "TreadmillLevel")), "Functional treadmill and upgrade prompt missing"
 assert "TreadmillBeltSpeed" in CONFIG and "TreadmillAnimator.Step(treadmillEntries, os.clock())" in ANIMATION_CLIENT, "Client treadmill belt and roller animation missing"
-assert all(token in WORLD for token in ('Kind = "Stripe"', 'Kind = "Roller"', "BaseCFrame = roller.CFrame")), "Treadmill stripes and rollers need separate animation tracks"
+assert all(token in WORLD for token in ('SetAttribute("TreadmillOrigin"', 'SetAttribute("AnimationPhase"', 'SetAttribute("AnimationLength"', 'SetAttribute("AnimationSpeed"')), "Treadmill stripe and roller metadata is missing"
 assert "TreadmillAnimator.ApplyLevel(treadmill, level, gain)" in MAIN_FILE, "Treadmill upgrade level must update its live visuals"
 assert "Rules.TrainingGain" in MAIN and "Rules.MoveSpeed" in MAIN and "Config.MaxSpeedPoints" in MAIN, "Training and speed cap must be server-authoritative"
 assert "createAnimalModel" in MAIN and "EvolutionStages" in MAIN, "Stage-aware animal model builder missing"
