@@ -5424,6 +5424,5445 @@
             "TopSurface": "Smooth",
             "BottomSurface": "Smooth"
           }
+        },
+        {
+          "Name": "CentralHubGrid",
+          "ClassName": "Folder",
+          "Children": [
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -90,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -72,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -54,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -36,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  -18,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  0,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  18,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  36,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  54,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  72,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  -90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  -72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  -54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  -36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  -18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  0
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  18
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  36
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  54
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  72
+                ],
+                "Color": [
+                  0.3568627450980392,
+                  0.7725490196078432,
+                  0.25882352941176473
+                ],
+                "Material": "SmoothPlastic"
+              }
+            },
+            {
+              "Name": "CentralHubTile",
+              "ClassName": "Part",
+              "Properties": {
+                "Anchored": true,
+                "CanCollide": false,
+                "CastShadow": false,
+                "Size": [
+                  17.8,
+                  0.08,
+                  17.8
+                ],
+                "Position": [
+                  90,
+                  -0.08,
+                  90
+                ],
+                "Color": [
+                  0.4666666666666667,
+                  0.8627450980392157,
+                  0.2980392156862745
+                ],
+                "Material": "SmoothPlastic"
+              }
+            }
+          ]
+        },
+        {
+          "Name": "MeadowTransitionLine",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.65,
+              0.12,
+              44
+            ],
+            "Position": [
+              258,
+              0.12,
+              0
+            ],
+            "Color": [
+              1,
+              0.8549019607843137,
+              0.4117647058823529
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "MeadowRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              94,
+              2.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.8549019607843137,
+              0.4117647058823529
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "MeadowRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              94,
+              5.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              94,
+              2.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.8549019607843137,
+              0.4117647058823529
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "MeadowRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              94,
+              5.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowMonumentStem",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.4,
+              8,
+              1.4
+            ],
+            "Position": [
+              188,
+              4,
+              -66
+            ],
+            "Color": [
+              0.27450980392156865,
+              0.592156862745098,
+              0.2901960784313726
+            ],
+            "Material": "Grass"
+          }
+        },
+        {
+          "Name": "MeadowMonumentPetal",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3.8,
+              1.25,
+              3.8
+            ],
+            "Position": [
+              191.2,
+              8.6,
+              -66
+            ],
+            "Color": [
+              1,
+              0.5450980392156862,
+              0.7372549019607844
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowMonumentPetal",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3.8,
+              1.25,
+              3.8
+            ],
+            "Position": [
+              189.6,
+              8.6,
+              -63.2287187078898
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.4
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowMonumentPetal",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3.8,
+              1.25,
+              3.8
+            ],
+            "Position": [
+              186.4,
+              8.6,
+              -63.2287187078898
+            ],
+            "Color": [
+              1,
+              0.5450980392156862,
+              0.7372549019607844
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowMonumentPetal",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3.8,
+              1.25,
+              3.8
+            ],
+            "Position": [
+              184.8,
+              8.6,
+              -66
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.4
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowMonumentPetal",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3.8,
+              1.25,
+              3.8
+            ],
+            "Position": [
+              186.4,
+              8.6,
+              -68.7712812921102
+            ],
+            "Color": [
+              1,
+              0.5450980392156862,
+              0.7372549019607844
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowMonumentPetal",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3.8,
+              1.25,
+              3.8
+            ],
+            "Position": [
+              189.6,
+              8.6,
+              -68.7712812921102
+            ],
+            "Color": [
+              1,
+              0.7450980392156863,
+              0.4
+            ],
+            "Material": "SmoothPlastic",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowMonumentCore",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2.8,
+              2.8,
+              2.8
+            ],
+            "Position": [
+              188,
+              9,
+              -66
+            ],
+            "Color": [
+              1,
+              0.9333333333333333,
+              0.5529411764705883
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "MeadowLandmarkPlaque",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              2.2,
+              0.5
+            ],
+            "Position": [
+              188,
+              4.5,
+              -55
+            ],
+            "Color": [
+              0.15294117647058825,
+              0.2235294117647059,
+              0.20784313725490197
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "LakeTransitionLine",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.65,
+              0.12,
+              44
+            ],
+            "Position": [
+              438,
+              0.12,
+              0
+            ],
+            "Color": [
+              0.4549019607843137,
+              0.8862745098039215,
+              0.9411764705882353
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "LakeRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              274,
+              2.75,
+              -29
+            ],
+            "Color": [
+              0.4549019607843137,
+              0.8862745098039215,
+              0.9411764705882353
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "LakeRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              274,
+              5.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "LakeRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              274,
+              2.75,
+              29
+            ],
+            "Color": [
+              0.4549019607843137,
+              0.8862745098039215,
+              0.9411764705882353
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "LakeRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              274,
+              5.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "LakeMonumentCliff",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              21,
+              13,
+              7
+            ],
+            "Position": [
+              368,
+              6.5,
+              69
+            ],
+            "Color": [
+              0.4,
+              0.5450980392156862,
+              0.5686274509803921
+            ],
+            "Material": "Rock"
+          }
+        },
+        {
+          "Name": "LakeMonumentWaterfall",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              12,
+              12,
+              0.5
+            ],
+            "Position": [
+              368,
+              5.8,
+              65
+            ],
+            "Color": [
+              0.3803921568627451,
+              0.8705882352941177,
+              0.9333333333333333
+            ],
+            "Material": "Glass"
+          }
+        },
+        {
+          "Name": "LakeMonumentPool",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              23,
+              0.55,
+              16
+            ],
+            "Position": [
+              368,
+              0.2,
+              64
+            ],
+            "Color": [
+              0.34509803921568627,
+              0.796078431372549,
+              0.8823529411764706
+            ],
+            "Material": "Glass"
+          }
+        },
+        {
+          "Name": "LakeMonumentTop",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              4,
+              4,
+              4
+            ],
+            "Position": [
+              368,
+              14,
+              69
+            ],
+            "Color": [
+              0.4980392156862745,
+              0.9372549019607843,
+              0.9647058823529412
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "LakeLandmarkPlaque",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              2.2,
+              0.5
+            ],
+            "Position": [
+              368,
+              4.5,
+              55
+            ],
+            "Color": [
+              0.15294117647058825,
+              0.2235294117647059,
+              0.20784313725490197
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "ForestTransitionLine",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.65,
+              0.12,
+              44
+            ],
+            "Position": [
+              618,
+              0.12,
+              0
+            ],
+            "Color": [
+              0.6470588235294118,
+              0.8549019607843137,
+              0.4588235294117647
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "ForestRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              454,
+              2.75,
+              -29
+            ],
+            "Color": [
+              0.6470588235294118,
+              0.8549019607843137,
+              0.4588235294117647
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "ForestRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              454,
+              5.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "ForestRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              454,
+              2.75,
+              29
+            ],
+            "Color": [
+              0.6470588235294118,
+              0.8549019607843137,
+              0.4588235294117647
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "ForestRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              454,
+              5.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "ForestMonumentTrunk",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              4.2,
+              17,
+              4.2
+            ],
+            "Position": [
+              548,
+              8.5,
+              -66
+            ],
+            "Color": [
+              0.43529411764705883,
+              0.29411764705882354,
+              0.18823529411764706
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "ForestMonumentCanopy",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              18,
+              13,
+              18
+            ],
+            "Position": [
+              548,
+              19,
+              -66
+            ],
+            "Color": [
+              0.24313725490196078,
+              0.5686274509803921,
+              0.29411764705882354
+            ],
+            "Material": "Grass",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "ForestMonumentCanopyUpper",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              12,
+              9,
+              12
+            ],
+            "Position": [
+              549,
+              25,
+              -66
+            ],
+            "Color": [
+              0.396078431372549,
+              0.7215686274509804,
+              0.3686274509803922
+            ],
+            "Material": "Grass",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "ForestMonumentRoot",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              8,
+              1.5,
+              2
+            ],
+            "Position": [
+              551.4,
+              0.8,
+              -66
+            ],
+            "Color": [
+              0.43529411764705883,
+              0.29411764705882354,
+              0.18823529411764706
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "ForestMonumentRoot",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              8,
+              1.5,
+              2
+            ],
+            "Position": [
+              548,
+              0.8,
+              -62.6
+            ],
+            "Color": [
+              0.43529411764705883,
+              0.29411764705882354,
+              0.18823529411764706
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "ForestMonumentRoot",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              8,
+              1.5,
+              2
+            ],
+            "Position": [
+              544.6,
+              0.8,
+              -66
+            ],
+            "Color": [
+              0.43529411764705883,
+              0.29411764705882354,
+              0.18823529411764706
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "ForestMonumentRoot",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              8,
+              1.5,
+              2
+            ],
+            "Position": [
+              548,
+              0.8,
+              -69.4
+            ],
+            "Color": [
+              0.43529411764705883,
+              0.29411764705882354,
+              0.18823529411764706
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "ForestLandmarkPlaque",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              2.2,
+              0.5
+            ],
+            "Position": [
+              548,
+              4.5,
+              -55
+            ],
+            "Color": [
+              0.15294117647058825,
+              0.2235294117647059,
+              0.20784313725490197
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "WetlandsTransitionLine",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.65,
+              0.12,
+              44
+            ],
+            "Position": [
+              798,
+              0.12,
+              0
+            ],
+            "Color": [
+              0.4588235294117647,
+              0.8901960784313725,
+              0.803921568627451
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "WetlandsRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              634,
+              2.75,
+              -29
+            ],
+            "Color": [
+              0.4588235294117647,
+              0.8901960784313725,
+              0.803921568627451
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "WetlandsRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              634,
+              5.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "WetlandsRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              634,
+              2.75,
+              29
+            ],
+            "Color": [
+              0.4588235294117647,
+              0.8901960784313725,
+              0.803921568627451
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "WetlandsRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              634,
+              5.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "WetlandsMonumentDeck",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              18,
+              0.8,
+              14
+            ],
+            "Position": [
+              728,
+              0.4,
+              66
+            ],
+            "Color": [
+              0.4666666666666667,
+              0.34509803921568627,
+              0.23529411764705882
+            ],
+            "Material": "WoodPlanks"
+          }
+        },
+        {
+          "Name": "WetlandsMonumentPost",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.8,
+              7,
+              0.8
+            ],
+            "Position": [
+              721,
+              3.5,
+              61
+            ],
+            "Color": [
+              0.4,
+              0.3058823529411765,
+              0.21568627450980393
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "WetlandsMonumentPost",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.8,
+              7,
+              0.8
+            ],
+            "Position": [
+              721,
+              3.5,
+              71
+            ],
+            "Color": [
+              0.4,
+              0.3058823529411765,
+              0.21568627450980393
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "WetlandsMonumentPost",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.8,
+              7,
+              0.8
+            ],
+            "Position": [
+              735,
+              3.5,
+              61
+            ],
+            "Color": [
+              0.4,
+              0.3058823529411765,
+              0.21568627450980393
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "WetlandsMonumentPost",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.8,
+              7,
+              0.8
+            ],
+            "Position": [
+              735,
+              3.5,
+              71
+            ],
+            "Color": [
+              0.4,
+              0.3058823529411765,
+              0.21568627450980393
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "WetlandsMonumentRoof",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              22,
+              1.1,
+              17
+            ],
+            "Position": [
+              728,
+              7.4,
+              66
+            ],
+            "Color": [
+              0.2196078431372549,
+              0.36470588235294116,
+              0.3333333333333333
+            ],
+            "Material": "Slate"
+          }
+        },
+        {
+          "Name": "WetlandsMonumentLamp",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3,
+              2.8,
+              3
+            ],
+            "Position": [
+              728,
+              5.2,
+              60
+            ],
+            "Color": [
+              0.45098039215686275,
+              1,
+              0.8392156862745098
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "WetlandsLandmarkPlaque",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              2.2,
+              0.5
+            ],
+            "Position": [
+              728,
+              4.5,
+              55
+            ],
+            "Color": [
+              0.15294117647058825,
+              0.2235294117647059,
+              0.20784313725490197
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "FrostTransitionLine",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.65,
+              0.12,
+              44
+            ],
+            "Position": [
+              978,
+              0.12,
+              0
+            ],
+            "Color": [
+              0.43137254901960786,
+              0.792156862745098,
+              1
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "FrostRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              814,
+              2.75,
+              -29
+            ],
+            "Color": [
+              0.43137254901960786,
+              0.792156862745098,
+              1
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "FrostRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              814,
+              5.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "FrostRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              814,
+              2.75,
+              29
+            ],
+            "Color": [
+              0.43137254901960786,
+              0.792156862745098,
+              1
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "FrostRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              814,
+              5.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2.7,
+              12,
+              2.7
+            ],
+            "Position": [
+              913,
+              6,
+              -66
+            ],
+            "Color": [
+              0.49411764705882355,
+              0.8431372549019608,
+              1
+            ],
+            "Material": "Ice"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2.7,
+              17,
+              2.7
+            ],
+            "Position": [
+              909.5450849718748,
+              8.5,
+              -61.24471741852423
+            ],
+            "Color": [
+              0.49411764705882355,
+              0.8431372549019608,
+              1
+            ],
+            "Material": "Ice"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2.7,
+              12,
+              2.7
+            ],
+            "Position": [
+              903.9549150281252,
+              6,
+              -63.06107373853764
+            ],
+            "Color": [
+              0.49411764705882355,
+              0.8431372549019608,
+              1
+            ],
+            "Material": "Ice"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2.7,
+              17,
+              2.7
+            ],
+            "Position": [
+              903.9549150281252,
+              8.5,
+              -68.93892626146237
+            ],
+            "Color": [
+              0.49411764705882355,
+              0.8431372549019608,
+              1
+            ],
+            "Material": "Ice"
+          }
+        },
+        {
+          "Name": "FrostMonumentShard",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2.7,
+              12,
+              2.7
+            ],
+            "Position": [
+              909.5450849718748,
+              6,
+              -70.75528258147577
+            ],
+            "Color": [
+              0.49411764705882355,
+              0.8431372549019608,
+              1
+            ],
+            "Material": "Ice"
+          }
+        },
+        {
+          "Name": "FrostMonumentCore",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              4.5,
+              4.5,
+              4.5
+            ],
+            "Position": [
+              908,
+              8,
+              -66
+            ],
+            "Color": [
+              0.8117647058823529,
+              0.9725490196078431,
+              1
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "FrostLandmarkPlaque",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              2.2,
+              0.5
+            ],
+            "Position": [
+              908,
+              4.5,
+              -55
+            ],
+            "Color": [
+              0.15294117647058825,
+              0.2235294117647059,
+              0.20784313725490197
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "SavannaTransitionLine",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.65,
+              0.12,
+              44
+            ],
+            "Position": [
+              1158,
+              0.12,
+              0
+            ],
+            "Color": [
+              1,
+              0.8901960784313725,
+              0.5019607843137255
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "SavannaRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              994,
+              2.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.8901960784313725,
+              0.5019607843137255
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "SavannaRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              994,
+              5.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "SavannaRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              994,
+              2.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.8901960784313725,
+              0.5019607843137255
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "SavannaRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              994,
+              5.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "SavannaMonumentTrunk",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3.2,
+              13,
+              3.2
+            ],
+            "Position": [
+              1088,
+              6.5,
+              66
+            ],
+            "Color": [
+              0.4980392156862745,
+              0.3568627450980392,
+              0.19607843137254902
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "SavannaMonumentCanopy",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              19,
+              4.8,
+              15
+            ],
+            "Position": [
+              1088,
+              14,
+              66
+            ],
+            "Color": [
+              0.8156862745098039,
+              0.6627450980392157,
+              0.3176470588235294
+            ],
+            "Material": "Grass",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "SavannaMonumentCanopyUpper",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              12,
+              3.6,
+              10
+            ],
+            "Position": [
+              1089,
+              16,
+              66
+            ],
+            "Color": [
+              0.9098039215686274,
+              0.7607843137254902,
+              0.3764705882352941
+            ],
+            "Material": "Grass",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "SavannaMonumentStone",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              6,
+              5,
+              5
+            ],
+            "Position": [
+              1080,
+              2.5,
+              66
+            ],
+            "Color": [
+              0.6039215686274509,
+              0.5137254901960784,
+              0.34509803921568627
+            ],
+            "Material": "Rock"
+          }
+        },
+        {
+          "Name": "SavannaLandmarkPlaque",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              2.2,
+              0.5
+            ],
+            "Position": [
+              1088,
+              4.5,
+              55
+            ],
+            "Color": [
+              0.15294117647058825,
+              0.2235294117647059,
+              0.20784313725490197
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "VolcanoTransitionLine",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.65,
+              0.12,
+              44
+            ],
+            "Position": [
+              1338,
+              0.12,
+              0
+            ],
+            "Color": [
+              1,
+              0.396078431372549,
+              0.21568627450980393
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "VolcanoRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              1174,
+              2.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.396078431372549,
+              0.21568627450980393
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "VolcanoRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              1174,
+              5.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "VolcanoRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              1174,
+              2.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.396078431372549,
+              0.21568627450980393
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "VolcanoRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              1174,
+              5.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "VolcanoMonumentBase",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              25,
+              15,
+              23
+            ],
+            "Position": [
+              1268,
+              5.5,
+              -66
+            ],
+            "Color": [
+              0.2627450980392157,
+              0.23529411764705882,
+              0.24705882352941178
+            ],
+            "Material": "Slate",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "VolcanoMonumentLava",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              3.2,
+              10
+            ],
+            "Position": [
+              1268,
+              12.5,
+              -66
+            ],
+            "Color": [
+              1,
+              0.39215686274509803,
+              0.1568627450980392
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "VolcanoMonumentFlow",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              1263,
+              5,
+              -74
+            ],
+            "Color": [
+              1,
+              0.49019607843137253,
+              0.19215686274509805
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "VolcanoMonumentFlow",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              1268,
+              5,
+              -74
+            ],
+            "Color": [
+              1,
+              0.49019607843137253,
+              0.19215686274509805
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "VolcanoMonumentFlow",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              1273,
+              5,
+              -74
+            ],
+            "Color": [
+              1,
+              0.49019607843137253,
+              0.19215686274509805
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "VolcanoMonumentSmoke",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              5.5,
+              5.5,
+              5.5
+            ],
+            "Position": [
+              1268,
+              19,
+              -66
+            ],
+            "Color": [
+              0.39215686274509803,
+              0.34509803921568627,
+              0.34901960784313724
+            ],
+            "Material": "Slate",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "VolcanoLandmarkPlaque",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              2.2,
+              0.5
+            ],
+            "Position": [
+              1268,
+              4.5,
+              -55
+            ],
+            "Color": [
+              0.15294117647058825,
+              0.2235294117647059,
+              0.20784313725490197
+            ],
+            "Material": "Wood"
+          }
+        },
+        {
+          "Name": "OceanTransitionLine",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              0.65,
+              0.12,
+              44
+            ],
+            "Position": [
+              1518,
+              0.12,
+              0
+            ],
+            "Color": [
+              0.3254901960784314,
+              0.8627450980392157,
+              0.9803921568627451
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "OceanRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              1354,
+              2.75,
+              -29
+            ],
+            "Color": [
+              0.3254901960784314,
+              0.8627450980392157,
+              0.9803921568627451
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "OceanRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              1354,
+              5.75,
+              -29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "OceanRouteMarker",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              5.5,
+              1.2
+            ],
+            "Position": [
+              1354,
+              2.75,
+              29
+            ],
+            "Color": [
+              0.3254901960784314,
+              0.8627450980392157,
+              0.9803921568627451
+            ],
+            "Material": "Neon"
+          }
+        },
+        {
+          "Name": "OceanRouteMarkerCap",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              2,
+              1.2,
+              2
+            ],
+            "Position": [
+              1354,
+              5.75,
+              29
+            ],
+            "Color": [
+              1,
+              0.9686274509803922,
+              0.8
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "OceanMonumentTower",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              5.5,
+              17,
+              5.5
+            ],
+            "Position": [
+              1448,
+              8.5,
+              66
+            ],
+            "Color": [
+              0.29411764705882354,
+              0.4823529411764706,
+              0.5725490196078431
+            ],
+            "Material": "Slate"
+          }
+        },
+        {
+          "Name": "OceanMonumentRoof",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              7.5,
+              2.8,
+              7.5
+            ],
+            "Position": [
+              1448,
+              18,
+              66
+            ],
+            "Color": [
+              0.1803921568627451,
+              0.30196078431372547,
+              0.40784313725490196
+            ],
+            "Material": "Metal"
+          }
+        },
+        {
+          "Name": "OceanMonumentBeacon",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              3.5,
+              3.5,
+              3.5
+            ],
+            "Position": [
+              1448,
+              20,
+              66
+            ],
+            "Color": [
+              0.4117647058823529,
+              0.9215686274509803,
+              1
+            ],
+            "Material": "Neon",
+            "Shape": "Ball"
+          }
+        },
+        {
+          "Name": "OceanMonumentFin",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              7,
+              3.5
+            ],
+            "Position": [
+              1443,
+              4.5,
+              66
+            ],
+            "Color": [
+              0.30196078431372547,
+              0.6235294117647059,
+              0.7215686274509804
+            ],
+            "Material": "Slate"
+          }
+        },
+        {
+          "Name": "OceanMonumentFin",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              1.2,
+              7,
+              3.5
+            ],
+            "Position": [
+              1453,
+              4.5,
+              66
+            ],
+            "Color": [
+              0.30196078431372547,
+              0.6235294117647059,
+              0.7215686274509804
+            ],
+            "Material": "Slate"
+          }
+        },
+        {
+          "Name": "OceanLandmarkPlaque",
+          "ClassName": "Part",
+          "Properties": {
+            "Anchored": true,
+            "CanCollide": false,
+            "CastShadow": false,
+            "Size": [
+              10,
+              2.2,
+              0.5
+            ],
+            "Position": [
+              1448,
+              4.5,
+              55
+            ],
+            "Color": [
+              0.15294117647058825,
+              0.2235294117647059,
+              0.20784313725490197
+            ],
+            "Material": "Wood"
+          }
         }
       ]
     },
@@ -19986,6 +25425,158 @@
         "Material": "WoodPlanks",
         "TopSurface": "Smooth",
         "BottomSurface": "Smooth"
+      }
+    },
+    {
+      "Name": "RouteStartArchPost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          2.4,
+          15,
+          2.4
+        ],
+        "Position": [
+          111,
+          7.5,
+          -14
+        ],
+        "Color": [
+          1,
+          0.8196078431372549,
+          0.3568627450980392
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "RouteStartArchPost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          2.4,
+          15,
+          2.4
+        ],
+        "Position": [
+          111,
+          7.5,
+          14
+        ],
+        "Color": [
+          1,
+          0.8196078431372549,
+          0.3568627450980392
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "RouteStartArchGem",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.7,
+          1.7,
+          1.7
+        ],
+        "Position": [
+          111,
+          15.2,
+          -14
+        ],
+        "Color": [
+          1,
+          0.9372549019607843,
+          0.6039215686274509
+        ],
+        "Material": "Neon",
+        "Shape": "Ball"
+      }
+    },
+    {
+      "Name": "RouteStartArchGem",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.7,
+          1.7,
+          1.7
+        ],
+        "Position": [
+          111,
+          15.2,
+          14
+        ],
+        "Color": [
+          1,
+          0.9372549019607843,
+          0.6039215686274509
+        ],
+        "Material": "Neon",
+        "Shape": "Ball"
+      }
+    },
+    {
+      "Name": "RouteStartArchTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          2.4,
+          2.2,
+          30
+        ],
+        "Position": [
+          111,
+          15,
+          0
+        ],
+        "Color": [
+          1,
+          0.8196078431372549,
+          0.3568627450980392
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "RouteStartSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.8,
+          3.2,
+          18
+        ],
+        "Position": [
+          109.8,
+          19,
+          0
+        ],
+        "Color": [
+          0.16862745098039217,
+          0.23137254901960785,
+          0.2
+        ],
+        "Material": "Slate"
       }
     }
   ]
