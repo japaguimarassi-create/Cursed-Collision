@@ -27373,6 +27373,1014 @@
         ],
         "Material": "SmoothPlastic"
       }
+    },
+    {
+      "Name": "MeadowSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          94,
+          4,
+          -10
+        ],
+        "Color": [
+          0.592,
+          0.859,
+          0.424
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "MeadowSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          94,
+          4,
+          10
+        ],
+        "Color": [
+          0.592,
+          0.859,
+          0.424
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "MeadowSpeedGateTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          1,
+          22
+        ],
+        "Position": [
+          94,
+          8.1,
+          0
+        ],
+        "Color": [
+          0.592,
+          0.859,
+          0.424
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "MeadowSpeedGateBarrier",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.35,
+          5.5,
+          18
+        ],
+        "Position": [
+          94,
+          2.75,
+          0
+        ],
+        "Color": [
+          0.592,
+          0.859,
+          0.424
+        ],
+        "Material": "Neon",
+        "Transparency": 0.48
+      }
+    },
+    {
+      "Name": "MeadowSpeedGateSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          12,
+          1.6,
+          0.4
+        ],
+        "Position": [
+          94,
+          10,
+          -15
+        ],
+        "Color": [
+          0.153,
+          0.224,
+          0.208
+        ],
+        "Material": "Wood"
+      }
+    },
+    {
+      "Name": "LakeSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          274,
+          4,
+          -10
+        ],
+        "Color": [
+          0.455,
+          0.886,
+          0.941
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "LakeSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          274,
+          4,
+          10
+        ],
+        "Color": [
+          0.455,
+          0.886,
+          0.941
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "LakeSpeedGateTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          1,
+          22
+        ],
+        "Position": [
+          274,
+          8.1,
+          0
+        ],
+        "Color": [
+          0.455,
+          0.886,
+          0.941
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "LakeSpeedGateBarrier",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.35,
+          5.5,
+          18
+        ],
+        "Position": [
+          274,
+          2.75,
+          0
+        ],
+        "Color": [
+          0.455,
+          0.886,
+          0.941
+        ],
+        "Material": "Neon",
+        "Transparency": 0.48
+      }
+    },
+    {
+      "Name": "LakeSpeedGateSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          12,
+          1.6,
+          0.4
+        ],
+        "Position": [
+          274,
+          10,
+          -15
+        ],
+        "Color": [
+          0.153,
+          0.224,
+          0.208
+        ],
+        "Material": "Wood"
+      }
+    },
+    {
+      "Name": "ForestSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          454,
+          4,
+          -10
+        ],
+        "Color": [
+          0.957,
+          0.8,
+          0.467
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "ForestSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          454,
+          4,
+          10
+        ],
+        "Color": [
+          0.957,
+          0.8,
+          0.467
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "ForestSpeedGateTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          1,
+          22
+        ],
+        "Position": [
+          454,
+          8.1,
+          0
+        ],
+        "Color": [
+          0.957,
+          0.8,
+          0.467
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "ForestSpeedGateBarrier",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.35,
+          5.5,
+          18
+        ],
+        "Position": [
+          454,
+          2.75,
+          0
+        ],
+        "Color": [
+          0.957,
+          0.8,
+          0.467
+        ],
+        "Material": "Neon",
+        "Transparency": 0.48
+      }
+    },
+    {
+      "Name": "ForestSpeedGateSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          12,
+          1.6,
+          0.4
+        ],
+        "Position": [
+          454,
+          10,
+          -15
+        ],
+        "Color": [
+          0.153,
+          0.224,
+          0.208
+        ],
+        "Material": "Wood"
+      }
+    },
+    {
+      "Name": "WetlandsSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          634,
+          4,
+          -10
+        ],
+        "Color": [
+          0.459,
+          0.89,
+          0.49
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "WetlandsSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          634,
+          4,
+          10
+        ],
+        "Color": [
+          0.459,
+          0.89,
+          0.49
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "WetlandsSpeedGateTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          1,
+          22
+        ],
+        "Position": [
+          634,
+          8.1,
+          0
+        ],
+        "Color": [
+          0.459,
+          0.89,
+          0.49
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "WetlandsSpeedGateBarrier",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.35,
+          5.5,
+          18
+        ],
+        "Position": [
+          634,
+          2.75,
+          0
+        ],
+        "Color": [
+          0.459,
+          0.89,
+          0.49
+        ],
+        "Material": "Neon",
+        "Transparency": 0.48
+      }
+    },
+    {
+      "Name": "WetlandsSpeedGateSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          12,
+          1.6,
+          0.4
+        ],
+        "Position": [
+          634,
+          10,
+          -15
+        ],
+        "Color": [
+          0.153,
+          0.224,
+          0.208
+        ],
+        "Material": "Wood"
+      }
+    },
+    {
+      "Name": "FrostSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          814,
+          4,
+          -10
+        ],
+        "Color": [
+          0.431,
+          0.792,
+          1
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "FrostSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          814,
+          4,
+          10
+        ],
+        "Color": [
+          0.431,
+          0.792,
+          1
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "FrostSpeedGateTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          1,
+          22
+        ],
+        "Position": [
+          814,
+          8.1,
+          0
+        ],
+        "Color": [
+          0.431,
+          0.792,
+          1
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "FrostSpeedGateBarrier",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.35,
+          5.5,
+          18
+        ],
+        "Position": [
+          814,
+          2.75,
+          0
+        ],
+        "Color": [
+          0.431,
+          0.792,
+          1
+        ],
+        "Material": "Neon",
+        "Transparency": 0.48
+      }
+    },
+    {
+      "Name": "FrostSpeedGateSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          12,
+          1.6,
+          0.4
+        ],
+        "Position": [
+          814,
+          10,
+          -15
+        ],
+        "Color": [
+          0.153,
+          0.224,
+          0.208
+        ],
+        "Material": "Wood"
+      }
+    },
+    {
+      "Name": "SavannaSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          994,
+          4,
+          -10
+        ],
+        "Color": [
+          0.863,
+          0.761,
+          0.502
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "SavannaSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          994,
+          4,
+          10
+        ],
+        "Color": [
+          0.863,
+          0.761,
+          0.502
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "SavannaSpeedGateTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          1,
+          22
+        ],
+        "Position": [
+          994,
+          8.1,
+          0
+        ],
+        "Color": [
+          0.863,
+          0.761,
+          0.502
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "SavannaSpeedGateBarrier",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.35,
+          5.5,
+          18
+        ],
+        "Position": [
+          994,
+          2.75,
+          0
+        ],
+        "Color": [
+          0.863,
+          0.761,
+          0.502
+        ],
+        "Material": "Neon",
+        "Transparency": 0.48
+      }
+    },
+    {
+      "Name": "SavannaSpeedGateSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          12,
+          1.6,
+          0.4
+        ],
+        "Position": [
+          994,
+          10,
+          -15
+        ],
+        "Color": [
+          0.153,
+          0.224,
+          0.208
+        ],
+        "Material": "Wood"
+      }
+    },
+    {
+      "Name": "VolcanoSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          1174,
+          4,
+          -10
+        ],
+        "Color": [
+          1,
+          0.396,
+          0.216
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "VolcanoSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          1174,
+          4,
+          10
+        ],
+        "Color": [
+          1,
+          0.396,
+          0.216
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "VolcanoSpeedGateTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          1,
+          22
+        ],
+        "Position": [
+          1174,
+          8.1,
+          0
+        ],
+        "Color": [
+          1,
+          0.396,
+          0.216
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "VolcanoSpeedGateBarrier",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.35,
+          5.5,
+          18
+        ],
+        "Position": [
+          1174,
+          2.75,
+          0
+        ],
+        "Color": [
+          1,
+          0.396,
+          0.216
+        ],
+        "Material": "Neon",
+        "Transparency": 0.48
+      }
+    },
+    {
+      "Name": "VolcanoSpeedGateSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          12,
+          1.6,
+          0.4
+        ],
+        "Position": [
+          1174,
+          10,
+          -15
+        ],
+        "Color": [
+          0.153,
+          0.224,
+          0.208
+        ],
+        "Material": "Wood"
+      }
+    },
+    {
+      "Name": "OceanSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          1354,
+          4,
+          -10
+        ],
+        "Color": [
+          0.325,
+          0.863,
+          0.98
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "OceanSpeedGatePost",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          8,
+          1.2
+        ],
+        "Position": [
+          1354,
+          4,
+          10
+        ],
+        "Color": [
+          0.325,
+          0.863,
+          0.98
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "OceanSpeedGateTop",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          1.2,
+          1,
+          22
+        ],
+        "Position": [
+          1354,
+          8.1,
+          0
+        ],
+        "Color": [
+          0.325,
+          0.863,
+          0.98
+        ],
+        "Material": "Metal"
+      }
+    },
+    {
+      "Name": "OceanSpeedGateBarrier",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          0.35,
+          5.5,
+          18
+        ],
+        "Position": [
+          1354,
+          2.75,
+          0
+        ],
+        "Color": [
+          0.325,
+          0.863,
+          0.98
+        ],
+        "Material": "Neon",
+        "Transparency": 0.48
+      }
+    },
+    {
+      "Name": "OceanSpeedGateSign",
+      "ClassName": "Part",
+      "Properties": {
+        "Anchored": true,
+        "CanCollide": false,
+        "CastShadow": false,
+        "Size": [
+          12,
+          1.6,
+          0.4
+        ],
+        "Position": [
+          1354,
+          10,
+          -15
+        ],
+        "Color": [
+          0.153,
+          0.224,
+          0.208
+        ],
+        "Material": "Wood"
+      }
     }
   ]
 }
