@@ -294,6 +294,11 @@ def main():
         "src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua",
         "src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua",
         "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua",
+        "src/StealAnAnimal/ReplicatedStorage/Shared/GuardianCatalog.lua",
+        "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua",
+        "src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua",
+        "src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua",
+        "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
         "src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua",
@@ -316,10 +321,15 @@ def main():
         main_server = read_text("src/StealAnAnimal/ServerScriptService/Main.server.lua")
         world_builder = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua")
         animal_factory = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua")
+        guardian_catalog = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/GuardianCatalog.lua")
+        animal_animator = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua")
+        treadmill_animator = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua")
+        guardian_controller = read_text("src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua")
+        animation_client = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua")
         profile_store = read_text("src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua")
         client_script = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
         interaction_prompt = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua")
-        server = main_server + world_builder + animal_factory + profile_store
+        server = main_server + world_builder + animal_factory + profile_store + guardian_catalog + animal_animator + treadmill_animator + guardian_controller
         client = client_script + interaction_prompt
         studio_server = read_text("src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua")
         studio_client = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua")
@@ -328,7 +338,7 @@ def main():
     except OSError as error:
         audit.check("All audited sources are readable", False, error)
         project = {}
-        config = catalog = rules = server = client = main_server = world_builder = animal_factory = profile_store = client_script = interaction_prompt = studio_server = studio_client = plugin = studio_docs = ""
+        config = catalog = rules = server = client = main_server = world_builder = animal_factory = guardian_catalog = animal_animator = treadmill_animator = guardian_controller = animation_client = profile_store = client_script = interaction_prompt = studio_server = studio_client = plugin = studio_docs = ""
 
     ids = sorted(set(re.findall(r'Id\s*=\s*"([A-Za-z0-9]+)"', catalog)))
     biomes = re.findall(r'Id\s*=\s*"([A-Za-z]+)"\s*,\s*Name\s*=', config)
@@ -344,8 +354,26 @@ def main():
                 "MoveSpeed, RebirthCost, and RebirthSpeedRequirement found")
     audit.check("World construction retains eight-farm map and interaction landmarks",
                 all(token in server for token in ("basePositions = {", "function createBase(index)", '"DepositPad"', '"CollectPad"',
-                                                   '"TrainingZone"', "function makeGuardian(spec, biome)", "StealAnimalRemotes")),
-                "Farm factory, deposit/collect pads, treadmill zone, guardian factory, and remotes found")
+                                                   '"TrainingZone"', "guardianController:SpawnAll()", "guardianController:Step(deltaTime, carried)", "StealAnimalRemotes")),
+                "Farm factory, deposit/collect pads, treadmill zone, server guardian controller, and remotes found")
+    audit.check("Eight guardian species have explicit biome identities",
+                all(token in guardian_catalog for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger",
+                    "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")),
+                "The eight biomes do not reuse arbitrary pet catalog entries")
+    audit.check("Guardian controller handles rest, return and chase states",
+                all(token in guardian_controller for token in ('model:SetAttribute("AnimationState", "Rest")',
+                    'model:SetAttribute("AnimationState", "Walk")', 'model:SetAttribute("AnimationState", "Run")',
+                    "Config.GuardianCatchDistance", "ClearCarry(targetPlayer)")),
+                "Server-authoritative guardian states and escape check are wired")
+    audit.check("Animal animations run locally and cull distant models",
+                all(token in animal_animator for token in ("Walk = true", "Rest = true", "Run = true", "MaxDistance", "SetViewPosition"))
+                and all(token in animation_client for token in ("Workspace.DescendantAdded", "animalAnimator:Step(deltaTime)",
+                    "TreadmillAnimator.Step(treadmillEntries, os.clock())")),
+                "Client animates nearby pets and leaves distant models untouched")
+    audit.check("Treadmill stripes and rollers have separate local animations",
+                all(token in world_builder for token in ('SetAttribute("TreadmillOrigin"', 'SetAttribute("AnimationPhase"', 'SetAttribute("AnimationSpeed"'))
+                and all(token in treadmill_animator for token in ('Kind == "Roller"', "STEP_INTERVAL", "ApplyLevel")),
+                "Belts and rollers animate client-side while upgrades are applied by the server")
     audit.check("Studio QA remains disabled outside Studio and requires opt-in",
                 all(token in studio_server for token in ('if not RunService:IsStudio() then return end',
                                                           'Workspace:GetAttribute("EnableStealAnimalAudit") ~= true then return end'))
@@ -358,6 +386,10 @@ def main():
     audit.check("Studio launcher creates two simulated clients",
                 'StudioTestService:ExecuteMultiplayerTestAsync(2, "StealAnAnimalAudit-v1")' in plugin,
                 "Plugin creates two Studio test clients")
+    audit.check("Studio runtime audit checks live animal and treadmill movement",
+                all(token in studio_client for token in ("Animal selvagem executa animação Walk local", "Faixa da esteira anima localmente"))
+                and all(token in studio_server for token in ("Oito guardiões distintos começam em repouso", "Esteiras têm metadados de animação local")),
+                "Simulated clients compare local part transforms after animation steps")
     audit.check("Audit report collects client tests and exports JSON",
                 all(token in studio_server for token in ("clientReports", "HttpService:JSONEncode(summary)",
                                                          "[STEAL_ANIMAL_AUDIT_REPORT]", "StudioTestService:EndTest(encoded)"))
