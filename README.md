@@ -6,7 +6,7 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 
 - Corredor de captura com oito biomas, ninhos e ovos decorativos.
 - Oito fazendas em grade 4×2, seis espaços por celeiro e esteiras com melhorias.
-- 49 espécies, quatro estágios de evolução, renda passiva e renda offline limitada; inclui oito espécies de destaque com anatomia em camadas, padrões de superfície, cristais de vidro, peças emissivas, filigranas, penas sobrepostas, carapaças segmentadas, galhadas ramificadas, folhagem, caudas múltiplas e juba radial.
+- 49 espécies, cada uma com detalhes anatômicos específicos, quatro estágios de evolução, renda passiva e renda offline limitada; oito espécies de destaque recebem anatomia em camadas, padrões de superfície, cristais de vidro, peças emissivas, filigranas, penas sobrepostas, carapaças segmentadas, galhadas ramificadas, folhagem, caudas múltiplas e juba radial.
 - Sistema visual por raridade: halo geométrico nos pets Míticos ou superiores em estágios avançados; partículas e luz local apenas nos níveis Secreto, Eterno e Divino. Os adornos de raridade não são aplicados aos filhotes comuns.
 - Captura de filhotes, fuga dos guardiões, depósito e coleta de moedas.
 - Renascimento validado no servidor: 100.000 moedas e velocidade máxima; até 25 renascimentos, com +10% de renda permanente por renascimento.
