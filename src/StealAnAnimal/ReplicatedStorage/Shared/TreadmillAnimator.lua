@@ -14,7 +14,7 @@ function TreadmillAnimator.Step(entries, elapsed, config)
             if entry.Kind == "Roller" then
                 local baseCFrame = entry.BaseCFrame or part.CFrame
                 entry.BaseCFrame = baseCFrame
-                part.CFrame = baseCFrame * CFrame.Angles(now * (entry.Speed or 4), 0, 0)
+                part.CFrame = baseCFrame * CFrame.Angles(0, now * (entry.Speed or 4), 0)
             else
                 local length = entry.Length or (config and config.TreadmillBeltLength) or 7.2
                 local speed = entry.Speed or (config and config.TreadmillBeltSpeed) or 2.4
