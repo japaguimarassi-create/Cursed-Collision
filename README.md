@@ -4,7 +4,7 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 
 ## Sistemas de jogo
 
-- Mapa inspirado no fluxo de Steal an Egg: safe zone aberta, oito fazendas, uma única pista reta e oito biomas em sequência. Cada bioma tem um portão com requisito mínimo de SPEED: 10, 100, 1.230, 12.300, 123.000, 1.230.000, 12.300.000 e 123.000.000. O servidor impede a entrada antes do requisito; a velocidade física do personagem continua limitada para preservar o controle mobile.
+- Mapa inspirado no fluxo de Steal an Egg: safe zone aberta, oito fazendas, uma única pista reta e oito biomas em sequência. Cada bioma tem um requisito mínimo de SPEED para roubar os ovos: 10, 100, 1.230, 12.300, 123.000, 1.230.000, 12.300.000 e 123.000.000. O percurso continua fisicamente aberto; o servidor valida o requisito da fase no momento da captura. A velocidade física do personagem continua limitada para preservar o controle mobile.
 - Oito fazendas em grade 4×2, seis espaços por celeiro e esteiras com melhorias.
 - 49 espécies, cada uma com detalhes anatômicos específicos, quatro estágios de evolução, renda passiva e renda offline limitada; oito espécies de destaque recebem anatomia em camadas, padrões de superfície, cristais de vidro, peças emissivas, filigranas, penas sobrepostas, carapaças segmentadas, galhadas ramificadas, folhagem, caudas múltiplas e juba radial.
 - Sistema visual por raridade: halo geométrico nos pets Míticos ou superiores em estágios avançados; partículas e luz local apenas nos níveis Secreto, Eterno e Divino. Os adornos de raridade não são aplicados aos filhotes comuns.
@@ -16,10 +16,13 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 ## Arquitetura revisada
 
 - `ReplicatedStorage/Shared/WorldBuilder.lua`: safe zone aberta, fazendas junto ao início da pista, oito biomas alinhados no mesmo eixo, portões visuais com placas de SPEED mínima, ninhos e marcos temáticos. A prévia estática do Workspace acompanha a nova composição.
-- `ReplicatedStorage/Shared/AnimalFactory.lua`: fábrica procedural com anatomia por espécie, camadas de escamas, carapaças, penas, chifres, patas, filigranas e adornos luminosos. O acabamento diferencia plástico, vidro e Neon, com efeitos reservados a estágios/raridades superiores.
+- `ReplicatedStorage/Shared/AnimalFactory.lua`: fábrica procedural com anatomia por espécie e ramificações exclusivas para os oito guardiões: galinha, cisne, escorpião, tigre, yeti, cão infernal, baleia abissal e tiranossauro.
+- `ReplicatedStorage/Shared/GuardianCatalog.lua` + `ServerScriptService/Services/GuardianController.lua`: oito guardiões próprios, estados de repouso/perseguição/retorno, validação server-side da captura e velocidade crescente por fase.
+- `ReplicatedStorage/Shared/AnimalAnimator.lua` + `StarterPlayerScripts/AnimalAnimation.client.lua`: animação local e limitada por distância para animais selvagens (Walk), animais nas bases (Rest) e guardiões (Rest/Walk/Run), sem replicar milhares de mudanças de CFrame por segundo.
+- `ReplicatedStorage/Shared/TreadmillAnimator.lua`: movimento local das faixas e roletes da esteira; melhorias atualizam cor, nível e ganho exibidos.
 - `ServerScriptService/Services/ProfileStore.lua`: sanitização, bloqueio de sessão e persistência.
 - `StarterPlayerScripts/InteractionPrompt.lua`: interface compacta de interação e tratamento do pressionar/soltar.
-- `ServerScriptService/Main.server.lua`: coordena perfis, progressão, remotes, captura, guardiões, economia e ciclo de vida dos jogadores.
+- `ServerScriptService/Main.server.lua`: coordena perfis, progressão, remotes, captura, guardiões, economia, estado das animações e ciclo de vida dos jogadores.
 - `ServerScriptService/BotX.server.lua`: NPCs observadores, patrulha e registro da sessão.
 
 ## Verificação local
@@ -51,6 +54,9 @@ O GitHub Actions executa as verificações de sintaxe Luau, regras, estrutura, m
 - [Pesquisa de HUD mobile](docs/HUD_DESIGN_RESEARCH_2026-10-20.md)
 - [Auditoria automatizada no Studio](docs/STUDIO_AUTOMATED_AUDIT.md)
 - [Auditoria dos NPCs BotX](docs/BOTX_NPC_AUDIT.md)
+- [Prancha de referências visuais do mapa e cercados](docs/visual/STEAL_AN_EGG_REFERENCE_BOARD.svg)
+- [Conceito visual original dos oito guardiões](docs/visual/GUARDIAN_CONCEPTS.svg)
+- [Conceito técnico e plano de animação da esteira](docs/visual/TREADMILL_CONCEPT.svg)
 - [Manifesto dos backups](docs/SAVE_MANIFEST_2026-10-20.md)
 
 Não há publicação automática após a validação. Publicar é uma operação separada e bloqueada até a aprovação explícita de um teste real do Studio para o mesmo commit.
