@@ -19,6 +19,7 @@ REQUIRED_FILES = [
     "src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua",
     "src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua",
     "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
+    "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua",
     "tools/tests/test_release_safety.py",
     "src/StealAnAnimal/ServerScriptService/Main.server.lua",
     "src/StealAnAnimal/ServerScriptService/BotX.server.lua",
@@ -93,6 +94,7 @@ def main():
     guardian_controller = read("src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua")
     profile_store = read("src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua")
     interaction_prompt = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua")
+    animation_client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua")
     server_all = main_source + world_builder + animal_factory + profile_store + guardian_catalog + animal_animator + treadmill_animator + guardian_controller
     client_all = client + interaction_prompt
 
@@ -129,12 +131,12 @@ def main():
         ("session-locked profiles and stage-aware offline income", all(token in server_all for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in server_all for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
         ("eight dedicated guardians with rest/run/walk pursuit states", all(token in guardian_catalog for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger", "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")) and all(token in guardian_controller for token in ("GuardianCatalog.Get(biome.Id)", "Config.GuardianCatchDistance", "Animator:SetState(model, \"Run\")", "Animator:SetState(model, \"Walk\")", "Animator:SetState(model, \"Rest\")", "ClearCarry(targetPlayer)")) and all(token in main_source for token in ("guardianController:SpawnAll()", "guardianController:Step(deltaTime, carried)"))),
-        ("animal walk rest run animations and custom guardian anatomy", all(token in animal_animator for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "self:Step(deltaTime)")) and all(token in animal_factory for token in ("GuardianHenTailFeather", "GuardianSwanWingFeather", "GuardianScorpionTailSegment", "GuardianTigerFlankStripe", "GuardianYetiFurTuft", "GuardianHellhoundHead", "GuardianWhaleBioluminescentSpot", "GuardianTyrannosaurDorsalPlate"))),
-        ("treadmill belt, rollers, and level visuals use a dedicated module", all(token in treadmill_animator for token in ('Kind == "Roller"', "TreadmillBeltLength", "TreadmillBeltSpeed", "TreadmillLevel", "TrainingGain")) and all(token in main_source for token in ("TreadmillAnimator.Step(treadmillStrips", "TreadmillAnimator.ApplyLevel(treadmill, level, gain)"))),
+        ("animal walk rest run animations and custom guardian anatomy", all(token in animal_animator for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "self:Step(deltaTime)", "self:SetViewPosition", "MaxDistance")) and all(token in animation_client for token in ("Workspace.DescendantAdded", 'GetAttributeChangedSignal("AnimationState")', "TreadmillAnimator.Step(treadmillEntries, os.clock())")) and all(token in animal_factory for token in ("GuardianHenTailFeather", "GuardianSwanWingFeather", "GuardianScorpionTailSegment", "GuardianTigerFlankStripe", "GuardianYetiFurTuft", "GuardianHellhoundHead", "GuardianWhaleBioluminescentSpot", "GuardianTyrannosaurDorsalPlate"))),
+        ("treadmill belt, rollers, and level visuals use a dedicated module", all(token in treadmill_animator for token in ('Kind == "Roller"', "TreadmillBeltLength", "TreadmillBeltSpeed", "TreadmillLevel", "TrainingGain")) and ("TreadmillAnimator.ApplyLevel(treadmill, level, gain)" in main_source) and ("TreadmillAnimator.Step(treadmillEntries, os.clock())" in animation_client))),
         ("original procedural models and scenery", all(token in server_all for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "HubSpawnMarker"))),
         ("server-side treadmill training and capped movement", all(token in server_all for token in ("createTreadmill", "TrainingZone", "Rules.TrainingGain", "Rules.MoveSpeed", "Config.MaxSpeedPoints", "MaxTreadmillLevel"))),
         ("standing training does not require forced movement", "zone.CFrame:PointToObjectSpace(root.Position)" in server_all and "humanoid.MoveDirection.Magnitude > 0.12" not in server_all),
-        ("animated belts and farm-owned treadmill upgrades", all(token in server_all for token in ("treadmillStrips", "TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId'))),
+        ("animated belts and farm-owned treadmill upgrades", all(token in server_all for token in ("TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId')) and all(token in animation_client for token in ("MovingBeltStripe", "BeltRoller", "TreadmillAnimator.Step"))),
         ("shop UI reports speed and upgrade levels", all(token in client_all for token in ("TreadmillLevel", "TreadmillGain", "TreadmillUpgradeCost", "EffectiveWalkSpeed", "OpenShop", "LOJA DE MELHORIAS"))),
         ("animal index is available by biome", all(token in client_all for token in ("AnimalIndex", "ÍNDICE ANIMAL", "Catalog.ForBiome(biome.Id)"))),
         ("responsive HUD and gameplay actions", all(token in client_all for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "TopDashboard", "QuickActions", "OpenIndex", "ContextObjective", "ScreenInsets", "Modal"))),
