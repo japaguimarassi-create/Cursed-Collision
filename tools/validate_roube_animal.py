@@ -110,6 +110,12 @@ def main():
             "Jackalope antler branch", "Spirit panda lantern", "Novafox giant star tail",
             "Sunlion crown mane crystal", "Sky whale ancient tree trunk",
         ))),
+        ("flagship material layers, rarity tiers, evolved halos, and elite lighting", all(token in animal_factory for token in (
+            "local function crystal(", "local function glow(", "local rarityRanks", "model:SetAttribute(\"RarityTier\", rarityTier)",
+            "Gecko tail band", "Beetle antenna stem", "Bluejay covert feather", "Jackalope antler jewel",
+            "Spirit panda lantern frame", "Novafox tail luminous tip", "Sunlion radial mane plate",
+            "Sky whale gill engraving", "Rarity ground halo", "RaritySparkles", "RarityCoreLight",
+        ))),
         ("session-locked profiles and stage-aware offline income", all(token in server_all for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in server_all for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
         ("guardian pursuit and escape", all(token in server_all for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),
