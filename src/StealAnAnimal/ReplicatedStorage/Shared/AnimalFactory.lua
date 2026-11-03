@@ -263,6 +263,110 @@ function AnimalFactory.new(services)
             end
         end
     
+
+        if spec.Id == "ShibaInu" then
+            for _, side in ipairs({ -1, 1 }) do
+                ball("ShibaEarTip", 0.28, 0.40, 0.23, side * 0.40, 3.03, -0.91, spec.Color)
+                ball("ShibaEarInner", 0.12, 0.25, 0.08, side * 0.40, 2.98, -1.05, spec.Accent)
+            end
+            ball("ShibaCurledTail", 0.42, 0.48, 0.42, 0, 1.70, 1.32, spec.Color)
+            ball("ShibaTailTip", 0.25, 0.27, 0.23, 0, 1.88, 1.56, spec.Accent)
+            ball("ShibaCreamChest", 0.92, 0.78, 0.20, 0, 1.35, -0.91, spec.Accent)
+        elseif spec.Id == "RedPanda" then
+            for _, side in ipairs({ -1, 1 }) do
+                ball("RedPandaEar", 0.42, 0.48, 0.25, side * 0.55, 2.83, -0.78, spec.Accent)
+                ball("RedPandaEyeMask", 0.48, 0.38, 0.15, side * 0.34, 2.27, -1.64, Color3.fromRGB(54, 39, 34))
+            end
+            ball("RedPandaTail", 0.55, 0.55, 1.85, 0, 1.42, 1.42, spec.Color)
+            for band = 1, 4 do
+                ball("RedPandaTailRing", 0.56, 0.56, 0.17, 0, 1.42, 0.68 + band * 0.34, band % 2 == 0 and spec.Accent or Color3.fromRGB(64, 43, 35))
+            end
+        elseif spec.Id == "HouseCat" then
+            for _, side in ipairs({ -1, 1 }) do
+                block("CatEar", 0.48, 0.65, 0.24, side * 0.43, 2.91, -0.88, spec.Color, CFrame.Angles(0, 0, math.rad(side * 12)))
+                ball("CatEarInner", 0.20, 0.36, 0.07, side * 0.43, 2.91, -1.03, spec.Accent)
+                for whisker = 1, 3 do
+                    ball("CatWhisker", 0.68, 0.035, 0.035, side * 0.70, 1.93 - whisker * 0.09, -1.93, spec.Accent)
+                end
+            end
+            ball("CatTail", 0.22, 0.22, 1.55, 0, 1.33, 1.48, spec.Color)
+            ball("CatTailTip", 0.23, 0.23, 0.25, 0, 1.33, 2.21, spec.Accent)
+        elseif spec.Id == "Axolotl" then
+            for _, side in ipairs({ -1, 1 }) do
+                for gill = 1, 3 do
+                    ball("AxolotlGillStem", 0.14, 0.16, 0.58, side * (0.57 + gill * 0.07), 2.16, -0.88 + gill * 0.12, spec.Accent)
+                    ball("AxolotlGillTip", 0.19, 0.19, 0.20, side * (0.68 + gill * 0.07), 2.36 - gill * 0.15, -0.88 + gill * 0.12, spec.Color)
+                end
+            end
+            ball("AxolotlTailFin", 0.52, 0.22, 1.15, 0, 1.34, 1.55, spec.Accent)
+            ball("AxolotlBelly", 0.90, 0.75, 0.18, 0, 1.20, -0.88, Color3.fromRGB(255, 223, 222))
+        elseif spec.Id == "Unicorn" then
+            block("UnicornHorn", 0.20, 0.95, 0.20, 0, 3.03, -1.08, spec.Accent, CFrame.Angles(math.rad(18), 0, 0))
+            for _, side in ipairs({ -1, 1 }) do
+                ball("UnicornMane", 0.26, 0.48, 0.42, side * 0.43, 2.65, -0.70, Color3.fromRGB(183, 143, 237))
+                ball("UnicornHoof", 0.40, 0.25, 0.42, side * 0.49, 0.22, -0.58, spec.Accent)
+            end
+            ball("UnicornTail", 0.34, 0.42, 1.18, 0, 1.56, 1.45, Color3.fromRGB(183, 143, 237))
+            ball("UnicornStar", 0.24, 0.24, 0.12, 0, 1.36, -1.18, Color3.fromRGB(255, 235, 141))
+        elseif spec.Id == "Koala" then
+            for _, side in ipairs({ -1, 1 }) do
+                ball("KoalaRoundEar", 0.76, 0.72, 0.34, side * 0.78, 2.55, -0.82, spec.Color)
+                ball("KoalaInnerEar", 0.42, 0.40, 0.12, side * 0.78, 2.55, -1.03, spec.Accent)
+            end
+            ball("KoalaNose", 0.27, 0.39, 0.22, 0, 2.04, -1.90, Color3.fromRGB(36, 34, 35))
+            ball("KoalaBelly", 0.90, 0.80, 0.18, 0, 1.19, -0.88, spec.Accent)
+        elseif spec.Id == "Peacock" then
+            for feather = 1, 7 do
+                local offset = feather - 4
+                ball("PeacockTailFeather", 0.20, 0.28, 1.42, offset * 0.28, 1.74, 1.52 + math.abs(offset) * 0.08, spec.Accent)
+                ball("PeacockEyeSpot", 0.24, 0.24, 0.13, offset * 0.28, 2.02, 2.12 + math.abs(offset) * 0.08, feather % 2 == 0 and Color3.fromRGB(255, 205, 74) or Color3.fromRGB(81, 191, 174))
+            end
+            for _, side in ipairs({ -1, 1 }) do
+                ball("PeacockWing", 0.32, 0.80, 0.95, side * 0.91, 1.50, 0.08, spec.Accent)
+            end
+        elseif spec.Id == "Capybara" then
+            ball("CapybaraLongMuzzle", 0.86, 0.48, 0.75, 0, 1.75, -1.76, spec.Accent)
+            for _, side in ipairs({ -1, 1 }) do
+                ball("CapybaraSmallEar", 0.30, 0.25, 0.22, side * 0.53, 2.66, -0.83, spec.Color)
+                ball("CapybaraNostril", 0.07, 0.07, 0.06, side * 0.20, 1.84, -2.13, Color3.fromRGB(49, 39, 33))
+            end
+        elseif spec.Id == "Panda" then
+            for _, side in ipairs({ -1, 1 }) do
+                ball("PandaRoundEar", 0.52, 0.52, 0.30, side * 0.58, 2.87, -0.84, spec.Accent)
+                ball("PandaEyePatch", 0.48, 0.54, 0.15, side * 0.34, 2.27, -1.68, Color3.fromRGB(43, 40, 38))
+                ball("PandaEye", 0.18, 0.18, 0.08, side * 0.34, 2.29, -1.79, Color3.fromRGB(250, 239, 219))
+            end
+            ball("PandaBelly", 0.92, 0.92, 0.17, 0, 1.26, -0.90, Color3.fromRGB(250, 246, 232))
+        elseif spec.Id == "Raccoon" then
+            for _, side in ipairs({ -1, 1 }) do
+                ball("RaccoonEyeMask", 0.54, 0.36, 0.14, side * 0.34, 2.27, -1.68, spec.Accent)
+                ball("RaccoonEar", 0.34, 0.35, 0.22, side * 0.52, 2.83, -0.84, spec.Color)
+            end
+            ball("RaccoonTail", 0.42, 0.42, 1.75, 0, 1.30, 1.48, spec.Color)
+            for ring = 1, 4 do
+                ball("RaccoonTailRing", 0.44, 0.44, 0.18, 0, 1.30, 0.68 + ring * 0.34, ring % 2 == 0 and spec.Accent or Color3.fromRGB(47, 45, 43))
+            end
+        elseif spec.Id == "Sloth" then
+            for _, side in ipairs({ -1, 1 }) do
+                ball("SlothLongArm", 0.28, 1.10, 0.32, side * 0.80, 1.38, -0.20, spec.Color)
+                for claw = 1, 2 do
+                    ball("SlothClaw", 0.09, 0.22, 0.10, side * (0.80 + claw * 0.10), 0.66, -0.30, spec.Accent)
+                end
+                ball("SlothEyeMask", 0.45, 0.32, 0.13, side * 0.28, 2.28, -1.67, spec.Accent)
+            end
+            ball("SlothCreamFace", 0.80, 0.56, 0.12, 0, 2.18, -1.69, Color3.fromRGB(224, 206, 171))
+        elseif spec.Id == "Cheetah" then
+            for spot = 1, 12 do
+                local side = spot % 2 == 0 and 1 or -1
+                local row = math.floor((spot - 1) / 2)
+                ball("CheetahCoatSpot", 0.13, 0.13, 0.08, side * (0.36 + (row % 2) * 0.13), 1.15 + row * 0.22, 0.55 - row * 0.13, spec.Accent)
+            end
+            ball("CheetahTail", 0.20, 0.20, 1.45, 0, 1.20, 1.55, spec.Color)
+            for ring = 1, 3 do
+                ball("CheetahTailRing", 0.22, 0.22, 0.18, 0, 1.20, 1.05 + ring * 0.30, spec.Accent)
+            end
+        end
+
         model.Parent = Workspace
         model:PivotTo(CFrame.new(base))
         for _, descendant in ipairs(model:GetDescendants()) do
