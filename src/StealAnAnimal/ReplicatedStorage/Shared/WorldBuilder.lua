@@ -102,6 +102,10 @@ function WorldBuilder.new(services)
             local phase = (index - 1) * (Config.TreadmillBeltLength / 7)
             local stripe = createPart(treadmill, "MovingBeltStripe", Vector3.new(5.45, 0.035, 0.11), CFrame.new(origin + Vector3.new(0, 0.86, phase - Config.TreadmillBeltLength / 2)), index % 2 == 0 and Color3.fromRGB(87, 220, 225) or Color3.fromRGB(56, 145, 161), Enum.Material.Neon, nil, false)
             stripe.CastShadow = false
+            stripe:SetAttribute("TreadmillOrigin", Vector3.new(origin.X, 0, origin.Z))
+            stripe:SetAttribute("AnimationPhase", phase)
+            stripe:SetAttribute("AnimationLength", Config.TreadmillBeltLength)
+            stripe:SetAttribute("AnimationSpeed", Config.TreadmillBeltSpeed)
             table.insert(treadmillStrips, {
                 Part = stripe,
                 Kind = "Stripe",
@@ -115,6 +119,7 @@ function WorldBuilder.new(services)
         for _, side in ipairs({ -1, 1 }) do
             local roller = createPart(treadmill, "BeltRoller", Vector3.new(0.28, 5.75, 0.28), CFrame.new(origin + Vector3.new(0, 0.88, side * 3.82)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(126, 147, 154), Enum.Material.Metal, Enum.PartType.Cylinder, false)
             roller.CastShadow = false
+            roller:SetAttribute("AnimationSpeed", Config.TreadmillBeltSpeed * 1.4)
             table.insert(treadmillStrips, {
                 Part = roller,
                 Kind = "Roller",
