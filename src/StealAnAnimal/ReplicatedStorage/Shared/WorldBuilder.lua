@@ -86,7 +86,7 @@ function WorldBuilder.new(services)
         local treadmill = Instance.new("Model")
         treadmill.Name = "Treadmill"
         treadmill.Parent = base
-        local frontSide = center.Z < 0 and -1 or 1
+        local frontSide = center.Z < 0 and 1 or -1
         local origin = center + Vector3.new(0, 0, frontSide * 9.5)
     
         createPart(treadmill, "TreadmillHousing", Vector3.new(7.4, 0.62, 9.2), CFrame.new(origin + Vector3.new(0, 0.38, 0)), Color3.fromRGB(38, 52, 60), Enum.Material.Metal, nil, true)
@@ -148,7 +148,7 @@ function WorldBuilder.new(services)
     
         createPart(base, "Floor", Vector3.new(34, 1, 31), CFrame.new(center + Vector3.new(0, -0.3, 0)), Color3.fromRGB(111, 171, 83), Enum.Material.Grass, nil, true)
         local frontSign = center.Z < 0 and 1 or -1
-        local frontSide = -frontSign
+        local frontSide = frontSign
         local fenceColor = Color3.fromRGB(151, 91, 52)
         local function fence(name, size, offset, color)
             local rail = createPart(base, name, size, CFrame.new(center + offset), color or fenceColor, Enum.Material.WoodPlanks, nil, false)
