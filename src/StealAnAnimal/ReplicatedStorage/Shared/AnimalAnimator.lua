@@ -50,6 +50,8 @@ function AnimalAnimator.new()
         TrackCount = 0,
         Accumulator = 0,
         StepInterval = 0.05,
+        MaxDistance = 240,
+        ViewPosition = nil,
     }
 
     function self:Register(model, state)
@@ -82,7 +84,6 @@ function AnimalAnimator.new()
 
         local initialState = VALID_STATES[state] and state or "Rest"
         self.Tracks[model] = {
-            Model = model,
             Parts = parts,
             State = initialState,
             Time = 0,
@@ -125,16 +126,18 @@ function AnimalAnimator.new()
                 self.Tracks[model] = nil
                 self.TrackCount = math.max(0, self.TrackCount - 1)
             else
-                track.Time += step
                 local pivot = model:GetPivot()
-                local state = track.State
-                local frequency = state == "Run" and 11.5 or state == "Walk" and 6.2 or 1.8
-                local amplitude = state == "Run" and 0.82 or state == "Walk" and 0.38 or 0.035
-                local bob = state == "Run" and math.abs(math.sin(track.Time * frequency)) * 0.12
-                    or state == "Walk" and math.abs(math.sin(track.Time * frequency)) * 0.055
-                    or math.sin(track.Time * frequency) * 0.025
+                local visible = not self.ViewPosition or (pivot.Position - self.ViewPosition).Magnitude <= self.MaxDistance
+                if visible then
+                    track.Time += step
+                    local state = track.State
+                    local frequency = state == "Run" and 11.5 or state == "Walk" and 6.2 or 1.8
+                    local amplitude = state == "Run" and 0.82 or state == "Walk" and 0.38 or 0.035
+                    local bob = state == "Run" and math.abs(math.sin(track.Time * frequency)) * 0.12
+                        or state == "Walk" and math.abs(math.sin(track.Time * frequency)) * 0.055
+                        or math.sin(track.Time * frequency) * 0.025
 
-                for _, item in ipairs(track.Parts) do
+                    for _, item in ipairs(track.Parts) do
                     local part = item.Part
                     if part and part.Parent then
                         local phase = track.Time * frequency + item.Phase + (item.Side < 0 and math.pi or 0)
@@ -154,8 +157,13 @@ function AnimalAnimator.new()
                         part.CFrame = pivot * CFrame.new(0, bob, 0) * item.Offset * CFrame.Angles(x, y, z)
                     end
                 end
+                end
             end
         end
+    end
+
+    function self:SetViewPosition(position)
+        self.ViewPosition = typeof(position) == "Vector3" and position or nil
     end
 
     function self:GetTrackCount()
