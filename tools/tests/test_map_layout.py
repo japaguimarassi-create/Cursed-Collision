@@ -8,8 +8,12 @@ CATALOG = (BASE / "ReplicatedStorage/Shared/AnimalCatalog.lua").read_text(encodi
 MAIN_FILE = (BASE / "ServerScriptService/Main.server.lua").read_text(encoding="utf-8")
 WORLD = (BASE / "ReplicatedStorage/Shared/WorldBuilder.lua").read_text(encoding="utf-8")
 ANIMAL = (BASE / "ReplicatedStorage/Shared/AnimalFactory.lua").read_text(encoding="utf-8")
+GUARDIAN_CATALOG = (BASE / "ReplicatedStorage/Shared/GuardianCatalog.lua").read_text(encoding="utf-8")
+ANIMATOR = (BASE / "ReplicatedStorage/Shared/AnimalAnimator.lua").read_text(encoding="utf-8")
+TREADMILL_ANIMATOR = (BASE / "ReplicatedStorage/Shared/TreadmillAnimator.lua").read_text(encoding="utf-8")
+GUARDIAN_CONTROLLER = (BASE / "ServerScriptService/Services/GuardianController.lua").read_text(encoding="utf-8")
 PROFILE = (BASE / "ServerScriptService/Services/ProfileStore.lua").read_text(encoding="utf-8")
-MAIN = MAIN_FILE + WORLD + ANIMAL + PROFILE
+MAIN = MAIN_FILE + WORLD + ANIMAL + PROFILE + GUARDIAN_CATALOG + ANIMATOR + TREADMILL_ANIMATOR + GUARDIAN_CONTROLLER
 CLIENT_FILE = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
 PROMPT = (BASE / "StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua").read_text(encoding="utf-8")
 CLIENT = CLIENT_FILE + PROMPT
@@ -26,7 +30,7 @@ assert len(biomes) == 8, "Expected eight sequential animal phases"
 assert phase_numbers == [str(n) for n in range(1, 9)], "Phases must be numbered sequentially from 1 to 8"
 assert all(biome in CATALOG for biome in biomes), "Every biome must have animals"
 assert "basePositions = {" in MAIN, "Eight farms must use an explicit rectangular layout"
-assert all(token in MAIN for token in ("CorridorFloor", "CorridorEdge", "MainPath", "GuardianParent_", "PAI PROTETOR")), "Central animal corridor or guardian parents missing"
+assert all(token in MAIN for token in ("CorridorFloor", "CorridorEdge", "MainPath", "GuardianParent_", "GUARDIÃO")), "Central animal corridor or guardian parents missing"
 assert all(token in MAIN for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower")), "Egg-inspired map landmarks or fenced farms missing"
 assert all(token in WORLD for token in ("CentralHubGrid", "CentralHubTile", "SafeZoneSign", "SafeZoneLine", "RouteStartSign", "MeadowMonumentCanopy", "LakeMonumentWaterfall", "ForestMonumentStoneArchTop", "WetlandsMonumentRoof", "FrostMonumentShard", "SavannaMonumentFossilRib", "VolcanoMonumentLava", "OceanMonumentBeacon")), "Open farm hub, safe-zone route, or one of eight biome landmarks missing"
 assert all(token not in WORLD for token in ("RouteStartArchTop", "CentralCarpet", "CorridorPillar")), "Old portal-heavy corridor decorations must not return"
@@ -41,7 +45,9 @@ assert [int(value) for value in re.findall(r'MinSpeed = (\d+)', CONFIG)] == [10,
 
 assert all(token in MAIN for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower")), "Egg-stealing map landmarks, walls, or fenced farms missing"
 assert all(token in MAIN for token in ("createTreadmill", "TrainingZone", "MovingBeltStripe", "UpgradeTreadmill", "TreadmillLevel")), "Functional treadmill and upgrade prompt missing"
-assert "treadmillStrips" in MAIN and "TreadmillBeltSpeed" in CONFIG, "Treadmill belt animation missing"
+assert "treadmillStrips" in MAIN and "TreadmillBeltSpeed" in CONFIG and "TreadmillAnimator.Step(treadmillStrips" in MAIN_FILE, "Treadmill belt animation missing"
+assert all(token in WORLD for token in ('Kind = "Stripe"', 'Kind = "Roller"', "BaseCFrame = roller.CFrame")), "Treadmill stripes and rollers need separate animation tracks"
+assert "TreadmillAnimator.ApplyLevel(treadmill, level, gain)" in MAIN_FILE, "Treadmill upgrade level must update its live visuals"
 assert "Rules.TrainingGain" in MAIN and "Rules.MoveSpeed" in MAIN and "Config.MaxSpeedPoints" in MAIN, "Training and speed cap must be server-authoritative"
 assert "createAnimalModel" in MAIN and "EvolutionStages" in MAIN, "Stage-aware animal model builder missing"
 assert "gui.AlwaysOnTop = false" in WORLD and "gui.MaxDistance = maxDistance or (compactLabel and 18 or 32)" in WORLD, "World labels must be occluded and distance-limited"
@@ -55,7 +61,12 @@ assert 'Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), -0.12, rng:NextNumb
 assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must be placed close to the slot surface"
 assert "SwanFoot" in ANIMAL and 'spec.Id ~= "Swan"' in ANIMAL and 'chestColor = spec.Id == "Swan" and spec.Color' in ANIMAL, "Swan guardian must use its dedicated silhouette without generic duplicated bird parts"
 assert "local function releaseBase(player)" in MAIN_FILE and "releaseBase(player)" in MAIN_FILE[MAIN_FILE.find("Players.PlayerRemoving:Connect"):MAIN_FILE.find("for _, player in ipairs(Players:GetPlayers()) do")], "PlayerRemoving must release the assigned farm"
-assert "makeGuardian" in MAIN and "GuardianCatchDistance" in MAIN, "Guardian pursuit gameplay missing"
+assert all(token in GUARDIAN_CATALOG for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger", "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")), "Eight biome guardians need explicit identities"
+assert all(token in GUARDIAN_CONTROLLER for token in ("GuardianCatalog.Get(biome.Id)", "Animator:Register(model, \"Rest\")", "Animator:SetState(model, \"Run\")", "Animator:SetState(model, \"Walk\")", "Config.GuardianCatchDistance", "ClearCarry(targetPlayer)", "self:SpawnAll()", "self:Step(deltaTime, carried)")), "Guardian controller must spawn, rest, pursue, run, return home and trigger the escape"
+assert all(token in ANIMAL for token in ("GuardianHenTailFeather", "GuardianSwanWingFeather", "GuardianScorpionTailSegment", "GuardianTigerFlankStripe", "GuardianYetiFurTuft", "GuardianHellhoundHead", "GuardianWhaleBioluminescentSpot", "GuardianTyrannosaurDorsalPlate")), "Guardian-specific 3D anatomy branches are missing"
+assert all(token in ANIMATOR for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "StepInterval = 0.05")), "Animal procedural animation states are missing"
+assert all(token in TREADMILL_ANIMATOR for token in ("Kind == \"Roller\"", "TreadmillLevel", "TrainingGain", "MovingBeltStripe")), "Treadmill belt, roller and upgrade visuals must animate"
+assert "guardianController:SpawnAll()" in MAIN_FILE and "guardianController:Step(deltaTime, carried)" in MAIN_FILE and "animalAnimator:Step(deltaTime)" in MAIN_FILE, "Main server must wire the dedicated animation and guardian services"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
 assert all(token in CLIENT for token in ("TreadmillLevel", "TreadmillGain", "OpenShop", "OpenIndex", "TouchEnabled", "TopDashboard", "QuickActions", "ContextObjective", "ScreenInsets", "Modal", "OpenMore", "MenuList", "Daily", "Quests", "Codes", "Stats", "Settings", "Diagnostics", "AnimalIndex", "ÍNDICE ANIMAL", "LOJA DE MELHORIAS", "mapBotReportRemote.OnClientEvent")), "Responsive HUD or progression panels missing"
