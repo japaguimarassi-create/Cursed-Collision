@@ -78,7 +78,6 @@ local progressionWriteInProgress = {}
 local mapBotCooldowns = {}
 local actionCooldowns = {}
 local trainingNoticeAt = {}
-local treadmillStrips = {}
 local playerBases = {}
 local playerSetupDone = {}
 local carried = {}
@@ -110,7 +109,6 @@ local worldBuilder = WorldBuilder.new({
     BasesFolder = basesFolder,
     DecorationFolder = decorationFolder,
     Rng = rng,
-    TreadmillStrips = treadmillStrips,
     Lighting = Lighting,
 })
 local createPart = worldBuilder.CreatePart
@@ -1086,7 +1084,6 @@ end
 local incomeAccumulator = 0
 RunService.Heartbeat:Connect(function(deltaTime)
     incomeAccumulator += deltaTime
-    TreadmillAnimator.Step(treadmillStrips, os.clock(), Config)
 
     for player, carry in pairs(carried) do
         local character = player.Character
