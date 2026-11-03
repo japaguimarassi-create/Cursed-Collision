@@ -8,26 +8,25 @@ O visual de Steal An Animal é próprio. Referências de outros jogos são usada
 
 ## Sistemas de jogo
 
-- Mapa inspirado no fluxo de Steal an Egg: safe zone aberta, oito fazendas, uma única pista reta e oito biomas em sequência. Cada bioma tem um requisito mínimo de SPEED para roubar os ovos: 10, 100, 1.230, 12.300, 123.000, 1.230.000, 12.300.000 e 123.000.000. O percurso continua fisicamente aberto; o servidor valida o requisito da fase no momento da captura. A velocidade física do personagem continua limitada para preservar o controle mobile.
+- Identidade própria de Steal An Animal: safe zone aberta, oito fazendas, uma única pista reta e oito biomas em sequência. Cada bioma tem requisito mínimo de SPEED para roubar animais: 10, 100, 1.230, 12.300, 123.000, 1.230.000, 12.300.000 e 123.000.000. O percurso permanece aberto; o servidor valida a fase no momento da captura e limita a velocidade física para preservar o controle mobile.
 - Oito fazendas em grade 4×2, seis espaços por celeiro e esteiras com melhorias.
 - 49 espécies, cada uma com detalhes anatômicos específicos, quatro estágios de evolução, renda passiva e renda offline limitada; oito espécies de destaque recebem anatomia em camadas, padrões de superfície, cristais de vidro, peças emissivas, filigranas, penas sobrepostas, carapaças segmentadas, galhadas ramificadas, folhagem, caudas múltiplas e juba radial.
 - Sistema visual por raridade: halo geométrico nos pets Míticos ou superiores em estágios avançados; partículas e luz local apenas nos níveis Secreto, Eterno e Divino. Os adornos de raridade não são aplicados aos filhotes comuns.
 - Captura de filhotes, fuga dos guardiões, depósito e coleta de moedas.
 - Renascimento validado no servidor: 100.000 moedas e velocidade máxima; até 25 renascimentos, com +10% de renda permanente por renascimento.
-- Recompensas diárias, quatro missões, três códigos de uso único, estatísticas, MapBot e NPCs BotX de observação.
+- Recompensas diárias, quatro missões, três códigos de uso único e estatísticas. Não existem NPCs-bot; os oito guardiões permanecem com IA pausada até um roubo validado no próprio bioma.
 - IDs/configurações dos passes mantidos fora do runtime reconstruído e sem mudanças neste trabalho.
 
 ## Arquitetura revisada
 
-- `ReplicatedStorage/Shared/WorldBuilder.lua`: safe zone aberta, fazendas junto ao início da pista, oito biomas alinhados no mesmo eixo, portões visuais com placas de SPEED mínima, ninhos e marcos temáticos. A prévia estática do Workspace acompanha a nova composição.
+- `ReplicatedStorage/Shared/WorldBuilder.lua`: safe zone aberta, fazendas junto ao início da pista, oito biomas alinhados no mesmo eixo, ninhos e marcos temáticos. O passe adicional acrescenta bases, inlays, wedges, anéis, rochas facetadas e esculturas próprias por bioma.
 - `ReplicatedStorage/Shared/AnimalFactory.lua`: fábrica procedural com anatomia por espécie e ramificações exclusivas para os oito guardiões: galinha, cisne, escorpião, tigre, yeti, cão infernal, baleia abissal e tiranossauro.
-- `ReplicatedStorage/Shared/GuardianCatalog.lua` + `ServerScriptService/Services/GuardianController.lua`: oito guardiões próprios, estados de repouso/perseguição/retorno, validação server-side da captura e velocidade crescente por fase.
-- `ReplicatedStorage/Shared/AnimalAnimator.lua` + `StarterPlayerScripts/AnimalAnimation.client.lua`: animação local e limitada por distância para animais selvagens (Walk), animais nas bases (Rest) e guardiões (Rest/Walk/Run), sem replicar milhares de mudanças de CFrame por segundo.
+- `ReplicatedStorage/Shared/GuardianCatalog.lua` + `ServerScriptService/Services/GuardianController.lua` + `ServerScriptService/Services/GuardianAI.lua`: oito entidades com cérebros independentes; cada cérebro nasce pausado e só ativa após roubo confirmado no bioma correspondente. Ao terminar o transporte, o guardião volta ao repouso.
+- `ReplicatedStorage/Shared/AnimalAnimator.lua` + `StarterPlayerScripts/AnimalAnimation.client.lua`: animação local e limitada por distância para animais selvagens (Walk), animais nas bases (Rest) e guardiões (Rest/Run), sem replicar milhares de mudanças de CFrame por segundo.
 - `ReplicatedStorage/Shared/TreadmillAnimator.lua`: movimento local das faixas e roletes da esteira; melhorias atualizam cor, nível e ganho exibidos.
 - `ServerScriptService/Services/ProfileStore.lua`: sanitização, bloqueio de sessão e persistência.
 - `StarterPlayerScripts/InteractionPrompt.lua`: interface compacta de interação e tratamento do pressionar/soltar.
 - `ServerScriptService/Main.server.lua`: coordena perfis, progressão, remotes, captura, guardiões, economia, estado das animações e ciclo de vida dos jogadores.
-- `ServerScriptService/BotX.server.lua`: NPCs observadores, patrulha e registro da sessão.
 
 ## Verificação local
 
@@ -40,7 +39,7 @@ python3 tools/tests/test_map_layout.py
 python3 tools/tests/test_monetization.py
 python3 tools/tests/test_core_reliability.py
 python3 tools/tests/test_studio_audit.py
-python3 tools/tests/test_botx_npc.py
+python3 tools/tests/test_guardian_ai.py
 python3 tools/tests/test_release_safety.py
 rojo build default.project.json --output build/StealAnAnimal.rbxl
 python3 tools/tests/test_rbxl_file.py build/StealAnAnimal.rbxl
@@ -57,7 +56,6 @@ O GitHub Actions executa as verificações de sintaxe Luau, regras, estrutura, m
 - [Pesquisa visual do mapa](docs/STEAL_AN_EGG_MAP_RESEARCH_2026-10-20.md)
 - [Pesquisa de HUD mobile](docs/HUD_DESIGN_RESEARCH_2026-10-20.md)
 - [Auditoria automatizada no Studio](docs/STUDIO_AUTOMATED_AUDIT.md)
-- [Auditoria dos NPCs BotX](docs/BOTX_NPC_AUDIT.md)
 - [Prancha de referências visuais do mapa e cercados](docs/visual/STEAL_AN_EGG_REFERENCE_BOARD.svg)
 - [Conceito visual original dos oito guardiões](docs/visual/GUARDIAN_CONCEPTS.svg)
 - [Conceito técnico e plano de animação da esteira](docs/visual/TREADMILL_CONCEPT.svg)

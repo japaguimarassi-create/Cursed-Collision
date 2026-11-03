@@ -60,8 +60,8 @@ jobs:
         run: python3 tools/tests/test_release_safety.py
       - name: Validate Studio QA bot harness
         run: python3 tools/tests/test_studio_audit.py
-      - name: Validate BotX human NPC observers
-        run: python3 tools/tests/test_botx_npc.py
+      - name: Validate paused theft-triggered guardian AI and bot removal
+        run: python3 tools/tests/test_guardian_ai.py
       - name: Build Roblox place
         run: |
           set -euo pipefail

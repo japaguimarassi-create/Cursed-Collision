@@ -13,8 +13,9 @@ ANIMATOR = (BASE / "ReplicatedStorage/Shared/AnimalAnimator.lua").read_text(enco
 ANIMATION_CLIENT = (BASE / "StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua").read_text(encoding="utf-8")
 TREADMILL_ANIMATOR = (BASE / "ReplicatedStorage/Shared/TreadmillAnimator.lua").read_text(encoding="utf-8")
 GUARDIAN_CONTROLLER = (BASE / "ServerScriptService/Services/GuardianController.lua").read_text(encoding="utf-8")
+GUARDIAN_AI = (BASE / "ServerScriptService/Services/GuardianAI.lua").read_text(encoding="utf-8")
 PROFILE = (BASE / "ServerScriptService/Services/ProfileStore.lua").read_text(encoding="utf-8")
-MAIN = MAIN_FILE + WORLD + ANIMAL + PROFILE + GUARDIAN_CATALOG + ANIMATOR + TREADMILL_ANIMATOR + GUARDIAN_CONTROLLER
+MAIN = MAIN_FILE + WORLD + ANIMAL + PROFILE + GUARDIAN_CATALOG + ANIMATOR + TREADMILL_ANIMATOR + GUARDIAN_CONTROLLER + GUARDIAN_AI
 CLIENT_FILE = (BASE / "StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
 PROMPT = (BASE / "StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua").read_text(encoding="utf-8")
 CLIENT = CLIENT_FILE + PROMPT
@@ -63,20 +64,20 @@ assert "slot.Position + Vector3.new(0, 0.05, 0)" in MAIN, "Stored animals must b
 assert "SwanFoot" in ANIMAL and 'spec.Id ~= "Swan"' in ANIMAL and 'chestColor = spec.Id == "Swan" and spec.Color' in ANIMAL, "Swan guardian must use its dedicated silhouette without generic duplicated bird parts"
 assert "local function releaseBase(player)" in MAIN_FILE and "releaseBase(player)" in MAIN_FILE[MAIN_FILE.find("Players.PlayerRemoving:Connect"):MAIN_FILE.find("for _, player in ipairs(Players:GetPlayers()) do")], "PlayerRemoving must release the assigned farm"
 assert all(token in GUARDIAN_CATALOG for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger", "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")), "Eight biome guardians need explicit identities"
-assert all(token in GUARDIAN_CONTROLLER for token in ("GuardianCatalog.Get(biome.Id)", 'model:SetAttribute("AnimationState", "Rest")', 'model:SetAttribute("AnimationState", "Run")', 'model:SetAttribute("AnimationState", "Walk")', "Config.GuardianCatchDistance", "ClearCarry(targetPlayer)", "self:SpawnAll()", "self:Step(deltaTime, carried)")), "Guardian controller must spawn, rest, pursue, run, return home and trigger the escape"
+assert all(token in GUARDIAN_CONTROLLER for token in ("GuardianCatalog.Get(biome.Id)", "GuardianAIFactory", "OnAnimalStolen", "OnCarryEnded", "HasActiveGuardians", "Brain:IsActive()")), "Guardian controller must delegate to separately paused AI instances"
 assert all(token in ANIMAL for token in ("GuardianHenTailFeather", "GuardianSwanWingFeather", "GuardianScorpionTailSegment", "GuardianTigerFlankStripe", "GuardianYetiFurTuft", "GuardianHellhoundHead", "GuardianWhaleBioluminescentSpot", "GuardianTyrannosaurDorsalPlate")), "Guardian-specific 3D anatomy branches are missing"
 assert all(token in ANIMATOR for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "StepInterval = 0.05")), "Animal procedural animation states are missing"
 assert all(token in TREADMILL_ANIMATOR for token in ("Kind == \"Roller\"", "TreadmillLevel", "TrainingGain", "MovingBeltStripe")), "Treadmill belt, roller and upgrade visuals must animate"
-assert "guardianController:SpawnAll()" in MAIN_FILE and "guardianController:Step(deltaTime, carried)" in MAIN_FILE and "animalAnimator:Step(deltaTime)" in ANIMATION_CLIENT, "Server guardian AI and client animal animation must both be wired"
+assert "guardianController:SpawnAll()" in MAIN_FILE and "guardianController:OnAnimalStolen(player, spec.Biome)" in MAIN_FILE and "guardianController:HasActiveGuardians()" in MAIN_FILE and "animalAnimator:Step(deltaTime)" in ANIMATION_CLIENT, "Server guardian AI must spawn dormant and only step after a validated theft"
 assert all(token in ANIMATION_CLIENT for token in ("Workspace.DescendantAdded", "GetAttributeChangedSignal(\"AnimationState\")", "animalAnimator:SetViewPosition", "animalAnimator:Step(deltaTime)")) and "MaxDistance = 240" in ANIMATOR, "Client animation discovery and distance culling are missing"
 assert all(token in WORLD for token in ('SetAttribute("TreadmillOrigin"', 'SetAttribute("AnimationPhase"', 'SetAttribute("AnimationSpeed"')), "Treadmill geometry must publish local animation metadata"
 assert "StoredAnimals" in MAIN and "DepositAnimal" in MAIN and "CollectIncome" in MAIN, "Farm loop missing"
 assert "renderBarn" in MAIN and "Rules.AnimalIncome" in MAIN, "Evolution and barn income need to be linked"
 assert all(token in CLIENT for token in ("TreadmillLevel", "TreadmillGain", "OpenShop", "OpenIndex", "TouchEnabled", "TopDashboard", "QuickActions", "ContextObjective", "ScreenInsets", "Modal", "OpenMore", "MenuList", "Daily", "Quests", "Codes", "Stats", "Settings", "Diagnostics", "AnimalIndex", "ÍNDICE ANIMAL", "LOJA DE MELHORIAS", "mapBotReportRemote.OnClientEvent")), "Responsive HUD or progression panels missing"
 assert all(token in CLIENT for token in ("makeGlyph", "Book", "Bag", "objectiveMarker", "RebirthBadge")), "Egg-style HUD icons and objective status are missing"
-assert all(token in CLIENT for token in ('makeButton(gui, "BotXStatus"', 'botXChip.Activated:Connect(function()', 'botXStatusRemote.OnClientEvent:Connect(function(status)', 'formatDiagnosticReport()', 'botXStatusRemote:FireServer("request")')), "Visible BotX status and live diagnostic request/reply are missing"
+assert not any(token in CLIENT_FILE + MAIN_FILE for token in ("BotXStatus", "RequestMapBot", "MapBotReport", "BOTX_SESSION_REPORT", "PathfindingService")), "BotX NPCs and MapBot diagnostic wiring must be removed"
 assert all(token not in CLIENT for token in ("ActionDock", "helpButton.Activated", "barnButton.Activated", "collectButton.Activated", "rebirthButton.Activated")), "Removed HUD controls must not leave stale callbacks"
-assert all(token in MAIN for token in ("RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestMapBot", "PathfindingService:CreatePath")), "Daily rewards, quests, code redemption, or MapBot server remotes are missing"
+assert all(token in MAIN for token in ("RequestDailyReward", "RequestRedeemCode", "RequestQuest", "DailyStreak", "RedeemedCodes", "QuestClaims")), "Daily rewards, quests and code redemption must remain wired"
 assert "RebirthCoinsRequired = 100000" in CONFIG and "MaxRebirths = 25" in CONFIG and "Rules.RebirthSpeedRequirement(Config)" in MAIN, "Original rebirth requirements are missing"
 assert "GAMEPASSES" not in CLIENT and "PASSES" not in CLIENT, "Gamepass UI must not exist"
 assert "ActionDock" not in CLIENT, "The previous permanent bottom action dock must be removed"
