@@ -712,6 +712,206 @@ function AnimalFactory.new(services)
                 local angle = math.pi * 2 * rune / 9
                 glow("Sky whale orbit rune", 0.10, 0.10, 0.08, math.cos(angle) * 1.22, 2.10, math.sin(angle) * 1.25, Color3.fromRGB(111, 226, 255))
             end
+        elseif spec.Id == "Chick" then
+            ball("Chick fluffy forehead", 0.48, 0.34, 0.36, 0, 2.98, -0.86, Color3.fromRGB(255, 242, 184))
+            ball("Chick belly fluff", 0.88, 0.78, 0.18, 0, 1.35, -0.89, Color3.fromRGB(255, 245, 204))
+            for feather = 1, 5 do
+                ball("Chick tail down feather", 0.16, 0.20, 0.54, (feather - 3) * 0.17, 1.55, 0.98 + math.abs(feather - 3) * 0.08, Color3.fromRGB(255, 194, 72))
+            end
+            for _, side in ipairs({ -1, 1 }) do
+                ball("Chick wing tip", 0.25, 0.34, 0.40, side * 0.88, 1.40, 0.13, Color3.fromRGB(255, 190, 65))
+                ball("Chick toe", 0.10, 0.08, 0.28, side * 0.28, 0.13, -0.40, Color3.fromRGB(238, 142, 41))
+            end
+        elseif spec.Id == "Fox" then
+            ball("Fox cream throat ruff", 0.95, 0.83, 0.34, 0, 1.83, -1.08, Color3.fromRGB(255, 236, 207))
+            ball("Fox muzzle bridge", 0.38, 0.34, 0.62, 0, 1.92, -1.74, Color3.fromRGB(255, 224, 190))
+            for _, side in ipairs({ -1, 1 }) do
+                block("Fox inner ear", 0.12, 0.48, 0.06, side * 0.38, 2.94, -1.02, Color3.fromRGB(255, 181, 158), CFrame.Angles(0, 0, math.rad(side * 10)))
+                ball("Fox cheek fur tuft", 0.34, 0.30, 0.22, side * 0.72, 1.92, -1.14, Color3.fromRGB(255, 231, 200))
+                block("Fox foreleg sock", 0.23, 0.32, 0.30, side * 0.48, 0.25, -0.70, Color3.fromRGB(255, 232, 201))
+                ball("Fox paw pad", 0.25, 0.10, 0.24, side * 0.48, 0.13, -0.70, Color3.fromRGB(75, 54, 49))
+            end
+            for tuft = 1, 5 do
+                ball("Fox tail underside tuft", 0.22, 0.22, 0.44, (tuft - 3) * 0.14, 1.40, 1.55 + math.abs(tuft - 3) * 0.10, Color3.fromRGB(255, 236, 211))
+            end
+        elseif spec.Id == "Hedgehog" then
+            ball("Hedgehog dark nose", 0.16, 0.14, 0.14, 0, 1.90, -1.92, Color3.fromRGB(39, 31, 29))
+            ball("Hedgehog cream face mask", 0.80, 0.60, 0.14, 0, 2.12, -1.52, Color3.fromRGB(245, 222, 184))
+            for row = 1, 3 do
+                for quill = 1, 7 do
+                    local offset = quill - 4
+                    block("Hedgehog layered quill", 0.12, 0.56, 0.12, offset * 0.20, 1.92 + (row % 2) * 0.18, 0.02 + row * 0.35, row % 2 == 0 and Color3.fromRGB(93, 56, 37) or Color3.fromRGB(224, 191, 147), CFrame.Angles(0, 0, math.rad(offset * 13)))
+                end
+            end
+            for _, side in ipairs({ -1, 1 }) do
+                ball("Hedgehog ear inner", 0.16, 0.20, 0.07, side * 0.49, 2.67, -1.02, Color3.fromRGB(231, 155, 149))
+            end
+        elseif spec.Id == "Wolf" then
+            ball("Wolf silver throat ruff", 1.02, 0.90, 0.34, 0, 1.86, -1.04, Color3.fromRGB(220, 228, 236))
+            ball("Wolf forehead blaze", 0.28, 0.72, 0.12, 0, 2.45, -1.62, Color3.fromRGB(218, 226, 237))
+            for _, side in ipairs({ -1, 1 }) do
+                block("Wolf ear inner", 0.12, 0.46, 0.07, side * 0.40, 2.98, -0.98, Color3.fromRGB(94, 105, 120), CFrame.Angles(0, 0, math.rad(side * 9)))
+                ball("Wolf cheek mane tuft", 0.30, 0.44, 0.25, side * 0.78, 2.05, -0.90, Color3.fromRGB(163, 177, 190))
+                for claw = 1, 3 do
+                    block("Wolf paw claw", 0.08, 0.08, 0.20, side * (0.38 + claw * 0.10), 0.20, -0.86, Color3.fromRGB(40, 43, 48), CFrame.Angles(math.rad(-14), 0, 0))
+                end
+            end
+            for stripe = 1, 4 do
+                ball("Wolf tail fur band", 0.42, 0.42, 0.13, 0, 1.64, 1.02 + stripe * 0.25, stripe % 2 == 0 and Color3.fromRGB(216, 225, 235) or Color3.fromRGB(91, 103, 119))
+            end
+        elseif spec.Id == "Frog" then
+            ball("Frog throat pouch", 0.72, 0.42, 0.24, 0, 0.91, -0.96, Color3.fromRGB(183, 239, 142))
+            for _, side in ipairs({ -1, 1 }) do
+                for toe = 1, 4 do
+                    ball("Frog toe pad", 0.20, 0.10, 0.20, side * (0.72 + toe * 0.05), 0.16, -0.72 + toe * 0.18, Color3.fromRGB(250, 223, 111))
+                end
+                for spot = 1, 5 do
+                    ball("Frog dorsal spot", 0.12, 0.08, 0.08, side * (0.35 + (spot % 2) * 0.14), 1.78 + (spot % 3) * 0.12, -0.15 + spot * 0.25, Color3.fromRGB(51, 143, 80))
+                end
+            end
+            for ridge = 1, 5 do
+                ball("Frog back ridge", 0.10, 0.16, 0.18, 0, 1.94, -0.48 + ridge * 0.30, Color3.fromRGB(124, 220, 128))
+            end
+        elseif spec.Id == "Turtle" then
+            ball("Turtle plastron", 1.34, 0.22, 1.45, 0, 1.18, 0.08, Color3.fromRGB(224, 193, 127))
+            for plate = 1, 7 do
+                local x = ((plate - 1) % 3 - 1) * 0.42
+                local z = math.floor((plate - 1) / 3) * 0.48 - 0.42
+                crystal("Turtle shell scute", 0.42, 0.12, 0.48, x, 2.13, z, plate % 2 == 0 and Color3.fromRGB(202, 164, 94) or Color3.fromRGB(127, 105, 66))
+            end
+            for _, side in ipairs({ -1, 1 }) do
+                for claw = 1, 3 do
+                    block("Turtle foot claw", 0.10, 0.08, 0.18, side * (0.78 + claw * 0.06), 0.20, -0.48 + claw * 0.18, Color3.fromRGB(226, 211, 163))
+                end
+            end
+            ball("Turtle nose highlight", 0.10, 0.08, 0.07, 0, 1.94, -1.93, Color3.fromRGB(218, 255, 197))
+        elseif spec.Id == "ArcticFox" then
+            ball("Arctic fox snow ruff", 1.05, 0.92, 0.38, 0, 1.86, -1.03, Color3.fromRGB(255, 255, 255))
+            for _, side in ipairs({ -1, 1 }) do
+                crystal("Arctic fox ear crystal", 0.13, 0.34, 0.12, side * 0.36, 3.20, -0.88, Color3.fromRGB(152, 220, 255))
+                ball("Arctic fox cheek frost", 0.32, 0.28, 0.18, side * 0.66, 2.00, -1.22, Color3.fromRGB(210, 237, 255))
+            end
+            for band = 1, 4 do
+                ball("Arctic fox tail frost band", 0.49, 0.48, 0.13, 0, 1.62, 0.94 + band * 0.23, band % 2 == 0 and Color3.fromRGB(203, 234, 255) or Color3.fromRGB(255, 255, 255))
+            end
+            for snow = 1, 6 do
+                glow("Arctic fox frost mote", 0.07, 0.07, 0.07, (snow - 3.5) * 0.34, 2.25 + (snow % 2) * 0.16, 0.30, Color3.fromRGB(181, 231, 255))
+            end
+        elseif spec.Id == "Mammoth" then
+            ball("Mammoth forehead cap", 0.92, 0.52, 0.34, 0, 2.32, -1.36, Color3.fromRGB(156, 170, 186))
+            for _, side in ipairs({ -1, 1 }) do
+                ball("Mammoth ear inner", 0.40, 0.40, 0.12, side * 0.78, 2.12, -0.92, Color3.fromRGB(205, 161, 148))
+                for ring = 1, 4 do
+                    ball("Mammoth tusk ring", 0.19, 0.12, 0.13, side * 0.36, 1.72 + ring * 0.16, -1.75, Color3.fromRGB(255, 238, 203))
+                end
+                crystal("Mammoth tusk tip", 0.15, 0.26, 0.15, side * 0.36, 2.32, -1.72, Color3.fromRGB(255, 244, 219))
+            end
+            for tuft = 1, 7 do
+                ball("Mammoth wool tuft", 0.30, 0.24, 0.30, (tuft - 4) * 0.30, 2.16, 0.46, Color3.fromRGB(174, 185, 196))
+            end
+        elseif spec.Id == "PolarBear" then
+            ball("Polar bear neck ruff", 1.18, 0.94, 0.38, 0, 1.86, -1.00, Color3.fromRGB(255, 255, 250))
+            for _, side in ipairs({ -1, 1 }) do
+                ball("Polar bear ear inner", 0.18, 0.18, 0.08, side * 0.42, 2.72, -1.00, Color3.fromRGB(235, 170, 177))
+                for claw = 1, 4 do
+                    block("Polar bear dark claw", 0.09, 0.08, 0.19, side * (0.34 + claw * 0.11), 0.19, -0.78, Color3.fromRGB(68, 73, 81), CFrame.Angles(math.rad(-10), 0, 0))
+                end
+            end
+            for snow = 1, 6 do
+                glow("Polar bear snowflake marking", 0.09, 0.09, 0.06, math.cos(snow * math.pi / 3) * 0.50, 1.50 + math.sin(snow * math.pi / 3) * 0.30, 0.62, Color3.fromRGB(184, 228, 255))
+            end
+        elseif spec.Id == "LionCub" then
+            ball("Lion cub baby mane", 1.34, 1.25, 0.80, 0, 2.08, -0.90, Color3.fromRGB(255, 190, 88))
+            for tuft = 1, 10 do
+                local angle = math.pi * 2 * tuft / 10
+                block("Lion cub mane tuft", 0.22, 0.42, 0.20, math.cos(angle) * 0.74, 2.12 + math.sin(angle) * 0.68, -0.90, Color3.fromRGB(245, 157, 67), CFrame.Angles(0, 0, math.rad(tuft * 18)))
+            end
+            for _, side in ipairs({ -1, 1 }) do
+                ball("Lion cub cheek", 0.30, 0.26, 0.18, side * 0.62, 1.98, -1.58, Color3.fromRGB(255, 225, 178))
+                ball("Lion cub paw pad", 0.23, 0.08, 0.12, side * 0.50, 0.18, -0.80, Color3.fromRGB(120, 79, 52))
+            end
+        elseif spec.Id == "Elephant" then
+            ball("Elephant forehead plate", 0.86, 0.60, 0.22, 0, 2.33, -1.45, Color3.fromRGB(168, 177, 187))
+            for _, side in ipairs({ -1, 1 }) do
+                ball("Elephant inner ear", 0.44, 0.58, 0.09, side * 0.68, 2.15, -1.06, Color3.fromRGB(205, 158, 153))
+                for ring = 1, 4 do
+                    ball("Elephant trunk ring", 0.28 - ring * 0.025, 0.09, 0.10, 0, 1.58 - ring * 0.15, -1.88 - ring * 0.045, Color3.fromRGB(185, 191, 198))
+                end
+                crystal("Elephant tusk sheen", 0.12, 0.28, 0.12, side * 0.38, 1.76, -1.74, Color3.fromRGB(255, 241, 210))
+                for toe = 1, 3 do
+                    ball("Elephant toenail", 0.14, 0.10, 0.12, side * (0.28 + toe * 0.12), 0.18, -0.63, Color3.fromRGB(222, 216, 205))
+                end
+            end
+        elseif spec.Id == "LionGuardian" then
+            for mane = 1, 20 do
+                local angle = math.pi * 2 * mane / 20
+                local x = math.cos(angle) * 1.18
+                local y = 2.22 + math.sin(angle) * 1.00
+                crystal("Lion guardian mane armor", 0.28, 0.62, 0.24, x, y, -0.91, mane % 2 == 0 and Color3.fromRGB(255, 209, 94) or Color3.fromRGB(151, 82, 45), CFrame.Angles(0, 0, math.rad(mane * 18)))
+            end
+            for _, side in ipairs({ -1, 1 }) do
+                ball("Lion guardian cheek fur", 0.44, 0.48, 0.22, side * 0.75, 1.96, -1.48, Color3.fromRGB(248, 205, 127))
+                glow("Lion guardian eye flame", 0.13, 0.13, 0.08, side * 0.42, 2.43, -1.80, Color3.fromRGB(255, 214, 89))
+                for claw = 1, 4 do
+                    crystal("Lion guardian claw", 0.10, 0.12, 0.26, side * (0.35 + claw * 0.12), 0.21, -0.84, Color3.fromRGB(255, 224, 143))
+                end
+            end
+        elseif spec.Id == "Salamander" then
+            ball("Salamander throat plate", 0.92, 0.54, 0.22, 0, 1.08, -1.04, Color3.fromRGB(255, 185, 105))
+            for _, side in ipairs({ -1, 1 }) do
+                for gill = 1, 4 do
+                    block("Salamander external gill", 0.10, 0.12, 0.48, side * (0.66 + gill * 0.08), 1.72 - gill * 0.08, -0.78, gill % 2 == 0 and Color3.fromRGB(255, 194, 89) or spec.Accent, CFrame.Angles(0, 0, math.rad(side * 18)))
+                end
+                for spot = 1, 5 do
+                    glow("Salamander ember spot", 0.09, 0.08, 0.06, side * (0.38 + spot * 0.10), 1.45 + (spot % 2) * 0.18, -0.10 + spot * 0.24, Color3.fromRGB(255, 196, 77))
+                end
+            end
+            for ridge = 1, 6 do
+                crystal("Salamander dorsal ember ridge", 0.13, 0.26, 0.13, 0, 1.94, -0.65 + ridge * 0.30, Color3.fromRGB(255, 170, 72))
+            end
+        elseif spec.Id == "Dragon" then
+            for _, side in ipairs({ -1, 1 }) do
+                block("Dragon wing spar", 0.12, 1.20, 1.55, side * 1.08, 2.00, 0.20, Color3.fromRGB(75, 46, 112), CFrame.Angles(0, 0, math.rad(side * 22)))
+                for rib = 1, 4 do
+                    block("Dragon wing rib", 0.06, 0.10, 1.20, side * (0.56 + rib * 0.16), 1.80 + rib * 0.08, 0.22 + rib * 0.08, spec.Accent, CFrame.Angles(0, 0, math.rad(side * 18)))
+                end
+                for claw = 1, 3 do
+                    crystal("Dragon foreclaw", 0.10, 0.12, 0.24, side * (0.68 + claw * 0.12), 0.23, -0.76, Color3.fromRGB(245, 218, 167))
+                end
+            end
+            for plate = 1, 7 do
+                ball("Dragon armored belly plate", 0.72 - plate * 0.035, 0.14, 0.26, 0, 1.26, -1.20 + plate * 0.34, Color3.fromRGB(241, 174, 136))
+                crystal("Dragon dorsal spine", 0.18, 0.42, 0.16, 0, 2.08, -0.85 + plate * 0.42, Color3.fromRGB(255, 137, 112))
+            end
+            for horn = 1, 2 do
+                crystal("Dragon crown horn", 0.16, 0.52, 0.16, (horn == 1 and -1 or 1) * 0.35, 3.00, -0.88, Color3.fromRGB(255, 196, 143))
+            end
+        elseif spec.Id == "Dolphin" then
+            ball("Dolphin rostrum bridge", 0.70, 0.34, 0.74, 0, 1.47, -2.05, Color3.fromRGB(183, 225, 238))
+            for _, side in ipairs({ -1, 1 }) do
+                block("Dolphin flank stripe", 0.06, 0.10, 2.00, side * 0.97, 1.38, 0.18, Color3.fromRGB(39, 128, 177), CFrame.Angles(0, 0, math.rad(side * 4)))
+                for ridge = 1, 3 do
+                    block("Dolphin flipper ridge", 0.05, 0.06, 0.62, side * (0.88 + ridge * 0.08), 0.97, -0.30 + ridge * 0.18, Color3.fromRGB(163, 224, 244))
+                end
+            end
+            ball("Dolphin blowhole", 0.14, 0.06, 0.12, 0, 2.35, -1.03, Color3.fromRGB(43, 86, 110))
+            for spot = 1, 8 do
+                glow("Dolphin water-speckle", 0.06, 0.06, 0.05, (spot % 2 == 0 and 1 or -1) * (0.44 + (spot % 3) * 0.16), 1.72 + (spot % 4) * 0.12, -0.30 + math.floor(spot / 2) * 0.23, Color3.fromRGB(177, 239, 255))
+            end
+        elseif spec.Id == "Whale" then
+            for _, side in ipairs({ -1, 1 }) do
+                for groove = 1, 5 do
+                    block("Whale throat groove", 0.06, 0.38, 0.16, side * (0.30 + groove * 0.10), 1.14, -1.64 + groove * 0.18, Color3.fromRGB(213, 235, 240))
+                end
+                for barnacle = 1, 3 do
+                    ball("Whale skin marking", 0.10, 0.08, 0.08, side * (0.82 + barnacle * 0.10), 1.90, -0.20 + barnacle * 0.42, Color3.fromRGB(180, 218, 237))
+                end
+                block("Whale flipper ridge", 0.07, 0.10, 0.90, side * 1.18, 0.94, -0.10, Color3.fromRGB(134, 187, 217))
+            end
+            ball("Whale blowhole", 0.18, 0.07, 0.16, 0, 2.34, -1.00, Color3.fromRGB(42, 65, 81))
+            for tailLine = 1, 3 do
+                ball("Whale tail fluke ridge", 0.08, 0.08, 0.72, (tailLine - 2) * 0.42, 1.37, 2.92, Color3.fromRGB(179, 221, 237))
+            end
         end
 
         if rarityTier >= 6 and (stageIndex >= 3 or giant) then
