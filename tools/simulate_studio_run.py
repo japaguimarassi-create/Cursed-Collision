@@ -126,13 +126,12 @@ def simulate_hud(audit, client, screen_profiles):
         '"FUGA • LEVE O ANIMAL AO PAD VERDE DA SUA FAZENDA"' in client
         and "objectiveMarker.BackgroundColor3 = COLORS.Orange" in client,
         "Carrying an animal selects the escape message and orange marker", "GameClient.client.lua")
-    audit.check("BotX status is visible and the diagnostics panel requests server data",
-        all(token in client for token in (
-            'makeButton(gui, "BotXStatus"', 'botXChip.Activated:Connect(function()',
-            'botXStatusRemote:FireServer("request")', 'botXStatusRemote.OnClientEvent:Connect(function(status)',
-            "formatDiagnosticReport()", 'openPanel("Diagnostics")'
+    audit.check("BotX and MapBot systems are absent from the gameplay HUD",
+        not any(token in client for token in (
+            "BotXStatus", "RequestMapBot", "MapBotReport", "BOTX_SESSION_REPORT",
+            "PathfindingService:CreatePath", "formatDiagnosticReport()"
         )),
-        "BotX chip has a request/reply path and displays the current session", "GameClient.client.lua")
+        "No bot observer, status chip, diagnostics request or map bot remains in gameplay", "GameClient.client.lua")
 
     prompt_anchor = "promptCard.AnchorPoint = Vector2.new(0.5, 0)" in client
     prompt_position = re.search(r'promptCard\.Position\s*=\s*UDim2\.new\(0\.5,\s*0,\s*0,\s*(\d+)\)', client)
@@ -298,6 +297,7 @@ def main():
         "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua",
         "src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua",
         "src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua",
+        "src/StealAnAnimal/ServerScriptService/Services/GuardianAI.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
@@ -325,11 +325,12 @@ def main():
         animal_animator = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua")
         treadmill_animator = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua")
         guardian_controller = read_text("src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua")
+        guardian_ai = read_text("src/StealAnAnimal/ServerScriptService/Services/GuardianAI.lua")
         animation_client = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua")
         profile_store = read_text("src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua")
         client_script = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
         interaction_prompt = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua")
-        server = main_server + world_builder + animal_factory + profile_store + guardian_catalog + animal_animator + treadmill_animator + guardian_controller
+        server = main_server + world_builder + animal_factory + profile_store + guardian_catalog + animal_animator + treadmill_animator + guardian_controller + guardian_ai
         client = client_script + interaction_prompt
         studio_server = read_text("src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua")
         studio_client = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua")
@@ -360,11 +361,22 @@ def main():
                 all(token in guardian_catalog for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger",
                     "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")),
                 "The eight biomes do not reuse arbitrary pet catalog entries")
-    audit.check("Guardian controller handles rest, return and chase states",
-                all(token in guardian_controller for token in ('model:SetAttribute("AnimationState", "Rest")',
-                    'model:SetAttribute("AnimationState", "Walk")', 'model:SetAttribute("AnimationState", "Run")',
-                    "Config.GuardianCatchDistance", "ClearCarry(targetPlayer)")),
-                "Server-authoritative guardian states and escape check are wired")
+    audit.check("Guardian AI is separate and dormant until a matching animal is stolen",
+                all(token in guardian_controller for token in (
+                    "GuardianAIFactory", "function self:OnAnimalStolen", "function self:OnCarryEnded",
+                    "function self:HasActiveGuardians()", "Brain:IsActive()"
+                )) and all(token in guardian_ai for token in (
+                    'Model:SetAttribute("GuardianAIActive", false)',
+                    'Model:SetAttribute("GuardianBrainState", "Dormant")',
+                    'Model:SetAttribute("AnimationState", "Rest")',
+                    "function self:Activate(player)", "if not self.Active then",
+                    "carry.Spec.Biome ~= Biome.Id", "Config.GuardianCatchDistance", "ClearCarry(targetPlayer)"
+                )) and all(token in main_server for token in (
+                    "guardianController:OnAnimalStolen(player, spec.Biome)",
+                    "guardianController:OnCarryEnded(player)",
+                    "guardianController:HasActiveGuardians()"
+                )),
+                "Every guardian brain begins dormant, activates only for a validated theft in its biome, and pauses after carrying ends")
     audit.check("Animal animations run locally and cull distant models",
                 all(token in animal_animator for token in ("Walk = true", "Rest = true", "Run = true", "MaxDistance", "SetViewPosition"))
                 and all(token in animation_client for token in ("Workspace.DescendantAdded", "animalAnimator:Step(deltaTime)",
@@ -428,9 +440,14 @@ def main():
             "RouteStartArchTop", "CentralCarpet", "CorridorPillar"
         ))
         audit.check(
-            "Runtime map builds an Egg-inspired hub, readable entrance, and eight distinct biome landmarks",
-            all(token in world_builder for token in runtime_landmarks) and simplified_route,
-            "Open checkerboard safe zone, simple route signage, low transition markers, and all eight biome landmarks are present",
+            "Runtime map preserves its original identity and adds layered geometry to all biomes",
+            all(token in world_builder for token in runtime_landmarks) and simplified_route and all(token in world_builder for token in (
+                "buildBiomeGeometry", "GateFooting", "GateFootInlay", "PathEdgeSegment", "PathEdgeFacet",
+                "FacetedOutcrop", "GateBaseRing", "LakeBridgeSpan", "ForestMonolithLintel",
+                "WetlandsRootRib", "FrostSculptedSpire", "VolcanoBasaltRidgeFin", "OceanCoralFan",
+                "SavannaFossilRib"
+            )),
+            "Open safe zone, readable route, eight established landmarks, and the new per-biome geometry pass are present",
             "WorldBuilder.lua",
         )
     except (OSError, json.JSONDecodeError) as error:
@@ -484,7 +501,7 @@ def main():
             "This is a deterministic source-level simulation, not an executed Roblox Studio session.",
             "It models HUD geometry from source constants; it does not render Roblox UI or measure Roblox AbsolutePosition.",
             "It does not execute physics, ProximityPrompt triggering, DataStore calls, client/server replication, or live RemoteEvents.",
-            "The StudioTestService plugin and runtime bots must still be run inside Roblox Studio for engine-level evidence.",
+            "The StudioTestService plugin and two-client live Studio test must still be run inside Roblox Studio for engine-level evidence.",
             "TouchEnabled is modeled for device profiles; actual Device Simulator state is not changed by this script.",
         ],
         "nextStep": "Download studio-run-simulation.json from the GitHub Actions artifact. For actual runtime evidence, run the Studio plugin and provide [STEAL_ANIMAL_AUDIT_REPORT] JSON.",
