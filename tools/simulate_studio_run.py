@@ -387,15 +387,18 @@ def main():
         audit.check("Static map landmarks exist", not absent,
                     "All required landmarks found" if not absent else "Missing: " + ", ".join(absent))
         runtime_landmarks = (
-            "CentralHubGrid", "CentralHubTile", "RouteStartArchTop", "RouteStartSign",
-            "MeadowMonumentPetal", "LakeMonumentWaterfall", "ForestMonumentCanopy",
-            "WetlandsMonumentRoof", "FrostMonumentShard", "SavannaMonumentCanopy",
+            "CentralHubGrid", "CentralHubTile", "SafeZoneLine", "SafeZoneSign", "RouteStartSign",
+            "MeadowMonumentCanopy", "LakeMonumentWaterfall", "ForestMonumentStoneArchTop",
+            "WetlandsMonumentRoof", "FrostMonumentShard", "SavannaMonumentFossilRib",
             "VolcanoMonumentLava", "OceanMonumentBeacon", "LandmarkPlaque",
         )
+        simplified_route = all(token not in world_builder for token in (
+            "RouteStartArchTop", "CentralCarpet", "CorridorPillar"
+        ))
         audit.check(
             "Runtime map builds an Egg-inspired hub, readable entrance, and eight distinct biome landmarks",
-            all(token in world_builder for token in runtime_landmarks),
-            "Checkerboard hub, route arch, transition markers, plaques, and all eight signature monuments are present",
+            all(token in world_builder for token in runtime_landmarks) and simplified_route,
+            "Open checkerboard safe zone, simple route signage, low transition markers, and all eight biome landmarks are present",
             "WorldBuilder.lua",
         )
     except (OSError, json.JSONDecodeError) as error:
