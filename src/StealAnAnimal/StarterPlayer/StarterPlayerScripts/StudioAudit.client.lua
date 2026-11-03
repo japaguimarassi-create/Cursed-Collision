@@ -256,6 +256,74 @@ else
         "Perfil ainda não está disponível; verificar configuração de API Services no Studio", true)
 end
 
+local runtimeWorld = Workspace:FindFirstChild("StealAnAnimalRuntimeWorld")
+local wildlife = runtimeWorld and runtimeWorld:FindFirstChild("Wildlife")
+local nearestAnimal
+local nearestDistance = math.huge
+local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+local referencePosition = playerRoot and playerRoot.Position or (camera and camera.CFrame.Position)
+if wildlife and referencePosition then
+    for _, animal in ipairs(wildlife:GetChildren()) do
+        if animal:IsA("Model") and animal.PrimaryPart and animal:GetAttribute("AnimationState") == "Walk" then
+            local distance = (animal.PrimaryPart.Position - referencePosition).Magnitude
+            if distance < nearestDistance then
+                nearestDistance = distance
+                nearestAnimal = animal
+            end
+        end
+    end
+end
+
+local movingAnimalPart
+if nearestAnimal and nearestDistance <= 260 then
+    for _, descendant in ipairs(nearestAnimal:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            local lower = string.lower(descendant.Name)
+            if string.find(lower, "leg", 1, true) or string.find(lower, "tail", 1, true)
+                or string.find(lower, "wing", 1, true) or string.find(lower, "flipper", 1, true) then
+                movingAnimalPart = descendant
+                break
+            end
+        end
+    end
+end
+
+if movingAnimalPart then
+    local before = movingAnimalPart.CFrame
+    task.wait(0.32)
+    local after = movingAnimalPart.CFrame
+    local moved = (after.Position - before.Position).Magnitude > 0.008
+        or (after.LookVector - before.LookVector).Magnitude > 0.008
+    record("Animal selvagem executa animação Walk local", moved,
+        nearestAnimal.Name .. " • " .. movingAnimalPart.Name .. " • distância=" .. tostring(math.floor(nearestDistance)))
+else
+    record("Animal selvagem executa animação Walk local", false,
+        "Nenhum animal com peça animável foi encontrado dentro do raio local de 260 studs.")
+end
+
+local ownedTreadmill
+local runtimeFarms = runtimeWorld and runtimeWorld:FindFirstChild("PlayerFarms")
+if runtimeFarms then
+    for _, farm in ipairs(runtimeFarms:GetChildren()) do
+        if farm:GetAttribute("OwnerUserId") == player.UserId then
+            ownedTreadmill = farm:FindFirstChild("Treadmill")
+            break
+        end
+    end
+end
+
+local movingStripe = ownedTreadmill and ownedTreadmill:FindFirstChild("MovingBeltStripe")
+if movingStripe then
+    local before = movingStripe.Position
+    task.wait(0.32)
+    local after = movingStripe.Position
+    record("Faixa da esteira anima localmente", (after - before).Magnitude > 0.04,
+        "Farm=" .. tostring(ownedTreadmill.Parent and ownedTreadmill.Parent.Name or "indefinida"))
+else
+    record("Faixa da esteira anima localmente", false,
+        "A esteira da fazenda atribuída não foi encontrada.")
+end
+
 local report = {
     client = player.Name,
     passed = passed,
