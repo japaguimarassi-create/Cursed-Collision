@@ -7,12 +7,15 @@ local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
-local PathfindingService = game:GetService("PathfindingService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("AnimalCatalog"))
 local Rules = require(Shared:WaitForChild("GameplayRules"))
+local GuardianCatalog = require(Shared:WaitForChild("GuardianCatalog"))
+local TreadmillAnimator = require(Shared:WaitForChild("TreadmillAnimator"))
+local GuardianControllerFactory = require(script.Parent:WaitForChild("Services"):WaitForChild("GuardianController"))
+local GuardianAIFactory = require(script.Parent:WaitForChild("Services"):WaitForChild("GuardianAI"))
 local Store = DataStoreService:GetDataStore(Config.DataStoreName)
 
 local remotes = ReplicatedStorage:FindFirstChild("StealAnimalRemotes") or Instance.new("Folder")
@@ -36,9 +39,6 @@ local rebirthRemote = remote("RequestRebirth")
 local dailyRemote = remote("RequestDailyReward")
 local codeRemote = remote("RequestRedeemCode")
 local questRemote = remote("RequestQuest")
-local mapBotRemote = remote("RequestMapBot")
-local mapBotReportRemote = remote("MapBotReport")
-local botXStatusRemote = remote("BotXStatus")
 
 local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")
 local previousRuntimeWorld = Workspace:FindFirstChild("StealAnAnimalRuntimeWorld")
@@ -72,16 +72,13 @@ local saveInProgress = {}
 local leaving = {}
 local rebirthInProgress = {}
 local progressionWriteInProgress = {}
-local mapBotCooldowns = {}
 local actionCooldowns = {}
 local trainingNoticeAt = {}
-local treadmillStrips = {}
-local treadmillAnimationAccumulator = 0
 local playerBases = {}
 local playerSetupDone = {}
 local carried = {}
-local guardians = {}
 local wildRecords = {}
+local guardianController
 local rng = Random.new(20261020)
 local SESSION_LEASE_SECONDS = 180
 local DAILY_CODES = table.freeze({
@@ -109,7 +106,6 @@ local worldBuilder = WorldBuilder.new({
     BasesFolder = basesFolder,
     DecorationFolder = decorationFolder,
     Rng = rng,
-    TreadmillStrips = treadmillStrips,
     Lighting = Lighting,
 })
 local createPart = worldBuilder.CreatePart
@@ -268,6 +264,15 @@ local function updatePlayerAttributes(player)
         baseSpeed = speed or Config.CarrySpeedMinimum
     end
     player:SetAttribute("EffectiveWalkSpeed", baseSpeed)
+    local nextBiome
+    for _, biome in ipairs(Config.Biomes) do
+        if profile.Speed < biome.MinSpeed then
+            nextBiome = biome
+            break
+        end
+    end
+    player:SetAttribute("NextBiomeName", nextBiome and nextBiome.Name or "TODOS")
+    player:SetAttribute("NextBiomeSpeed", nextBiome and nextBiome.MinSpeed or 0)
     local character = player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     if humanoid then
@@ -281,11 +286,27 @@ local function clearCarry(player)
         return
     end
     carried[player] = nil
-    if carry.Model and carry.Model.Parent then
-        carry.Model:Destroy()
+    if guardianController then
+        guardianController:OnCarryEnded(player)
+    end
+    if carry.Model then
+                if carry.Model.Parent then
+            carry.Model:Destroy()
+        end
     end
     player:SetAttribute("CarryingAnimal", false)
     updatePlayerAttributes(player)
+end
+
+local function refreshTreadmill(player, profile)
+    local base = playerBases[player]
+    local treadmill = base and base:FindFirstChild("Treadmill")
+    if not treadmill then
+        return false
+    end
+    local level = profile and profile.TreadmillLevel or 1
+    local gain = Rules.TrainingGain(level, Config)
+    return TreadmillAnimator.ApplyLevel(treadmill, level, gain)
 end
 
 local function renderBarn(player)
@@ -321,6 +342,7 @@ local function renderBarn(player)
                 local model = createAnimalModel(spec, stage.Name, slot.Position + Vector3.new(0, 0.05, 0), false)
                 model.Name = "StoredAnimal_" .. tostring(index)
                 model.Parent = display
+                model:SetAttribute("AnimationState", "Rest")
                 local income = math.floor(Rules.AnimalIncome(spec.Income, stageIndex, Config) * Rules.RebirthIncomeMultiplier(profile.Rebirths, Config))
                 addLabel(model.PrimaryPart, spec.Name, stage.DisplayName .. " • +" .. tostring(income) .. "/s", spec.Accent, true, 18, 1.2)
                 slot.Color = spec.Color
@@ -382,6 +404,7 @@ local function spawnWild(spec)
     local position = Vector3.new(biome.CenterX + rng:NextNumber(-28, 28), -0.12, rng:NextNumber(-20, 20))
     local model = createAnimalModel(spec, "Baby", position, false)
     model.Parent = wildlifeFolder
+    model:SetAttribute("AnimationState", "Walk")
     local root = model.PrimaryPart
     addLabel(root, spec.Name, spec.Rarity .. " • $" .. tostring(spec.Income) .. "/s base", spec.Accent, true, 18, 1.2)
     local prompt = Instance.new("ProximityPrompt")
@@ -398,36 +421,18 @@ local function spawnWild(spec)
     wildRecords[model] = spec
 end
 
-local function makeGuardian(spec, biome)
-    local guardianSide = biome.Phase % 2 == 0 and 1 or -1
-    local position = Vector3.new(biome.CenterX - 50, -0.12, guardianSide * 23)
-    local model = createAnimalModel(spec, "Adult", position, true)
-    model.Name = "GuardianParent_" .. biome.Id
-    model:SetAttribute("GuardianBiome", biome.Id)
-    model:SetAttribute("ThreatLevel", biome.Phase)
-    model.Parent = guardiansFolder
-    local head = model:FindFirstChild("Head") or model:FindFirstChild("SwanHead")
-    addLabel(head or model.PrimaryPart, "PAI PROTETOR: " .. string.upper(spec.Name), "GUARDIÃO • FASE " .. tostring(biome.Phase) .. " • PROTEGE OS OVOS", biome.Accent, false, 58, 1.4)
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "GuardianRim"
-    highlight.Adornee = model
-    highlight.FillColor = biome.Accent
-    highlight.FillTransparency = 0.78
-    highlight.OutlineColor = biome.Accent
-    highlight.OutlineTransparency = 0.04
-    highlight.DepthMode = Enum.HighlightDepthMode.Occluded
-    highlight.Parent = model
-    for shard = 1, 8 do
-        local angle = math.rad(shard * 45)
-        local auraPosition = position + Vector3.new(math.cos(angle) * 10.5, 0.45, math.sin(angle) * 10.5)
-        local aura = addBall(model, "GuardianAuraShard", Vector3.new(1.1, 0.2, 0.2), auraPosition, biome.Accent, Enum.Material.Neon)
-        aura.CFrame = CFrame.new(auraPosition) * CFrame.Angles(0, -angle, math.rad(25))
-        aura.CanTouch = false
-        aura.CanQuery = false
-    end
-    addBall(model, "GuardianCrownGem", Vector3.new(1.9, 1.9, 1.9), position + Vector3.new(0, 16.4, 0), biome.Accent, Enum.Material.Neon)
-    table.insert(guardians, { Model = model, Home = CFrame.new(position), Biome = biome, Spec = spec, Speed = math.min(Config.GuardianSpeed, 12 + biome.Phase * 1.1) })
-end
+guardianController = GuardianControllerFactory.new({
+    Config = Config,
+    Players = Players,
+    Folder = guardiansFolder,
+    GuardianCatalog = GuardianCatalog,
+    GuardianAI = GuardianAIFactory,
+    CreateAnimalModel = createAnimalModel,
+    AddLabel = addLabel,
+    AddBall = addBall,
+    Notify = notify,
+    ClearCarry = clearCarry,
+})
 
 local function loadProfile(player)
     local raw, reason = acquireSession(player)
@@ -484,9 +489,24 @@ local function captureAnimal(player, prompt)
     if not spec or not model:IsDescendantOf(wildlifeFolder) then
         return
     end
+    local profile = profiles[player]
+    local requiredBiome
+    for _, biome in ipairs(Config.Biomes) do
+        if biome.Id == spec.Biome then
+            requiredBiome = biome
+            break
+        end
+    end
+    local minimumSpeed = requiredBiome and requiredBiome.MinSpeed or 0
+    if not profile or profile.Speed < minimumSpeed then
+        notify(player, "Você precisa de " .. tostring(minimumSpeed) .. " SPEED para roubar ovos de " .. (requiredBiome and requiredBiome.Name or "este bioma") .. ".", "Warning")
+        return
+    end
     wildRecords[model] = nil
     carried[player] = { Spec = spec, Model = model }
-    local profile = profiles[player]
+    if guardianController then
+        guardianController:OnAnimalStolen(player, spec.Biome)
+    end
     if profile then
         profile.TotalCaptured = math.min(2147483647, (profile.TotalCaptured or 0) + 1)
     end
@@ -531,8 +551,13 @@ local function depositAnimal(player, prompt)
     table.insert(profile.BarnAnimals, animal)
     profile.TotalDeposited = math.min(2147483647, (profile.TotalDeposited or 0) + 1)
     carried[player] = nil
-    if carry.Model and carry.Model.Parent then
-        carry.Model:Destroy()
+    if guardianController then
+        guardianController:OnCarryEnded(player)
+    end
+    if carry.Model then
+                if carry.Model.Parent then
+            carry.Model:Destroy()
+        end
     end
     player:SetAttribute("CarryingAnimal", false)
     updatePlayerAttributes(player)
@@ -604,6 +629,7 @@ local function upgradeTreadmill(player, prompt)
 
     profile.Coins -= cost
     profile.TreadmillLevel += 1
+    refreshTreadmill(player, profile)
     updatePlayerAttributes(player)
     notify(player, "Esteira nível " .. tostring(profile.TreadmillLevel) .. "! Agora você ganha +" .. tostring(Rules.TrainingGain(profile.TreadmillLevel, Config)) .. " de velocidade por segundo correndo nela.", "Success")
 end
@@ -910,68 +936,6 @@ questRemote.OnServerEvent:Connect(function(player, questId)
     end
 end)
 
-local function mapSummary()
-    local partCount = 0
-    for _, item in ipairs(world:GetDescendants()) do
-        if item:IsA("BasePart") then partCount += 1 end
-    end
-    local occupiedFarms = 0
-    for _, base in ipairs(basesFolder:GetChildren()) do
-        if base:GetAttribute("OwnerUserId") ~= 0 then occupiedFarms += 1 end
-    end
-    local biomes = 0
-    for _, biome in ipairs(Config.Biomes) do
-        if world:FindFirstChild(biome.Id .. "Ground", true) then biomes += 1 end
-    end
-    return {
-        Parts = partCount,
-        Farms = #basesFolder:GetChildren(),
-        OccupiedFarms = occupiedFarms,
-        Biomes = biomes,
-        WildAnimals = #wildlifeFolder:GetChildren(),
-        Guardians = #guardiansFolder:GetChildren(),
-    }
-end
-
-mapBotRemote.OnServerEvent:Connect(function(player)
-    if not profiles[player] or leaving[player] then return end
-    local now = os.clock()
-    if now - (mapBotCooldowns[player] or 0) < 20 then
-        notify(player, "O MapBot pode testar novamente em 20 segundos.", "Warning")
-        return
-    end
-    mapBotCooldowns[player] = now
-    local base = playerBases[player]
-    local pad = base and base:FindFirstChild("CollectPad")
-    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    local summary = mapSummary()
-    local pathStatus = "SEM PERSONAGEM"
-    local waypointCount = 0
-    if root and pad then
-        local path = PathfindingService:CreatePath({ AgentRadius = 2, AgentHeight = 5, AgentCanJump = true })
-        local success, err = pcall(function()
-            path:ComputeAsync(root.Position, pad.Position + Vector3.new(0, 3, 0))
-        end)
-        if success then
-            pathStatus = tostring(path.Status)
-            waypointCount = #path:GetWaypoints()
-        else
-            pathStatus = "ERRO: " .. tostring(err)
-        end
-    end
-    local report = table.concat({
-        "MAPBOT • DIAGNÓSTICO",
-        "Mapa: " .. ((summary.Parts > 300 and summary.Farms == 8 and summary.Biomes == 8) and "PASSOU" or "INCOMPLETO"),
-        "Peças: " .. tostring(summary.Parts),
-        "Fazendas: " .. tostring(summary.Farms) .. " (ocupadas " .. tostring(summary.OccupiedFarms) .. ")",
-        "Biomas: " .. tostring(summary.Biomes) .. "/8",
-        "Animais selvagens: " .. tostring(summary.WildAnimals),
-        "Guardiões: " .. tostring(summary.Guardians) .. "/8",
-        "Rota até o pad da fazenda: " .. pathStatus,
-        "Pontos de caminho: " .. tostring(waypointCount),
-    }, "\n")
-    mapBotReportRemote:FireClient(player, report, pathStatus == "Success" and "Success" or "Warning")
-end)
 
 buildScenery()
 for index = 1, 8 do
@@ -980,11 +944,9 @@ end
 for _, spec in ipairs(Catalog.All()) do
     spawnWild(spec)
 end
-for _, biome in ipairs(Config.Biomes) do
-    local options = Catalog.ForBiome(biome.Id)
-    if #options > 0 then
-        makeGuardian(options[#options], biome)
-    end
+local guardianCount = guardianController:SpawnAll()
+if guardianCount ~= #Config.Biomes then
+    warn("Guardian spawn mismatch: " .. tostring(guardianCount) .. "/" .. tostring(#Config.Biomes))
 end
 
 if previewWorld and previewWorld.Parent then
@@ -1032,6 +994,7 @@ local function playerAdded(player)
         local loaded = loadProfile(player)
         if not loaded or player.Parent ~= Players or not profiles[player] then return end
         player:SetAttribute("ProfileLoaded", true)
+        refreshTreadmill(player, profiles[player])
         renderBarn(player)
         notify(player, "Bem-vindo! Roube animais bebês, fuja dos guardiões e leve-os ao celeiro. Eles crescem até adultos e rendem cada vez mais.", "Success")
         if player.Character then task.spawn(characterAdded, player, player.Character) end
@@ -1052,7 +1015,6 @@ Players.PlayerRemoving:Connect(function(player)
     actionCooldowns[player] = nil
     rebirthInProgress[player] = nil
     progressionWriteInProgress[player] = nil
-    mapBotCooldowns[player] = nil
     trainingNoticeAt[player] = nil
     releaseBase(player)
     playerSetupDone[player] = nil
@@ -1063,23 +1025,10 @@ for _, player in ipairs(Players:GetPlayers()) do
     task.spawn(playerAdded, player)
 end
 
-local accumulator = 0
 local incomeAccumulator = 0
 RunService.Heartbeat:Connect(function(deltaTime)
-    accumulator += deltaTime
     incomeAccumulator += deltaTime
-    treadmillAnimationAccumulator += deltaTime
-    if treadmillAnimationAccumulator >= 0.1 then
-        treadmillAnimationAccumulator = 0
-        local elapsed = os.clock() * Config.TreadmillBeltSpeed
-        for _, entry in ipairs(treadmillStrips) do
-            local part = entry.Part
-            if part and part.Parent then
-                local offset = ((entry.Phase + elapsed) % entry.Length) - entry.Length / 2
-                part.Position = Vector3.new(entry.Origin.X, part.Position.Y, entry.Origin.Z + offset)
-            end
-        end
-    end
+
     for player, carry in pairs(carried) do
         local character = player.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -1089,52 +1038,8 @@ RunService.Heartbeat:Connect(function(deltaTime)
             carry.Model:PivotTo(root.CFrame * CFrame.new(0, 1.7, 2.1))
         end
     end
-
-    if accumulator >= Config.GuardianThinkSeconds then
-        accumulator = 0
-        for _, guardian in ipairs(guardians) do
-            local model = guardian.Model
-            if model and model.Parent and model.PrimaryPart then
-                local targetRoot
-                local targetPlayer
-                local nearest = Config.GuardianNoticeDistance
-                for player in pairs(carried) do
-                    local character = player.Character
-                    local root = character and character:FindFirstChild("HumanoidRootPart")
-                    if root then
-                        local distance = (root.Position - model.PrimaryPart.Position).Magnitude
-                        if distance < nearest then
-                            nearest = distance
-                            targetRoot = root
-                            targetPlayer = player
-                        end
-                    end
-                end
-                if targetRoot and targetPlayer then
-                    if nearest <= Config.GuardianCatchDistance then
-                        clearCarry(targetPlayer)
-                        notify(targetPlayer, "O guardião alcançou você! O animal escapou.", "Error")
-                    else
-                        local current = model:GetPivot()
-                        local destination = Vector3.new(targetRoot.Position.X, current.Position.Y, targetRoot.Position.Z)
-                        local direction = destination - current.Position
-                        if direction.Magnitude > 0.1 then
-                            local step = math.min(direction.Magnitude, (guardian.Speed or Config.GuardianSpeed) * Config.GuardianThinkSeconds)
-                            local nextPosition = current.Position + direction.Unit * step
-                            model:PivotTo(CFrame.lookAt(nextPosition, destination))
-                        end
-                    end
-                else
-                    local current = model:GetPivot()
-                    local home = guardian.Home.Position
-                    local direction = home - current.Position
-                    if direction.Magnitude > 1 then
-                        local step = math.min(direction.Magnitude, 6 * Config.GuardianThinkSeconds)
-                        model:PivotTo(CFrame.lookAt(current.Position + direction.Unit * step, home))
-                    end
-                end
-            end
-        end
+    if guardianController:HasActiveGuardians() then
+        guardianController:Step(deltaTime, carried)
     end
 
     if incomeAccumulator >= 1 then

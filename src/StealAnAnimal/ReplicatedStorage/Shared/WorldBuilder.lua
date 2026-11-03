@@ -1,4 +1,4 @@
-local WorldBuilder = {}
+local WorldBuilder = { VisualBuild = "OriginalBiomeGeometry-v2" }
 
 function WorldBuilder.new(services)
     local Config = services.Config
@@ -6,7 +6,6 @@ function WorldBuilder.new(services)
     local basesFolder = services.BasesFolder
     local decorationFolder = services.DecorationFolder
     local rng = services.Rng
-    local treadmillStrips = services.TreadmillStrips
     local Lighting = services.Lighting
 
     local function createPart(parent, name, size, cf, color, material, shape, canCollide)
@@ -37,6 +36,36 @@ function WorldBuilder.new(services)
         return createPart(parent, name, cylinderSize, cf * CFrame.Angles(0, 0, math.rad(90)), color, material, Enum.PartType.Cylinder, canCollide)
     end
     
+    local function addWedge(parent, name, size, cf, color, material, canCollide)
+        local item = Instance.new("WedgePart")
+        item.Name = name
+        item.Size = size
+        item.CFrame = cf
+        item.Color = color
+        item.Material = material or Enum.Material.SmoothPlastic
+        item.Anchored = true
+        item.CanCollide = canCollide == true
+        item.CastShadow = true
+        item.TopSurface = Enum.SurfaceType.Smooth
+        item.BottomSurface = Enum.SurfaceType.Smooth
+        item.Parent = parent
+        return item
+    end
+
+    local function addPolygonRing(parent, name, center, radius, segments, barHeight, barThickness, color, material)
+        for index = 1, segments do
+            local a1 = (index - 1) * math.pi * 2 / segments
+            local a2 = index * math.pi * 2 / segments
+            local first = center + Vector3.new(math.cos(a1) * radius, 0, math.sin(a1) * radius)
+            local second = center + Vector3.new(math.cos(a2) * radius, 0, math.sin(a2) * radius)
+            local delta = second - first
+            local middle = (first + second) * 0.5
+            local frame = CFrame.lookAt(middle, middle + delta.Unit) * CFrame.Angles(0, math.rad(90), 0)
+            local segment = createPart(parent, name, Vector3.new(delta.Magnitude + 0.35, barHeight, barThickness), frame, color, material or Enum.Material.Metal, nil, false)
+            segment.CastShadow = false
+        end
+    end
+
     local function addLabel(part, title, subtitle, color, compact, maxDistance, heightOffset)
         local compactLabel = compact == true
         local gui = Instance.new("BillboardGui")
@@ -85,8 +114,10 @@ function WorldBuilder.new(services)
     local function createTreadmill(base, center)
         local treadmill = Instance.new("Model")
         treadmill.Name = "Treadmill"
+        treadmill:SetAttribute("TreadmillLevel", 1)
         treadmill.Parent = base
-        local origin = center + Vector3.new(0, 0, -9.5)
+        local frontSide = center.Z < 0 and 1 or -1
+        local origin = center + Vector3.new(0, 0, frontSide * 9.5)
     
         createPart(treadmill, "TreadmillHousing", Vector3.new(7.4, 0.62, 9.2), CFrame.new(origin + Vector3.new(0, 0.38, 0)), Color3.fromRGB(38, 52, 60), Enum.Material.Metal, nil, true)
         createPart(treadmill, "TreadmillBelt", Vector3.new(5.9, 0.14, 7.8), CFrame.new(origin + Vector3.new(0, 0.76, 0)), Color3.fromRGB(32, 43, 49), Enum.Material.DiamondPlate, nil, true)
@@ -100,12 +131,16 @@ function WorldBuilder.new(services)
             local phase = (index - 1) * (Config.TreadmillBeltLength / 7)
             local stripe = createPart(treadmill, "MovingBeltStripe", Vector3.new(5.45, 0.035, 0.11), CFrame.new(origin + Vector3.new(0, 0.86, phase - Config.TreadmillBeltLength / 2)), index % 2 == 0 and Color3.fromRGB(87, 220, 225) or Color3.fromRGB(56, 145, 161), Enum.Material.Neon, nil, false)
             stripe.CastShadow = false
-            table.insert(treadmillStrips, { Part = stripe, Origin = origin, Phase = phase, Length = Config.TreadmillBeltLength })
+            stripe:SetAttribute("TreadmillOrigin", Vector3.new(origin.X, 0, origin.Z))
+            stripe:SetAttribute("AnimationPhase", phase)
+            stripe:SetAttribute("AnimationLength", Config.TreadmillBeltLength)
+            stripe:SetAttribute("AnimationSpeed", Config.TreadmillBeltSpeed)
         end
     
         for _, side in ipairs({ -1, 1 }) do
             local roller = createPart(treadmill, "BeltRoller", Vector3.new(0.28, 5.75, 0.28), CFrame.new(origin + Vector3.new(0, 0.88, side * 3.82)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(126, 147, 154), Enum.Material.Metal, Enum.PartType.Cylinder, false)
             roller.CastShadow = false
+            roller:SetAttribute("AnimationSpeed", Config.TreadmillBeltSpeed * 1.4)
         end
     
         local console = createPart(treadmill, "TreadmillConsole", Vector3.new(2.6, 1.15, 0.38), CFrame.new(origin + Vector3.new(0, 2.05, -3.45)), Color3.fromRGB(35, 67, 72), Enum.Material.Metal, nil, true)
@@ -147,6 +182,7 @@ function WorldBuilder.new(services)
     
         createPart(base, "Floor", Vector3.new(34, 1, 31), CFrame.new(center + Vector3.new(0, -0.3, 0)), Color3.fromRGB(111, 171, 83), Enum.Material.Grass, nil, true)
         local frontSign = center.Z < 0 and 1 or -1
+        local frontSide = frontSign
         local fenceColor = Color3.fromRGB(151, 91, 52)
         local function fence(name, size, offset, color)
             local rail = createPart(base, name, size, CFrame.new(center + offset), color or fenceColor, Enum.Material.WoodPlanks, nil, false)
@@ -175,26 +211,12 @@ function WorldBuilder.new(services)
                 createPart(base, "PenFencePost", Vector3.new(0.8, 3.2, 0.8), CFrame.new(center + Vector3.new(xSide * 16.4, 1.35, zSide * 14.8)), Color3.fromRGB(124, 73, 42), Enum.Material.Wood, nil, false)
             end
         end
-        createPart(base, "BarnBack", Vector3.new(20, 10, 1), CFrame.new(center + Vector3.new(0, 5, 9)), Color3.fromRGB(174, 107, 65), Enum.Material.WoodPlanks, nil, true)
-        createPart(base, "BarnLeft", Vector3.new(1, 10, 15), CFrame.new(center + Vector3.new(-9.5, 5, 1.5)), Color3.fromRGB(196, 132, 81), Enum.Material.WoodPlanks, nil, true)
-        createPart(base, "BarnRight", Vector3.new(1, 10, 15), CFrame.new(center + Vector3.new(9.5, 5, 1.5)), Color3.fromRGB(196, 132, 81), Enum.Material.WoodPlanks, nil, true)
-        createPart(base, "BarnRoofLeft", Vector3.new(12, 0.85, 18), CFrame.new(center + Vector3.new(-5.2, 12.0, 1.5)) * CFrame.Angles(0, 0, math.rad(25)), Color3.fromRGB(112, 61, 54), Enum.Material.Slate, nil, true)
-        createPart(base, "BarnRoofRight", Vector3.new(12, 0.85, 18), CFrame.new(center + Vector3.new(5.2, 12.0, 1.5)) * CFrame.Angles(0, 0, math.rad(-25)), Color3.fromRGB(135, 70, 59), Enum.Material.Slate, nil, true)
-        createPart(base, "BarnRoofRidge", Vector3.new(0.9, 0.9, 18.5), CFrame.new(center + Vector3.new(0, 14.35, 1.5)), Color3.fromRGB(255, 190, 84), Enum.Material.Metal, nil, false)
-        createPart(base, "BarnFrontTrim", Vector3.new(20.5, 0.55, 0.5), CFrame.new(center + Vector3.new(0, 9.65, -6.25)), Color3.fromRGB(239, 205, 147), Enum.Material.Wood, nil, false)
-        createPart(base, "BarnDoorFrame", Vector3.new(7.5, 7, 0.65), CFrame.new(center + Vector3.new(0, 3.2, -6.35)), Color3.fromRGB(91, 54, 39), Enum.Material.Wood, nil, false)
-        createPart(base, "BarnDoor", Vector3.new(6.4, 6.15, 0.32), CFrame.new(center + Vector3.new(0, 3.1, -6.7)), Color3.fromRGB(198, 139, 78), Enum.Material.WoodPlanks, nil, false)
         for _, side in ipairs({ -1, 1 }) do
-            createPart(base, "BarnWindowFrame", Vector3.new(3.4, 2.8, 0.42), CFrame.new(center + Vector3.new(side * 6.5, 6.2, -6.28)), Color3.fromRGB(87, 59, 44), Enum.Material.Wood, nil, false)
-            createPart(base, "BarnWindowGlass", Vector3.new(2.7, 2.1, 0.18), CFrame.new(center + Vector3.new(side * 6.5, 6.2, -6.55)), Color3.fromRGB(137, 223, 236), Enum.Material.Glass, nil, false)
-            createPart(base, "BarnWindowCross", Vector3.new(0.2, 2.2, 0.24), CFrame.new(center + Vector3.new(side * 6.5, 6.2, -6.7)), Color3.fromRGB(240, 215, 165), Enum.Material.Wood, nil, false)
+            createPart(base, "PenSignPost", Vector3.new(0.55, 3.8, 0.55), CFrame.new(center + Vector3.new(side * 5.7, 1.9, -frontSide * 10.8)), Color3.fromRGB(124, 73, 42), Enum.Material.Wood, nil, false)
         end
-        local barnLamp = addBall(base, "BarnLamp", Vector3.new(1.2, 1.2, 0.6), center + Vector3.new(0, 7.2, -7.2), Color3.fromRGB(255, 221, 112), Enum.Material.Neon)
-        barnLamp.Shape = Enum.PartType.Ball
-        createPart(base, "BarnSign", Vector3.new(10, 2, 0.35), CFrame.new(center + Vector3.new(0, 8.35, -6.7)), Color3.fromRGB(75, 52, 42), Enum.Material.Wood, nil, false)
-        local sign = base.BarnSign
-        addLabel(sign, "SUA FAZENDA", "Bebês crescem aqui", Color3.fromRGB(255, 218, 105), false, 28, 1.7)
-    
+        local sign = createPart(base, "PenSign", Vector3.new(12.5, 1.8, 0.45), CFrame.new(center + Vector3.new(0, 3.75, -frontSide * 10.8)), Color3.fromRGB(58, 55, 43), Enum.Material.Wood, nil, false)
+        addLabel(sign, "SEU CERCADO", "OVOS • ANIMAIS • RENDA", Color3.fromRGB(255, 218, 105), false, 28, 1.35)
+
         local display = Instance.new("Folder")
         display.Name = "StoredAnimals"
         display.Parent = base
@@ -205,11 +227,23 @@ function WorldBuilder.new(services)
         for slotIndex, offset in ipairs(offsets) do
             local pad = createPart(display, "Slot_" .. tostring(slotIndex), Vector3.new(5.1, 0.25, 5.1), CFrame.new(center + offset), Color3.fromRGB(235, 222, 183), Enum.Material.Sand, nil, false)
             pad:SetAttribute("SlotIndex", slotIndex)
+            local rimY = 0.22
+            local rimColor = Color3.fromRGB(231, 199, 116)
+            createPart(display, "AnimalSlotRim", Vector3.new(5.5, 0.16, 0.18), CFrame.new(center + offset + Vector3.new(0, rimY, -2.7)), rimColor, Enum.Material.Metal, nil, false)
+            createPart(display, "AnimalSlotRim", Vector3.new(5.5, 0.16, 0.18), CFrame.new(center + offset + Vector3.new(0, rimY, 2.7)), rimColor, Enum.Material.Metal, nil, false)
+            createPart(display, "AnimalSlotRim", Vector3.new(0.18, 0.16, 5.5), CFrame.new(center + offset + Vector3.new(-2.7, rimY, 0)), rimColor, Enum.Material.Metal, nil, false)
+            createPart(display, "AnimalSlotRim", Vector3.new(0.18, 0.16, 5.5), CFrame.new(center + offset + Vector3.new(2.7, rimY, 0)), rimColor, Enum.Material.Metal, nil, false)
+            for corner = 1, 4 do
+                local xSide = corner % 2 == 0 and 1 or -1
+                local zSide = corner > 2 and 1 or -1
+                local stud = addWedge(display, "AnimalSlotCorner", Vector3.new(0.65, 0.24, 0.65), CFrame.new(center + offset + Vector3.new(xSide * 2.55, 0.24, zSide * 2.55)) * CFrame.Angles(0, math.rad(corner * 90), 0), Color3.fromRGB(93, 218, 190), Enum.Material.Neon, false)
+                stud.CastShadow = false
+            end
         end
     
         createTreadmill(base, center)
     
-        local deposit = createPart(base, "DepositPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(-12, 0.35, -10)), Color3.fromRGB(78, 235, 128), Enum.Material.Neon, nil, false)
+        local deposit = createPart(base, "DepositPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(-12, 0.35, frontSide * 10)), Color3.fromRGB(78, 235, 128), Enum.Material.Neon, nil, false)
         addLabel(deposit, "GUARDAR ANIMAL", "Leve o bebê para casa", Color3.fromRGB(255, 255, 230), false, 18, 1.2)
         local depositPrompt = Instance.new("ProximityPrompt")
         depositPrompt.Style = Enum.ProximityPromptStyle.Custom
@@ -222,7 +256,7 @@ function WorldBuilder.new(services)
         depositPrompt:SetAttribute("InteractionType", "DepositAnimal")
         depositPrompt.Parent = deposit
     
-        local collect = createPart(base, "CollectPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(12, 0.35, -10)), Color3.fromRGB(255, 203, 65), Enum.Material.Neon, nil, false)
+        local collect = createPart(base, "CollectPad", Vector3.new(7, 0.45, 4), CFrame.new(center + Vector3.new(12, 0.35, frontSide * 10)), Color3.fromRGB(255, 203, 65), Enum.Material.Neon, nil, false)
         addLabel(collect, "COLETAR MOEDAS", "Renda dos animais", Color3.fromRGB(255, 255, 230), false, 18, 1.2)
         local collectPrompt = Instance.new("ProximityPrompt")
         collectPrompt.Style = Enum.ProximityPromptStyle.Custom
@@ -235,12 +269,12 @@ function WorldBuilder.new(services)
         collectPrompt:SetAttribute("InteractionType", "CollectIncome")
         collectPrompt.Parent = collect
     
-        local entryGate = createPart(base, "FarmEntryArchRight", Vector3.new(0.65, 4.2, 0.65), CFrame.new(center + Vector3.new(6.5, 2.15, -15.2)), Color3.fromRGB(255, 216, 104), Enum.Material.Neon, nil, false)
-        createPart(base, "FarmEntryArchLeft", Vector3.new(0.65, 4.2, 0.65), CFrame.new(center + Vector3.new(-6.5, 2.15, -15.2)), Color3.fromRGB(255, 216, 104), Enum.Material.Neon, nil, false)
-        createPart(base, "FarmEntryArchTop", Vector3.new(13.5, 0.65, 0.65), CFrame.new(center + Vector3.new(0, 4.1, -15.2)), Color3.fromRGB(255, 216, 104), Enum.Material.Neon, nil, false)
+        local entryGate = createPart(base, "FarmEntryArchRight", Vector3.new(0.65, 4.2, 0.65), CFrame.new(center + Vector3.new(6.5, 2.15, frontSide * 15.2)), Color3.fromRGB(255, 216, 104), Enum.Material.Neon, nil, false)
+        createPart(base, "FarmEntryArchLeft", Vector3.new(0.65, 4.2, 0.65), CFrame.new(center + Vector3.new(-6.5, 2.15, frontSide * 15.2)), Color3.fromRGB(255, 216, 104), Enum.Material.Neon, nil, false)
+        createPart(base, "FarmEntryArchTop", Vector3.new(13.5, 0.65, 0.65), CFrame.new(center + Vector3.new(0, 4.1, frontSide * 15.2)), Color3.fromRGB(255, 216, 104), Enum.Material.Neon, nil, false)
         entryGate.CanCollide = false
-        local farmBeacon = createPart(base, "FarmBeacon", Vector3.new(0.7, 5, 0.7), CFrame.new(center + Vector3.new(14, 2.5, 10)), Color3.fromRGB(122, 245, 136), Enum.Material.Neon, nil, false)
-        addBall(base, "FarmBeaconOrb", Vector3.new(2, 2, 2), center + Vector3.new(14, 5.7, 10), Color3.fromRGB(255, 222, 105), Enum.Material.Neon)
+        local farmBeacon = createPart(base, "FarmBeacon", Vector3.new(0.7, 5, 0.7), CFrame.new(center + Vector3.new(14, 2.5, -frontSide * 10)), Color3.fromRGB(122, 245, 136), Enum.Material.Neon, nil, false)
+        addBall(base, "FarmBeaconOrb", Vector3.new(2, 2, 2), center + Vector3.new(14, 5.7, -frontSide * 10), Color3.fromRGB(255, 222, 105), Enum.Material.Neon)
         base.PrimaryPart = base.Floor
         return base
     end
@@ -257,14 +291,118 @@ function WorldBuilder.new(services)
                 addBall(parent, "EmberCanopy", Vector3.new(3.5, 2.8, 3.5), position + Vector3.new(0, trunkHeight + layer * 1.1, 0), layer == 2 and biome.Accent or Color3.fromRGB(111, 67, 63), Enum.Material.Slate)
             end
         elseif biome.Id == "Wetlands" then
-            addBall(parent, "MossCanopy", Vector3.new(7, 3.5, 7), position + Vector3.new(0, trunkHeight, 0), Color3.fromRGB(70, 133, 108), Enum.Material.Grass)
+            addBall(parent, "MossCanopy", Vector3.new(7, 3.5, 7), position + Vector3.new(0, trunkHeight, 0), Color3.fromRGB(34, 103, 52), Enum.Material.Grass)
             addBall(parent, "MossCanopy", Vector3.new(5, 3, 5), position + Vector3.new(2.5, trunkHeight + 1, 0), biome.Accent, Enum.Material.Grass)
+        elseif biome.Name == "Deserto" then
+            addCylinder(parent, "DesertCactus", Vector3.new(1.15, 7.2, 1.15), CFrame.new(position + Vector3.new(0, 3.6, 0)), Color3.fromRGB(68, 137, 72), Enum.Material.Grass, false)
+            addCylinder(parent, "DesertCactusArm", Vector3.new(0.8, 3.1, 0.8), CFrame.new(position + Vector3.new(-1.2, 4.3, 0)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(68, 137, 72), Enum.Material.Grass, false)
+            addCylinder(parent, "DesertCactusArm", Vector3.new(0.8, 2.6, 0.8), CFrame.new(position + Vector3.new(1.3, 5.1, 0)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(68, 137, 72), Enum.Material.Grass, false)
         else
             addBall(parent, "TreeCanopy", Vector3.new(7, 5.5, 7), position + Vector3.new(0, trunkHeight, 0), biome.Id == "Savanna" and Color3.fromRGB(194, 165, 75) or Color3.fromRGB(68, 151, 82), Enum.Material.Grass)
             addBall(parent, "TreeCanopy", Vector3.new(5, 4.2, 5), position + Vector3.new(2.5, trunkHeight + 1, 0), biome.Accent, Enum.Material.Grass)
         end
     end
     
+    local function buildBiomeGeometry(biome, biomeIndex)
+        local stoneColor = biome.Id == "Frost" and Color3.fromRGB(163, 207, 231)
+            or biome.Id == "Volcano" and Color3.fromRGB(70, 61, 70)
+            or biome.Id == "Ocean" and Color3.fromRGB(73, 124, 146)
+            or biome.Id == "Forest" and Color3.fromRGB(185, 145, 86)
+            or Color3.fromRGB(112, 116, 96)
+        local stoneMaterial = biome.Id == "Frost" and Enum.Material.Ice
+            or biome.Id == "Volcano" and Enum.Material.Basalt
+            or biome.Id == "Forest" and Enum.Material.Sandstone
+            or Enum.Material.Rock
+        local gateX = biome.CenterX - 76
+        for _, side in ipairs({ -1, 1 }) do
+            local postPosition = Vector3.new(gateX, 0, side * 10)
+            createPart(decorationFolder, biome.Id .. "GateFooting", Vector3.new(3.7, 0.62, 3.7), CFrame.new(postPosition + Vector3.new(0, 0.12, 0)), stoneColor, stoneMaterial, nil, false)
+            createPart(decorationFolder, biome.Id .. "GateFootInlay", Vector3.new(2.7, 0.10, 2.7), CFrame.new(postPosition + Vector3.new(0, 0.49, 0)), biome.Accent, Enum.Material.Metal, nil, false)
+            addWedge(decorationFolder, biome.Id .. "GateShoulder", Vector3.new(2.2, 2.8, 1.25), CFrame.new(postPosition + Vector3.new(side * 1.05, 6.1, 0)) * CFrame.Angles(0, 0, math.rad(side * 18)), stoneColor, stoneMaterial, false)
+            for segment = 1, 3 do
+                local tileX = biome.CenterX - 58 + segment * 29
+                local tile = createPart(decorationFolder, biome.Id .. "PathEdgeSegment", Vector3.new(17, 0.16, 0.72), CFrame.new(tileX, 0.075, side * 9.8), stoneColor, stoneMaterial, nil, false)
+                tile.CastShadow = false
+                local inlay = addWedge(decorationFolder, biome.Id .. "PathEdgeFacet", Vector3.new(3.2, 0.12, 0.82), CFrame.new(tileX, 0.14, side * 9.8) * CFrame.Angles(0, math.rad((segment % 2 == 0 and 1 or -1) * 8), 0), biome.Accent, Enum.Material.Metal, false)
+                inlay.CastShadow = false
+            end
+            local clusterX = biome.CenterX + (biomeIndex % 2 == 0 and -48 or 48)
+            local clusterZ = side * 63
+            local footing = createPart(decorationFolder, biome.Id .. "FacetedOutcropBase", Vector3.new(15, 0.9, 12), CFrame.new(clusterX, 0.28, clusterZ), stoneColor, stoneMaterial, nil, false)
+            footing.CFrame = footing.CFrame * CFrame.Angles(0, math.rad(biomeIndex * 7), 0)
+            for facet = 1, 3 do
+                local height = 5.5 + ((facet + biomeIndex) % 3) * 2.7
+                local offsetX = (facet - 2) * 3.4
+                local outcrop = addWedge(decorationFolder, biome.Id .. "FacetedOutcrop", Vector3.new(5.2, height, 5.6), CFrame.new(clusterX + offsetX, height / 2, clusterZ + (facet % 2 == 0 and 1.6 or -1.6)) * CFrame.Angles(0, math.rad(facet * 24 + biomeIndex * 11), math.rad((facet % 2 == 0 and 1 or -1) * 7)), stoneColor, stoneMaterial, false)
+                outcrop.CastShadow = true
+            end
+            if biome.Id == "Meadow" or biome.Id == "Wetlands" then
+                for root = 1, 2 do
+                    addWedge(decorationFolder, biome.Id .. "RootButtress", Vector3.new(11, 1.6, 2.4), CFrame.new(clusterX, 0.8, clusterZ + side * root * 3.2) * CFrame.Angles(0, math.rad(root * 28), math.rad(-12)), Color3.fromRGB(104, 77, 52), Enum.Material.Wood, false)
+                end
+            elseif biome.Id == "Lake" or biome.Id == "Ocean" then
+                for coral = 1, 2 do
+                    local height = coral == 1 and 6.5 or 4.6
+                    local stalk = addCylinder(decorationFolder, biome.Id .. "ReefColumn", Vector3.new(1.05, height, 1.05), CFrame.new(clusterX + (coral - 1.5) * 4.2, height / 2, clusterZ), biome.Accent, stoneMaterial, false)
+                    stalk.CastShadow = true
+                    addWedge(decorationFolder, biome.Id .. "ReefCrown", Vector3.new(3.8, 1.0, 2.1), CFrame.new(stalk.Position + Vector3.new(0, height / 2 + 0.7, 0)) * CFrame.Angles(0, math.rad(coral * 45), math.rad(14)), biome.Accent, Enum.Material.Glass, false)
+                end
+            elseif biome.Id == "Forest" or biome.Id == "Savanna" then
+                for stratum = 1, 2 do
+                    addWedge(decorationFolder, biome.Id .. "ErodedStrata", Vector3.new(10, 1.1, 5.2), CFrame.new(clusterX + (stratum - 1.5) * 3.8, 2.1 + stratum * 1.2, clusterZ) * CFrame.Angles(0, math.rad(stratum * 17), math.rad(9)), stoneColor, stoneMaterial, false)
+                end
+            elseif biome.Id == "Frost" or biome.Id == "Volcano" then
+                for shard = 1, 2 do
+                    local height = shard == 1 and 8.5 or 6.1
+                    local crystal = addWedge(decorationFolder, biome.Id .. "OutcropShard", Vector3.new(2.4, height, 2.2), CFrame.new(clusterX + (shard == 1 and -3.4 or 3.4), height / 2, clusterZ - side * 1.8) * CFrame.Angles(0, math.rad(shard * 33), math.rad(shard == 1 and -9 or 11)), biome.Accent, biome.Id == "Frost" and Enum.Material.Ice or Enum.Material.Basalt, false)
+                    crystal.CastShadow = true
+                end
+            end
+        end
+        addPolygonRing(decorationFolder, biome.Id .. "GateBaseRing", Vector3.new(gateX - 18, 0.25, 24), 5, 8, 0.18, 0.22, biome.Accent, Enum.Material.Neon)
+        local keystone = addWedge(decorationFolder, biome.Id .. "GateKeystone", Vector3.new(3.2, 2.3, 1.0), CFrame.new(gateX, 8.9, 0), biome.Accent, Enum.Material.Metal, false)
+        keystone.CastShadow = false
+        if biome.Id == "Meadow" then
+            addCylinder(decorationFolder, "MeadowRootColumn", Vector3.new(1.2, 8.5, 1.2), CFrame.new(biome.CenterX - 21, 4.25, -52), Color3.fromRGB(110, 78, 51), Enum.Material.Wood, false)
+            addWedge(decorationFolder, "MeadowBranchCrown", Vector3.new(11, 1.4, 3), CFrame.new(biome.CenterX - 21, 8.4, -52) * CFrame.Angles(0, math.rad(25), math.rad(-12)), Color3.fromRGB(73, 145, 71), Enum.Material.Grass, false)
+        elseif biome.Id == "Lake" then
+            for pier = 1, 2 do
+                local x = biome.CenterX + (pier == 1 and -26 or 26)
+                addWedge(decorationFolder, "LakeBridgePier", Vector3.new(8, 9, 8), CFrame.new(x, 4.5, 54) * CFrame.Angles(0, math.rad(pier * 8), 0), stoneColor, stoneMaterial, false)
+            end
+            createPart(decorationFolder, "LakeBridgeSpan", Vector3.new(56, 1.1, 5), CFrame.new(biome.CenterX, 9.3, 54), Color3.fromRGB(100, 151, 161), Enum.Material.Slate, nil, false)
+        elseif biome.Id == "Forest" then
+            for archSide = -1, 1, 2 do
+                addWedge(decorationFolder, "ForestMonolithFoot", Vector3.new(5.5, 12, 5), CFrame.new(biome.CenterX + archSide * 23, 6, -54) * CFrame.Angles(0, 0, math.rad(archSide * 9)), stoneColor, stoneMaterial, false)
+            end
+            createPart(decorationFolder, "ForestMonolithLintel", Vector3.new(52, 2.3, 5), CFrame.new(biome.CenterX, 12.4, -54), stoneColor, stoneMaterial, nil, false)
+        elseif biome.Id == "Wetlands" then
+            for root = 1, 4 do
+                local angle = math.rad((root - 1) * 90)
+                addWedge(decorationFolder, "WetlandsRootRib", Vector3.new(15, 1.8, 2.2), CFrame.new(biome.CenterX + math.cos(angle) * 29, 2.2, 55 + math.sin(angle) * 8) * CFrame.Angles(0, -angle, math.rad(12)), Color3.fromRGB(92, 77, 49), Enum.Material.Wood, false)
+            end
+        elseif biome.Id == "Frost" then
+            for shard = 1, 3 do
+                local height = 10 + shard * 2.5
+                addWedge(decorationFolder, "FrostSculptedSpire", Vector3.new(3.2, height, 3.2), CFrame.new(biome.CenterX + (shard - 2) * 6, height / 2, 55), biome.Accent, Enum.Material.Ice, false)
+            end
+        elseif biome.Id == "Volcano" then
+            for fin = 1, 3 do
+                local height = 8 + fin * 2
+                addWedge(decorationFolder, "VolcanoBasaltRidgeFin", Vector3.new(4.2, height, 3.8), CFrame.new(biome.CenterX + (fin - 2) * 7, height / 2, -55) * CFrame.Angles(0, math.rad(fin * 19), math.rad(fin == 2 and 0 or 8)), stoneColor, Enum.Material.Basalt, false)
+            end
+        elseif biome.Id == "Ocean" then
+            for fan = 1, 3 do
+                addWedge(decorationFolder, "OceanCoralFan", Vector3.new(5.4, 2.2, 1.5), CFrame.new(biome.CenterX + (fan - 2) * 7, 4.2, 56) * CFrame.Angles(0, math.rad(fan * 38), math.rad(15)), biome.Accent, Enum.Material.Glass, false)
+            end
+        elseif biome.Id == "Savanna" then
+            for rib = 1, 4 do
+                local x = biome.CenterX + (rib - 2.5) * 8
+                addCylinder(decorationFolder, "SavannaFossilRib", Vector3.new(0.9, 8 + (rib % 2) * 2, 0.9), CFrame.new(x, 4.5, -56) * CFrame.Angles(0, 0, math.rad(rib % 2 == 0 and 16 or -16)), Color3.fromRGB(225, 211, 172), Enum.Material.Rock, false)
+            end
+        end
+    end
+
     local function buildScenery()
         Lighting.ClockTime = 14
         Lighting.Brightness = 2.2
@@ -288,53 +426,211 @@ function WorldBuilder.new(services)
     
         createPart(world, "HubGround", Vector3.new(210, 1, 210), CFrame.new(0, -1, 0), Color3.fromRGB(101, 193, 68), Enum.Material.Grass, nil, true)
         createPart(world, "HubGrassBorder", Vector3.new(198, 0.25, 198), CFrame.new(0, -0.32, 0), Color3.fromRGB(141, 213, 89), Enum.Material.Grass, nil, false)
-        createPart(world, "CorridorFloor", Vector3.new(1500, 0.28, 56), CFrame.new(850, -0.38, 0), Color3.fromRGB(91, 181, 74), Enum.Material.Grass, nil, true)
-        createPart(world, "MainPath", Vector3.new(1500, 0.35, 12), CFrame.new(850, -0.15, 0), Color3.fromRGB(224, 201, 155), Enum.Material.Cobblestone, nil, true)
-        createPart(world, "CentralCarpet", Vector3.new(225, 0.2, 18), CFrame.new(18, 0.14, 0), Color3.fromRGB(210, 62, 64), Enum.Material.Fabric, nil, false)
-        createPart(world, "CarpetGoldEdgeNorth", Vector3.new(225, 0.18, 0.55), CFrame.new(18, 0.27, -9.2), Color3.fromRGB(255, 216, 99), Enum.Material.Neon, nil, false)
-        createPart(world, "CarpetGoldEdgeSouth", Vector3.new(225, 0.18, 0.55), CFrame.new(18, 0.27, 9.2), Color3.fromRGB(255, 216, 99), Enum.Material.Neon, nil, false)
-        for index = 1, 56 do
-            local stripeX = -88 + index * 3.8
-            createPart(world, "CarpetStripe", Vector3.new(1.25, 0.035, 16.4), CFrame.new(stripeX, 0.255, 0), index % 2 == 0 and Color3.fromRGB(232, 89, 83) or Color3.fromRGB(179, 42, 55), Enum.Material.Fabric, nil, false)
-        end
-        for index = 1, 62 do
-            local stripeX = 120 + index * 22
-            if stripeX < 1510 then
-                createPart(world, "MainPathTile", Vector3.new(0.7, 0.07, 10.4), CFrame.new(stripeX, 0.045, 0), index % 2 == 0 and Color3.fromRGB(248, 220, 158) or Color3.fromRGB(191, 164, 117), Enum.Material.SmoothPlastic, nil, false)
+        createPart(world, "CorridorFloor", Vector3.new(1500, 0.28, 56), CFrame.new(850, -0.38, 0), Color3.fromRGB(106, 190, 75), Enum.Material.Grass, nil, true)
+        createPart(world, "MainPath", Vector3.new(1500, 0.35, 16), CFrame.new(850, -0.15, 0), Color3.fromRGB(211, 190, 145), Enum.Material.Ground, nil, true)
+        for index = 1, 72 do
+            local markerX = 105 + index * 20
+            if markerX < 1590 then
+                local marker = createPart(world, "MainPathTile", Vector3.new(1.4, 0.055, 1.2), CFrame.new(markerX, 0.055, 0), index % 2 == 0 and Color3.fromRGB(245, 222, 167) or Color3.fromRGB(188, 163, 121), Enum.Material.SmoothPlastic, nil, false)
+                marker.CastShadow = false
             end
         end
         for _, side in ipairs({ -1, 1 }) do
-            createPart(world, "TrackInnerRail", Vector3.new(1500, 0.45, 0.55), CFrame.new(850, 0.35, side * 6.55), Color3.fromRGB(247, 190, 82), Enum.Material.Metal, nil, false)
-            createPart(world, "CorridorEdge", Vector3.new(1500, 0.2, 0.8), CFrame.new(850, 0.04, side * 28), Color3.fromRGB(255, 218, 105), Enum.Material.Neon, nil, false)
+            createPart(world, "TrackInnerRail", Vector3.new(1500, 0.45, 0.5), CFrame.new(850, 0.22, side * 8.5), Color3.fromRGB(155, 104, 65), Enum.Material.Wood, nil, false)
+            createPart(world, "CorridorEdge", Vector3.new(1500, 0.2, 0.8), CFrame.new(850, 0.04, side * 28), Color3.fromRGB(244, 191, 110), Enum.Material.SmoothPlastic, nil, false)
+            createPart(world, "CorridorBoundaryWall", Vector3.new(1500, 20, 2), CFrame.new(850, 9.5, side * 86), Color3.fromRGB(184, 119, 72), Enum.Material.Brick, nil, true)
+            createPart(world, "CorridorWallCap", Vector3.new(1500, 0.8, 2.4), CFrame.new(850, 19.9, side * 86), Color3.fromRGB(232, 173, 112), Enum.Material.WoodPlanks, nil, false)
         end
-        for _, side in ipairs({ -1, 1 }) do
-            createPart(world, "CorridorBoundaryWall", Vector3.new(1500, 18, 2), CFrame.new(850, 8.5, side * 86), Color3.fromRGB(67, 107, 75), Enum.Material.Brick, nil, true)
-            createPart(world, "CorridorWallCap", Vector3.new(1500, 0.65, 2.4), CFrame.new(850, 17.8, side * 86), Color3.fromRGB(255, 202, 90), Enum.Material.WoodPlanks, nil, false)
-            for pillar = 1, 30 do
-                local x = 115 + pillar * 49
-                createPart(world, "CorridorPillar", Vector3.new(1.05, 17.2, 2.8), CFrame.new(x, 8.3, side * 85.4), pillar % 4 == 0 and Color3.fromRGB(255, 202, 90) or Color3.fromRGB(90, 148, 89), Enum.Material.Brick, nil, false)
-                if pillar % 5 == 0 then
-                    createPart(world, "CorridorPillarGem", Vector3.new(1.35, 0.75, 3.3), CFrame.new(x, 17.1, side * 85.4), Color3.fromRGB(255, 214, 101), Enum.Material.Neon, nil, false)
-                end
+
+        local hubGrid = Instance.new("Folder")
+        hubGrid.Name = "CentralHubGrid"
+        hubGrid.Parent = decorationFolder
+        for tileX = -5, 5 do
+            for tileZ = -5, 5 do
+                local tile = createPart(hubGrid, "CentralHubTile", Vector3.new(17.8, 0.08, 17.8), CFrame.new(tileX * 18, -0.08, tileZ * 18), (tileX + tileZ) % 2 == 0 and Color3.fromRGB(119, 220, 76) or Color3.fromRGB(91, 197, 66), Enum.Material.SmoothPlastic, nil, false)
+                tile.CastShadow = false
             end
         end
-        createPart(world, "HubFountainBase", Vector3.new(18, 1, 18), CFrame.new(0, 0, 0), Color3.fromRGB(225, 221, 190), Enum.Material.Marble, nil, true)
-        addCylinder(world, "HubFountain", Vector3.new(9, 2.2, 9), CFrame.new(0, 1.4, 0), Color3.fromRGB(90, 194, 221), Enum.Material.Glass, false)
-        addBall(world, "FountainGem", Vector3.new(3.5, 3.5, 3.5), Vector3.new(0, 4.2, 0), Color3.fromRGB(115, 234, 255), Enum.Material.Neon)
-    
+
+        for _, edge in ipairs({ -1, 1 }) do
+            createPart(world, "HubPerimeterGlow", Vector3.new(190, 0.16, 0.5), CFrame.new(0, 0.02, edge * 96), Color3.fromRGB(176, 226, 112), Enum.Material.SmoothPlastic, nil, false)
+            createPart(world, "HubPerimeterGlow", Vector3.new(0.5, 0.16, 190), CFrame.new(edge * 96, 0.02, 0), Color3.fromRGB(176, 226, 112), Enum.Material.SmoothPlastic, nil, false)
+        end
+
+        createPart(world, "HubSpawnPadBase", Vector3.new(16, 0.8, 16), CFrame.new(0, -0.05, 0), Color3.fromRGB(231, 221, 190), Enum.Material.SmoothPlastic, nil, false)
+        addCylinder(world, "HubSpawnPad", Vector3.new(9, 0.8, 9), CFrame.new(0, 0.55, 0), Color3.fromRGB(99, 198, 123), Enum.Material.SmoothPlastic, false)
+        addBall(world, "HubSpawnMarker", Vector3.new(1.2, 1.2, 1.2), Vector3.new(0, 1.25, 0), Color3.fromRGB(255, 218, 105), Enum.Material.Neon)
+        addCylinder(world, "HubWildCoreBase", Vector3.new(10, 1.25, 10), CFrame.new(0, 1.6, 0), Color3.fromRGB(47, 91, 78), Enum.Material.Slate, false)
+        addPolygonRing(world, "HubWildCoreRing", Vector3.new(0, 2.5, 0), 7.2, 10, 0.42, 0.55, Color3.fromRGB(235, 190, 91), Enum.Material.Metal)
+        addBall(world, "HubWildCore", Vector3.new(5.2, 5.2, 5.2), Vector3.new(0, 6.0, 0), Color3.fromRGB(112, 242, 196), Enum.Material.Neon)
+        for shard = 1, 10 do
+            local angle = math.rad((shard - 1) * 36)
+            local radial = Vector3.new(math.cos(angle), 0, math.sin(angle))
+            local blade = addWedge(world, "HubWildCoreShard", Vector3.new(2.4, 7.2, 1.35), CFrame.new(radial * 6 + Vector3.new(0, 5.5, 0)) * CFrame.Angles(0, -angle, math.rad((shard % 2 == 0 and 1 or -1) * 18)), Color3.fromRGB(89, 168, 139), Enum.Material.Glass, false)
+            blade.Transparency = 0.14
+        end
+        addPolygonRing(world, "HubWildCoreUpperRing", Vector3.new(0, 9.2, 0), 5.6, 10, 0.18, 0.22, Color3.fromRGB(255, 221, 123), Enum.Material.Neon)
+
+        local safeZoneLine = createPart(world, "SafeZoneLine", Vector3.new(0.9, 0.16, 56), CFrame.new(100, 0.08, 0), Color3.fromRGB(255, 204, 88), Enum.Material.Neon, nil, false)
+        safeZoneLine.CastShadow = false
+        local safeSign = createPart(world, "SafeZoneSign", Vector3.new(0.7, 3.2, 18), CFrame.new(34, 7.4, -37), Color3.fromRGB(52, 68, 48), Enum.Material.Wood, nil, false)
+        addLabel(safeSign, "SAFE ZONE", "FAZENDAS • TREINO • MELHORIAS", Color3.fromRGB(255, 226, 135), false, 80, 1.8)
+        local routeSign = createPart(world, "RouteStartSign", Vector3.new(0.7, 3.2, 18), CFrame.new(68, 7.4, 0), Color3.fromRGB(52, 68, 48), Enum.Material.Wood, nil, false)
+        addLabel(routeSign, "ROTA DOS OVOS", "PEGUE • FUJA • VOLTE PARA A FAZENDA", Color3.fromRGB(255, 226, 135), false, 100, 1.8)
+
         for biomeIndex, biome in ipairs(Config.Biomes) do
             createPart(world, biome.Id .. "Ground", Vector3.new(180, 1, 170), CFrame.new(biome.CenterX, -0.5, 0), biome.Ground, biome.Material, nil, true)
-            createPart(world, biome.Id .. "Path", Vector3.new(180, 0.32, 56), CFrame.new(biome.CenterX, -0.15, 0), Color3.fromRGB(218, 199, 157), Enum.Material.Cobblestone, nil, true)
-            createPart(world, biome.Id .. "ArchTop", Vector3.new(2.4, 2.3, 29), CFrame.new(biome.CenterX - 76, 13, 0), biome.Accent, Enum.Material.Neon, nil, false)
-            createPart(world, biome.Id .. "ArchCrown", Vector3.new(8, 1.3, 6), CFrame.new(biome.CenterX - 76, 14.6, 0), Color3.fromRGB(34, 47, 48), Enum.Material.Metal, nil, false)
-            addBall(world, biome.Id .. "ArchGem", Vector3.new(3.3, 3.3, 3.3), Vector3.new(biome.CenterX - 76, 16, 0), biome.Accent, Enum.Material.Neon)
+            createPart(world, biome.Id .. "Path", Vector3.new(180, 0.32, 18), CFrame.new(biome.CenterX, -0.15, 0), Color3.fromRGB(211, 190, 145), Enum.Material.Ground, nil, true)
+            local entryStrip = createPart(world, biome.Id .. "EntryStrip", Vector3.new(1.2, 0.12, 44), CFrame.new(biome.CenterX - 76, 0.12, 0), biome.Accent, Enum.Material.Neon, nil, false)
+            entryStrip.CastShadow = false
             for _, side in ipairs({ -1, 1 }) do
-                createPart(world, biome.Id .. "ArchPost", Vector3.new(2.2, 14, 2.2), CFrame.new(biome.CenterX - 76, 6, side * 11.5), biome.Accent, Enum.Material.SmoothPlastic, nil, false)
-                createPart(world, biome.Id .. "ArchFoot", Vector3.new(4.4, 1.2, 4.4), CFrame.new(biome.CenterX - 76, 0.6, side * 11.5), Color3.fromRGB(43, 55, 52), Enum.Material.Slate, nil, false)
-                addBall(world, biome.Id .. "ArchRune", Vector3.new(1.25, 1.25, 1.25), Vector3.new(biome.CenterX - 76, 7.5, side * 11.5), biome.Accent, Enum.Material.Neon)
+                local post = createPart(world, biome.Id .. "RouteMarker", Vector3.new(0.85, 4.8, 0.85), CFrame.new(biome.CenterX - 76, 2.4, side * 24), biome.Accent, Enum.Material.Wood, nil, false)
+                post.CastShadow = false
+                addBall(world, biome.Id .. "RouteMarkerCap", Vector3.new(1.2, 1.2, 1.2), post.Position + Vector3.new(0, 2.7, 0), biome.Accent, Enum.Material.Neon)
             end
-            local sign = createPart(world, biome.Id .. "Sign", Vector3.new(18, 3, 0.5), CFrame.new(biome.CenterX - 76, 10, -0.1), Color3.fromRGB(45, 52, 47), Enum.Material.Wood, nil, false)
-            addLabel(sign, "FASE " .. tostring(biomeIndex) .. " • " .. biome.Name, "CORREDOR DOS ANIMAIS", biome.Accent)
+            local gateX = biome.CenterX - 76
+            for _, side in ipairs({ -1, 1 }) do
+                createPart(world, biome.Id .. "SpeedGatePost", Vector3.new(1.2, 8, 1.2), CFrame.new(gateX, 4, side * 10), biome.Accent, Enum.Material.Metal, nil, false)
+                addBall(world, biome.Id .. "SpeedGateCap", Vector3.new(1.8, 1.8, 1.8), Vector3.new(gateX, 8.6, side * 10), biome.Accent, Enum.Material.Neon)
+            end
+            createPart(world, biome.Id .. "SpeedGateTop", Vector3.new(1.2, 1, 22), CFrame.new(gateX, 8.1, 0), biome.Accent, Enum.Material.Metal, nil, false)
+            for side = -1, 1, 2 do
+                local wing = addWedge(world, biome.Id .. "SpeedGateWing", Vector3.new(5.2, 5.5, 1.15), CFrame.new(gateX, 3.25, side * 12.1) * CFrame.Angles(0, math.rad(side == -1 and 90 or -90), 0), biome.Accent, Enum.Material.Metal, false)
+                wing.CastShadow = false
+                createPart(world, biome.Id .. "SpeedGateBand", Vector3.new(0.22, 6.4, 0.22), CFrame.new(gateX, 4.2, side * 10.2), Color3.fromRGB(245, 240, 220), Enum.Material.Neon, nil, false)
+            end
+            addPolygonRing(world, biome.Id .. "SpeedGateHalo", Vector3.new(gateX, 8.9, 0), 13.5, 8, 0.28, 0.28, biome.Accent, Enum.Material.Neon)
+            local gateBarrier = createPart(world, biome.Id .. "SpeedGateBarrier", Vector3.new(0.35, 5.5, 18), CFrame.new(gateX, 2.75, 0), biome.Accent, Enum.Material.Neon, nil, false)
+            gateBarrier.Transparency = 0.48
+            gateBarrier.CanTouch = false
+            gateBarrier.CanQuery = false
+            gateBarrier:SetAttribute("BiomeId", biome.Id)
+            gateBarrier:SetAttribute("MinimumSpeed", biome.MinSpeed)
+            local gateSign = createPart(world, biome.Id .. "SpeedGateSign", Vector3.new(12, 1.6, 0.4), CFrame.new(gateX, 10, -15), Color3.fromRGB(39, 57, 53), Enum.Material.Wood, nil, false)
+            addLabel(gateSign, "VELOCIDADE MÍNIMA", tostring(biome.MinSpeed) .. " SPEED", biome.Accent, false, 90, 1.4)
+
+            local sign = createPart(world, biome.Id .. "Sign", Vector3.new(18, 3, 0.5), CFrame.new(biome.CenterX - 76, 8, -31), Color3.fromRGB(55, 65, 48), Enum.Material.Wood, nil, false)
+            addLabel(sign, "FASE " .. tostring(biomeIndex) .. " • " .. biome.Name, "SPEED MÍNIMA: " .. tostring(biome.MinSpeed), biome.Accent, false, 70, 1.8)
+
+            local transitionX = biome.CenterX + 88
+            local transition = createPart(world, biome.Id .. "TransitionLine", Vector3.new(0.65, 0.12, 44), CFrame.new(transitionX, 0.12, 0), biome.Accent, Enum.Material.Neon, nil, false)
+            transition.CastShadow = false
+            buildBiomeGeometry(biome, biomeIndex)
+
+            local landmarkX = biome.CenterX + 18
+            local landmarkZ = biomeIndex % 2 == 0 and 66 or -66
+            local landmarkPosition = Vector3.new(landmarkX, 0, landmarkZ)
+            if biome.Id == "Meadow" then
+                addCylinder(decorationFolder, "MeadowMonumentStem", Vector3.new(5.2, 23, 5.2), CFrame.new(landmarkPosition + Vector3.new(0, 11.5, 0)), Color3.fromRGB(103, 72, 48), Enum.Material.Wood, true)
+                addPolygonRing(decorationFolder, "MeadowRootRing", landmarkPosition + Vector3.new(0, 1.25, 0), 15, 12, 1.1, 1.1, Color3.fromRGB(107, 75, 49), Enum.Material.Wood)
+                for rootIndex = 1, 8 do
+                    local angle = math.rad((rootIndex - 1) * 45)
+                    local rootPosition = landmarkPosition + Vector3.new(math.cos(angle) * 6, 1.15, math.sin(angle) * 6)
+                    local root = addWedge(decorationFolder, "MeadowMonumentRoot", Vector3.new(13, 2.3, 3.2), CFrame.new(rootPosition) * CFrame.Angles(0, -angle, math.rad(-18)), Color3.fromRGB(105, 73, 48), Enum.Material.Wood, false)
+                    root.CastShadow = true
+                    addWedge(decorationFolder, "MeadowMonumentBranch", Vector3.new(8, 1.5, 2.3), CFrame.new(landmarkPosition + Vector3.new(math.cos(angle) * 8, 17, math.sin(angle) * 8)) * CFrame.Angles(0, -angle, math.rad(-25)), Color3.fromRGB(117, 83, 53), Enum.Material.Wood, false)
+                end
+                addBall(decorationFolder, "MeadowMonumentCanopy", Vector3.new(20, 12, 20), landmarkPosition + Vector3.new(0, 22, 0), Color3.fromRGB(49, 127, 61), Enum.Material.Grass)
+                addBall(decorationFolder, "MeadowMonumentPetal", Vector3.new(13, 8, 13), landmarkPosition + Vector3.new(1, 29, 0), Color3.fromRGB(105, 183, 83), Enum.Material.Grass)
+                for leafIndex = 1, 12 do
+                    local angle = math.rad((leafIndex - 1) * 30)
+                    local leaf = addWedge(decorationFolder, "MeadowMonumentLeaf", Vector3.new(5.8, 1.2, 2.1), CFrame.new(landmarkPosition + Vector3.new(math.cos(angle) * 10, 25 + (leafIndex % 3), math.sin(angle) * 10)) * CFrame.Angles(0, -angle, math.rad(14)), leafIndex % 2 == 0 and Color3.fromRGB(106, 185, 87) or Color3.fromRGB(77, 157, 68), Enum.Material.Grass, false)
+                    leaf.CastShadow = false
+                end
+                addBall(decorationFolder, "MeadowMonumentHeart", Vector3.new(3, 3, 3), landmarkPosition + Vector3.new(0, 31.5, 0), Color3.fromRGB(255, 218, 111), Enum.Material.Neon)
+            elseif biome.Id == "Lake" then
+                createPart(decorationFolder, "LakeMonumentCliff", Vector3.new(23, 12, 8), CFrame.new(landmarkPosition + Vector3.new(0, 6, 3)), Color3.fromRGB(96, 132, 139), Enum.Material.Rock, nil, false)
+                addWedge(decorationFolder, "LakeMonumentRockShoulder", Vector3.new(15, 9, 12), CFrame.new(landmarkPosition + Vector3.new(-9, 4.5, 4)) * CFrame.Angles(0, math.rad(12), 0), Color3.fromRGB(112, 151, 157), Enum.Material.Rock, false)
+                addWedge(decorationFolder, "LakeMonumentRockShoulder", Vector3.new(15, 9, 12), CFrame.new(landmarkPosition + Vector3.new(9, 4.5, 4)) * CFrame.Angles(0, math.rad(-12), 0), Color3.fromRGB(83, 121, 134), Enum.Material.Rock, false)
+                local waterfall = createPart(decorationFolder, "LakeMonumentWaterfall", Vector3.new(8, 13, 0.45), CFrame.new(landmarkPosition + Vector3.new(0, 6.1, -1)), Color3.fromRGB(97, 222, 238), Enum.Material.Glass, nil, false)
+                waterfall.Transparency = 0.22
+                for stream = 1, 3 do
+                    local x = (stream - 2) * 3.1
+                    local cascade = createPart(decorationFolder, "LakeMonumentCascade", Vector3.new(1.15, 11.5, 0.32), CFrame.new(landmarkPosition + Vector3.new(x, 5.4, -1.3)), Color3.fromRGB(167, 246, 252), Enum.Material.Neon, nil, false)
+                    cascade.Transparency = 0.2
+                end
+                addBall(decorationFolder, "LakeMonumentPool", Vector3.new(25, 0.65, 18), landmarkPosition + Vector3.new(0, 0.22, -3), Color3.fromRGB(76, 190, 222), Enum.Material.Glass)
+                addPolygonRing(decorationFolder, "LakeMonumentPoolRim", landmarkPosition + Vector3.new(0, 0.55, -3), 13, 12, 0.28, 0.48, Color3.fromRGB(94, 165, 180), Enum.Material.Slate)
+                addBall(decorationFolder, "LakeMonumentTop", Vector3.new(4.5, 4.5, 4.5), landmarkPosition + Vector3.new(0, 14.5, 3), Color3.fromRGB(127, 239, 246), Enum.Material.Neon)
+            elseif biome.Id == "Forest" then
+                addWedge(decorationFolder, "ForestMonumentDune", Vector3.new(26, 7, 20), CFrame.new(landmarkPosition + Vector3.new(0, 2.8, 0)), Color3.fromRGB(219, 180, 106), Enum.Material.Sand, false)
+                for monolith = 1, 5 do
+                    local angle = math.rad((monolith - 3) * 18)
+                    local height = monolith % 2 == 0 and 16 or 12
+                    local x = (monolith - 3) * 5.5
+                    local shard = addWedge(decorationFolder, "ForestMonumentSandstoneSpire", Vector3.new(3.8, height, 4.2), CFrame.new(landmarkPosition + Vector3.new(x, height / 2 + 2, 1)) * CFrame.Angles(0, angle, math.rad((monolith % 2 == 0 and 1 or -1) * 7)), Color3.fromRGB(173, 132, 80), Enum.Material.Sand, false)
+                    shard.CastShadow = true
+                end
+                createPart(decorationFolder, "ForestMonumentStoneArchLeft", Vector3.new(2.8, 14, 3.2), CFrame.new(landmarkPosition + Vector3.new(-8, 7, 0)), Color3.fromRGB(160, 124, 77), Enum.Material.Rock, nil, false)
+                createPart(decorationFolder, "ForestMonumentStoneArchRight", Vector3.new(2.8, 14, 3.2), CFrame.new(landmarkPosition + Vector3.new(8, 7, 0)), Color3.fromRGB(160, 124, 77), Enum.Material.Rock, nil, false)
+                createPart(decorationFolder, "ForestMonumentStoneArchTop", Vector3.new(17, 2.8, 3.8), CFrame.new(landmarkPosition + Vector3.new(0, 14, 0)), Color3.fromRGB(180, 143, 91), Enum.Material.Rock, nil, false)
+                addPolygonRing(decorationFolder, "ForestMonumentSandRing", landmarkPosition + Vector3.new(0, 0.7, 0), 17, 8, 0.3, 0.4, Color3.fromRGB(242, 204, 129), Enum.Material.Sand)
+            elseif biome.Id == "Wetlands" then
+                addPolygonRing(decorationFolder, "WetlandsRootRing", landmarkPosition + Vector3.new(0, 0.7, 0), 13, 10, 0.6, 0.65, Color3.fromRGB(81, 119, 69), Enum.Material.Slate)
+                for root = 1, 8 do
+                    local angle = math.rad((root - 1) * 45)
+                    local rootPoint = landmarkPosition + Vector3.new(math.cos(angle) * 6, 6, math.sin(angle) * 6)
+                    local rootArch = addWedge(decorationFolder, "WetlandsRootArch", Vector3.new(12, 14, 2.8), CFrame.new(rootPoint) * CFrame.Angles(0, -angle, math.rad(root % 2 == 0 and -26 or 26)), Color3.fromRGB(91, 76, 55), Enum.Material.Wood, false)
+                    rootArch.CastShadow = true
+                    addWedge(decorationFolder, "WetlandsCanopyBlade", Vector3.new(9, 1.3, 2.7), CFrame.new(landmarkPosition + Vector3.new(math.cos(angle) * 10, 13 + (root % 3), math.sin(angle) * 10)) * CFrame.Angles(0, -angle, math.rad(20)), root % 2 == 0 and Color3.fromRGB(59, 157, 83) or Color3.fromRGB(88, 193, 95), Enum.Material.Grass, false)
+                end
+                for pod = 1, 6 do
+                    local angle = math.rad((pod - 1) * 60)
+                    local podPosition = landmarkPosition + Vector3.new(math.cos(angle) * 10, 4 + (pod % 2), math.sin(angle) * 10)
+                    addBall(decorationFolder, "WetlandsGlowPod", Vector3.new(1.7, 2.1, 1.7), podPosition, Color3.fromRGB(131, 255, 186), Enum.Material.Neon)
+                end
+                addBall(decorationFolder, "WetlandsRootCrown", Vector3.new(8, 5, 8), landmarkPosition + Vector3.new(0, 17, 0), Color3.fromRGB(53, 126, 69), Enum.Material.Grass)
+            elseif biome.Id == "Frost" then
+                addPolygonRing(decorationFolder, "FrostCrystalRing", landmarkPosition + Vector3.new(0, 0.65, 0), 10, 8, 0.32, 0.42, Color3.fromRGB(112, 205, 245), Enum.Material.Ice)
+                for shard = 1, 8 do
+                    local angle = math.rad((shard - 1) * 45)
+                    local height = shard % 2 == 0 and 19 or 14
+                    local crystal = addWedge(decorationFolder, "FrostMonumentShard", Vector3.new(4.1, height, 3.2), CFrame.new(landmarkPosition + Vector3.new(math.cos(angle) * 6, height / 2, math.sin(angle) * 6)) * CFrame.Angles(0, -angle, math.rad((shard % 2 == 0 and 1 or -1) * 8)), Color3.fromRGB(126, 215, 255), Enum.Material.Ice, false)
+                    crystal.Transparency = 0.08
+                end
+                addBall(decorationFolder, "FrostMonumentCore", Vector3.new(5, 5, 5), landmarkPosition + Vector3.new(0, 8, 0), Color3.fromRGB(207, 248, 255), Enum.Material.Neon)
+            elseif biome.Id == "Savanna" then
+                addWedge(decorationFolder, "SavannaMonumentFossilBase", Vector3.new(27, 5, 17), CFrame.new(landmarkPosition + Vector3.new(0, 2, 0)), Color3.fromRGB(165, 145, 107), Enum.Material.Rock, false)
+                for rib = -2, 2 do
+                    local ribPart = addCylinder(decorationFolder, "SavannaMonumentFossilRib", Vector3.new(1.25, 13, 1.25), CFrame.new(landmarkPosition + Vector3.new(rib * 4, 7, 0)) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(223, 207, 161), Enum.Material.Rock, false)
+                    ribPart.CastShadow = false
+                    addWedge(decorationFolder, "SavannaFossilRibTip", Vector3.new(2.3, 2.4, 2.3), CFrame.new(landmarkPosition + Vector3.new(rib * 4, 13.5, 0)), Color3.fromRGB(223, 207, 161), Enum.Material.Rock, false)
+                end
+                addBall(decorationFolder, "SavannaMonumentSkull", Vector3.new(6.5, 4.5, 5.5), landmarkPosition + Vector3.new(14, 3.2, 0), Color3.fromRGB(223, 207, 161), Enum.Material.Rock)
+                addWedge(decorationFolder, "SavannaSkullHorn", Vector3.new(2.8, 5.5, 2.2), CFrame.new(landmarkPosition + Vector3.new(11, 6, -3)) * CFrame.Angles(0, 0, math.rad(-22)), Color3.fromRGB(235, 219, 175), Enum.Material.Rock, false)
+                addWedge(decorationFolder, "SavannaSkullHorn", Vector3.new(2.8, 5.5, 2.2), CFrame.new(landmarkPosition + Vector3.new(17, 6, -3)) * CFrame.Angles(0, 0, math.rad(22)), Color3.fromRGB(235, 219, 175), Enum.Material.Rock, false)
+            elseif biome.Id == "Volcano" then
+                addBall(decorationFolder, "VolcanoMonumentBase", Vector3.new(29, 17, 25), landmarkPosition + Vector3.new(0, 6, 0), Color3.fromRGB(59, 52, 60), Enum.Material.Slate)
+                for fin = 1, 8 do
+                    local angle = math.rad((fin - 1) * 45)
+                    local height = fin % 2 == 0 and 16 or 11
+                    local basalt = addWedge(decorationFolder, "VolcanoBasaltFin", Vector3.new(4.2, height, 4.8), CFrame.new(landmarkPosition + Vector3.new(math.cos(angle) * 10, height / 2 + 3, math.sin(angle) * 10)) * CFrame.Angles(0, -angle, math.rad(10)), Color3.fromRGB(74, 64, 72), Enum.Material.Basalt, false)
+                    basalt.CastShadow = true
+                end
+                addBall(decorationFolder, "VolcanoMonumentLava", Vector3.new(12, 3.4, 12), landmarkPosition + Vector3.new(0, 13, 0), Color3.fromRGB(255, 100, 40), Enum.Material.Neon)
+                addPolygonRing(decorationFolder, "VolcanoLavaRim", landmarkPosition + Vector3.new(0, 14.5, 0), 8, 10, 0.38, 0.55, Color3.fromRGB(255, 135, 54), Enum.Material.Neon)
+                for flow = 1, 5 do
+                    local flowX = (flow - 3) * 4
+                    local lava = createPart(decorationFolder, "VolcanoMonumentFlow", Vector3.new(1.1, 7.5, 1.1), CFrame.new(landmarkPosition + Vector3.new(flowX, 4.2, -9)), Color3.fromRGB(255, 125, 49), Enum.Material.Neon, nil, false)
+                    lava.CastShadow = false
+                end
+                addBall(decorationFolder, "VolcanoMonumentSmoke", Vector3.new(6, 6, 6), landmarkPosition + Vector3.new(0, 21, 0), Color3.fromRGB(91, 79, 83), Enum.Material.Slate)
+            elseif biome.Id == "Ocean" then
+                addPolygonRing(decorationFolder, "OceanCoralCrown", landmarkPosition + Vector3.new(0, 1.1, 0), 13, 10, 0.65, 0.75, Color3.fromRGB(54, 113, 142), Enum.Material.Slate)
+                addCylinder(decorationFolder, "OceanMonumentReefSpine", Vector3.new(4.5, 15, 4.5), CFrame.new(landmarkPosition + Vector3.new(0, 7.5, 0)), Color3.fromRGB(75, 123, 146), Enum.Material.Slate, false)
+                for coral = 1, 8 do
+                    local angle = math.rad((coral - 1) * 45)
+                    local height = coral % 2 == 0 and 13 or 9
+                    local stalk = addCylinder(decorationFolder, "OceanCoralStalk", Vector3.new(1.5, height, 1.5), CFrame.new(landmarkPosition + Vector3.new(math.cos(angle) * 8, height / 2, math.sin(angle) * 8)) * CFrame.Angles(0, 0, math.rad(coral % 2 == 0 and 15 or -15)), Color3.fromRGB(76, 152, 172), Enum.Material.Slate, false)
+                    stalk.CastShadow = true
+                    addWedge(decorationFolder, "OceanCoralFan", Vector3.new(5.5, 2.1, 1.6), CFrame.new(landmarkPosition + Vector3.new(math.cos(angle) * 10, height + 1, math.sin(angle) * 10)) * CFrame.Angles(0, -angle, math.rad(12)), Color3.fromRGB(90, 197, 215), Enum.Material.Glass, false)
+                end
+                addBall(decorationFolder, "OceanMonumentBeacon", Vector3.new(3.8, 3.8, 3.8), landmarkPosition + Vector3.new(0, 17, 0), Color3.fromRGB(105, 235, 255), Enum.Material.Neon)
+                addPolygonRing(decorationFolder, "OceanBeaconHalo", landmarkPosition + Vector3.new(0, 17, 0), 5.2, 8, 0.2, 0.25, Color3.fromRGB(111, 232, 252), Enum.Material.Neon)
+            end
+
+            local plaque = createPart(decorationFolder, biome.Id .. "LandmarkPlaque", Vector3.new(10, 2.2, 0.5), CFrame.new(landmarkPosition + Vector3.new(0, 4.5, landmarkZ > 0 and -11 or 11)), Color3.fromRGB(39, 57, 53), Enum.Material.Wood, nil, false)
+            addLabel(plaque, biome.Name, "MARCO DO BIOMA " .. tostring(biomeIndex), biome.Accent, true, 48, 1.2)
             local nestZ = biomeIndex % 2 == 0 and -49 or 49
             local nestX = biome.CenterX + 40
             createPart(decorationFolder, biome.Id .. "EggNestBase", Vector3.new(16, 0.5, 12), CFrame.new(nestX, 0.08, nestZ), Color3.fromRGB(112, 75, 49), Enum.Material.WoodPlanks, nil, false)
@@ -367,11 +663,11 @@ function WorldBuilder.new(services)
                     addBall(decorationFolder, "LakeWater", Vector3.new(8, 0.16, 6), Vector3.new(x + 3, 0.04, z), Color3.fromRGB(85, 187, 215), Enum.Material.Glass)
                 end
             elseif biome.Id == "Forest" then
-                for mushroom = 1, 5 do
-                    local x = biome.CenterX + rng:NextNumber(-42, 42)
-                    local z = (mushroom % 2 == 0 and 1 or -1) * rng:NextNumber(34, 58)
-                    addCylinder(decorationFolder, "MushroomStem", Vector3.new(0.7, 2.2, 0.7), CFrame.new(x, 1.1, z), Color3.fromRGB(235, 222, 194), Enum.Material.SmoothPlastic, false)
-                    addBall(decorationFolder, "GiantMushroom", Vector3.new(3.2, 1.1, 3.2), Vector3.new(x, 2.3, z), mushroom % 2 == 0 and Color3.fromRGB(231, 91, 94) or biome.Accent, Enum.Material.SmoothPlastic)
+                for cactus = 1, 6 do
+                    local x = biome.CenterX + rng:NextNumber(-54, 54)
+                    local z = (cactus % 2 == 0 and 1 or -1) * rng:NextNumber(34, 62)
+                    addCylinder(decorationFolder, "DesertCactus", Vector3.new(1.1, rng:NextNumber(4, 7), 1.1), CFrame.new(x, 2.5, z), Color3.fromRGB(72, 139, 76), Enum.Material.Grass, false)
+                    addBall(decorationFolder, "DesertRock", Vector3.new(4, 2.2, 3.6), Vector3.new(x + 4, 0.7, z + 2), Color3.fromRGB(176, 139, 89), Enum.Material.Rock)
                 end
             elseif biome.Id == "Wetlands" then
                 for pool = 1, 4 do
@@ -388,7 +684,10 @@ function WorldBuilder.new(services)
                 for stone = 1, 5 do
                     local x = biome.CenterX + rng:NextNumber(-48, 48)
                     local z = (stone % 2 == 0 and 1 or -1) * rng:NextNumber(34, 58)
-                    addBall(decorationFolder, "SavannaBoulder", Vector3.new(rng:NextNumber(4, 8), rng:NextNumber(3, 6), rng:NextNumber(4, 8)), Vector3.new(x, 1.2, z), Color3.fromRGB(174, 143, 78), Enum.Material.Sand)
+                    addBall(decorationFolder, "SavannaBoulder", Vector3.new(rng:NextNumber(4, 8), rng:NextNumber(3, 6), rng:NextNumber(4, 8)), Vector3.new(x, 1.2, z), Color3.fromRGB(140, 124, 93), Enum.Material.Rock)
+                end
+                for fossil = 1, 3 do
+                    createPart(decorationFolder, "PrehistoricFossilRib", Vector3.new(0.8, 5.5, 0.8), CFrame.new(biome.CenterX + (fossil - 2) * 10, 2.75, (fossil % 2 == 0 and 1 or -1) * 42), Color3.fromRGB(220, 203, 157), Enum.Material.Rock, nil, false)
                 end
             elseif biome.Id == "Ocean" then
                 for bubble = 1, 9 do
@@ -408,6 +707,15 @@ function WorldBuilder.new(services)
                 end
             end
     
+            for ridge = 1, 7 do
+                local side = ridge % 2 == 0 and 1 or -1
+                local x = biome.CenterX + (ridge - 4) * 18
+                local z = side * (57 + (ridge % 3) * 5)
+                local ridgeHeight = 5 + (ridge % 3) * 2
+                local ridgeRock = addWedge(decorationFolder, biome.Id .. "FacetedRidge", Vector3.new(18, ridgeHeight, 12), CFrame.new(x, ridgeHeight / 2, z) * CFrame.Angles(0, math.rad(ridge * 19), math.rad((ridge % 2 == 0 and 1 or -1) * 5)), biome.Id == "Frost" and Color3.fromRGB(183, 222, 245) or biome.Id == "Volcano" and Color3.fromRGB(71, 60, 68) or biome.Accent, biome.Id == "Frost" and Enum.Material.Ice or biome.Id == "Volcano" and Enum.Material.Basalt or Enum.Material.Rock, false)
+                ridgeRock.CastShadow = true
+            end
+
             for index = 1, 12 do
                 local x = biome.CenterX + rng:NextNumber(-62, 62)
                 local z = rng:NextNumber(-76, 76)

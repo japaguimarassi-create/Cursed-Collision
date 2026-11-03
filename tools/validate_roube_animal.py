@@ -13,11 +13,16 @@ REQUIRED_FILES = [
     "src/StealAnAnimal/ReplicatedStorage/Shared/GameplayRules.lua",
     "src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua",
     "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/GuardianCatalog.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua",
+    "src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua",
+    "src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua",
+    "src/StealAnAnimal/ServerScriptService/Services/GuardianAI.lua",
     "src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua",
     "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
+    "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua",
     "tools/tests/test_release_safety.py",
     "src/StealAnAnimal/ServerScriptService/Main.server.lua",
-    "src/StealAnAnimal/ServerScriptService/BotX.server.lua",
     "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
     "src/StealAnAnimal/Workspace/StealAnAnimalWorld.model.json",
     "tools/tests/test_rbxl_file.py",
@@ -25,7 +30,7 @@ REQUIRED_FILES = [
     "tools/tests/test_map_layout.py",
     "tools/tests/test_monetization.py",
     "tools/tests/test_core_reliability.py",
-    "tools/tests/test_botx_npc.py",
+    "tools/tests/test_guardian_ai.py",
     "src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua",
     "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua",
     "tools/studio-tests/StealAnAnimalAudit.plugin.lua",
@@ -79,13 +84,18 @@ def main():
     catalog = read("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalCatalog.lua")
     rules = read("src/StealAnAnimal/ReplicatedStorage/Shared/GameplayRules.lua")
     main_source = read("src/StealAnAnimal/ServerScriptService/Main.server.lua")
-    bot_x = read("src/StealAnAnimal/ServerScriptService/BotX.server.lua")
     client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
     world_builder = read("src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua")
     animal_factory = read("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua")
+    guardian_catalog = read("src/StealAnAnimal/ReplicatedStorage/Shared/GuardianCatalog.lua")
+    animal_animator = read("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua")
+    treadmill_animator = read("src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua")
+    guardian_controller = read("src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua")
+    guardian_ai = read("src/StealAnAnimal/ServerScriptService/Services/GuardianAI.lua")
     profile_store = read("src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua")
     interaction_prompt = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua")
-    server_all = main_source + world_builder + animal_factory + profile_store
+    animation_client = read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua")
+    server_all = main_source + world_builder + animal_factory + profile_store + guardian_catalog + animal_animator + treadmill_animator + guardian_controller + guardian_ai
     client_all = client + interaction_prompt
 
     checks = [
@@ -93,34 +103,52 @@ def main():
         ("four life stages", all(token in config for token in ('Name = "Baby"', 'Name = "Child"', 'Name = "Teen"', 'Name = "Adult"'))),
         ("fifty-percent income evolution", "EvolutionIncomeMultiplier = 1.5" in config and "EvolutionIncomeMultiplier" in rules and "StageMultiplier" in rules and "growth ^" in rules),
         ("eight sequential biomes", all(token in config for token in ('Id = "Meadow"', 'Id = "Lake"', 'Id = "Forest"', 'Id = "Wetlands"', 'Id = "Frost"', 'Id = "Savanna"', 'Id = "Volcano"', 'Id = "Ocean"', 'Phase = 1, CenterX = 170', 'Phase = 8, CenterX = 1430'))),
+        ("eight biome speed requirements checked on egg capture", all(token in config for token in ("MinSpeed = 10", "MinSpeed = 100", "MinSpeed = 1230", "MinSpeed = 12300", "MinSpeed = 123000", "MinSpeed = 1230000", "MinSpeed = 12300000", "MinSpeed = 123000000", "MaxSpeedPoints = 150000000")) and all(token in main_source for token in ("requiredBiome", "profile.Speed < minimumSpeed", "spec.Biome")) and all(token in world_builder for token in ("biome.MinSpeed", "SPEED MÍNIMA")) and "enforceBiomeSpeedGates" not in main_source),
         ("preview is retained until runtime map is built", all(token in server_all for token in ('local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")', 'world.Name = "StealAnAnimalRuntimeWorld"', 'previewWorld:Destroy()'))),
-        ("rectangular farms and clear corridor", all(token in server_all for token in ("basePositions = {", "CorridorFloor", "CorridorEdge", "PAI PROTETOR"))),
+        ("rectangular farms and clear corridor", all(token in server_all for token in ("basePositions = {", "CorridorFloor", "CorridorEdge", "MainPath"))),
         ("egg-stealing map landmarks and fenced farms", all(token in server_all for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFenceGateLeftLower"))),
         ("original chicken, swan, and whale models", all(token in server_all for token in ("HenComb", "SwanNeck", "WhaleTailFluke"))),
+        ("eight high-detail flagship pets", all(token in catalog for token in (
+            'Id = "CrystalbackGecko"', 'Id = "BloomforgedBeetle"', 'Id = "RunebillBluejay"',
+            'Id = "AstralJackalope"', 'Id = "SpiritwoodPanda"', 'Id = "Novafox"',
+            'Id = "StarforgedSunlion"', 'Id = "VerdantSkyWhale"',
+        )) and all(token in animal_factory for token in (
+            'spec.Id == "CrystalbackGecko"', 'spec.Id == "BloomforgedBeetle"',
+            'spec.Id == "RunebillBluejay"', 'spec.Id == "AstralJackalope"',
+            'spec.Id == "SpiritwoodPanda"', 'spec.Id == "Novafox"',
+            'spec.Id == "StarforgedSunlion"', 'spec.Id == "VerdantSkyWhale"',
+            "Gecko raised scale", "Beetle armored elytra", "Bluejay layered wing feather",
+            "Jackalope antler branch", "Spirit panda lantern", "Novafox giant star tail",
+            "Sunlion crown mane crystal", "Sky whale ancient tree trunk",
+        ))),
+        ("all catalogue species have explicit species-specific visual detail branches", set(re.findall(r'spec\.Id == "([A-Za-z0-9]+)"', animal_factory)).issuperset(set(re.findall(r'Id = "([A-Za-z0-9]+)"', catalog)))),
+        ("flagship material layers, rarity tiers, evolved halos, and elite lighting", all(token in animal_factory for token in (
+            "local function crystal(", "local function glow(", "local rarityRanks", "model:SetAttribute(\"RarityTier\", rarityTier)",
+            "Gecko tail band", "Beetle antenna stem", "Bluejay covert feather", "Jackalope antler jewel",
+            "Spirit panda lantern frame", "Novafox tail luminous tip", "Sunlion radial mane plate",
+            "Sky whale gill engraving", "Rarity ground halo", "RaritySparkles", "RarityCoreLight",
+        ))),
         ("session-locked profiles and stage-aware offline income", all(token in server_all for token in ("acquireSession", "sessionTokens", "SESSION_LEASE_SECONDS", "ExpiresAt", "Store:UpdateAsync", "offlineIncome", "OfflineIncomeCapSeconds"))),
         ("server validated capture and deposit", all(token in server_all for token in ("ProximityPromptService.PromptTriggered", "wildRecords[model]", "depositAnimal", 'OwnerUserId") ~= player.UserId'))),
-        ("guardian pursuit and escape", all(token in server_all for token in ("makeGuardian", "GuardianCatchDistance", "GuardianSpeed", "clearCarry(targetPlayer"))),
-        ("original procedural models and scenery", all(token in server_all for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "FountainGem"))),
+        ("eight dedicated dormant guardians with theft-triggered AI", all(token in guardian_catalog for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger", "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")) and all(token in guardian_controller for token in ("GuardianCatalog.Get(biome.Id)", "GuardianAIFactory", "OnAnimalStolen", "OnCarryEnded", "HasActiveGuardians")) and all(token in guardian_ai for token in ('Model:SetAttribute("GuardianAIActive", false)', 'Model:SetAttribute("GuardianBrainState", "Dormant")', "function self:Activate(player)", "if not self.Active then", "carry.Spec.Biome ~= Biome.Id", "ClearCarry(targetPlayer)")) and all(token in main_source for token in ("guardianController:SpawnAll()", "guardianController:OnAnimalStolen(player, spec.Biome)", "guardianController:HasActiveGuardians()", "guardianController:OnCarryEnded(player)"))),
+        ("animal walk rest run animations and custom guardian anatomy", all(token in animal_animator for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "self:Step(deltaTime)", "self:SetViewPosition", "MaxDistance")) and all(token in animation_client for token in ("Workspace.DescendantAdded", 'GetAttributeChangedSignal("AnimationState")', "TreadmillAnimator.Step(treadmillEntries, os.clock())")) and all(token in animal_factory for token in ("GuardianHenTailFeather", "GuardianSwanWingFeather", "GuardianScorpionTailSegment", "GuardianTigerFlankStripe", "GuardianYetiFurTuft", "GuardianHellhoundHead", "GuardianWhaleBioluminescentSpot", "GuardianTyrannosaurDorsalPlate"))),
+        ("treadmill belt, rollers, and level visuals use a dedicated module", all(token in treadmill_animator for token in ('Kind == "Roller"', "TreadmillBeltLength", "TreadmillBeltSpeed", "TreadmillLevel", "TrainingGain")) and ("TreadmillAnimator.ApplyLevel(treadmill, level, gain)" in main_source) and ("TreadmillAnimator.Step(treadmillEntries, os.clock())" in animation_client)),
+        ("eight biomes receive the layered native geometry pass", all(token in world_builder for token in ("buildBiomeGeometry", "GateFooting", "GateFootInlay", "PathEdgeSegment", "PathEdgeFacet", "FacetedOutcrop", "GateBaseRing", "LakeBridgeSpan", "ForestMonolithLintel", "WetlandsRootRib", "FrostSculptedSpire", "VolcanoBasaltRidgeFin", "OceanCoralFan", "SavannaFossilRib"))),
+        ("original procedural models and scenery", all(token in server_all for token in ("createAnimalModel", "buildScenery", "TreeCanopy", "Crystal", "HubSpawnMarker"))),
         ("server-side treadmill training and capped movement", all(token in server_all for token in ("createTreadmill", "TrainingZone", "Rules.TrainingGain", "Rules.MoveSpeed", "Config.MaxSpeedPoints", "MaxTreadmillLevel"))),
         ("standing training does not require forced movement", "zone.CFrame:PointToObjectSpace(root.Position)" in server_all and "humanoid.MoveDirection.Magnitude > 0.12" not in server_all),
-        ("animated belts and farm-owned treadmill upgrades", all(token in server_all for token in ("treadmillStrips", "TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId'))),
+        ("animated belts and farm-owned treadmill upgrades", all(token in server_all for token in ("TreadmillBeltSpeed", "UpgradeTreadmill", 'ownerBase:GetAttribute("OwnerUserId") ~= player.UserId')) and all(token in animation_client for token in ("MovingBeltStripe", "BeltRoller", "TreadmillAnimator.Step"))),
         ("shop UI reports speed and upgrade levels", all(token in client_all for token in ("TreadmillLevel", "TreadmillGain", "TreadmillUpgradeCost", "EffectiveWalkSpeed", "OpenShop", "LOJA DE MELHORIAS"))),
         ("animal index is available by biome", all(token in client_all for token in ("AnimalIndex", "ÍNDICE ANIMAL", "Catalog.ForBiome(biome.Id)"))),
         ("responsive HUD and gameplay actions", all(token in client_all for token in ("TouchEnabled", "StealAnAnimalHUD", "RequestUpgrade", "RequestCollect", "TopDashboard", "QuickActions", "OpenIndex", "ContextObjective", "ScreenInsets", "Modal"))),
         ("Studio-only QA bots and sandbox profiles", "RunService:IsStudio()" in config and "StealAnAnimal_StudioSandbox_v1" in config and "if not RunService:IsStudio() then return end" in read("src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua") and "if not RunService:IsStudio() then return end" in read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua") and "StudioTestService:ExecuteMultiplayerTestAsync(2" in read("tools/studio-tests/StealAnAnimalAudit.plugin.lua")),
-        ("BotX human Bacon Hair NPCs are player-gated, non-player, grounded, pathfinding observers, and session-logged", all(token in bot_x for token in (
-            "local BOT_COUNT = 3", "CountsAsPlayer", "custom_bacon_hair", "PathfindingService:CreatePath",
-            "Players.PlayerAdded", "Players.PlayerRemoving", "ProximityPromptService.PromptTriggered",
-            "leftLeg.CanCollide = true", "rightLeg.CanCollide = true",
-            "GetAttributeChangedSignal", "player_state_changed", 'coins = player:GetAttribute("Coins")',
-            'barnBank = player:GetAttribute("BarnBank")', 'rebirths = player:GetAttribute("Rebirths")',
-            "remote_action", "state_snapshot", "BOTX_SESSION_REPORT", "MAX_RETAINED_EVENTS",
-            "includeRecentEvents and retainedEvents or nil"))),
+        ("Studio QA audits live local animal and treadmill animations", all(token in read("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua") for token in ("Animal selvagem executa animação Walk local", "Faixa da esteira anima localmente")) and all(token in read("src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua") for token in ("Oito guardiões distintos começam em repouso", "Esteiras têm metadados de animação local"))),
+        ("BotX NPCs and MapBot diagnostics are removed from runtime", not any(token in main_source + client for token in ("BotXStatus", "RequestMapBot", "MapBotReport", "BOTX_SESSION_REPORT", "PathfindingService:CreatePath")) and not (SOURCE_ROOT / "ServerScriptService/BotX.server.lua").exists()),
         ("CI source simulator produces structured non-Studio reports", '"studioRuntimeExecuted": False' in read("tools/simulate_studio_run.py") and '"source_and_layout_simulation"' in read("tools/simulate_studio_run.py") and "studio-run-simulation.json" in read("tools/simulate_studio_run.py")),
         ("minimal greenfield HUD and custom icon actions", all(token in client_all for token in ("makeGlyph", 'makeDockButton("OpenShop"', 'makeDockButton("OpenIndex"', 'makeDockButton("OpenMore"', "objectiveMarker", "RebirthBadge")) and all(token not in client_all for token in ("ActionDock", "helpButton.Activated", "barnButton.Activated", "collectButton.Activated", "rebirthButton.Activated"))),
         ("persistent server-validated rebirth progression", all(token in server_all for token in ("RequestRebirth", "requestRebirth", "Rules.RebirthCost", "Rules.RebirthSpeedRequirement(Config)", "profile.Rebirths += 1", "saveProfile(player)", "Rebirths = profile.Rebirths")) and all(token in rules for token in ("RebirthCost", "RebirthIncomeMultiplier", "RebirthSpeedRequirement")) and "RebirthCoinsRequired = 100000" in config and "MaxRebirths = 25" in config),
         ("rebirth confirmation and original reset semantics", all(token in client_all for token in ("confirmingRebirth", "CONFIRMAR RENASCIMENTO", "RebirthMultiplier", "RebirthRequiredSpeed", "RebirthCost")) and "profile.Coins = 0" in server_all and "profile.Speed = 0" in server_all),
-        ("daily rewards quests redeem codes stats and MapBot are restored", all(token in server_all for token in ("RequestDailyReward", "RequestRedeemCode", "RequestQuest", "RequestMapBot", "DailyStreak", "RedeemedCodes", "QuestClaims", "PathfindingService:CreatePath")) and all(token in client_all for token in ("Daily", "Quests", "Codes", "Stats", "Settings", "Diagnostics", "mapBotReportRemote.OnClientEvent"))),
+        ("daily rewards quests codes and statistics remain connected", all(token in server_all for token in ("RequestDailyReward", "RequestRedeemCode", "RequestQuest", "DailyStreak", "RedeemedCodes", "QuestClaims")) and all(token in client_all for token in ("Daily", "Quests", "Codes", "Stats", "Settings"))),
         ("no monetization in fresh runtime", not any(token in config + catalog + rules + server_all + client_all for token in ("MarketplaceService", "PromptGamePassPurchase", "UserOwnsGamePassAsync", "RequestGamepass", "VIPFarm", "DoubleIncome", "DoubleSpeed", "HasExtraBarnSlots"))),
     ]
     failed = [name for name, ok in checks if not ok]
@@ -167,7 +195,9 @@ def main():
     if part_count < 300:
         fail(f"static map preview contains only {part_count} Parts")
     preview_text = json.dumps(preview)
-    if not all(token in preview_text for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale", "CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower")):
+    if any(token in preview_text for token in ("FarmBackWall", "FarmCanopy", "FarmCanopyPost", "BarnSign", "SpeedGateBarrier")):
+        fail("static map must use open farm pens and passable biome signs, without houses or solid speed gates")
+    if not all(token in preview_text for token in ("CorridorFloor", "Farm_8", "TreadmillBelt", "GuardianParent_Ocean", "PreviewBaby_Whale", "CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "MeadowSpeedRequirementSign", "OceanSpeedRequirementSign", "SavannaSpeedRequirementSign")):
         fail("static map preview is missing core map landmarks")
     print(f"Steal An Animal validation passed: {len(animal_ids)} species, {len(checks)} architecture checks, and {part_count} embedded Workspace Parts.")
 

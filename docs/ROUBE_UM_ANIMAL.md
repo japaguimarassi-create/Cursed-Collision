@@ -18,7 +18,7 @@ O catálogo atual tem 29 espécies e o mapa tem oito biomas sequenciais. Cada fa
 
 - Um corredor comprido, com chão central, bordas e paredes laterais para definir o espaço jogável.
 - Oito biomas: Prado Solar, Lago das Asas, Floresta Sussurrante, Pântano Nebuloso, Pico Congelado, Savana Dourada, Vulcão de Âmbar e Abismo Azul.
-- Ninhos decorativos com três ovos em cada bioma, usados como referência visual para o estilo de Steal An Egg.
+- Ninhos decorativos próprios em cada bioma, com leitura visual consistente com a identidade de Steal An Animal.
 - Oito fazendas organizadas em uma grade 4×2, com cercas de dois níveis e entradas.
 - Guardiões grandes e marcos ambientais específicos para diferenciar a progressão de cada bioma.
 
@@ -26,7 +26,7 @@ O arquivo `src/StealAnAnimal/Workspace/StealAnAnimalWorld.model.json` oferece um
 
 ## Sistemas e persistência
 
-O servidor utiliza perfis persistentes com bloqueio de sessão, salvamento periódico e renda offline limitada. O código também implementa evolução em quatro fases, missões, recompensas diárias, códigos de resgate, estatísticas e MapBot. A interface foi projetada para telas móveis, com painéis e ações de toque.
+O servidor utiliza perfis persistentes com bloqueio de sessão, salvamento periódico e renda offline limitada. O código também implementa evolução em quatro fases, missões, recompensas diárias, códigos de resgate e estatísticas. Os oito guardiões têm IA separada e pausada por padrão: apenas o roubo validado de um animal ativa o guardião daquele bioma; depósito, morte, captura ou fim do transporte encerram a perseguição. NPCs-bot e o diagnóstico MapBot foram removidos. A interface foi projetada para telas móveis, com painéis e ações de toque.
 
 ## Passes e monetização legada
 

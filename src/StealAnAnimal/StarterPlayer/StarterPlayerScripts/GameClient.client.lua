@@ -14,9 +14,6 @@ local rebirthRemote = remotes:WaitForChild("RequestRebirth")
 local dailyRemote = remotes:WaitForChild("RequestDailyReward")
 local codeRemote = remotes:WaitForChild("RequestRedeemCode")
 local questRemote = remotes:WaitForChild("RequestQuest")
-local mapBotRemote = remotes:WaitForChild("RequestMapBot")
-local mapBotReportRemote = remotes:WaitForChild("MapBotReport")
-local botXStatusRemote = remotes:WaitForChild("BotXStatus")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Catalog = require(Shared:WaitForChild("AnimalCatalog"))
@@ -58,8 +55,6 @@ local touchDevice = UserInputService.TouchEnabled
 local compactHud = false
 local lowEffects = false
 local savedEffectStates = {}
-local lastMapBotReport = "Execute o diagnóstico para verificar as fazendas, os biomas, os guardiões e as rotas."
-local lastBotXStatus = nil
 
 local function updateScale()
     local camera = workspace.CurrentCamera
@@ -221,13 +216,6 @@ local objectiveText = makeLabel(objective, "Text", "CAPTURE • DEPOSITE • TRE
 objectiveText.TextStrokeTransparency = 0.85
 objectiveText.TextTruncate = Enum.TextTruncate.AtEnd
 
-local botXChip = makeButton(gui, "BotXStatus", "BOTX • 0/3", COLORS.Panel, COLORS.Cream)
-botXChip.AnchorPoint = Vector2.new(1, 0)
-botXChip.Position = UDim2.new(1, -8, 0, 39)
-botXChip.Size = UDim2.fromOffset(104, 27)
-botXChip.TextSize = 10
-round(botXChip, 9)
-outline(botXChip, COLORS.Aqua, 1, 0.52)
 
 local dock = Instance.new("Frame")
 dock.Name = "QuickActions"
@@ -650,39 +638,6 @@ workspace.DescendantAdded:Connect(function(object)
     end
 end)
 
-local function formatBotXStatus()
-    local status = lastBotXStatus
-    if type(status) ~= "table" then
-        return "BOTX • aguardando o primeiro relatório do servidor."
-    end
-    local bots = type(status.bots) == "table" and status.bots or {}
-    local alive = 0
-    local rows = {}
-    for _, bot in ipairs(bots) do
-        if bot.alive then alive += 1 end
-        local position = type(bot.position) == "table" and bot.position or {}
-        table.insert(rows, string.upper(tostring(bot.name or "bot?")) .. "  •  " .. tostring(bot.mode or "AGUARDANDO")
-            .. "  •  " .. (bot.alive and "VISÍVEL" or "INDISPONÍVEL")
-            .. "  •  X " .. tostring(math.floor(tonumber(position.x) or 0))
-            .. " / Z " .. tostring(math.floor(tonumber(position.z) or 0)))
-    end
-    local counts = type(status.eventCounts) == "table" and status.eventCounts or {}
-    local total = 0
-    for _, amount in pairs(counts) do total += tonumber(amount) or 0 end
-    local actions = tonumber(counts.remote_action) or 0
-    local interactions = tonumber(counts.interaction) or 0
-    local heading = "BOTX • " .. tostring(alive) .. "/" .. tostring(#bots) .. " NPCs • " .. tostring(status.activeRealPlayers or 0) .. " jogador(es) real(is)"
-    local activity = "SESSÃO " .. tostring(math.floor(tonumber(status.elapsedSeconds) or 0)) .. "s • EVENTOS " .. tostring(total)
-        .. " • AÇÕES " .. tostring(actions) .. " • INTERAÇÕES " .. tostring(interactions)
-    table.insert(rows, 1, heading)
-    table.insert(rows, 2, activity)
-    return table.concat(rows, "\n")
-end
-
-local function formatDiagnosticReport()
-    return tostring(lastMapBotReport) .. "\n\n" .. formatBotXStatus()
-end
-
 local function openPanel(kind, preserveConfirmation)
     modalBody.TextSize = 13
     activePanel = kind
@@ -710,7 +665,6 @@ local function openPanel(kind, preserveConfirmation)
             { Title = "CÓDIGOS", Detail = "Resgate FARMFAMILY, WILDSTART e BARNBOOST", Color = COLORS.Aqua, Action = function() openPanel("Codes") end },
             { Title = "ESTATÍSTICAS", Detail = "Capturas, depósitos, treino e progresso", Color = COLORS.Purple, Action = function() openPanel("Stats") end },
             { Title = "CONFIGURAÇÕES", Detail = "Reduzir efeitos e compactar a interface", Color = COLORS.Orange, Action = function() openPanel("Settings") end },
-            { Title = "MAPBOT / DIAGNÓSTICO", Detail = "Verifica fazendas, biomas, guardiões e caminho", Color = COLORS.Aqua, Action = function() openPanel("Diagnostics") end },
             { Title = "COMO JOGAR", Detail = "Entenda captura, fuga, depósito e evolução", Color = COLORS.Mint, Action = function() openPanel("Guide") end },
         })
         return
@@ -804,13 +758,6 @@ local function openPanel(kind, preserveConfirmation)
         modalBody.Text = "Códigos ativos, cada um resgatável uma vez por conta:\nFARMFAMILY  •  +1.000 moedas\nWILDSTART  •  +1.500 moedas\nBARNBOOST  •  +2.500 moedas"
         codeInput.Visible = true
         primaryButton.Text = "RESGATAR CÓDIGO"
-        primaryButton.BackgroundColor3 = COLORS.Aqua
-        return
-    elseif kind == "Diagnostics" then
-        modalTitle.Text = "MAPBOT • DIAGNÓSTICO"
-        modalBody.Text = formatDiagnosticReport()
-        modalBody.TextSize = 11
-        primaryButton.Text = "EXECUTAR MAPBOT"
         primaryButton.BackgroundColor3 = COLORS.Aqua
         return
     elseif kind == "Treadmill" or kind == "Shop" then
@@ -929,10 +876,6 @@ upgradeButton.Activated:Connect(function() openPanel("Shop") end)
 indexButton.Activated:Connect(function() openPanel("AnimalIndex") end)
 rebirthBadge.Activated:Connect(function() openPanel("Rebirth") end)
 moreButton.Activated:Connect(function() openPanel("More") end)
-botXChip.Activated:Connect(function()
-    botXStatusRemote:FireServer("request")
-    openPanel("Diagnostics")
-end)
 closeButton.Activated:Connect(closeModal)
 
 primaryButton.Activated:Connect(function()
@@ -965,9 +908,6 @@ primaryButton.Activated:Connect(function()
         else
             showToast("Digite um dos códigos ativos.", "Warning")
         end
-    elseif activePanel == "Diagnostics" then
-        modalBody.Text = "Executando MapBot: conferindo cenário e calculando rota..."
-        mapBotRemote:FireServer()
     else
         closeModal()
     end
@@ -981,35 +921,6 @@ secondaryButton.Activated:Connect(function()
         openPanel("More")
     else
         closeModal()
-    end
-end)
-
-mapBotReportRemote.OnClientEvent:Connect(function(report, kind)
-    lastMapBotReport = tostring(report)
-    if activePanel == "Diagnostics" then
-        modalBody.Text = formatDiagnosticReport()
-    end
-    showToast(kind == "Success" and "MapBot concluiu a verificação." or "MapBot concluiu a verificação com alertas.", kind or "Info")
-end)
-
-botXStatusRemote.OnClientEvent:Connect(function(status)
-    if type(status) ~= "table" then return end
-    lastBotXStatus = status
-    local bots = type(status.bots) == "table" and status.bots or {}
-    local alive = 0
-    for _, bot in ipairs(bots) do
-        if bot.alive then alive += 1 end
-    end
-    botXChip.Text = status.activeRealPlayers and status.activeRealPlayers > 0 and ("BOTX • " .. tostring(alive) .. "/" .. tostring(#bots)) or "BOTX • OFF"
-    botXChip.BackgroundColor3 = alive == 3 and Color3.fromRGB(34, 116, 63) or COLORS.Panel
-    if activePanel == "Diagnostics" then
-        modalBody.Text = formatDiagnosticReport()
-    end
-end)
-
-task.delay(2, function()
-    if botXStatusRemote.Parent then
-        botXStatusRemote:FireServer("request")
     end
 end)
 

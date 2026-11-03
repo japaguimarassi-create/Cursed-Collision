@@ -150,12 +150,25 @@ local function runAudit()
     local configModule = shared and shared:FindFirstChild("Config")
     local catalogModule = shared and shared:FindFirstChild("AnimalCatalog")
     local rulesModule = shared and shared:FindFirstChild("GameplayRules")
+    local guardianCatalogModule = shared and shared:FindFirstChild("GuardianCatalog")
+    local animalAnimatorModule = shared and shared:FindFirstChild("AnimalAnimator")
+    local treadmillAnimatorModule = shared and shared:FindFirstChild("TreadmillAnimator")
     local configOk, Config = pcall(require, configModule)
     local catalogOk, Catalog = pcall(require, catalogModule)
     local rulesOk, Rules = pcall(require, rulesModule)
+    local guardianCatalogOk, GuardianCatalog = pcall(require, guardianCatalogModule)
+    local animalAnimatorOk, AnimalAnimator = pcall(require, animalAnimatorModule)
+    local treadmillAnimatorOk, TreadmillAnimator = pcall(require, treadmillAnimatorModule)
 
-    record("Módulos compartilhados carregam", configOk and catalogOk and rulesOk,
-        "Config=" .. tostring(configOk) .. ", AnimalCatalog=" .. tostring(catalogOk) .. ", GameplayRules=" .. tostring(rulesOk))
+    record("Módulos compartilhados carregam", configOk and catalogOk and rulesOk and guardianCatalogOk,
+        "Config=" .. tostring(configOk) .. ", AnimalCatalog=" .. tostring(catalogOk)
+            .. ", GameplayRules=" .. tostring(rulesOk) .. ", GuardianCatalog=" .. tostring(guardianCatalogOk))
+    record("Módulos de animação carregam", animalAnimatorOk and treadmillAnimatorOk,
+        "AnimalAnimator=" .. tostring(animalAnimatorOk) .. ", TreadmillAnimator=" .. tostring(treadmillAnimatorOk))
+    local starterScripts = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
+    record("Script local de animação está no projeto", starterScripts ~= nil
+        and starterScripts:FindFirstChild("AnimalAnimation") ~= nil,
+        "StarterPlayerScripts/AnimalAnimation.client.lua")
 
     if configOk then
         record("Dados do Studio isolados", Config.DataStoreName == "StealAnAnimal_StudioSandbox_v1",
@@ -236,8 +249,38 @@ local function runAudit()
         record("Oito guardiões foram criados", guardians ~= nil and #guardians:GetChildren() >= 8,
             "Guardiões: " .. tostring(guardians and #guardians:GetChildren() or 0))
         local namedGuardians = countDescendantsNamed(guardians, "GuardianParent_")
-        record("Há um guardião nomeado para cada bioma", namedGuardians >= 8,
+        record("Há um guardião nomeado para cada bioma", namedGuardians == 8,
             "Guardians encontrados: " .. tostring(namedGuardians))
+        local guardianTypes = {}
+        local guardianStatesValid = guardians ~= nil
+        if guardians then
+            for _, guardian in ipairs(guardians:GetChildren()) do
+                local guardianType = guardian:GetAttribute("GuardianType")
+                if type(guardianType) ~= "string" or guardianType == "" then
+                    guardianStatesValid = false
+                else
+                    guardianTypes[guardianType] = true
+                end
+                if guardian:GetAttribute("AnimationState") ~= "Rest" then
+                    guardianStatesValid = false
+                end
+            end
+        end
+        local guardianTypeCount = 0
+        for _ in pairs(guardianTypes) do guardianTypeCount += 1 end
+        record("Oito guardiões distintos começam em repouso", guardianStatesValid and guardianTypeCount == 8,
+            "Tipos únicos=" .. tostring(guardianTypeCount) .. ", estado inicial=Rest")
+
+        local wildWalkCount = 0
+        if wildlife then
+            for _, animal in ipairs(wildlife:GetChildren()) do
+                if animal:GetAttribute("AnimationState") == "Walk" then
+                    wildWalkCount += 1
+                end
+            end
+        end
+        record("Animais selvagens publicam estado Walk", wildWalkCount > 0,
+            "Animais com estado Walk=" .. tostring(wildWalkCount))
         record("Animais aparecem no corredor", wildlife ~= nil and #wildlife:GetChildren() > 0,
             "Animais ativos: " .. tostring(wildlife and #wildlife:GetChildren() or 0))
         record("Cenário contém objetos", scenery ~= nil and #scenery:GetChildren() > 0,
@@ -258,9 +301,12 @@ local function runAudit()
                     local depositPrompt = deposit and deposit:FindFirstChild("DepositPrompt")
                     local collectPrompt = collect and collect:FindFirstChild("CollectPrompt")
                     local slots = countSlots(farm)
-                    if not depositPrompt or not collectPrompt or not treadmill or slots ~= 6 then
+                    local stripes = treadmill and countDescendantsNamed(treadmill, "MovingBeltStripe") or 0
+                    local rollers = treadmill and countDescendantsNamed(treadmill, "BeltRoller") or 0
+                    if not depositPrompt or not collectPrompt or not treadmill or slots ~= 6 or stripes ~= 7 or rollers ~= 2 then
                         completeFarms = false
-                        table.insert(farmIssues, farm.Name .. ": prompts/esteira/espaços=" .. tostring(slots))
+                        table.insert(farmIssues, farm.Name .. ": prompts/esteira/faixa/roletes/espaços="
+                            .. tostring(stripes) .. "/" .. tostring(rollers) .. "/" .. tostring(slots))
                     end
                 end
             end
@@ -270,6 +316,22 @@ local function runAudit()
         end
         record("Cada fazenda contém depósito, coleta, esteira e seis espaços", completeFarms,
             #farmIssues == 0 and "8 fazendas completas" or table.concat(farmIssues, "; "))
+        local treadmillMetadataValid = farms ~= nil
+        if farms then
+            for _, farm in ipairs(farms:GetChildren()) do
+                local treadmill = farm:FindFirstChild("Treadmill")
+                local stripe = treadmill and treadmill:FindFirstChild("MovingBeltStripe")
+                local roller = treadmill and treadmill:FindFirstChild("BeltRoller")
+                if not treadmill or treadmill:GetAttribute("TreadmillLevel") ~= 1
+                    or not stripe or typeof(stripe:GetAttribute("TreadmillOrigin")) ~= "Vector3"
+                    or type(stripe:GetAttribute("AnimationPhase")) ~= "number"
+                    or not roller or type(roller:GetAttribute("AnimationSpeed")) ~= "number" then
+                    treadmillMetadataValid = false
+                end
+            end
+        end
+        record("Esteiras têm metadados de animação local", treadmillMetadataValid,
+            "Oito faixas, roletes e níveis iniciais conferidos")
         local depositPromptCount = countDescendantsNamed(farms, "DepositPrompt")
         local collectPromptCount = countDescendantsNamed(farms, "CollectPrompt")
         local promptTypesValid = depositPromptCount == 8 and collectPromptCount == 8

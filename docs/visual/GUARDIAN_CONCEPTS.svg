@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1060" viewBox="0 0 1600 1060">
+<defs>
+ <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#e9eef2"/><stop offset="1" stop-color="#cbd5df"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffdb7a"/><stop offset="1" stop-color="#db8d25"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#1b2b35" flood-opacity=".2"/></filter>
+</defs>
+<rect width="1600" height="1060" fill="url(#bg)"/>
+<text x="64" y="70" font-family="Arial,sans-serif" font-size="39" font-weight="800" fill="#172d3a">STEAL AN ANIMAL — ORIGINAL GUARDIAN LINEUP</text>
+<text x="66" y="108" font-family="Arial" font-size="18" fill="#4c6270">Original Roblox-friendly low-poly silhouettes • adult scale • egg-protection variants</text>
+<g font-family="Arial" filter="url(#shadow)">
+<!-- cards backgrounds -->
+<g fill="#f9fbfc" stroke="#b9c7d0" stroke-width="2">
+ <rect x="55" y="145" width="355" height="390" rx="22"/><rect x="435" y="145" width="355" height="390" rx="22"/><rect x="815" y="145" width="355" height="390" rx="22"/><rect x="1195" y="145" width="355" height="390" rx="22"/>
+ <rect x="55" y="560" width="355" height="390" rx="22"/><rect x="435" y="560" width="355" height="390" rx="22"/><rect x="815" y="560" width="355" height="390" rx="22"/><rect x="1195" y="560" width="355" height="390" rx="22"/>
+</g>
+</g>
+<!-- 1 chicken -->
+<g transform="translate(235 340)" filter="url(#shadow)">
+ <ellipse cx="0" cy="62" rx="90" ry="23" fill="#b7c5cb"/>
+ <ellipse cx="0" cy="15" rx="77" ry="68" fill="#f0c879" stroke="#9d6634" stroke-width="6"/>
+ <ellipse cx="-3" cy="30" rx="48" ry="46" fill="#fff0d4"/>
+ <circle cx="-4" cy="-73" r="49" fill="#f7dca9" stroke="#a66b39" stroke-width="5"/>
+ <path d="M-30 -115 Q-54 -168 -24 -145 Q-3 -181 9 -144 Q35 -164 34 -119" fill="#e94e3b" stroke="#a52829" stroke-width="8"/>
+ <path d="M40 -72 L102 -48 L41 -27Z" fill="#ff9d24" stroke="#b75f11" stroke-width="5"/>
+ <circle cx="-20" cy="-79" r="8" fill="#1a2835"/><circle cx="17" cy="-79" r="8" fill="#1a2835"/>
+ <path d="M-67 12 Q-116 -37 -94 40 L-56 56Z M65 12 Q111 -36 100 40 L59 55Z" fill="#e9b95e" stroke="#99612e" stroke-width="6"/>
+ <path d="M-26 77 L-32 113 M27 77 L32 113" stroke="#b96a20" stroke-width="9"/><path d="M-48 112 L-12 112 M12 112 L48 112" stroke="#e68a20" stroke-width="12" stroke-linecap="round"/>
+</g>
+<g transform="translate(78 470)"><text font-size="26" font-weight="800" fill="#223b4a">01  HEN GUARDIAN</text><text y="26" font-size="15" fill="#5a7381">Floresta • warm feather armor</text></g>
+<!-- 2 swan -->
+<g transform="translate(615 342)" filter="url(#shadow)">
+ <ellipse cx="0" cy="65" rx="92" ry="21" fill="#b7c5cb"/>
+ <path d="M-75 48 Q-108 -5 -56 -42 Q14 -88 89 -10 Q63 72 -28 78Z" fill="#f5fbff" stroke="#6c96c3" stroke-width="6"/>
+ <path d="M-43 35 Q-29 -20 34 -34 L72 8 Q31 65 -43 35Z" fill="#6fc3f2"/>
+ <path d="M-6 5 Q-48 -66 -5 -105 Q37 -142 19 -197" fill="none" stroke="#f9fdff" stroke-width="35" stroke-linecap="round"/>
+ <circle cx="22" cy="-191" r="27" fill="#f8fdff" stroke="#6b91b8" stroke-width="5"/>
+ <path d="M42 -193 L94 -181 L43 -171Z" fill="#ff8f27"/>
+ <path d="M-9 -229 L-19 -265 L1 -246 L18 -280 L26 -242 L53 -258 L44 -224" fill="url(#gold)" stroke="#a87524" stroke-width="5"/>
+ <circle cx="30" cy="-197" r="5" fill="#102638"/>
+ <path d="M-38 70 L-38 101 M26 70 L26 101" stroke="#254b75" stroke-width="9"/>
+</g>
+<g transform="translate(458 470)"><text font-size="26" font-weight="800" fill="#223b4a">02  ROYAL SWAN</text><text y="26" font-size="15" fill="#5a7381">Lago • feathered crown and blue wings</text></g>
+<!-- 3 scorpion -->
+<g transform="translate(995 344)" filter="url(#shadow)">
+ <ellipse cx="0" cy="72" rx="100" ry="18" fill="#b7c5cb"/>
+ <ellipse cx="0" cy="34" rx="67" ry="42" fill="#f2a33c" stroke="#8b4d19" stroke-width="6"/>
+ <ellipse cx="-3" cy="-3" rx="48" ry="38" fill="#ffbe49" stroke="#a75a18" stroke-width="6"/>
+ <path d="M-48 -9 Q-120 -72 -134 -8 Q-120 32 -80 16 M48 -9 Q120 -72 134 -8 Q120 32 80 16" fill="none" stroke="#9d561d" stroke-width="18" stroke-linecap="round"/>
+ <path d="M-128 -11 L-160 -40 L-148 -2Z M128 -11 L160 -40 L148 -2Z" fill="#f8b13c" stroke="#8b4b1a" stroke-width="7"/>
+ <path d="M-25 25 Q-58 4 -45 -42 Q-33 -90 10 -116 Q57 -144 32 -185" fill="none" stroke="#ad5b1e" stroke-width="24" stroke-linecap="round"/>
+ <path d="M29 -180 L52 -224 L12 -199Z" fill="#e84c29" stroke="#80331e" stroke-width="6"/>
+ <g stroke="#8b4b1a" stroke-width="10" stroke-linecap="round">
+  <path d="M-44 17 L-91 65 L-116 60 M-22 24 L-49 83 L-68 87 M43 17 L91 65 L116 60 M22 24 L49 83 L68 87"/>
+ </g>
+ <circle cx="-21" cy="-19" r="7" fill="#18232b"/><circle cx="21" cy="-19" r="7" fill="#18232b"/>
+</g>
+<g transform="translate(838 470)"><text font-size="26" font-weight="800" fill="#223b4a">03  DUNE SCORPION</text><text y="26" font-size="15" fill="#5a7381">Deserto • segmented armor and stinger</text></g>
+<!-- 4 tiger -->
+<g transform="translate(1375 342)" filter="url(#shadow)">
+ <ellipse cx="0" cy="70" rx="100" ry="18" fill="#b7c5cb"/>
+ <ellipse cx="-4" cy="19" rx="84" ry="49" fill="#ed8a32" stroke="#99451e" stroke-width="6"/>
+ <circle cx="20" cy="-50" r="57" fill="#f39a38" stroke="#99451e" stroke-width="6"/>
+ <path d="M-19 -90 L-53 -148 L-5 -117 L17 -157 L46 -105 L65 -133 L70 -79" fill="#e9872c" stroke="#89431c" stroke-width="6"/>
+ <path d="M-17 -83 L-42 -126 L-12 -110 M31 -82 L58 -121 L51 -91" fill="#392d29"/>
+ <g stroke="#35282a" stroke-width="10" stroke-linecap="round"><path d="M-49 -3 L-63 36 M-15 -6 L-24 42 M34 -3 L40 34 M64 1 L72 38 M-63 -38 L-41 -24 M-15 -97 L-11 -75 M30 -100 L24 -74"/></g>
+ <path d="M-77 24 L-102 79 M-34 31 L-42 87 M41 30 L51 88 M77 21 L95 75" stroke="#ef963b" stroke-width="20" stroke-linecap="round"/>
+ <path d="M-99 79 L-63 79 M-42 87 L-8 87 M51 88 L84 88 M95 75 L126 75" stroke="#faf0df" stroke-width="15" stroke-linecap="round"/>
+ <path d="M-38 18 Q-122 -20 -112 -77" fill="none" stroke="#e88a30" stroke-width="13"/><path d="M-111 -65 L-117 -77 L-106 -91" stroke="#30282a" stroke-width="11"/>
+ <circle cx="3" cy="-52" r="8" fill="#192532"/><circle cx="46" cy="-52" r="8" fill="#192532"/>
+</g>
+<g transform="translate(1218 470)"><text font-size="26" font-weight="800" fill="#223b4a">04  JUNGLE TIGER</text><text y="26" font-size="15" fill="#5a7381">Selva • muscular chase guardian</text></g>
+<!-- 5 yeti -->
+<g transform="translate(235 760)" filter="url(#shadow)">
+ <ellipse cx="0" cy="85" rx="98" ry="18" fill="#b7c5cb"/>
+ <ellipse cx="0" cy="16" rx="78" ry="88" fill="#eaf7ff" stroke="#7fa8d8" stroke-width="7"/>
+ <circle cx="0" cy="-76" r="67" fill="#f6fbff" stroke="#7fa8d8" stroke-width="7"/>
+ <path d="M-54 -123 L-79 -170 L-42 -151 L-16 -195 L5 -151 L40 -187 L50 -133 L83 -154 L67 -95" fill="#b5ddfc" stroke="#5d91c8" stroke-width="6"/>
+ <ellipse cx="0" cy="-7" rx="40" ry="37" fill="#8cc4f2"/>
+ <circle cx="-25" cy="-84" r="9" fill="#172d43"/><circle cx="25" cy="-84" r="9" fill="#172d43"/>
+ <path d="M-82 -4 Q-145 11 -120 68 M82 -4 Q145 11 120 68" fill="none" stroke="#eff8ff" stroke-width="33" stroke-linecap="round"/>
+ <path d="M-47 82 L-61 111 M47 82 L61 111" stroke="#5b91cc" stroke-width="22" stroke-linecap="round"/>
+</g>
+<g transform="translate(78 890)"><text font-size="26" font-weight="800" fill="#223b4a">05  FROST YETI</text><text y="26" font-size="15" fill="#5a7381">Neve • icy fur and heavy arms</text></g>
+<!-- 6 hellhound -->
+<g transform="translate(615 757)" filter="url(#shadow)">
+ <ellipse cx="0" cy="90" rx="106" ry="17" fill="#b7c5cb"/>
+ <path d="M-75 12 Q-99 -45 -50 -67 Q0 -91 60 -54 L87 29 L50 78 L-57 74Z" fill="#302b3a" stroke="#111723" stroke-width="8"/>
+ <g fill="#3b3142" stroke="#131723" stroke-width="7">
+  <path d="M-71 -52 L-96 -116 L-42 -91Z"/><path d="M-8 -65 L-22 -138 L33 -91Z"/><path d="M55 -45 L75 -112 L103 -60Z"/>
+  <path d="M-104 -42 Q-132 -79 -105 -100 L-63 -86 L-51 -39Z"/><path d="M-39 -60 Q-43 -116 -4 -116 L28 -83 L19 -39Z"/><path d="M34 -45 Q48 -98 91 -86 L114 -43 L88 -10Z"/>
+ </g>
+ <g fill="#ff5a18"><path d="M-113 -45 L-82 -61 L-62 -39Z"/><path d="M-23 -57 L4 -76 L24 -49Z"/><path d="M55 -43 L80 -58 L95 -35Z"/></g>
+ <path d="M-68 69 L-77 111 M-13 71 L-16 113 M42 66 L55 111 M78 56 L98 99" stroke="#201b28" stroke-width="21" stroke-linecap="round"/>
+ <path d="M-83 105 L-51 105 M-26 110 L5 110 M49 108 L80 108 M88 96 L117 96" stroke="#ff6a22" stroke-width="13" stroke-linecap="round"/>
+</g>
+<g transform="translate(458 890)"><text font-size="26" font-weight="800" fill="#223b4a">06  VOLCANO HELLHOUND</text><text y="26" font-size="15" fill="#5a7381">Vulcão • three-headed molten guardian</text></g>
+<!-- 7 whale -->
+<g transform="translate(995 761)" filter="url(#shadow)">
+ <ellipse cx="0" cy="86" rx="105" ry="16" fill="#b7c5cb"/>
+ <path d="M-95 5 Q-87 -65 -9 -78 Q75 -91 98 -22 Q130 28 63 66 Q-18 97 -83 51Z" fill="#1764c5" stroke="#0b3478" stroke-width="7"/>
+ <path d="M-74 24 Q-5 61 77 23 Q67 78 -8 79 Q-65 74 -74 24Z" fill="#d8f5fb"/>
+ <path d="M75 -4 Q111 -61 141 -93 Q130 -34 161 -15 Q133 13 105 12" fill="#0d4da7" stroke="#0b3478" stroke-width="7"/>
+ <path d="M-15 -70 L-9 -112 L12 -75" fill="#36bcff" stroke="#0b4b97" stroke-width="7"/>
+ <path d="M-76 24 L-130 58 L-107 7Z M71 26 L119 62 L107 9Z" fill="#24b9f2" stroke="#0c4b9c" stroke-width="7"/>
+ <circle cx="54" cy="-36" r="9" fill="#102d4c"/><circle cx="58" cy="-40" r="3" fill="#fff"/>
+ <g fill="#5be3ff"><circle cx="-37" cy="-32" r="5"/><circle cx="-13" cy="-47" r="4"/><circle cx="14" cy="-33" r="5"/><circle cx="28" cy="-58" r="4"/></g>
+</g>
+<g transform="translate(838 890)"><text font-size="26" font-weight="800" fill="#223b4a">07  ABYSS WHALE</text><text y="26" font-size="15" fill="#5a7381">Oceano Abissal • glowing fins and spots</text></g>
+<!-- 8 t rex -->
+<g transform="translate(1375 762)" filter="url(#shadow)">
+ <ellipse cx="0" cy="88" rx="105" ry="16" fill="#b7c5cb"/>
+ <ellipse cx="-6" cy="25" rx="80" ry="58" fill="#9a7041" stroke="#493b2a" stroke-width="7"/>
+ <path d="M-47 8 Q-48 -50 11 -66 Q82 -85 108 -38 Q137 -2 92 28 L34 31Z" fill="#b17b45" stroke="#493b2a" stroke-width="7"/>
+ <path d="M44 -62 L74 -112 L95 -55 M69 -55 L112 -89 L112 -31" fill="#4a6541" stroke="#30422d" stroke-width="6"/>
+ <path d="M78 12 Q138 40 159 11" fill="none" stroke="#8b613a" stroke-width="18" stroke-linecap="round"/>
+ <path d="M-45 64 L-50 114 M27 70 L36 114" stroke="#72502d" stroke-width="25" stroke-linecap="round"/>
+ <path d="M-67 111 L-29 111 M19 111 L62 111" stroke="#e1c18b" stroke-width="15" stroke-linecap="round"/>
+ <path d="M-7 43 L-10 64 M20 38 L22 58" stroke="#5c4028" stroke-width="11" stroke-linecap="round"/>
+ <path d="M80 -6 L130 8 L80 19Z" fill="#6b3d2c"/><path d="M84 7 L91 20 L99 8 L107 20 L114 7" fill="#fff0cf"/>
+ <circle cx="76" cy="-27" r="8" fill="#141d21"/>
+ <g fill="#d2c18d"><path d="M-44 -24 L-59 -42 L-49 -10Z"/><path d="M-13 -32 L-24 -55 L-8 -15Z"/><path d="M17 -28 L16 -52 L31 -12Z"/></g>
+</g>
+<g transform="translate(1218 890)"><text font-size="26" font-weight="800" fill="#223b4a">08  PREHISTORIC T-REX</text><text y="26" font-size="15" fill="#5a7381">Pré-histórico • strong jaw and dorsal plates</text></g>
+</svg>

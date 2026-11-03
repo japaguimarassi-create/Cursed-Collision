@@ -126,13 +126,12 @@ def simulate_hud(audit, client, screen_profiles):
         '"FUGA • LEVE O ANIMAL AO PAD VERDE DA SUA FAZENDA"' in client
         and "objectiveMarker.BackgroundColor3 = COLORS.Orange" in client,
         "Carrying an animal selects the escape message and orange marker", "GameClient.client.lua")
-    audit.check("BotX status is visible and the diagnostics panel requests server data",
-        all(token in client for token in (
-            'makeButton(gui, "BotXStatus"', 'botXChip.Activated:Connect(function()',
-            'botXStatusRemote:FireServer("request")', 'botXStatusRemote.OnClientEvent:Connect(function(status)',
-            "formatDiagnosticReport()", 'openPanel("Diagnostics")'
+    audit.check("BotX and MapBot systems are absent from the gameplay HUD",
+        not any(token in client for token in (
+            "BotXStatus", "RequestMapBot", "MapBotReport", "BOTX_SESSION_REPORT",
+            "PathfindingService:CreatePath", "formatDiagnosticReport()"
         )),
-        "BotX chip has a request/reply path and displays the current session", "GameClient.client.lua")
+        "No bot observer, status chip, diagnostics request or map bot remains in gameplay", "GameClient.client.lua")
 
     prompt_anchor = "promptCard.AnchorPoint = Vector2.new(0.5, 0)" in client
     prompt_position = re.search(r'promptCard\.Position\s*=\s*UDim2\.new\(0\.5,\s*0,\s*0,\s*(\d+)\)', client)
@@ -294,6 +293,12 @@ def main():
         "src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua",
         "src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua",
         "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua",
+        "src/StealAnAnimal/ReplicatedStorage/Shared/GuardianCatalog.lua",
+        "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua",
+        "src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua",
+        "src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua",
+        "src/StealAnAnimal/ServerScriptService/Services/GuardianAI.lua",
+        "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua",
         "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua",
         "src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua",
@@ -316,10 +321,16 @@ def main():
         main_server = read_text("src/StealAnAnimal/ServerScriptService/Main.server.lua")
         world_builder = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/WorldBuilder.lua")
         animal_factory = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalFactory.lua")
+        guardian_catalog = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/GuardianCatalog.lua")
+        animal_animator = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua")
+        treadmill_animator = read_text("src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua")
+        guardian_controller = read_text("src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua")
+        guardian_ai = read_text("src/StealAnAnimal/ServerScriptService/Services/GuardianAI.lua")
+        animation_client = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua")
         profile_store = read_text("src/StealAnAnimal/ServerScriptService/Services/ProfileStore.lua")
         client_script = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua")
         interaction_prompt = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua")
-        server = main_server + world_builder + animal_factory + profile_store
+        server = main_server + world_builder + animal_factory + profile_store + guardian_catalog + animal_animator + treadmill_animator + guardian_controller + guardian_ai
         client = client_script + interaction_prompt
         studio_server = read_text("src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua")
         studio_client = read_text("src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua")
@@ -328,7 +339,7 @@ def main():
     except OSError as error:
         audit.check("All audited sources are readable", False, error)
         project = {}
-        config = catalog = rules = server = client = main_server = world_builder = animal_factory = profile_store = client_script = interaction_prompt = studio_server = studio_client = plugin = studio_docs = ""
+        config = catalog = rules = server = client = main_server = world_builder = animal_factory = guardian_catalog = animal_animator = treadmill_animator = guardian_controller = animation_client = profile_store = client_script = interaction_prompt = studio_server = studio_client = plugin = studio_docs = ""
 
     ids = sorted(set(re.findall(r'Id\s*=\s*"([A-Za-z0-9]+)"', catalog)))
     biomes = re.findall(r'Id\s*=\s*"([A-Za-z]+)"\s*,\s*Name\s*=', config)
@@ -344,8 +355,37 @@ def main():
                 "MoveSpeed, RebirthCost, and RebirthSpeedRequirement found")
     audit.check("World construction retains eight-farm map and interaction landmarks",
                 all(token in server for token in ("basePositions = {", "function createBase(index)", '"DepositPad"', '"CollectPad"',
-                                                   '"TrainingZone"', "function makeGuardian(spec, biome)", "StealAnimalRemotes")),
-                "Farm factory, deposit/collect pads, treadmill zone, guardian factory, and remotes found")
+                                                   '"TrainingZone"', "guardianController:SpawnAll()", "guardianController:Step(deltaTime, carried)", "StealAnimalRemotes")),
+                "Farm factory, deposit/collect pads, treadmill zone, server guardian controller, and remotes found")
+    audit.check("Eight guardian species have explicit biome identities",
+                all(token in guardian_catalog for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger",
+                    "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")),
+                "The eight biomes do not reuse arbitrary pet catalog entries")
+    audit.check("Guardian AI is separate and dormant until a matching animal is stolen",
+                all(token in guardian_controller for token in (
+                    "GuardianAIFactory", "function self:OnAnimalStolen", "function self:OnCarryEnded",
+                    "function self:HasActiveGuardians()", "Brain:IsActive()"
+                )) and all(token in guardian_ai for token in (
+                    'Model:SetAttribute("GuardianAIActive", false)',
+                    'Model:SetAttribute("GuardianBrainState", "Dormant")',
+                    'Model:SetAttribute("AnimationState", "Rest")',
+                    "function self:Activate(player)", "if not self.Active then",
+                    "carry.Spec.Biome ~= Biome.Id", "Config.GuardianCatchDistance", "ClearCarry(targetPlayer)"
+                )) and all(token in main_server for token in (
+                    "guardianController:OnAnimalStolen(player, spec.Biome)",
+                    "guardianController:OnCarryEnded(player)",
+                    "guardianController:HasActiveGuardians()"
+                )),
+                "Every guardian brain begins dormant, activates only for a validated theft in its biome, and pauses after carrying ends")
+    audit.check("Animal animations run locally and cull distant models",
+                all(token in animal_animator for token in ("Walk = true", "Rest = true", "Run = true", "MaxDistance", "SetViewPosition"))
+                and all(token in animation_client for token in ("Workspace.DescendantAdded", "animalAnimator:Step(deltaTime)",
+                    "TreadmillAnimator.Step(treadmillEntries, os.clock())")),
+                "Client animates nearby pets and leaves distant models untouched")
+    audit.check("Treadmill stripes and rollers have separate local animations",
+                all(token in world_builder for token in ('SetAttribute("TreadmillOrigin"', 'SetAttribute("AnimationPhase"', 'SetAttribute("AnimationSpeed"'))
+                and all(token in treadmill_animator for token in ('Kind == "Roller"', "STEP_INTERVAL", "ApplyLevel")),
+                "Belts and rollers animate client-side while upgrades are applied by the server")
     audit.check("Studio QA remains disabled outside Studio and requires opt-in",
                 all(token in studio_server for token in ('if not RunService:IsStudio() then return end',
                                                           'Workspace:GetAttribute("EnableStealAnimalAudit") ~= true then return end'))
@@ -358,6 +398,10 @@ def main():
     audit.check("Studio launcher creates two simulated clients",
                 'StudioTestService:ExecuteMultiplayerTestAsync(2, "StealAnAnimalAudit-v1")' in plugin,
                 "Plugin creates two Studio test clients")
+    audit.check("Studio runtime audit checks live animal and treadmill movement",
+                all(token in studio_client for token in ("Animal selvagem executa animação Walk local", "Faixa da esteira anima localmente"))
+                and all(token in studio_server for token in ("Oito guardiões distintos começam em repouso", "Esteiras têm metadados de animação local")),
+                "Simulated clients compare local part transforms after animation steps")
     audit.check("Audit report collects client tests and exports JSON",
                 all(token in studio_server for token in ("clientReports", "HttpService:JSONEncode(summary)",
                                                          "[STEAL_ANIMAL_AUDIT_REPORT]", "StudioTestService:EndTest(encoded)"))
@@ -386,6 +430,26 @@ def main():
         absent = [name for name in required_landmarks if name not in names]
         audit.check("Static map landmarks exist", not absent,
                     "All required landmarks found" if not absent else "Missing: " + ", ".join(absent))
+        runtime_landmarks = (
+            "CentralHubGrid", "CentralHubTile", "SafeZoneLine", "SafeZoneSign", "RouteStartSign",
+            "MeadowMonumentCanopy", "LakeMonumentWaterfall", "ForestMonumentStoneArchTop",
+            "WetlandsMonumentRoof", "FrostMonumentShard", "SavannaMonumentFossilRib",
+            "VolcanoMonumentLava", "OceanMonumentBeacon", "LandmarkPlaque",
+        )
+        simplified_route = all(token not in world_builder for token in (
+            "RouteStartArchTop", "CentralCarpet", "CorridorPillar"
+        ))
+        audit.check(
+            "Runtime map preserves its original identity and adds layered geometry to all biomes",
+            all(token in world_builder for token in runtime_landmarks) and simplified_route and all(token in world_builder for token in (
+                "buildBiomeGeometry", "GateFooting", "GateFootInlay", "PathEdgeSegment", "PathEdgeFacet",
+                "FacetedOutcrop", "GateBaseRing", "LakeBridgeSpan", "ForestMonolithLintel",
+                "WetlandsRootRib", "FrostSculptedSpire", "VolcanoBasaltRidgeFin", "OceanCoralFan",
+                "SavannaFossilRib"
+            )),
+            "Open safe zone, readable route, eight established landmarks, and the new per-biome geometry pass are present",
+            "WorldBuilder.lua",
+        )
     except (OSError, json.JSONDecodeError) as error:
         audit.check("Static map preview parses as JSON", False, error)
 
@@ -437,7 +501,7 @@ def main():
             "This is a deterministic source-level simulation, not an executed Roblox Studio session.",
             "It models HUD geometry from source constants; it does not render Roblox UI or measure Roblox AbsolutePosition.",
             "It does not execute physics, ProximityPrompt triggering, DataStore calls, client/server replication, or live RemoteEvents.",
-            "The StudioTestService plugin and runtime bots must still be run inside Roblox Studio for engine-level evidence.",
+            "The StudioTestService plugin and two-client live Studio test must still be run inside Roblox Studio for engine-level evidence.",
             "TouchEnabled is modeled for device profiles; actual Device Simulator state is not changed by this script.",
         ],
         "nextStep": "Download studio-run-simulation.json from the GitHub Actions artifact. For actual runtime evidence, run the Studio plugin and provide [STEAL_ANIMAL_AUDIT_REPORT] JSON.",

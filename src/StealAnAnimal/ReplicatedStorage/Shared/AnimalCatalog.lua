@@ -37,6 +37,30 @@ local species = {
     { Id = "Dolphin", Name = "Golfinho", Biome = "Ocean", Rarity = "Raro", Weight = 16, Income = 140, Color = Color3.fromRGB(91, 177, 207), Shape = "Dolphin", Accent = Color3.fromRGB(198, 236, 242) },
     { Id = "MantaRay", Name = "Arraia-Lua", Biome = "Ocean", Rarity = "Épico", Weight = 19, Income = 210, Color = Color3.fromRGB(65, 113, 151), Shape = "Ray", Accent = Color3.fromRGB(113, 212, 224) },
     { Id = "Whale", Name = "Baleia", Biome = "Ocean", Rarity = "Mítico", Weight = 60, Income = 320, Color = Color3.fromRGB(77, 133, 180), Shape = "Whale", Accent = Color3.fromRGB(160, 218, 239) },
+
+    { Id = "ShibaInu", Name = "Shiba Inu", Biome = "Forest", Rarity = "Incomum", Weight = 6, Income = 16, Color = Color3.fromRGB(224, 132, 61), Shape = "Fox", Accent = Color3.fromRGB(250, 225, 181) },
+    { Id = "RedPanda", Name = "Panda-Vermelho", Biome = "Forest", Rarity = "Épico", Weight = 13, Income = 48, Color = Color3.fromRGB(183, 73, 39), Shape = "Mammal", Accent = Color3.fromRGB(250, 229, 193) },
+    { Id = "HouseCat", Name = "Gatinho", Biome = "Meadow", Rarity = "Incomum", Weight = 4, Income = 14, Color = Color3.fromRGB(128, 139, 151), Shape = "Mammal", Accent = Color3.fromRGB(236, 225, 207) },
+    { Id = "Axolotl", Name = "Axolote", Biome = "Wetlands", Rarity = "Épico", Weight = 8, Income = 56, Color = Color3.fromRGB(239, 151, 165), Shape = "Reptile", Accent = Color3.fromRGB(255, 222, 224) },
+    { Id = "Unicorn", Name = "Unicórnio Celestial", Biome = "Frost", Rarity = "Mítico", Weight = 18, Income = 190, Color = Color3.fromRGB(241, 233, 255), Shape = "Mammal", Accent = Color3.fromRGB(174, 126, 230) },
+    { Id = "Koala", Name = "Coalinha", Biome = "Forest", Rarity = "Raro", Weight = 7, Income = 33, Color = Color3.fromRGB(145, 153, 157), Shape = "Bear", Accent = Color3.fromRGB(238, 178, 184) },
+    { Id = "Peacock", Name = "Pavão Real", Biome = "Savanna", Rarity = "Épico", Weight = 12, Income = 78, Color = Color3.fromRGB(36, 112, 139), Shape = "Bird", Accent = Color3.fromRGB(52, 190, 151) },
+    { Id = "Capybara", Name = "Capivara", Biome = "Wetlands", Rarity = "Incomum", Weight = 6, Income = 22, Color = Color3.fromRGB(155, 105, 68), Shape = "Mammal", Accent = Color3.fromRGB(221, 190, 151) },
+    { Id = "Panda", Name = "Panda-Gigante", Biome = "Frost", Rarity = "Épico", Weight = 16, Income = 88, Color = Color3.fromRGB(235, 232, 218), Shape = "Bear", Accent = Color3.fromRGB(42, 39, 37) },
+    { Id = "Raccoon", Name = "Guaxinim", Biome = "Forest", Rarity = "Incomum", Weight = 5, Income = 25, Color = Color3.fromRGB(116, 119, 119), Shape = "Mammal", Accent = Color3.fromRGB(45, 43, 42) },
+    { Id = "Sloth", Name = "Bicho-Preguiça", Biome = "Wetlands", Rarity = "Raro", Weight = 9, Income = 44, Color = Color3.fromRGB(126, 143, 95), Shape = "Mammal", Accent = Color3.fromRGB(205, 185, 143) },
+    { Id = "Cheetah", Name = "Guepardo", Biome = "Savanna", Rarity = "Lendário", Weight = 22, Income = 145, Color = Color3.fromRGB(222, 169, 91), Shape = "Mammal", Accent = Color3.fromRGB(52, 43, 35) },
+
+
+    { Id = "CrystalbackGecko", Name = "Lagarto Prisma", Biome = "Forest", Rarity = "Lendário", Weight = 11, Income = 95, Color = Color3.fromRGB(31, 177, 104), Shape = "Gecko", Accent = Color3.fromRGB(74, 201, 255) },
+    { Id = "BloomforgedBeetle", Name = "Besouro Flor de Cristal", Biome = "Meadow", Rarity = "Mítico", Weight = 19, Income = 175, Color = Color3.fromRGB(49, 57, 156), Shape = "Beetle", Accent = Color3.fromRGB(74, 220, 255) },
+    { Id = "RunebillBluejay", Name = "Gaio Rúnico", Biome = "Lake", Rarity = "Mítico", Weight = 8, Income = 160, Color = Color3.fromRGB(31, 91, 225), Shape = "Bluejay", Accent = Color3.fromRGB(74, 219, 255) },
+    { Id = "AstralJackalope", Name = "Jackalope Astral", Biome = "Frost", Rarity = "Cósmico", Weight = 17, Income = 420, Color = Color3.fromRGB(122, 119, 181), Shape = "Jackalope", Accent = Color3.fromRGB(191, 132, 255) },
+    { Id = "SpiritwoodPanda", Name = "Panda Guardião", Biome = "Forest", Rarity = "Cósmico", Weight = 29, Income = 690, Color = Color3.fromRGB(34, 39, 43), Shape = "SpiritPanda", Accent = Color3.fromRGB(119, 230, 115) },
+    { Id = "Novafox", Name = "Raposa Nova", Biome = "Ocean", Rarity = "Secreto", Weight = 14, Income = 1800, Color = Color3.fromRGB(62, 73, 135), Shape = "StarryFox", Accent = Color3.fromRGB(48, 193, 255) },
+    { Id = "StarforgedSunlion", Name = "Leão Forjado em Estrelas", Biome = "Volcano", Rarity = "Eterno", Weight = 48, Income = 5200, Color = Color3.fromRGB(115, 49, 224), Shape = "Sunlion", Accent = Color3.fromRGB(255, 193, 66) },
+    { Id = "VerdantSkyWhale", Name = "Baleia Jardim Celestial", Biome = "Ocean", Rarity = "Divino", Weight = 75, Income = 12000, Color = Color3.fromRGB(76, 49, 161), Shape = "SkyWhale", Accent = Color3.fromRGB(89, 220, 255) },
+
 }
 
 local byId = {}
