@@ -37,3 +37,16 @@ A pesquisa informa a linguagem visual e a organização espacial do mapa do proj
 
 ## Limitações e validação
 As capturas são screenshots de terceiros e podem mostrar versões antigas ou eventos temporários. Números exatos de biomas e requisitos de velocidade em wikis comunitárias entram em conflito, então não foram usados como verdades rígidas. O mapa desta versão mantém oito zonas autorais. A CI valida sintaxe, regras, estrutura do mapa, serialização RBXL e build Rojo; isso não substitui um playtest no Roblox Studio.
+
+
+## Reconstrução do mapa — 2026-11-03
+
+A nova passagem visual mantém as oito fases autorais de Steal An Animal e adota a leitura de mapa observada em Steal An Egg: uma área segura de fazendas claramente recortadas, uma saída fácil de reconhecer e uma rota longa com progressão por regiões.
+
+- A praça inicial agora recebe um piso quadriculado verde em peças leves, abaixo das fazendas e das superfícies de circulação. O padrão reforça o aspecto de campo aberto sem cobrir cercados, tapete de spawn ou estrada.
+- Um portal de entrada marca a transição entre a praça segura e a Trilha Selvagem. As linhas de transição, marcadores laterais e placas de bioma tornam as mudanças de fase legíveis durante a corrida.
+- Cada fase ganhou um marco visual diferente: flor monumental no Prado Solar, queda d'água no Lago das Asas, árvore gigante na Floresta Sussurrante, abrigo elevado no Pântano Nebuloso, conjunto de cristais no Pico Congelado, árvore de copa larga na Savana Dourada, vulcão luminoso no Vulcão de Âmbar e farol no Abismo Azul.
+- Os marcos são posicionados fora da faixa central para preservar perseguições, fuga, coleta e navegação. A maior parte da decoração não é colidível; chão, estrada e estruturas de jogo continuam com suas colisões próprias.
+- A identidade dos biomas permanece autoral. A referência é a organização espacial e a legibilidade de Steal An Egg, não a cópia de assets, nomes ou geometrias proprietárias.
+
+A verificação automatizada cobre a presença dos marcos no construtor de mundo e a estrutura estática do Workspace. Ela não substitui a abertura do place e um teste de corrida no Roblox Studio em dispositivo móvel.
