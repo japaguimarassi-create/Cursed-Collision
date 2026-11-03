@@ -337,7 +337,7 @@ function WorldBuilder.new(services)
             createPart(world, "HubPerimeterGlow", Vector3.new(0.5, 0.16, 190), CFrame.new(edge * 96, 0.02, 0), Color3.fromRGB(189, 255, 125), Enum.Material.Neon, nil, false)
         end
 
-        local routeGateX = 111
+        local routeGateX = 68
         for _, side in ipairs({ -1, 1 }) do
             createPart(world, "RouteStartArchPost", Vector3.new(2.4, 15, 2.4), CFrame.new(routeGateX, 7.5, side * 14), Color3.fromRGB(255, 209, 91), Enum.Material.Metal, nil, false)
             createPart(world, "RouteStartArchGem", Vector3.new(1.7, 1.7, 1.7), CFrame.new(routeGateX, 15.2, side * 14), Color3.fromRGB(255, 239, 154), Enum.Material.Neon, nil, false)
