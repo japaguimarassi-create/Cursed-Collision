@@ -6,7 +6,8 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 
 - Corredor de captura com oito biomas, ninhos e ovos decorativos.
 - Oito fazendas em grade 4×2, seis espaços por celeiro e esteiras com melhorias.
-- 49 espécies, quatro estágios de evolução, renda passiva e renda offline limitada; inclui oito espécies de destaque com silhuetas e detalhes próprios (escamas e cristais, carapaça e pétalas, penas, galhadas, lanternas e folhagem, caudas estelares e juba facetada).
+- 49 espécies, quatro estágios de evolução, renda passiva e renda offline limitada; inclui oito espécies de destaque com anatomia em camadas, padrões de superfície, cristais de vidro, peças emissivas, filigranas, penas sobrepostas, carapaças segmentadas, galhadas ramificadas, folhagem, caudas múltiplas e juba radial.
+- Sistema visual por raridade: halo geométrico nos pets Míticos ou superiores em estágios avançados; partículas e luz local apenas nos níveis Secreto, Eterno e Divino. Os adornos de raridade não são aplicados aos filhotes comuns.
 - Captura de filhotes, fuga dos guardiões, depósito e coleta de moedas.
 - Renascimento validado no servidor: 100.000 moedas e velocidade máxima; até 25 renascimentos, com +10% de renda permanente por renascimento.
 - Recompensas diárias, quatro missões, três códigos de uso único, estatísticas, MapBot e NPCs BotX de observação.
@@ -15,7 +16,7 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 ## Arquitetura revisada
 
 - `ReplicatedStorage/Shared/WorldBuilder.lua`: cenário, fazendas, cercas, esteiras e letreiros.
-- `ReplicatedStorage/Shared/AnimalFactory.lua`: fábrica procedural com anatomia por espécie, camadas de escamas, carapaças, penas, chifres, patas, filigranas e adornos luminosos.
+- `ReplicatedStorage/Shared/AnimalFactory.lua`: fábrica procedural com anatomia por espécie, camadas de escamas, carapaças, penas, chifres, patas, filigranas e adornos luminosos. O acabamento diferencia plástico, vidro e Neon, com efeitos reservados a estágios/raridades superiores.
 - `ServerScriptService/Services/ProfileStore.lua`: sanitização, bloqueio de sessão e persistência.
 - `StarterPlayerScripts/InteractionPrompt.lua`: interface compacta de interação e tratamento do pressionar/soltar.
 - `ServerScriptService/Main.server.lua`: coordena perfis, progressão, remotes, captura, guardiões, economia e ciclo de vida dos jogadores.
