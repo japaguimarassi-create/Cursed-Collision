@@ -1,7 +1,13 @@
 local TreadmillAnimator = {}
+local lastStepAt = 0
+local STEP_INTERVAL = 0.05
 
 function TreadmillAnimator.Step(entries, elapsed, config)
     local now = tonumber(elapsed) or os.clock()
+    if now - lastStepAt < STEP_INTERVAL then
+        return
+    end
+    lastStepAt = now
     for _, entry in ipairs(entries or {}) do
         local part = entry.Part
         if part and part.Parent then
