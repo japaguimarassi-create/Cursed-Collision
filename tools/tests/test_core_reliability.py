@@ -38,7 +38,7 @@ checks = {
     "autosave and shutdown save exist": all(token in MAIN for token in ("AutosaveSeconds", "BindToClose", "releaseSession(player)", "while saveInProgress[player] do")),
     "capture is server-validated": all(token in MAIN for token in ("wildRecords[model]", "ProximityPromptService.PromptTriggered", "Magnitude > 12", "not model:IsDescendantOf(wildlifeFolder)")),
     "deposit checks farm ownership and distance": all(token in MAIN for token in ('base:GetAttribute("OwnerUserId") ~= player.UserId', "Magnitude > 15", "allowAction(player, interaction, 0.45")),
-    "guardian catches carriers": all(token in GUARDIAN for token in ("Config.GuardianCatchDistance", "ClearCarry(targetPlayer)", "Animator:SetState(model, \"Run\")", "Animator:SetState(model, \"Rest\")")) and "guardianController:Step(deltaTime, carried)" in MAIN_FILE,
+    "guardian catches carriers": all(token in GUARDIAN for token in ("Config.GuardianCatchDistance", "ClearCarry(targetPlayer)", 'model:SetAttribute("AnimationState", "Run")', 'model:SetAttribute("AnimationState", "Rest")')) and "guardianController:Step(deltaTime, carried)" in MAIN_FILE,
     "carrying speed is server-applied": "Rules.CarrySpeed" in MAIN and "humanoid.WalkSpeed = baseSpeed" in MAIN,
     "treadmills are built for every base": "createTreadmill(base, center)" in MAIN and '"TrainingZone"' in MAIN,
     "eight explicit guardian species are mapped by biome": all(token in GUARDIAN_CATALOG for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger", "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")),
