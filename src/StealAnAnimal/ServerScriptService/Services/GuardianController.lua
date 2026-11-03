@@ -8,7 +8,6 @@ function GuardianController.new(services)
     local CreateAnimalModel = services.CreateAnimalModel
     local AddLabel = services.AddLabel
     local AddBall = services.AddBall
-    local Animator = services.Animator
     local Notify = services.Notify
     local ClearCarry = services.ClearCarry
 
@@ -70,7 +69,6 @@ function GuardianController.new(services)
                     end
 
                     AddBall(model, "GuardianCrownGem", Vector3.new(1.9, 1.9, 1.9), position + Vector3.new(0, 16.4, 0), biome.Accent, Enum.Material.Neon)
-                    Animator:Register(model, "Rest")
                     table.insert(self.Guardians, {
                         Model = model,
                         Home = CFrame.new(position),
@@ -120,7 +118,7 @@ function GuardianController.new(services)
                     if nearest <= Config.GuardianCatchDistance then
                         ClearCarry(targetPlayer)
                         Notify(targetPlayer, "O guardião alcançou você! O animal escapou.", "Error")
-                        Animator:SetState(model, "Rest")
+                        model:SetAttribute("AnimationState", "Rest")
                     else
                         local current = model:GetPivot()
                         local destination = Vector3.new(targetRoot.Position.X, current.Position.Y, targetRoot.Position.Z)
@@ -130,7 +128,7 @@ function GuardianController.new(services)
                             local nextPosition = current.Position + direction.Unit * movement
                             model:PivotTo(CFrame.lookAt(nextPosition, destination))
                         end
-                        Animator:SetState(model, "Run")
+                        model:SetAttribute("AnimationState", "Run")
                     end
                 else
                     local current = model:GetPivot()
@@ -140,10 +138,10 @@ function GuardianController.new(services)
                         local movement = math.min(direction.Magnitude, 7 * stepTime)
                         local nextPosition = current.Position + direction.Unit * movement
                         model:PivotTo(CFrame.lookAt(nextPosition, home))
-                        Animator:SetState(model, "Walk")
+                        model:SetAttribute("AnimationState", "Walk")
                     else
                         model:PivotTo(guardian.Home)
-                        Animator:SetState(model, "Rest")
+                        model:SetAttribute("AnimationState", "Rest")
                     end
                 end
             end
@@ -157,7 +155,6 @@ function GuardianController.new(services)
     function self:Destroy()
         for _, guardian in ipairs(self.Guardians) do
             if guardian.Model then
-                Animator:Remove(guardian.Model)
                 guardian.Model:Destroy()
             end
         end
