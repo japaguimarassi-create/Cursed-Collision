@@ -50,3 +50,16 @@ A nova passagem visual mantém as oito fases autorais de Steal An Animal e adota
 - A identidade dos biomas permanece autoral. A referência é a organização espacial e a legibilidade de Steal An Egg, não a cópia de assets, nomes ou geometrias proprietárias.
 
 A verificação automatizada cobre a presença dos marcos no construtor de mundo e a estrutura estática do Workspace. Ela não substitui a abertura do place e um teste de corrida no Roblox Studio em dispositivo móvel.
+
+
+## Atualização de projeto — 2026-11-03
+
+A ordem de fases mantida no código é: Floresta, Lago, Deserto, Selva, Neve, Vulcão, Oceano Abissal e Pré-histórico. A sequência de SPEED permanece 10 → 100 → 1.230 → 12.300 → 123.000 → 1.230.000 → 12.300.000 → 123.000.000. O requisito é validado na captura dos ovos; o jogador ainda pode percorrer fisicamente a pista.
+
+A referência de guardiões inspira escala exagerada e estado de repouso junto aos ninhos. O projeto usa oito identidades originais com silhuetas próprias: Galinha Guardiã, Cisne Real, Escorpião das Dunas, Tigre Guardião, Yeti Glacial, Cão Infernal, Baleia Abissal e Tiranossauro Ancestral. Os modelos são construídos com peças/meshes originais pelo AnimalFactory, e o GuardianController controla o despertar, a perseguição, a captura e o retorno ao ponto de repouso.
+
+A prancha vetorial [GUARDIAN_CONCEPTS.svg](visual/GUARDIAN_CONCEPTS.svg) é um conceito visual original para orientar os modelos; não é screenshot do jogo de referência. A prancha [STEAL_AN_EGG_REFERENCE_BOARD.svg](visual/STEAL_AN_EGG_REFERENCE_BOARD.svg) resume a linguagem visual observada e cita imagens públicas usadas no estudo. A imagem [TREADMILL_CONCEPT.svg](visual/TREADMILL_CONCEPT.svg) documenta peças da esteira e o movimento esperado.
+
+As animações são separadas por responsabilidade: o servidor define o estado e move os guardiões; cada cliente anima localmente os membros e detalhes dos animais próximos. Faixa e roletes da esteira também são animados localmente. Esse arranjo reduz tráfego de replicação e preserva a autoridade do servidor sobre perseguição, alcance e captura.
+
+A auditoria Studio foi ampliada para verificar oito tipos de guardião em repouso, animais selvagens com estado Walk, metadados da esteira e movimento local observado em dois clientes simulados. A simulação de CI apenas verifica fonte/estrutura; os movimentos reais precisam ser confirmados no StudioTestService.
