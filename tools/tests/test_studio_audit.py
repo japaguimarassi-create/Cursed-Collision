@@ -5,6 +5,10 @@ CONFIG = (ROOT / "src/StealAnAnimal/ReplicatedStorage/Shared/Config.lua").read_t
 SERVER = (ROOT / "src/StealAnAnimal/ServerScriptService/StudioAudit.server.lua").read_text(encoding="utf-8")
 CLIENT = (ROOT / "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/StudioAudit.client.lua").read_text(encoding="utf-8")
 HUD = (ROOT / "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/GameClient.client.lua").read_text(encoding="utf-8")
+ANIMATION = (ROOT / "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/AnimalAnimation.client.lua").read_text(encoding="utf-8")
+GUARDIANS = (ROOT / "src/StealAnAnimal/ServerScriptService/Services/GuardianController.lua").read_text(encoding="utf-8")
+ANIMAL_ANIMATOR = (ROOT / "src/StealAnAnimal/ReplicatedStorage/Shared/AnimalAnimator.lua").read_text(encoding="utf-8")
+TREADMILL_ANIMATOR = (ROOT / "src/StealAnAnimal/ReplicatedStorage/Shared/TreadmillAnimator.lua").read_text(encoding="utf-8")
 PROMPT = (ROOT / "src/StealAnAnimal/StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua").read_text(encoding="utf-8")
 PLUGIN = (ROOT / "tools/studio-tests/StealAnAnimalAudit.plugin.lua").read_text(encoding="utf-8")
 DOCS = (ROOT / "docs/STUDIO_AUTOMATED_AUDIT.md").read_text(encoding="utf-8")
@@ -18,6 +22,11 @@ checks = {
     "server emits a structured report and ends the Studio test": 'HttpService:JSONEncode(summary)' in SERVER and 'StudioTestService:EndTest(encoded)' in SERVER and '[STEAL_ANIMAL_AUDIT_REPORT]' in SERVER,
     "client reports viewport, touch state, and UI checks": all(token in CLIENT for token in ("touchEnabled = UserInputService.TouchEnabled", "viewport = {", "ContextObjective", "QuickActions", "CreateVirtualInput", 'reportRemote:FireServer(report)')),
     "server checks the world, farms, guardians, remotes, and profiles": all(token in SERVER for token in ("StealAnAnimalRuntimeWorld", "PlayerFarms", "GuardianParent_", "StealAnimalRemotes", "ProfileLoaded", "DepositPrompt", "CollectPrompt")),
+    "server audit verifies eight typed guardians in the rest state and treadmill rigging": all(token in SERVER for token in ("GuardianType", 'GetAttribute("AnimationState") ~= "Rest"', "MovingBeltStripe", "BeltRoller", "TreadmillOrigin", "TreadmillLevel")),
+    "client audit verifies a moving animal part and treadmill belt at runtime": all(token in CLIENT for token in ("Animal selvagem executa animação Walk local", "Faixa da esteira anima localmente", "AnimationState", "MovingBeltStripe")),
+    "client animation code observes server states and culls by camera distance": all(token in ANIMATION for token in ('GetAttributeChangedSignal("AnimationState")', "SetViewPosition", "Workspace.DescendantAdded", "TreadmillAnimator.Step")),
+    "procedural animal animator exposes three states": all(token in ANIMAL_ANIMATOR for token in ("Walk = true", "Rest = true", "Run = true", "MaxDistance")),
+    "treadmill animation includes independent stripe and roller movement": all(token in TREADMILL_ANIMATOR for token in ('Kind == "Roller"', "AnimationSpeed", "STEP_INTERVAL")),
     "audit avoids economy-changing button actions": all(token not in CLIENT for token in ("collectRemote:FireServer()", "rebirthRemote:FireServer()", "upgradeRemote:FireServer()")),
     "plugin does not call external endpoints": all(token not in PLUGIN for token in ("RequestAsync(", "GetAsync(", "PostAsync(", "HttpGet(")),
     "instructions document the supported Studio test flow": all(token in DOCS for token in ("StudioTestService", "VirtualInput", "StudioSandbox", "Output", "API Services")),
