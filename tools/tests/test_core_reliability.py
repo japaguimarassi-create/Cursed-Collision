@@ -12,6 +12,11 @@ PROMPT = (BASE / "StarterPlayer/StarterPlayerScripts/InteractionPrompt.lua").rea
 CLIENT = CLIENT_FILE + PROMPT
 CONFIG = (BASE / "ReplicatedStorage/Shared/Config.lua").read_text(encoding="utf-8")
 RULES = (BASE / "ReplicatedStorage/Shared/GameplayRules.lua").read_text(encoding="utf-8")
+GUARDIAN = (BASE / "ServerScriptService/Services/GuardianController.lua").read_text(encoding="utf-8")
+ANIMATOR = (BASE / "ReplicatedStorage/Shared/AnimalAnimator.lua").read_text(encoding="utf-8")
+TREADMILL_ANIMATOR = (BASE / "ReplicatedStorage/Shared/TreadmillAnimator.lua").read_text(encoding="utf-8")
+GUARDIAN_CATALOG = (BASE / "ReplicatedStorage/Shared/GuardianCatalog.lua").read_text(encoding="utf-8")
+MAIN += GUARDIAN + ANIMATOR + TREADMILL_ANIMATOR + GUARDIAN_CATALOG
 
 checks = {
     "profiles acquire an atomic session lease": all(token in MAIN for token in ("local function acquireSession", "SESSION_LEASE_SECONDS = 180", "ExpiresAt", "sessionTokens[player] = token")),
@@ -32,14 +37,18 @@ checks = {
     "autosave and shutdown save exist": all(token in MAIN for token in ("AutosaveSeconds", "BindToClose", "releaseSession(player)", "while saveInProgress[player] do")),
     "capture is server-validated": all(token in MAIN for token in ("wildRecords[model]", "ProximityPromptService.PromptTriggered", "Magnitude > 12", "not model:IsDescendantOf(wildlifeFolder)")),
     "deposit checks farm ownership and distance": all(token in MAIN for token in ('base:GetAttribute("OwnerUserId") ~= player.UserId', "Magnitude > 15", "allowAction(player, interaction, 0.45")),
-    "guardian catches carriers": "GuardianCatchDistance" in MAIN and "clearCarry(targetPlayer" in MAIN,
+    "guardian catches carriers": all(token in GUARDIAN for token in ("Config.GuardianCatchDistance", "ClearCarry(targetPlayer)", "Animator:SetState(model, \"Run\")", "Animator:SetState(model, \"Rest\")")) and "guardianController:Step(deltaTime, carried)" in MAIN_FILE,
     "carrying speed is server-applied": "Rules.CarrySpeed" in MAIN and "humanoid.WalkSpeed = baseSpeed" in MAIN,
     "treadmills are built for every base": "createTreadmill(base, center)" in MAIN and '"TrainingZone"' in MAIN,
+    "eight explicit guardian species are mapped by biome": all(token in GUARDIAN_CATALOG for token in ("GuardianHen", "GuardianSwan", "GuardianScorpion", "GuardianTiger", "GuardianYeti", "GuardianHellhound", "GuardianWhale", "GuardianTyrannosaur")),
+    "all animal models use walk rest and run procedural animation states": all(token in ANIMATOR for token in ("Walk = true", "Rest = true", "Run = true", "self:Register(model", "self:SetState(model", "self:Step(deltaTime)")) and all(token in MAIN_FILE for token in ('animalAnimator:Register(model, "Walk")', 'animalAnimator:Register(model, "Rest")', "animalAnimator:Step(deltaTime)")),
+    "guardian AI has resting return and running chase states": all(token in GUARDIAN for token in ('Animator:Register(model, "Rest")', 'Animator:SetState(model, "Run")', 'Animator:SetState(model, "Walk")', 'Animator:SetState(model, "Rest")', "GuardianCatalog.Get(biome.Id)")),
+    "treadmill upgrades update display and moving hardware": all(token in TREADMILL_ANIMATOR for token in ("ApplyLevel", "TreadmillLevel", "TrainingGain", 'Kind == "Roller"')) and all(token in MAIN_FILE for token in ("TreadmillAnimator.Step(treadmillStrips", "TreadmillAnimator.ApplyLevel(treadmill, level, gain)")),
     "speed is earned server-side while standing on the treadmill": all(token in MAIN for token in ("zone.CFrame:PointToObjectSpace(root.Position)", "Rules.TrainingGain(profile.TreadmillLevel, Config)", "profile.Speed = nextSpeed")) and "humanoid.MoveDirection.Magnitude > 0.12" not in MAIN,
     "speed points change actual movement with a cap": "Rules.MoveSpeed(profile.Speed, Config)" in MAIN and "MaxWalkSpeed = 40" in CONFIG,
     "biome minimum speed is checked when stealing an egg, not when entering": all(token in MAIN_FILE for token in ("requiredBiome", "spec.Biome", "profile.Speed < minimumSpeed", "SPEED para roubar ovos")) and all(token in CONFIG for token in ("MinSpeed = 10", "MinSpeed = 100", "MinSpeed = 1230", "MinSpeed = 123000000", "MaxSpeedPoints = 150000000")) and "enforceBiomeSpeedGates" not in MAIN_FILE,
     "treadmill upgrade validates coins and level": all(token in MAIN for token in ("Rules.UpgradeCost(profile.TreadmillLevel, Config)", "profile.Coins -= cost", "profile.TreadmillLevel += 1")),
-    "treadmill belt uses a single shared animation loop": "treadmillAnimationAccumulator >= 0.1" in MAIN and "for _, entry in ipairs(treadmillStrips)" in MAIN,
+    "treadmill belt and rollers use a shared animation controller": "TreadmillAnimator.Step(treadmillStrips" in MAIN_FILE and all(token in TREADMILL_ANIMATOR for token in ('Kind == "Roller"', "TreadmillBeltLength", "TreadmillBeltSpeed")),
     "mobile HUD includes original progression and diagnostic panels": all(token in CLIENT for token in ("TouchEnabled", "StealAnAnimalHUD", "TopDashboard", "QuickActions", "OpenIndex", "ContextObjective", "ScreenInsets", "Modal", "ResponsiveScale", "MenuList", "OpenMore", "Daily", "Quests", "Codes", "Stats", "Settings", "Diagnostics", "mapBotReportRemote.OnClientEvent")),
     "greenfield HUD has clean custom icons and contextual objective state": all(token in CLIENT for token in ('makeDockButton("OpenShop"', 'makeDockButton("OpenIndex"', 'makeDockButton("OpenMore"', "makeGlyph", "objectiveMarker", "RebirthBadge", "Enum.ScreenInsets.CoreUISafeInsets")) and all(token not in CLIENT for token in ("ActionDock", "helpButton.Activated", "barnButton.Activated", "collectButton.Activated", "rebirthButton.Activated")),
     "quick menu is touch-sized and avoids permanent bottom action dock": "UDim2.new(0, 82, 0, 54)" in CLIENT and "dock.Position = UDim2.new(0, 8, 0, 108)" in CLIENT and "ActionDock" not in CLIENT,
