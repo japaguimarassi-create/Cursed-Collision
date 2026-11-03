@@ -47,9 +47,9 @@ local Config = {
         { Id = "Forest", Name = "Deserto", Phase = 3, CenterX = 530, MinSpeed = 1230, Ground = Color3.fromRGB(205, 165, 93), Accent = Color3.fromRGB(244, 204, 119), Material = Enum.Material.Sand },
         { Id = "Wetlands", Name = "Selva", Phase = 4, CenterX = 710, MinSpeed = 12300, Ground = Color3.fromRGB(48, 119, 69), Accent = Color3.fromRGB(117, 227, 125), Material = Enum.Material.Grass },
         { Id = "Frost", Name = "Neve", Phase = 5, CenterX = 890, MinSpeed = 123000, Ground = Color3.fromRGB(190, 221, 239), Accent = Color3.fromRGB(110, 202, 255), Material = Enum.Material.Snow },
-        { Id = "Savanna", Name = "Pré-histórico", Phase = 6, CenterX = 1070, MinSpeed = 1230000, Ground = Color3.fromRGB(140, 116, 75), Accent = Color3.fromRGB(220, 194, 128), Material = Enum.Material.Ground },
-        { Id = "Volcano", Name = "Vulcão", Phase = 7, CenterX = 1250, MinSpeed = 12300000, Ground = Color3.fromRGB(65, 58, 66), Accent = Color3.fromRGB(255, 101, 55), Material = Enum.Material.Slate },
-        { Id = "Ocean", Name = "Oceano Abissal", Phase = 8, CenterX = 1430, MinSpeed = 123000000, Ground = Color3.fromRGB(43, 91, 126), Accent = Color3.fromRGB(83, 220, 250), Material = Enum.Material.Slate },
+        { Id = "Volcano", Name = "Vulcão", Phase = 6, CenterX = 1070, MinSpeed = 1230000, Ground = Color3.fromRGB(65, 58, 66), Accent = Color3.fromRGB(255, 101, 55), Material = Enum.Material.Slate },
+        { Id = "Ocean", Name = "Oceano Abissal", Phase = 7, CenterX = 1250, MinSpeed = 12300000, Ground = Color3.fromRGB(43, 91, 126), Accent = Color3.fromRGB(83, 220, 250), Material = Enum.Material.Slate },
+        { Id = "Savanna", Name = "Pré-histórico", Phase = 8, CenterX = 1430, MinSpeed = 123000000, Ground = Color3.fromRGB(140, 116, 75), Accent = Color3.fromRGB(220, 194, 128), Material = Enum.Material.Ground },
     },
 }
 
