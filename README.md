@@ -4,7 +4,7 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 
 ## Sistemas de jogo
 
-- Mapa inspirado no fluxo de Steal an Egg: safe zone aberta e quadriculada, oito fazendas com cercas baixas voltadas para a praça, rota contínua de captura, oito biomas em sequência, placas discretas, ninhos de ovos e marcos naturais por região.
+- Mapa inspirado no fluxo de Steal an Egg: safe zone aberta, oito fazendas, uma única pista reta e oito biomas em sequência. Cada bioma tem um portão com requisito mínimo de SPEED: 10, 100, 1.230, 12.300, 123.000, 1.230.000, 12.300.000 e 123.000.000. O servidor impede a entrada antes do requisito; a velocidade física do personagem continua limitada para preservar o controle mobile.
 - Oito fazendas em grade 4×2, seis espaços por celeiro e esteiras com melhorias.
 - 49 espécies, cada uma com detalhes anatômicos específicos, quatro estágios de evolução, renda passiva e renda offline limitada; oito espécies de destaque recebem anatomia em camadas, padrões de superfície, cristais de vidro, peças emissivas, filigranas, penas sobrepostas, carapaças segmentadas, galhadas ramificadas, folhagem, caudas múltiplas e juba radial.
 - Sistema visual por raridade: halo geométrico nos pets Míticos ou superiores em estágios avançados; partículas e luz local apenas nos níveis Secreto, Eterno e Divino. Os adornos de raridade não são aplicados aos filhotes comuns.
@@ -15,7 +15,7 @@ Projeto Roblox mobile-first com oito biomas, fazendas, animais evolutivos, guard
 
 ## Arquitetura revisada
 
-- `ReplicatedStorage/Shared/WorldBuilder.lua`: safe zone aberta, fazendas com entradas simétricas voltadas para o centro, caminho linear em terreno verde, marcas de progressão no chão, placas pequenas, ninhos e marcos temáticos. A prévia estática do Workspace acompanha a nova composição.
+- `ReplicatedStorage/Shared/WorldBuilder.lua`: safe zone aberta, fazendas junto ao início da pista, oito biomas alinhados no mesmo eixo, portões visuais com placas de SPEED mínima, ninhos e marcos temáticos. A prévia estática do Workspace acompanha a nova composição.
 - `ReplicatedStorage/Shared/AnimalFactory.lua`: fábrica procedural com anatomia por espécie, camadas de escamas, carapaças, penas, chifres, patas, filigranas e adornos luminosos. O acabamento diferencia plástico, vidro e Neon, com efeitos reservados a estágios/raridades superiores.
 - `ServerScriptService/Services/ProfileStore.lua`: sanitização, bloqueio de sessão e persistência.
 - `StarterPlayerScripts/InteractionPrompt.lua`: interface compacta de interação e tratamento do pressionar/soltar.
