@@ -10,6 +10,20 @@ function AnimalFactory.new(services)
         model.Name = (giant and "Guardian_" or "Animal_") .. spec.Id
         model:SetAttribute("AnimalId", spec.Id)
         model:SetAttribute("Stage", stageName or "Baby")
+        local rarityRanks = {
+            Comum = 1,
+            Incomum = 2,
+            Raro = 3,
+            ["Épico"] = 4,
+            ["Lendário"] = 5,
+            ["Mítico"] = 6,
+            ["Cósmico"] = 7,
+            ["Secreto"] = 8,
+            ["Eterno"] = 9,
+            ["Divino"] = 10,
+        }
+        local rarityTier = rarityRanks[spec.Rarity] or 1
+        model:SetAttribute("RarityTier", rarityTier)
         local stageIndex = 1
         for index, stage in ipairs(Config.EvolutionStages) do
             if stage.Name == (stageName or "Baby") then
@@ -21,11 +35,23 @@ function AnimalFactory.new(services)
         local function point(x, y, z)
             return base + Vector3.new(x * scale, y * scale, z * scale)
         end
-        local function ball(name, sx, sy, sz, x, y, z, color)
-            return addBall(model, name, Vector3.new(sx * scale, sy * scale, sz * scale), point(x, y, z), color or spec.Color)
+        local function ball(name, sx, sy, sz, x, y, z, color, material)
+            return addBall(model, name, Vector3.new(sx * scale, sy * scale, sz * scale), point(x, y, z), color or spec.Color, material)
         end
-        local function block(name, sx, sy, sz, x, y, z, color, rotation)
-            return createPart(model, name, Vector3.new(sx * scale, sy * scale, sz * scale), CFrame.new(point(x, y, z)) * (rotation or CFrame.new()), color or spec.Color, Enum.Material.SmoothPlastic, nil, false)
+        local function block(name, sx, sy, sz, x, y, z, color, rotation, material)
+            return createPart(model, name, Vector3.new(sx * scale, sy * scale, sz * scale), CFrame.new(point(x, y, z)) * (rotation or CFrame.new()), color or spec.Color, material or Enum.Material.SmoothPlastic, nil, false)
+        end
+        local function crystal(name, sx, sy, sz, x, y, z, color, rotation)
+            local part = block(name, sx, sy, sz, x, y, z, color or spec.Accent, rotation, Enum.Material.Glass)
+            part.Reflectance = 0.12
+            part.CastShadow = false
+            return part
+        end
+        local function glow(name, sx, sy, sz, x, y, z, color)
+            local part = ball(name, sx, sy, sz, x, y, z, color or spec.Accent, Enum.Material.Neon)
+            part.CastShadow = false
+            part.Transparency = 0.08
+            return part
         end
     
         local core = createPart(model, "ModelRoot", Vector3.new(0.25, 0.25, 0.25), CFrame.new(base), spec.Color, Enum.Material.SmoothPlastic, nil, false)
@@ -551,6 +577,162 @@ function AnimalFactory.new(services)
             for _, side in ipairs({ -1, 1 }) do
                 block("Sky whale tail fluke", 0.78, 0.19, 0.90, side * 0.54, 1.36, 2.85, spec.Color, CFrame.Angles(0, math.rad(side * 18), 0))
                 block("Sky whale gold filigree", 0.08, 0.08, 1.55, side * 0.98, 1.43, 0.10, Color3.fromRGB(255, 197, 78), CFrame.Angles(0, math.rad(side * 12), 0))
+            end
+        end
+
+        if spec.Id == "CrystalbackGecko" then
+            for _, side in ipairs({ -1, 1 }) do
+                for ridge = 1, 4 do
+                    glow("Gecko cheek light scale", 0.10, 0.09, 0.06, side * (0.62 + ridge * 0.07), 1.42 + ridge * 0.09, -1.71, Color3.fromRGB(117, 245, 255))
+                end
+                crystal("Gecko temple crystal", 0.20, 0.34, 0.16, side * 0.73, 1.88, -1.35, Color3.fromRGB(101, 239, 222), CFrame.Angles(0, 0, math.rad(side * 24)))
+                for toe = 1, 4 do
+                    glow("Gecko suction pad", 0.13, 0.06, 0.13, side * (0.82 + toe * 0.035), 0.22, -0.80 + toe * 0.17, Color3.fromRGB(120, 255, 189))
+                end
+            end
+            for band = 1, 3 do
+                ball("Gecko tail band", 0.47 - band * 0.06, 0.39 - band * 0.05, 0.13, 0, 1.00, 1.36 + band * 0.43, band % 2 == 0 and Color3.fromRGB(85, 227, 197) or Color3.fromRGB(18, 110, 89), Enum.Material.SmoothPlastic)
+            end
+            for crest = 1, 3 do
+                crystal("Gecko crown crystal", 0.18, 0.42, 0.16, (crest - 2) * 0.23, 2.00, -1.48, Color3.fromRGB(135, 255, 244), CFrame.Angles(0, 0, math.rad((crest - 2) * 13)))
+            end
+        elseif spec.Id == "BloomforgedBeetle" then
+            for _, side in ipairs({ -1, 1 }) do
+                block("Beetle antenna stem", 0.09, 0.52, 0.09, side * 0.20, 2.42, -1.66, Color3.fromRGB(29, 32, 79), CFrame.Angles(math.rad(-12), 0, math.rad(side * 14)))
+                glow("Beetle antenna tip", 0.16, 0.16, 0.16, side * 0.26, 2.68, -1.74, Color3.fromRGB(104, 239, 255))
+                ball("Beetle mandible", 0.12, 0.19, 0.34, side * 0.18, 0.96, -1.83, Color3.fromRGB(21, 25, 77))
+                for plate = 1, 4 do
+                    ball("Beetle abdomen segment", 0.82 - plate * 0.08, 0.13, 0.36, 0, 0.86, 0.30 + plate * 0.34, plate % 2 == 0 and Color3.fromRGB(44, 72, 154) or Color3.fromRGB(34, 47, 119))
+                end
+                for ridge = 1, 3 do
+                    crystal("Beetle elytra vein", 0.07, 0.08, 1.12, side * (0.28 + ridge * 0.12), 1.97, 0.16, Color3.fromRGB(112, 231, 255), CFrame.Angles(0, 0, math.rad(side * (ridge * 3))))
+                end
+            end
+            for flower = 1, 6 do
+                local angle = math.pi * 2 * flower / 6
+                ball("Beetle dorsal flower petal", 0.22, 0.12, 0.42, math.cos(angle) * 0.42, 2.14, 0.24 + math.sin(angle) * 0.38, flower % 2 == 0 and Color3.fromRGB(104, 235, 255) or Color3.fromRGB(121, 255, 193))
+            end
+            glow("Beetle flower core", 0.23, 0.18, 0.23, 0, 2.18, 0.24, Color3.fromRGB(255, 226, 111))
+        elseif spec.Id == "RunebillBluejay" then
+            for _, side in ipairs({ -1, 1 }) do
+                for row = 1, 3 do
+                    for feather = 1, 4 do
+                        ball("Bluejay covert feather", 0.15, 0.13, 0.62, side * (0.61 + feather * 0.12), 1.82 - row * 0.13, -0.02 + feather * 0.18, row % 2 == 0 and Color3.fromRGB(18, 51, 149) or Color3.fromRGB(75, 173, 255))
+                    end
+                end
+                block("Bluejay lower mandible", 0.29, 0.12, 0.48, 0, 2.06, -1.86, Color3.fromRGB(255, 185, 71), CFrame.Angles(math.rad(-5), 0, 0))
+                glow("Bluejay rune eye glint", 0.075, 0.075, 0.045, side * 0.34, 2.65, -1.53, Color3.fromRGB(130, 235, 255))
+                for band = 1, 3 do
+                    block("Bluejay wing rune stripe", 0.06, 0.07, 0.48, side * (0.75 + band * 0.11), 1.61 - band * 0.13, 0.02 + band * 0.17, Color3.fromRGB(153, 226, 255), CFrame.Angles(0, 0, math.rad(side * 12)), Enum.Material.Neon)
+                end
+            end
+            for plume = 1, 3 do
+                crystal("Bluejay crown rune", 0.12, 0.34, 0.12, (plume - 2) * 0.16, 3.36, -0.78, Color3.fromRGB(124, 235, 255))
+            end
+        elseif spec.Id == "AstralJackalope" then
+            for _, side in ipairs({ -1, 1 }) do
+                for tuft = 1, 4 do
+                    ball("Jackalope layered cheek fur", 0.25, 0.22, 0.20, side * (0.48 + tuft * 0.08), 2.03 - tuft * 0.15, -1.23, tuft % 2 == 0 and Color3.fromRGB(213, 199, 255) or spec.Color)
+                end
+                crystal("Jackalope antler jewel", 0.16, 0.24, 0.14, side * 0.72, 3.78, -0.72, Color3.fromRGB(236, 208, 255))
+                glow("Jackalope hoof rune", 0.16, 0.07, 0.20, side * 0.48, 0.28, -0.55, Color3.fromRGB(214, 158, 255))
+            end
+            for star = 1, 7 do
+                local angle = math.pi * 2 * star / 7
+                glow("Jackalope forehead star", 0.10, 0.10, 0.06, math.cos(angle) * 0.20, 2.73 + math.sin(angle) * 0.15, -1.45, Color3.fromRGB(238, 219, 255))
+            end
+            ball("Jackalope moon crest", 0.24, 0.30, 0.10, 0, 2.91, -1.46, Color3.fromRGB(255, 224, 154), Enum.Material.Neon)
+        elseif spec.Id == "SpiritwoodPanda" then
+            for _, side in ipairs({ -1, 1 }) do
+                block("Spirit panda lantern frame", 0.40, 0.05, 0.05, side * 0.46, 2.87, 0.40, Color3.fromRGB(133, 83, 42))
+                block("Spirit panda lantern cap", 0.38, 0.08, 0.34, side * 0.46, 2.90, 0.40, Color3.fromRGB(121, 72, 36))
+                glow("Spirit panda lantern core", 0.15, 0.19, 0.12, side * 0.46, 2.66, 0.19, Color3.fromRGB(178, 255, 119))
+                ball("Spirit panda paw pad", 0.20, 0.08, 0.08, side * 0.62, 0.25, -0.82, Color3.fromRGB(160, 225, 153))
+                for leaf = 1, 5 do
+                    local angle = math.pi * 2 * leaf / 5
+                    ball("Spirit panda canopy leaf", 0.23, 0.15, 0.25, side * 0.46 + math.cos(angle) * 0.25, 3.24 + math.sin(angle) * 0.12, 0.68, Color3.fromRGB(98, 220, 114))
+                end
+            end
+            for ring = 1, 3 do
+                block("Spirit panda tree bark ring", 0.32, 0.05, 0.32, 0, 2.03 + ring * 0.28, 0.72, Color3.fromRGB(147, 96, 54))
+            end
+            for firefly = 1, 5 do
+                glow("Spirit panda forest firefly", 0.07, 0.07, 0.07, (firefly - 3) * 0.52, 2.85 + (firefly % 2) * 0.32, 0.92, Color3.fromRGB(194, 255, 119))
+            end
+        elseif spec.Id == "Novafox" then
+            for tail = 1, 9 do
+                local offset = tail - 5
+                local z = 1.75 + math.abs(offset) * 0.09
+                ball("Novafox tail root tuft", 0.32, 0.38, 0.44, offset * 0.15, 1.53, 1.34, Color3.fromRGB(178, 188, 226))
+                ball("Novafox tail luminous tip", 0.20, 0.24, 0.32, offset * 0.15, 1.56 + math.abs(offset) * 0.04, z + 0.72, Color3.fromRGB(180, 244, 255), Enum.Material.Neon)
+                glow("Novafox tail star", 0.09, 0.09, 0.07, offset * 0.15, 1.88, z + 0.38, Color3.fromRGB(255, 231, 135))
+            end
+            for _, side in ipairs({ -1, 1 }) do
+                ball("Novafox ear inner glow", 0.10, 0.49, 0.07, side * 0.37, 3.01, -1.08, Color3.fromRGB(103, 218, 255), Enum.Material.Neon)
+                for whisker = 1, 3 do
+                    block("Novafox whisker", 0.42, 0.035, 0.025, side * (0.68 + whisker * 0.08), 1.92 - whisker * 0.10, -1.69, Color3.fromRGB(189, 225, 255))
+                end
+            end
+            for collar = 1, 5 do
+                local angle = math.pi * 2 * collar / 5
+                glow("Novafox chest constellation", 0.10, 0.10, 0.06, math.cos(angle) * 0.37, 1.93 + math.sin(angle) * 0.28, -1.30, Color3.fromRGB(255, 224, 125))
+            end
+        elseif spec.Id == "StarforgedSunlion" then
+            for mane = 1, 16 do
+                local angle = math.pi * 2 * mane / 16
+                local x = math.cos(angle) * 1.08
+                local y = 2.27 + math.sin(angle) * 0.95
+                local z = -0.88 + math.sin(angle) * 0.20
+                crystal("Sunlion radial mane plate", 0.28, 0.54, 0.20, x, y, z, mane % 2 == 0 and Color3.fromRGB(191, 130, 255) or Color3.fromRGB(255, 198, 74), CFrame.Angles(0, 0, math.rad(mane * 22)))
+            end
+            for _, side in ipairs({ -1, 1 }) do
+                for whisker = 1, 3 do
+                    block("Sunlion whisker", 0.44, 0.035, 0.025, side * (0.64 + whisker * 0.08), 1.97 - whisker * 0.12, -1.86, Color3.fromRGB(255, 235, 187))
+                end
+                for shoulder = 1, 3 do
+                    crystal("Sunlion shoulder armor", 0.22, 0.42, 0.22, side * (0.70 + shoulder * 0.10), 1.55 - shoulder * 0.18, -0.38, Color3.fromRGB(184, 119, 255))
+                end
+            end
+            for gem = 1, 5 do
+                glow("Sunlion crown star gem", 0.10, 0.10, 0.08, (gem - 3) * 0.23, 3.34, -0.80, Color3.fromRGB(255, 221, 126))
+            end
+        elseif spec.Id == "VerdantSkyWhale" then
+            for _, side in ipairs({ -1, 1 }) do
+                for gill = 1, 5 do
+                    block("Sky whale gill engraving", 0.06, 0.20, 0.50, side * 1.05, 1.48 - gill * 0.16, -0.77, Color3.fromRGB(100, 206, 233), CFrame.Angles(0, 0, math.rad(side * 16)), Enum.Material.Neon)
+                end
+                for finRidge = 1, 4 do
+                    block("Sky whale fin ridge", 0.05, 0.06, 0.88, side * (1.55 + finRidge * 0.05), 1.00, -0.12 + finRidge * 0.12, Color3.fromRGB(135, 206, 255))
+                end
+            end
+            for bellyRidge = 1, 5 do
+                ball("Sky whale belly plate", 1.28, 0.08, 0.40, 0, 0.70, -0.90 + bellyRidge * 0.48, Color3.fromRGB(168, 148, 226))
+            end
+            for rune = 1, 9 do
+                local angle = math.pi * 2 * rune / 9
+                glow("Sky whale orbit rune", 0.10, 0.10, 0.08, math.cos(angle) * 1.22, 2.10, math.sin(angle) * 1.25, Color3.fromRGB(111, 226, 255))
+            end
+        end
+
+        if rarityTier >= 6 and (stageIndex >= 3 or giant) then
+            for segment = 1, 10 do
+                local angle = math.pi * 2 * segment / 10
+                local ring = glow("Rarity ground halo", 0.15, 0.07, 0.15, math.cos(angle) * 1.62, 0.10, math.sin(angle) * 1.62, spec.Accent)
+                ring.Transparency = 0.18
+            end
+            if rarityTier >= 8 then
+                local sparkles = Instance.new("Sparkles")
+                sparkles.Name = "RaritySparkles"
+                sparkles.SparkleColor = spec.Accent
+                sparkles.TimeScale = 0.8
+                sparkles.Parent = core
+                local light = Instance.new("PointLight")
+                light.Name = "RarityCoreLight"
+                light.Color = spec.Accent
+                light.Brightness = giant and 1.2 or 0.55
+                light.Range = giant and 18 or 9
+                light.Shadows = false
+                light.Parent = core
             end
         end
 
