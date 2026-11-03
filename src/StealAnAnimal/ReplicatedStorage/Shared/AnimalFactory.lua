@@ -580,9 +580,10 @@ function AnimalFactory.new(services)
             end
         end
 
-        if spec.Id == "CrystalbackGecko" then
-            for _, side in ipairs({ -1, 1 }) do
-                for ridge = 1, 4 do
+        if stageIndex >= 2 or giant then
+            if spec.Id == "CrystalbackGecko" then
+                for _, side in ipairs({ -1, 1 }) do
+                    for ridge = 1, 4 do
                     glow("Gecko cheek light scale", 0.10, 0.09, 0.06, side * (0.62 + ridge * 0.07), 1.42 + ridge * 0.09, -1.71, Color3.fromRGB(117, 245, 255))
                 end
                 crystal("Gecko temple crystal", 0.20, 0.34, 0.16, side * 0.73, 1.88, -1.35, Color3.fromRGB(101, 239, 222), CFrame.Angles(0, 0, math.rad(side * 24)))
@@ -911,6 +912,7 @@ function AnimalFactory.new(services)
             ball("Whale blowhole", 0.18, 0.07, 0.16, 0, 2.34, -1.00, Color3.fromRGB(42, 65, 81))
             for tailLine = 1, 3 do
                 ball("Whale tail fluke ridge", 0.08, 0.08, 0.72, (tailLine - 2) * 0.42, 1.37, 2.92, Color3.fromRGB(179, 221, 237))
+            end
             end
         end
 
