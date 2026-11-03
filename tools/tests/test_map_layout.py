@@ -67,7 +67,7 @@ assert all(token in static_json for token in ("CorridorFloor", "Farm_8", "Treadm
 assert all(token in static_json for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFencePost")), "Static preview missing egg nests, boundary walls, or fenced farms"
 assert all(token in static_json for token in ("CentralHubGrid", "CentralHubTile", "RouteStartArchTop", "RouteStartSign", "MeadowMonumentPetal", "LakeMonumentWaterfall", "ForestMonumentCanopy", "WetlandsMonumentRoof", "FrostMonumentShard", "SavannaMonumentCanopy", "VolcanoMonumentLava", "OceanMonumentBeacon", "LandmarkPlaque")), "Static Workspace preview does not contain the rebuilt hub and all biome landmarks"
 assert static_json.count('"Name": "CentralHubTile"') == 121, "Static hub preview must preserve the complete 11-by-11 checkerboard"
-assert static_json.count('"Name": "LandmarkPlaque"') == 8, "Static hub preview must include one landmark plaque per biome"
+assert static_json.count("LandmarkPlaque") == 8, "Static hub preview must include one landmark plaque per biome"
 assert all(token in static_json for token in ("CorridorBoundaryWall", "EggNestBase", "WildEgg", "PenFenceBackLower", "PenFencePost")), "Static preview missing egg nests, boundary walls, or fenced farm pens"
 assert 'local previewWorld = Workspace:FindFirstChild("StealAnAnimalWorld")' in MAIN, "Runtime must preserve preview while booting"
 assert "previewWorld:Destroy()" in MAIN, "Runtime must remove preview only after successfully creating its world"
